@@ -1,0 +1,1651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anvil Order Planner</title>
+<meta name="description" content="Find the cheapest Minecraft anvil order for your enchantments, Java and Bedrock.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Karla:wght@400;500;600;700;800&display=swap">
+<style>
+body { margin: 0; }
+[hidden] { display: none !important; }
+/* Layout: inventory-style panels on a deepslate backdrop. Choices stack on the left, the anvil plan stays beside them; one column on phones. */
+:root {
+  color-scheme: dark;
+  --page: #1d1d21;
+  --panel: #c6c6c6;
+  --panel-hi: #ffffff;
+  --panel-lo: #555555;
+  --edge: #000000;
+  --slot: #8b8b8b;
+  --slot-hi: #ffffff;
+  --slot-lo: #373737;
+  --well: #b3b3b3;
+  --ink: #3f3f3f;
+  --ink-soft: #4d4d4d;
+  --white: #ffffff;
+  --shadow: #3f3f3f;
+  --btn: #727272;
+  --btn-hi: #a9a9a9;
+  --btn-lo: #3b3b3b;
+  --btn-on: #4f8a2f;
+  --btn-on-hi: #86c05d;
+  --btn-on-lo: #284a17;
+  --xp: #80ff20;
+  --xp-shadow: #203f08;
+  --bad: #ff6060;
+  --bad-shadow: #3f1818;
+  --bad-ink: #9e1a1a;
+  --picked: #c4b5dd;
+  --picked-edge: #6f45b5;
+  --tip-bg: #100010;
+  --tip-edge: #2c0b72;
+  --tip-name: #55ffff;
+  --tip-text: #aaaaaa;
+  --tip-curse: #ff5555;
+  --yellow: #ffff55;
+  --yellow-shadow: #3f3f15;
+  --font-pixel: "Pixelify Sans", "Courier New", monospace;
+  --font-body: "Karla", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--page); }
+body {
+  background-color: var(--page);
+  background-image: var(--stone, none);
+  background-size: 128px 128px;
+  image-rendering: pixelated;
+  color: var(--white);
+  font: 15px/1.5 var(--font-body);
+}
+.wrap {
+  max-width: 1200px; margin: 0 auto; overflow-x: clip;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+.ico { width: 32px; height: 32px; display: block; image-rendering: pixelated; flex: none; }
+
+/* Header */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px; margin-bottom: 24px; }
+.brand { display: flex; gap: 16px; align-items: center; min-width: 0; }
+.brand .logo { width: 64px; height: 64px; }
+.title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+h1 { font: 600 clamp(28px, 4.4vw, 42px)/1.05 var(--font-pixel); color: var(--white); text-shadow: 3px 3px 0 var(--shadow); margin: 0; text-wrap: balance; }
+.splash { display: inline-block; margin: 6px 0; color: var(--yellow); text-shadow: 2px 2px 0 var(--yellow-shadow); font: 600 17px/1 var(--font-pixel); transform: rotate(-10deg); white-space: nowrap; }
+.lede { margin: 8px 0 0; color: #dedede; max-width: 60ch; text-shadow: 1px 1px 0 #000; }
+
+/* Buttons */
+.mc-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 400 16px/1 var(--font-pixel); color: var(--white); text-shadow: 2px 2px 0 var(--shadow);
+  background: var(--btn); border: 2px solid var(--edge); border-radius: 0;
+  box-shadow: inset 2px 2px 0 var(--btn-hi), inset -2px -3px 0 var(--btn-lo);
+  padding: 8px 14px 10px; cursor: pointer;
+}
+.mc-btn:hover { border-color: var(--white); }
+.mc-btn[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -3px 0 var(--btn-on-lo); }
+.mc-btn .ico { width: 24px; height: 24px; }
+.mc-btn.sm { font-size: 14px; padding: 6px 10px 8px; }
+.edition { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Panels */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 880px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.panel {
+  background: var(--panel); color: var(--ink);
+  border: 3px solid var(--edge);
+  box-shadow: inset 3px 3px 0 var(--panel-hi), inset -3px -3px 0 var(--panel-lo);
+  padding: 16px 18px 18px; min-width: 0;
+}
+.panel h2 { font: 600 19px/1.1 var(--font-pixel); color: var(--ink); margin: 0; }
+.panel > h2 { margin-bottom: 12px; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.head-btns { display: flex; gap: 6px; }
+
+/* Slots */
+.slot {
+  position: relative; width: 44px; height: 44px; flex: none;
+  display: grid; place-items: center;
+  background: var(--slot);
+  box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi);
+}
+.slot.sm { width: 40px; height: 40px; }
+.glint::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 32px; height: 32px; margin: -16px 0 0 -16px;
+  -webkit-mask: var(--m) center / 32px 32px no-repeat; mask: var(--m) center / 32px 32px no-repeat;
+  background:
+    linear-gradient(115deg, transparent 40%, rgba(190, 120, 255, .45) 47%, rgba(240, 200, 255, .6) 50%, rgba(190, 120, 255, .45) 53%, transparent 60%) 0 0 / 300% 100% no-repeat,
+    linear-gradient(rgba(140, 60, 255, .14), rgba(140, 60, 255, .14));
+  mix-blend-mode: screen; pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .glint::after { animation: glint 2.8s linear infinite; }
+  @keyframes glint { from { background-position: 120% 0, 0 0; } to { background-position: -40% 0, 0 0; } }
+  .splash { animation: splash .9s ease-in-out infinite alternate; }
+  @keyframes splash { to { transform: rotate(-10deg) scale(1.08); } }
+}
+
+/* Item picker */
+.cats { display: flex; flex-direction: column; gap: 12px; }
+.cat-label { font: 600 14px/1 var(--font-pixel); color: var(--ink-soft); margin-bottom: 6px; }
+.slot-grid { display: flex; flex-wrap: wrap; }
+.slot-btn { border: 0; padding: 0; cursor: pointer; font: inherit; }
+.slot-btn:hover::before { content: ""; position: absolute; inset: 2px; background: rgba(255, 255, 255, .4); z-index: 1; }
+.slot-btn[aria-pressed="true"] { background: #b9b9b9; box-shadow: inset 0 0 0 3px var(--white), inset 0 0 0 5px var(--edge); }
+.slot-btn[data-name]:hover::after, .slot-btn[data-name]:focus-visible::after {
+  content: attr(data-name); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  white-space: nowrap; z-index: 5; pointer-events: none;
+  background: var(--tip-bg); color: var(--white); font: 600 14px/1 var(--font-body);
+  padding: 6px 8px; border: 2px solid var(--tip-edge);
+}
+.picked-name { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+
+/* Enchantments */
+.ench-list { display: flex; flex-direction: column; gap: 2px; }
+.ench {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "slot name lv" "slot meta meta";
+  align-items: center; gap: 0 12px; padding: 5px 8px;
+  border: 2px solid transparent; cursor: pointer;
+}
+.ench:hover { background: #d3d3d3; }
+.ench.on { background: var(--picked); border-color: var(--picked-edge); }
+.ench .slot { grid-area: slot; }
+.ench-name { grid-area: name; font-weight: 800; font-size: 15px; line-height: 1.25; }
+.ench-name .curse { color: var(--bad-ink); font-weight: 700; font-size: 12px; margin-left: 6px; }
+.ench-meta { grid-area: meta; font-size: 12.5px; color: var(--ink-soft); line-height: 1.35; }
+.ench-meta .warn { color: var(--bad-ink); font-weight: 700; }
+.ench.blocked .ench-name { color: #6a6a6a; }
+.ench.blocked .ico { opacity: .5; }
+.levels { grid-area: lv; display: inline-flex; gap: 3px; }
+.levels button {
+  font: 800 13px/1 var(--font-body); color: var(--white); text-shadow: 1px 1px 0 var(--shadow);
+  min-width: 32px; padding: 6px 5px 7px; cursor: pointer;
+  background: var(--btn); border: 2px solid var(--edge);
+  box-shadow: inset 2px 2px 0 var(--btn-hi), inset -2px -2px 0 var(--btn-lo);
+}
+.levels button:hover { border-color: var(--white); }
+.levels button[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -2px 0 var(--btn-on-lo); }
+@media (max-width: 480px) {
+  .ench { grid-template-areas: "slot name" "slot meta" "slot lv"; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; }
+  .levels { justify-self: start; margin-top: 4px; }
+}
+
+/* Options */
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; cursor: pointer; }
+.opt-label { font-weight: 800; font-size: 14.5px; line-height: 1.25; }
+.mc-select {
+  font: 700 14px/1.2 var(--font-body); color: var(--white); text-shadow: 1px 1px 0 var(--shadow);
+  appearance: none; -webkit-appearance: none; border-radius: 0; cursor: pointer;
+  background: var(--btn) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23fff' d='M1 2h6v1H1zM2 3h4v1H2zM3 4h2v1H3z'/%3E%3C/svg%3E") right 9px center / 14px 14px no-repeat;
+  border: 2px solid var(--edge);
+  box-shadow: inset 2px 2px 0 var(--btn-hi), inset -2px -3px 0 var(--btn-lo);
+  padding: 8px 32px 9px 10px;
+}
+.mc-select:hover { border-color: var(--white); }
+.mc-select option { background: #2b2b2b; color: var(--white); }
+.mc-check {
+  appearance: none; -webkit-appearance: none; margin: 0; width: 28px; height: 28px; cursor: pointer;
+  background: var(--slot) center / 18px 18px no-repeat;
+  box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi);
+}
+.mc-check:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23203f08' d='M2 5h1v2H2zM3 6h1v2H3zM4 7h1v2H4zM5 6h1v2H5zM6 5h1v2H6zM7 4h1v2H7zM8 3h1v2H8z'/%3E%3Cpath fill='%2380ff20' d='M1 4h1v2H1zM2 5h1v2H2zM3 6h1v2H3zM4 5h1v2H4zM5 4h1v2H5zM6 3h1v2H6zM7 2h1v2H7z'/%3E%3C/svg%3E");
+}
+@media (max-width: 520px) {
+  .opt { grid-template-columns: auto minmax(0, 1fr); }
+  .opt .mc-select { grid-column: 1 / -1; }
+  .opt.opt-check { grid-template-columns: auto minmax(0, 1fr) auto; }
+}
+
+/* Anvil plan */
+.result { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); padding: 0; }
+@media (max-width: 880px) { .result { position: static; } }
+.res-top { padding: 16px 18px 14px; }
+.res-title { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.stat {
+  background: var(--slot-lo); color: var(--white); padding: 10px 12px 12px;
+  box-shadow: inset 2px 2px 0 #1e1e1e, inset -2px -2px 0 #6b6b6b; min-width: 0;
+}
+.stat .k { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #d0d0d0; }
+.stat .goal { color: var(--yellow); }
+.stat .v { font: 800 38px/1.1 var(--font-body); color: var(--xp); text-shadow: 3px 3px 0 var(--xp-shadow); font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: 15px; margin-left: 5px; text-shadow: 2px 2px 0 var(--xp-shadow); }
+.mini { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 10px; font-size: 14px; }
+.mini b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.compare { margin: 10px 0 0; font-size: 14px; }
+.compare b { font-weight: 800; }
+.banner { margin-top: 12px; padding: 10px 12px; background: #3a0d0d; color: #ffb4ac; border: 2px solid var(--edge); font-weight: 700; font-size: 13.5px; }
+
+.steps { list-style: none; margin: 0; padding: 0 18px; display: flex; flex-direction: column; gap: 10px; }
+.step { background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi); padding: 12px 14px; }
+.step-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.step-no { font: 600 17px/1 var(--font-pixel); color: var(--ink); }
+.cost {
+  font: 800 14.5px/1 var(--font-body); color: var(--xp); text-shadow: 2px 2px 0 var(--xp-shadow);
+  background: var(--slot-lo); border: 2px solid var(--edge); padding: 6px 9px; font-variant-numeric: tabular-nums;
+}
+.cost.bad { color: var(--bad); text-shadow: 2px 2px 0 var(--bad-shadow); }
+.anvil-row { display: flex; align-items: center; gap: 8px; }
+.op { font: 800 22px/1 var(--font-body); color: var(--ink); width: 16px; text-align: center; }
+.what { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+.what .lbl { font-weight: 800; }
+.what .sub { color: var(--ink-soft); }
+.tips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.tip { background: var(--tip-bg); color: var(--tip-text); border: 2px solid var(--tip-edge); font: 700 12.5px/1 var(--font-body); padding: 4px 6px 5px; white-space: nowrap; }
+.tip.curse { color: var(--tip-curse); }
+.breakdown { margin-top: 8px; font-size: 12.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+.final { padding: 14px 18px 18px; }
+.mc-tooltip {
+  display: flex; gap: 12px; align-items: flex-start; margin: 2px;
+  background: var(--tip-bg); color: var(--tip-text); border: 2px solid var(--tip-edge); outline: 2px solid var(--tip-bg);
+  padding: 10px 12px; font-size: 14px;
+}
+.mc-tooltip .tname { color: var(--tip-name); font: 600 18px/1.2 var(--font-pixel); }
+.mc-tooltip ul { list-style: none; margin: 6px 0 8px; padding: 0; }
+.mc-tooltip li { font-weight: 700; }
+.mc-tooltip li.curse { color: var(--tip-curse); }
+.mc-tooltip .foot { color: #9a9a9a; font-size: 12.5px; }
+.empty { padding: 40px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.empty .ico { width: 64px; height: 64px; }
+.empty p { margin: 0; max-width: 34ch; font-weight: 600; }
+
+/* Rules */
+details.rules { margin-top: 20px; }
+details.rules summary { cursor: pointer; font: 600 18px/1.2 var(--font-pixel); color: var(--ink); }
+details.rules ul { padding-left: 20px; margin: 10px 0 0; max-width: 78ch; }
+details.rules li { margin: 6px 0; }
+details.rules code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; background: var(--well); padding: 1px 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <img class="ico logo" data-icon="ui:anvil" alt="" width="64" height="64">
+      <div>
+        <div class="title-row">
+          <h1>Anvil Order Planner</h1>
+          <span class="splash" aria-hidden="true">Never Too Expensive!</span>
+        </div>
+        <p class="lede">Pick your edition, the item and the books you have. The planner finds the anvil order that costs the least XP, with no job over 39 levels.</p>
+      </div>
+    </div>
+    <div class="edition" id="edition" role="group" aria-label="Game edition">
+      <button type="button" class="mc-btn" id="ed-java" data-ed="java"><img class="ico" data-icon="ui:grass" alt="">Java Edition</button>
+      <button type="button" class="mc-btn" id="ed-bedrock" data-ed="bedrock"><img class="ico" data-icon="ui:bedrock" alt="">Bedrock Edition</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Item</h2>
+          <span class="picked-name" id="item-name"></span>
+        </div>
+        <div class="cats" id="items"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="ench-title">Enchantments</h2>
+          <div class="head-btns">
+            <button type="button" class="mc-btn sm" id="btn-full">Full set</button>
+            <button type="button" class="mc-btn sm" id="btn-clear">Clear</button>
+          </div>
+        </div>
+        <div class="ench-list" id="enchants"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Options</h2>
+        <div class="opts">
+          <label class="opt" for="opt-mode">
+            <span class="slot sm"><img class="ico" data-icon="ui:orb" alt=""></span>
+            <span class="opt-label">Optimize for</span>
+            <select class="mc-select" id="opt-mode">
+              <option value="xp">Fewest XP points</option>
+              <option value="levels">Fewest levels</option>
+            </select>
+          </label>
+          <label class="opt" for="opt-work">
+            <span class="slot sm"><img class="ico" data-icon="ui:anvil" alt=""></span>
+            <span class="opt-label">Item’s previous anvil uses</span>
+            <select class="mc-select" id="opt-work">
+              <option value="0">0 (fresh item)</option>
+              <option value="1">1 (penalty 1)</option>
+              <option value="2">2 (penalty 3)</option>
+              <option value="3">3 (penalty 7)</option>
+              <option value="4">4 (penalty 15)</option>
+              <option value="5">5 (penalty 31)</option>
+            </select>
+          </label>
+          <label class="opt opt-check" for="opt-creative">
+            <span class="slot sm"><img class="ico" data-icon="ui:command" alt=""></span>
+            <span class="opt-label">Creative mode (no 39-level limit)</span>
+            <input type="checkbox" class="mc-check" id="opt-creative">
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <aside class="panel result" id="result" aria-live="polite"></aside>
+  </div>
+
+  <details class="panel rules">
+    <summary>How the cost is calculated</summary>
+    <ul>
+      <li>Each anvil job costs <code>left penalty + right penalty + enchantment cost</code>. The penalty is <code>2ⁿ − 1</code>, where n is how many times that item or book has been through an anvil. The result keeps the higher count plus one.</li>
+      <li>Enchantment cost is the level of each enchantment on the right-hand book times its book multiplier, shown under each enchantment. Bedrock only charges for levels the left item gains, so with fresh books both editions charge the same here. Impaling is cheaper on Bedrock (1 per level instead of 2).</li>
+      <li>In Survival, a job costing 40 levels or more is refused as “Too Expensive!”. The planner never suggests one unless Creative mode is on.</li>
+      <li>XP points assume you pay each job right at that level, for example by leveling up between jobs. If you pay every job from one big pool of levels, only the total levels matter, so pick “Fewest levels”.</li>
+      <li>Assumes one fresh book per enchantment (from the enchanting table, a librarian or loot) with no anvil uses yet. Enchantments already on the item can be left unchecked; set the item’s previous anvil uses instead.</li>
+      <li>The search tries every possible merge order, so the plan shown is the true minimum, not a rule of thumb.</li>
+      <li>Icons are original pixel art drawn for this page.</li>
+    </ul>
+  </details>
+</div>
+
+<script id="solver">
+/* ---------- Game data ---------- */
+// m = cost per level when the enchantment comes from a book (the right slot is always a book here).
+const ENCH = {
+  protection:            { n: "Protection", max: 4, m: 1 },
+  fire_protection:       { n: "Fire Protection", max: 4, m: 1 },
+  blast_protection:      { n: "Blast Protection", max: 4, m: 2 },
+  projectile_protection: { n: "Projectile Protection", max: 4, m: 1 },
+  feather_falling:       { n: "Feather Falling", max: 4, m: 1 },
+  respiration:           { n: "Respiration", max: 3, m: 2 },
+  aqua_affinity:         { n: "Aqua Affinity", max: 1, m: 2 },
+  thorns:                { n: "Thorns", max: 3, m: 4 },
+  depth_strider:         { n: "Depth Strider", max: 3, m: 2 },
+  frost_walker:          { n: "Frost Walker", max: 2, m: 2 },
+  soul_speed:            { n: "Soul Speed", max: 3, m: 4 },
+  swift_sneak:           { n: "Swift Sneak", max: 3, m: 4 },
+  sharpness:             { n: "Sharpness", max: 5, m: 1 },
+  smite:                 { n: "Smite", max: 5, m: 1 },
+  bane_of_arthropods:    { n: "Bane of Arthropods", max: 5, m: 1 },
+  knockback:             { n: "Knockback", max: 2, m: 1 },
+  fire_aspect:           { n: "Fire Aspect", max: 2, m: 2 },
+  looting:               { n: "Looting", max: 3, m: 2 },
+  sweeping_edge:         { n: "Sweeping Edge", max: 3, m: 2, only: "java" },
+  lunge:                 { n: "Lunge", max: 3, m: 1 },
+  density:               { n: "Density", max: 5, m: 1 },
+  breach:                { n: "Breach", max: 4, m: 2 },
+  wind_burst:            { n: "Wind Burst", max: 3, m: 2 },
+  efficiency:            { n: "Efficiency", max: 5, m: 1 },
+  fortune:               { n: "Fortune", max: 3, m: 2 },
+  silk_touch:            { n: "Silk Touch", max: 1, m: 4 },
+  power:                 { n: "Power", max: 5, m: 1 },
+  punch:                 { n: "Punch", max: 2, m: 2 },
+  flame:                 { n: "Flame", max: 1, m: 2 },
+  infinity:              { n: "Infinity", max: 1, m: 4 },
+  multishot:             { n: "Multishot", max: 1, m: 2 },
+  piercing:              { n: "Piercing", max: 4, m: 1 },
+  quick_charge:          { n: "Quick Charge", max: 3, m: 1 },
+  impaling:              { n: "Impaling", max: 5, m: 2, bedrockM: 1 },
+  loyalty:               { n: "Loyalty", max: 3, m: 1 },
+  riptide:               { n: "Riptide", max: 3, m: 2 },
+  channeling:            { n: "Channeling", max: 1, m: 4 },
+  luck_of_the_sea:       { n: "Luck of the Sea", max: 3, m: 2 },
+  lure:                  { n: "Lure", max: 3, m: 2 },
+  unbreaking:            { n: "Unbreaking", max: 3, m: 1 },
+  mending:               { n: "Mending", max: 1, m: 2 },
+  binding_curse:         { n: "Curse of Binding", max: 1, m: 4, curse: true },
+  vanishing_curse:       { n: "Curse of Vanishing", max: 1, m: 4, curse: true },
+};
+
+// Pairs inside one group can't share an item. Riptide has two separate groups because Loyalty + Channeling is allowed.
+const CONFLICTS = [
+  ["protection", "fire_protection", "blast_protection", "projectile_protection"],
+  ["sharpness", "smite", "bane_of_arthropods", "density", "breach"],
+  ["fortune", "silk_touch"],
+  ["depth_strider", "frost_walker"],
+  ["infinity", "mending"],
+  ["multishot", "piercing"],
+  ["riptide", "loyalty"],
+  ["riptide", "channeling"],
+];
+
+const PROT = ["protection", "fire_protection", "blast_protection", "projectile_protection"];
+const DMG = ["sharpness", "smite", "bane_of_arthropods"];
+const TOOL = ["efficiency", "fortune", "silk_touch"];
+const END = ["unbreaking", "mending", "vanishing_curse"];
+const HELMET = [...PROT, "respiration", "aqua_affinity", "thorns", "unbreaking", "mending", "binding_curse", "vanishing_curse"];
+
+// "key@bedrock" means the enchantment is only allowed on that item in that edition.
+const ITEMS = [
+  { k: "helmet", n: "Helmet", cat: "Armor", e: HELMET },
+  { k: "chestplate", n: "Chestplate", cat: "Armor", e: [...PROT, "thorns", "unbreaking", "mending", "binding_curse", "vanishing_curse"] },
+  { k: "leggings", n: "Leggings", cat: "Armor", e: [...PROT, "swift_sneak", "thorns", "unbreaking", "mending", "binding_curse", "vanishing_curse"] },
+  { k: "boots", n: "Boots", cat: "Armor", e: [...PROT, "feather_falling", "depth_strider", "frost_walker", "soul_speed", "thorns", "unbreaking", "mending", "binding_curse", "vanishing_curse"] },
+  { k: "turtle_shell", n: "Turtle Shell", cat: "Armor", e: HELMET },
+  { k: "elytra", n: "Elytra", cat: "Armor", e: ["unbreaking", "mending", "binding_curse", "vanishing_curse"] },
+  { k: "sword", n: "Sword", cat: "Weapons", e: [...DMG, "knockback", "fire_aspect", "looting", "sweeping_edge", ...END] },
+  { k: "axe", n: "Axe", cat: "Weapons", e: [...DMG, ...TOOL, ...END] },
+  { k: "mace", n: "Mace", cat: "Weapons", e: ["density", "breach", "smite", "bane_of_arthropods", "wind_burst", "fire_aspect", ...END] },
+  { k: "spear", n: "Spear", cat: "Weapons", e: [...DMG, "knockback", "fire_aspect", "looting", "lunge", ...END] },
+  { k: "trident", n: "Trident", cat: "Weapons", e: ["impaling", "loyalty", "channeling", "riptide", ...END] },
+  { k: "bow", n: "Bow", cat: "Weapons", e: ["power", "punch", "flame", "infinity", ...END] },
+  { k: "crossbow", n: "Crossbow", cat: "Weapons", e: ["multishot", "piercing", "quick_charge", ...END] },
+  { k: "pickaxe", n: "Pickaxe", cat: "Tools", e: [...TOOL, ...END] },
+  { k: "shovel", n: "Shovel", cat: "Tools", e: [...TOOL, ...END] },
+  { k: "hoe", n: "Hoe", cat: "Tools", e: [...TOOL, ...END] },
+  { k: "fishing_rod", n: "Fishing Rod", cat: "Tools", e: ["luck_of_the_sea", "lure", ...END] },
+  { k: "shears", n: "Shears", cat: "Tools", e: ["efficiency", "silk_touch@bedrock", ...END] },
+  { k: "shield", n: "Shield", cat: "Other", e: END },
+  { k: "flint_and_steel", n: "Flint and Steel", cat: "Other", e: END },
+  { k: "brush", n: "Brush", cat: "Other", e: END },
+  { k: "carrot_on_a_stick", n: "Carrot on a Stick", cat: "Other", e: END },
+  { k: "warped_fungus_on_a_stick", n: "Warped Fungus on a Stick", cat: "Other", e: END },
+];
+
+const MAX_COST = 39;
+
+function enchantsFor(item, edition) {
+  return item.e.flatMap(raw => {
+    const [key, ed] = raw.split("@");
+    if (ed && ed !== edition) return [];
+    if (ENCH[key].only && ENCH[key].only !== edition) return [];
+    return [key];
+  });
+}
+
+function bookMultiplier(key, edition) {
+  const e = ENCH[key];
+  return edition === "bedrock" && e.bedrockM ? e.bedrockM : e.m;
+}
+
+function conflicts(a, b) {
+  return a !== b && CONFLICTS.some(g => g.includes(a) && g.includes(b));
+}
+
+const penalty = uses => (1 << uses) - 1;
+
+// Total experience points needed to reach a level from zero.
+function xpForLevel(l) {
+  if (l <= 16) return l * l + 6 * l;
+  if (l <= 31) return 2.5 * l * l - 40.5 * l + 360;
+  return 4.5 * l * l - 162.5 * l + 2220;
+}
+
+/* ---------- Solver ----------
+ * Leaf 0 is the item, leaves 1..n are books. dp over (subset, anvil uses of the result):
+ * best total cost to combine that subset into one item/book. The item must always sit in the
+ * left slot, so any subset holding it splits into (left: has item, right: books only).
+ * Ties on the primary goal break on the secondary goal, then on fewer anvil uses.
+ */
+function solve(books, { itemUses = 0, cap = true, mode = "levels" } = {}) {
+  const leaves = [{ val: 0, uses: itemUses }, ...books.map(b => ({ val: b.val, uses: 0 }))];
+  const N = leaves.length;
+  const FULL = (1 << N) - 1;
+  const W = N + itemUses + 1;
+  const size = (FULL + 1) * W;
+  const p1 = new Float64Array(size).fill(Infinity);
+  const p2 = new Float64Array(size).fill(Infinity);
+  const lvA = new Float64Array(size);
+  const xpA = new Float64Array(size);
+  const pick = new Int32Array(size).fill(-1);
+  const pwA = new Int8Array(size);
+  const pwB = new Int8Array(size);
+
+  const val = new Int32Array(FULL + 1);
+  for (let m = 1; m <= FULL; m++) {
+    const low = m & -m;
+    val[m] = val[m ^ low] + leaves[31 - Math.clz32(low)].val;
+  }
+  for (let i = 0; i < N; i++) {
+    const at = (1 << i) * W + leaves[i].uses;
+    p1[at] = 0; p2[at] = 0; lvA[at] = 0; xpA[at] = 0;
+  }
+
+  for (let mask = 1; mask <= FULL; mask++) {
+    if ((mask & (mask - 1)) === 0) continue;
+    const hasItem = mask & 1;
+    for (let a = (mask - 1) & mask; a > 0; a = (a - 1) & mask) {
+      if (hasItem && !(a & 1)) continue;
+      const b = mask ^ a;
+      for (let wa = 0; wa < W; wa++) {
+        const ia = a * W + wa;
+        if (p1[ia] === Infinity) continue;
+        for (let wb = 0; wb < W; wb++) {
+          const ib = b * W + wb;
+          if (p1[ib] === Infinity) continue;
+          const w = Math.max(wa, wb) + 1;
+          if (w >= W) continue;
+          const cost = penalty(wa) + penalty(wb) + val[b];
+          if (cap && cost > MAX_COST) continue;
+          const lv = lvA[ia] + lvA[ib] + cost;
+          const xp = xpA[ia] + xpA[ib] + xpForLevel(cost);
+          const q1 = mode === "xp" ? xp : lv;
+          const q2 = mode === "xp" ? lv : xp;
+          const it = mask * W + w;
+          if (q1 < p1[it] || (q1 === p1[it] && q2 < p2[it])) {
+            p1[it] = q1; p2[it] = q2; lvA[it] = lv; xpA[it] = xp;
+            pick[it] = a; pwA[it] = wa; pwB[it] = wb;
+          }
+        }
+      }
+    }
+  }
+
+  let bestW = -1;
+  for (let w = 0; w < W; w++) {
+    const it = FULL * W + w;
+    if (p1[it] === Infinity) continue;
+    const bt = FULL * W + bestW;
+    if (bestW < 0 || p1[it] < p1[bt] || (p1[it] === p1[bt] && p2[it] < p2[bt])) bestW = w;
+  }
+  if (bestW < 0) return null;
+
+  const build = (mask, w) => {
+    const it = mask * W + w;
+    if ((mask & (mask - 1)) === 0) {
+      const i = 31 - Math.clz32(mask);
+      return { leaf: i, mask, uses: w };
+    }
+    const a = pick[it], b = mask ^ a;
+    const left = build(a, pwA[it]), right = build(b, pwB[it]);
+    return {
+      mask, uses: w, left, right,
+      cost: penalty(pwA[it]) + penalty(pwB[it]) + val[b],
+      parts: { leftPen: penalty(pwA[it]), rightPen: penalty(pwB[it]), ench: val[b] },
+    };
+  };
+  const tree = build(FULL, bestW);
+  return { tree, levels: lvA[FULL * W + bestW], xp: xpA[FULL * W + bestW], uses: bestW };
+}
+
+// One book at a time onto the item, in the order given: what most players do.
+function naive(books, itemUses = 0) {
+  let uses = itemUses, levels = 0, worst = 0;
+  for (const b of books) {
+    const cost = penalty(uses) + b.val;
+    levels += cost; worst = Math.max(worst, cost); uses++;
+  }
+  return { levels, worst };
+}
+
+// Flatten the tree into anvil jobs, shallow merges first so books get paired before they hit the item.
+function toSteps(tree) {
+  const steps = [];
+  const height = n => n.leaf !== undefined ? 0 : 1 + Math.max(height(n.left), height(n.right));
+  const walk = n => {
+    if (n.leaf !== undefined) return;
+    walk(n.left); walk(n.right);
+    steps.push({ node: n, h: height(n) });
+  };
+  walk(tree);
+  steps.sort((x, y) => x.h - y.h);
+  steps.forEach((s, i) => { s.node.step = i + 1; });
+  return steps.map(s => s.node);
+}
+
+if (typeof module !== "undefined") module.exports = { ENCH, ITEMS, solve, naive, toSteps, enchantsFor, bookMultiplier, conflicts, xpForLevel, penalty };
+</script>
+<script>
+/* ---------- Pixel icons ----------
+ * Original 16×16 pixel art drawn for this page. Templates use shade letters:
+ * 1-4 = main material (light → dark), a-d = second material, other letters are fixed colors.
+ * The renderer adds a dark outline around every shape, the way item sprites read in game.
+ */
+const MAT = {
+  diamond: ["#e3fffa", "#5eecd9", "#22a99e", "#0f5d57"],
+  iron:    ["#ffffff", "#d8d8d8", "#a3a3a3", "#5c5c5c"],
+  gold:    ["#fffcb0", "#fbe24a", "#dca521", "#8c5c0b"],
+  wood:    ["#c79c60", "#9b7440", "#6e5129", "#46321a"],
+  stone:   ["#b0b0b0", "#858585", "#5f5f5f", "#3a3a3a"],
+  red:     ["#ffb3a8", "#ea4a3f", "#b02822", "#5e0f0c"],
+  fire:    ["#fff6b3", "#ffc23d", "#f07a1e", "#a83a0c"],
+  soul:    ["#e3ffff", "#73eaf2", "#2ab1c6", "#11607a"],
+  green:   ["#e2ffb0", "#8fdc4f", "#4c9f2a", "#22561a"],
+  emerald: ["#d4ffe1", "#4ef28e", "#1aa54f", "#0a5a27"],
+  purple:  ["#f1dcff", "#c690ff", "#8a4ad8", "#45207a"],
+  water:   ["#d8ecff", "#69a9ff", "#2f67d8", "#163a85"],
+  ice:     ["#f4fcff", "#c4e8ff", "#86bbe8", "#3f6f9e"],
+  xp:      ["#f7ffbf", "#cdf55a", "#79c02a", "#3b6b0f"],
+  book:    ["#d8a874", "#a8693a", "#713f1c", "#3d200c"],
+  string:  ["#ffffff", "#ececec", "#c4c4c4", "#7f7f7f"],
+  orange:  ["#ffd9a0", "#f5a03a", "#cf6a12", "#7a3a06"],
+  teal:    ["#b7fff0", "#3fd6b7", "#14917a", "#0a4f44"],
+  turtle:  ["#c7f0a0", "#6fbf4a", "#3c8a2c", "#1f4d18"],
+  elytra:  ["#e4e0ef", "#aea4c6", "#7a6f94", "#463d5c"],
+  sculk:   ["#8af2ec", "#1ea5ad", "#0d5d69", "#05262e"],
+  dark:    ["#8a7f88", "#5e545c", "#3a3339", "#1a1619"],
+  flint:   ["#8a8a92", "#5a5a62", "#3a3a40", "#1d1d22"],
+};
+const FIXED = { w: "#ffffff", k: "#161616", r: "#d42c2c", y: "#ffe14d", g: "#5fbf2a", G: "#9a9a9a", o: "#e0803a", p: "#c08cff" };
+
+const TPL = {
+  sword: [
+    "................",
+    ".............23.",
+    "...........123..",
+    "..........123...",
+    ".........123....",
+    "........123.....",
+    ".......123......",
+    "...c..123.......",
+    "....c123........",
+    ".....c..........",
+    "...ab.c.........",
+    "..ab...c........",
+    ".ab.............",
+    ".c..............",
+  ],
+  pickaxe: [
+    "................",
+    ".....1111111....",
+    "...11222222221..",
+    "..123......b223.",
+    "..3.......b.23..",
+    ".........b..23..",
+    "........b...23..",
+    ".......b....23..",
+    "......b.....23..",
+    ".....b......3...",
+    "....b...........",
+    "...b............",
+    "..b.............",
+    ".c..............",
+  ],
+  axe: [
+    "................",
+    "........112.....",
+    "......11222.b...",
+    ".....122223b....",
+    ".....12233b.....",
+    "......123b......",
+    ".......3b.......",
+    ".......b........",
+    "......b.........",
+    ".....b..........",
+    "....b...........",
+    "...b............",
+    "..b.............",
+    ".c..............",
+  ],
+  shovel: [
+    "................",
+    "...........122..",
+    "..........11223.",
+    ".........122233.",
+    ".........12233..",
+    "........b.233...",
+    ".......b........",
+    "......b.........",
+    ".....b..........",
+    "....b...........",
+    "...b............",
+    "..b.............",
+    ".c..............",
+  ],
+  hoe: [
+    "................",
+    "................",
+    ".......11122b...",
+    ".......2333b....",
+    "..........b.....",
+    ".........b......",
+    "........b.......",
+    ".......b........",
+    "......b.........",
+    ".....b..........",
+    "....b...........",
+    "...b............",
+    "..b.............",
+    ".c..............",
+  ],
+  helmet: [
+    "................",
+    "................",
+    "................",
+    "....11111111....",
+    "...1222222223...",
+    "..122222222223..",
+    "..123333333323..",
+    "..123......123..",
+    "..123......123..",
+    "..23........23..",
+  ],
+  chestplate: [
+    "................",
+    "................",
+    ".1122......2233.",
+    ".11222....22233.",
+    ".12222222222233.",
+    "..122222222223..",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1333333333...",
+  ],
+  leggings: [
+    "................",
+    "................",
+    "...1111111111...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222..2223...",
+    "...1223..1223...",
+    "...1223..1223...",
+    "...1223..1223...",
+    "...1223..1223...",
+    "...1223..1223...",
+    "...1223..1223...",
+    "...1223..1223...",
+    "...3333..3333...",
+  ],
+  boots: [
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    ".1223....1223...",
+    ".1223....1223...",
+    ".1223....1223...",
+    ".12222...12222..",
+    ".123333..123333.",
+  ],
+  elytra: [
+    "................",
+    "................",
+    "...12......21...",
+    "..1222....2221..",
+    ".12222....22221.",
+    ".12223....32221.",
+    ".12233....33221.",
+    ".12233....33221.",
+    ".1233......3321.",
+    ".1233......3321.",
+    "..233......332..",
+    "..23........32..",
+    "...3........3...",
+  ],
+  mace: [
+    "................",
+    "...........2....",
+    "..........122...",
+    ".........12222..",
+    "........3122233.",
+    ".........12333..",
+    "........b.333...",
+    ".......b...3....",
+    "......b.........",
+    ".....b..........",
+    "....b...........",
+    "...b............",
+    "..b.............",
+    ".c..............",
+  ],
+  spear: [
+    "................",
+    ".............12.",
+    "...........1223.",
+    "..........1233..",
+    ".........b3.....",
+    "........b.......",
+    ".......b........",
+    "......b.........",
+    ".....b..........",
+    "....c...........",
+    "...c............",
+    "..b.............",
+    ".b..............",
+  ],
+  trident: [
+    "................",
+    "...1...12...2...",
+    "...1...12...2...",
+    "...1...12...2...",
+    "...12..12..32...",
+    "....12222223....",
+    ".......ab.......",
+    ".......ab.......",
+    ".......ab.......",
+    ".......ab.......",
+    ".......ab.......",
+    ".......ab.......",
+    ".......ab.......",
+    ".......cc.......",
+  ],
+  bow: [
+    "................",
+    "..1222..........",
+    "...a..2223......",
+    "....a....223....",
+    ".....a....223...",
+    "......a....23...",
+    ".......a...cc...",
+    "........a...cc..",
+    ".........a..23..",
+    "..........a.23..",
+    "...........a23..",
+    "............23..",
+    "............3...",
+  ],
+  crossbow: [
+    "................",
+    "......12........",
+    "........2...a...",
+    ".........2.a....",
+    "..........2.....",
+    ".........b.2....",
+    "........b...2...",
+    ".......b.....3..",
+    "......b......3..",
+    ".....b..........",
+    "....b...........",
+    "...b............",
+    "..b.............",
+    ".c..............",
+  ],
+  rod: [
+    "................",
+    "................",
+    "............b...",
+    "...........b.w..",
+    "..........b..w..",
+    ".........b...w..",
+    "........b....w..",
+    ".......b.....w..",
+    "......b......w..",
+    ".....b.......w..",
+    "....b........G..",
+    "...b........GG..",
+    "..b.............",
+    ".c..............",
+  ],
+  stickbait: [
+    "................",
+    "................",
+    "............b...",
+    "...........b.w..",
+    "..........b..w..",
+    ".........b...w..",
+    "........b....w..",
+    ".......b.....w..",
+    "......b.....gg..",
+    ".....b.....abb..",
+    "....b.....abc...",
+    "...b.....bc.....",
+    "..b.....c.......",
+    ".c..............",
+  ],
+  shears: [
+    "................",
+    "................",
+    "............12..",
+    "...........12...",
+    "..........12....",
+    ".........12.....",
+    "........12......",
+    ".......32.......",
+    "...333.3........",
+    "..3..3.33.......",
+    "..3..33..3......",
+    "...33.3..3......",
+    ".......33.......",
+  ],
+  shield: [
+    "................",
+    "...bbbbbbbbbb...",
+    "...b11222223b...",
+    "...b12222223b...",
+    "...b12222223b...",
+    "...b12222223b...",
+    "...b12222223b...",
+    "...b12222223b...",
+    "...b12222223b...",
+    "...b12222223b...",
+    "...b12222223b...",
+    "....b122223b....",
+    ".....b1223b.....",
+    "......bbbb......",
+  ],
+  flint: [
+    "................",
+    "................",
+    "...1222.........",
+    "..12..23........",
+    "..1.............",
+    "..1.............",
+    "..12..23........",
+    "...2333.........",
+    "........aab.....",
+    ".......abbbc....",
+    "......abbbbc....",
+    "......bbbbcc....",
+    ".......bccc.....",
+    "........cc......",
+  ],
+  brush: [
+    "................",
+    "..........1122..",
+    ".........112223.",
+    "........1122233.",
+    ".........1233...",
+    ".........oo.....",
+    "........oo......",
+    ".......b........",
+    "......b.........",
+    ".....b..........",
+    "....b...........",
+    "...b............",
+    "..b.............",
+    ".c..............",
+  ],
+};
+
+// Item key -> template and materials.
+const ICONS = {
+  helmet:       { t: "helmet", m: "diamond" },
+  chestplate:   { t: "chestplate", m: "diamond" },
+  leggings:     { t: "leggings", m: "diamond" },
+  boots:        { t: "boots", m: "diamond" },
+  turtle_shell: { t: "helmet", m: "turtle" },
+  elytra:       { t: "elytra", m: "elytra" },
+  sword:        { t: "sword", m: "diamond", s: "wood" },
+  axe:          { t: "axe", m: "diamond", s: "wood" },
+  mace:         { t: "mace", m: "stone", s: "iron" },
+  spear:        { t: "spear", m: "iron", s: "wood" },
+  trident:      { t: "trident", m: "teal", s: "teal" },
+  bow:          { t: "bow", m: "wood", s: "string" },
+  crossbow:     { t: "crossbow", m: "iron", s: "wood" },
+  pickaxe:      { t: "pickaxe", m: "diamond", s: "wood" },
+  shovel:       { t: "shovel", m: "diamond", s: "wood" },
+  hoe:          { t: "hoe", m: "diamond", s: "wood" },
+  fishing_rod:  { t: "rod", m: "string", s: "wood" },
+  shears:       { t: "shears", m: "iron" },
+  shield:       { t: "shield", m: "wood", s: "iron" },
+  flint_and_steel: { t: "flint", m: "iron", s: "flint" },
+  brush:        { t: "brush", m: "string", s: "wood" },
+  carrot_on_a_stick: { t: "stickbait", m: "string", s: "orange" },
+  warped_fungus_on_a_stick: { t: "stickbait", m: "string", s: "teal", c: { g: "#e8743a" } },
+};
+
+/* ---------- Renderer ---------- */
+const hex = c => { const n = parseInt(c.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+
+// Small seeded random generator so textures look the same on every load.
+function rng(seed) {
+  return () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function paint(size, px) {
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = size;
+  const ctx = cv.getContext("2d");
+  const img = ctx.createImageData(size, size);
+  px.forEach((p, i) => { if (p) img.data.set([p[0], p[1], p[2], 255], i * 4); });
+  ctx.putImageData(img, 0, 0);
+  return cv.toDataURL();
+}
+
+function fromTemplate(spec) {
+  const rows = TPL[spec.t];
+  const m = MAT[spec.m] || MAT.iron, s = MAT[spec.s] || MAT.wood;
+  const pal = { ...FIXED, 1: m[0], 2: m[1], 3: m[2], 4: m[3], a: s[0], b: s[1], c: s[2], d: s[3], ...spec.c };
+  const px = [];
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const ch = (rows[y] || "")[x] || ".";
+    px.push(ch === "." ? null : hex(pal[ch] || "#ff00ff"));
+  }
+  const out = px.slice();
+  for (let i = 0; i < 256; i++) {
+    if (px[i]) continue;
+    const x = i % 16, y = (i / 16) | 0;
+    const n = [x > 0 && px[i - 1], x < 15 && px[i + 1], y > 0 && px[i - 16], y < 15 && px[i + 16]].find(Boolean);
+    if (n) out[i] = n.map(v => Math.round(v * 0.3));
+  }
+  return out;
+}
+
+function speckle(seed, size, colors, pick = (r, x, y, pal) => pal[(r() * pal.length) | 0]) {
+  const r = rng(seed), pal = colors.map(hex);
+  return Array.from({ length: size * size }, (_, i) => pick(r, i % size, (i / size) | 0, pal));
+}
+
+const iconCache = {};
+function icon(name) {
+  if (iconCache[name]) return iconCache[name];
+  const spec = ICONS[name] || ICONS["ui:book"];
+  return (iconCache[name] = paint(16, spec.gen ? spec.gen() : fromTemplate(spec)));
+}
+const iconImg = (name, cls = "ico") => `<img class="${cls}" src="${icon(name)}" alt="" width="32" height="32">`;
+
+/* ---------- Enchantment and interface icons ---------- */
+Object.assign(TPL, {
+  anvil: [
+    "................",
+    "................",
+    "................",
+    ".1111111111111..",
+    ".2222222222223..",
+    ".....222223.....",
+    ".....122223.....",
+    ".....122223.....",
+    "....12222223....",
+    "...1222222223...",
+    "..122222222223..",
+    "..333333333333..",
+  ],
+  book: [
+    "................",
+    "................",
+    "..41111111111...",
+    "..4222222222a...",
+    "..4222222222b...",
+    "..42222yy222a...",
+    "..4222y22y22b...",
+    "..42222yy222a...",
+    "..4222222222b...",
+    "..4222222222a...",
+    "..4222222222b...",
+    "..4333333333a...",
+    "...aaaaaaaaaa...",
+  ],
+  orb: [
+    "................",
+    "................",
+    "................",
+    "................",
+    "......1122......",
+    ".....1w2222.....",
+    "....11222223....",
+    "....12222223....",
+    "....12222233....",
+    "....22222333....",
+    ".....222333.....",
+    "......2333......",
+  ],
+  cmdblock: [
+    "3333333333333333",
+    "3222222222222223",
+    "3222222222222223",
+    "322kkkkkkkkkk223",
+    "322kGGGGGGGGk223",
+    "322kGkkkkkkGk223",
+    "322kGkwkkkkGk223",
+    "322kGkkwkkkGk223",
+    "322kGkwkkkkGk223",
+    "322kGkkkkkkGk223",
+    "322kGGGGGGGGk223",
+    "322kkkkkkkkkk223",
+    "3222222222222223",
+    "3222222222222223",
+    "3222222222222223",
+    "3333333333333333",
+  ],
+  arrowR: [
+    "................",
+    "................",
+    "................",
+    "........1.......",
+    "........12......",
+    "........122.....",
+    "..1111112222....",
+    "..22222222223...",
+    "..3333332223....",
+    "........223.....",
+    "........23......",
+    "........3.......",
+  ],
+  crest: [
+    "................",
+    "................",
+    "...1111111111...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222112223...",
+    "...1221111223...",
+    "...1222112223...",
+    "...1222222223...",
+    "....12222223....",
+    ".....122223.....",
+    "......1223......",
+    ".......33.......",
+  ],
+  feather: [
+    "................",
+    "...........112..",
+    ".........112222.",
+    "........1222223.",
+    ".......12222233.",
+    "......12222333..",
+    ".....1222333....",
+    "....122333......",
+    "...1233.........",
+    "..cb............",
+    ".c..............",
+  ],
+  bubbles: [
+    "................",
+    "............12..",
+    "............23..",
+    "........111.....",
+    ".......1w222....",
+    ".......12223....",
+    ".......22233....",
+    "...1111.333.....",
+    "..1w2222........",
+    "..122222........",
+    "..122223........",
+    "..222233........",
+    "...3333.........",
+  ],
+  drop: [
+    "................",
+    "................",
+    ".......1........",
+    ".......12.......",
+    "......1222......",
+    "......1222......",
+    ".....122222.....",
+    "....12222223....",
+    "....1w222223....",
+    "....12222223....",
+    "....22222233....",
+    ".....222333.....",
+    "......3333......",
+  ],
+  spikes: [
+    "................",
+    ".....122223.....",
+    "....w122k23.....",
+    ".....122223w....",
+    ".....1k2223.....",
+    "....w122223.....",
+    ".....12222kw....",
+    ".....122223.....",
+    "....w12k223.....",
+    ".....122223w....",
+    ".....1222k3.....",
+    "....w122223.....",
+    ".....122223.....",
+    ".....233333.....",
+  ],
+  flake: [
+    "................",
+    ".......2........",
+    "...2...2...2....",
+    "....2..2..2.....",
+    ".....2.2.2......",
+    "......121.......",
+    ".2222221222222..",
+    "......121.......",
+    ".....2.2.2......",
+    "....2..2..2.....",
+    "...2...2...2....",
+    ".......2........",
+  ],
+  flame: [
+    "................",
+    ".......3........",
+    "......33........",
+    "......323...3...",
+    ".....3223..33...",
+    "....32223.323...",
+    "...3222223223...",
+    "...3221122223...",
+    "..322111122223..",
+    "..321111112223..",
+    "..322111111223..",
+    "..332211112233..",
+    "...3322222233...",
+    ".....333333.....",
+  ],
+  gem: [
+    "................",
+    "................",
+    "................",
+    ".....111111.....",
+    "....12222223....",
+    "...1w22222223...",
+    "..122222222223..",
+    "...1222222223...",
+    "....12222223....",
+    ".....122223.....",
+    "......1223......",
+    ".......23.......",
+  ],
+  burst: [
+    "................",
+    ".......2........",
+    "..2....2....2...",
+    "...2...2...2....",
+    "....2.121.2.....",
+    ".....12221......",
+    ".2222122212222..",
+    ".....12221......",
+    "....2.121.2.....",
+    "...2...2...2....",
+    "..2....2....2...",
+    ".......2........",
+  ],
+  gust: [
+    "................",
+    "................",
+    "................",
+    "....11111112....",
+    "............2...",
+    "...........2....",
+    "................",
+    ".1111111111112..",
+    "..............2.",
+    ".............2..",
+    "................",
+    "...222222223....",
+    "...........3....",
+  ],
+  arrow: [
+    "................",
+    "...........1112.",
+    "............122.",
+    "...........b.23.",
+    "..........b...3.",
+    ".........b......",
+    "........b.......",
+    ".......b........",
+    "......b.........",
+    ".....b..........",
+    "..w.b...........",
+    "..wb............",
+    ".wbww...........",
+  ],
+  bolt: [
+    "................",
+    ".........1111...",
+    "........1222....",
+    ".......1222.....",
+    "......1222......",
+    ".....12222222...",
+    "........22223...",
+    ".......2223.....",
+    "......2223......",
+    ".....223........",
+    "....223.........",
+    "...23...........",
+    "..3.............",
+  ],
+  fish: [
+    "................",
+    "................",
+    "................",
+    "................",
+    "......1111......",
+    ".2...1222222....",
+    ".22.122222k22...",
+    ".2222222222223..",
+    ".22.1222222233..",
+    ".3...33333333...",
+    "......3333......",
+  ],
+  lock: [
+    "................",
+    "................",
+    "......1111......",
+    ".....12..23.....",
+    ".....2....3.....",
+    ".....2....3.....",
+    "...1111111111...",
+    "...1222222223...",
+    "...1222kk2223...",
+    "...12222k2223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...3333333333...",
+  ],
+  ghost: [
+    "................",
+    "................",
+    "......1111......",
+    ".....122222.....",
+    "....12222222....",
+    "....12k22k22....",
+    "....12k22k22....",
+    "....12222222....",
+    "....12222223....",
+    "....12222223....",
+    "....12222223....",
+    "....23.23.23....",
+  ],
+});
+
+function grassBlock() {
+  const depth = [3, 4, 3, 5, 3, 3, 4, 3, 4, 5, 3, 3, 4, 3, 3, 4];
+  const grass = ["#6cc046", "#5fae3a", "#4e9a2f", "#79c94f"], dirt = ["#8b5e3c", "#79502f", "#9a6b47", "#6a4528"];
+  return speckle(7, 16, [], (r, x, y) => hex((y < depth[x] ? grass : dirt)[(r() * 4) | 0]));
+}
+const bedrockBlock = () => speckle(11, 16, ["#7a7a7a", "#555555", "#3a3a3a", "#2a2a2a", "#9a9a9a"]);
+
+// Deepslate-like page backdrop, 32×32, with the faint horizontal seams of cut tiles.
+function stoneTile() {
+  const px = speckle(3, 32, ["#2a2a2f", "#2f2f35", "#26262b", "#33333a", "#1f1f24"],
+    (r, x, y, pal) => (y % 8 === 7 && r() < 0.7 ? pal[4] : pal[(r() * 4) | 0]));
+  return paint(32, px);
+}
+
+Object.assign(ICONS, {
+  "ui:anvil":   { t: "anvil", m: "stone" },
+  "ui:book":    { t: "book", m: "book", s: "string" },
+  "ui:orb":     { t: "orb", m: "xp" },
+  "ui:grass":   { gen: grassBlock },
+  "ui:bedrock": { gen: bedrockBlock },
+  "ui:command": { t: "cmdblock", m: "orange" },
+  "ui:arrow":   { t: "arrowR", m: "string" },
+
+  "e:protection":            { t: "crest", m: "iron" },
+  "e:fire_protection":       { t: "crest", m: "fire" },
+  "e:blast_protection":      { t: "crest", m: "red" },
+  "e:projectile_protection": { t: "crest", m: "water" },
+  "e:feather_falling":       { t: "feather", m: "string", s: "stone" },
+  "e:respiration":           { t: "bubbles", m: "water" },
+  "e:aqua_affinity":         { t: "drop", m: "water" },
+  "e:thorns":                { t: "spikes", m: "green" },
+  "e:depth_strider":         { t: "boots", m: "water" },
+  "e:frost_walker":          { t: "flake", m: "ice" },
+  "e:soul_speed":            { t: "flame", m: "soul" },
+  "e:swift_sneak":           { t: "leggings", m: "sculk" },
+  "e:sharpness":             { t: "sword", m: "iron", s: "wood" },
+  "e:smite":                 { t: "sword", m: "gold", s: "wood" },
+  "e:bane_of_arthropods":    { t: "sword", m: "emerald", s: "wood" },
+  "e:knockback":             { t: "burst", m: "iron" },
+  "e:fire_aspect":           { t: "flame", m: "fire" },
+  "e:looting":               { t: "gem", m: "emerald" },
+  "e:sweeping_edge":         { t: "gust", m: "iron" },
+  "e:lunge":                 { t: "spear", m: "gold", s: "wood" },
+  "e:density":               { t: "anvil", m: "dark" },
+  "e:breach":                { t: "burst", m: "red" },
+  "e:wind_burst":            { t: "gust", m: "ice" },
+  "e:efficiency":            { t: "pickaxe", m: "gold", s: "wood" },
+  "e:fortune":               { t: "gem", m: "diamond" },
+  "e:silk_touch":            { gen: grassBlock },
+  "e:power":                 { t: "bow", m: "gold", s: "string" },
+  "e:punch":                 { t: "burst", m: "orange" },
+  "e:flame":                 { t: "arrow", m: "fire", s: "wood" },
+  "e:infinity":              { t: "arrow", m: "purple", s: "wood" },
+  "e:multishot":             { t: "arrow", m: "diamond", s: "wood" },
+  "e:piercing":              { t: "arrow", m: "iron", s: "wood" },
+  "e:quick_charge":          { t: "crossbow", m: "gold", s: "wood" },
+  "e:impaling":              { t: "trident", m: "iron", s: "iron" },
+  "e:loyalty":               { t: "trident", m: "gold", s: "gold" },
+  "e:riptide":               { t: "gust", m: "water" },
+  "e:channeling":            { t: "bolt", m: "gold" },
+  "e:luck_of_the_sea":       { t: "fish", m: "gold" },
+  "e:lure":                  { t: "fish", m: "water" },
+  "e:unbreaking":            { t: "anvil", m: "iron" },
+  "e:mending":               { t: "orb", m: "xp" },
+  "e:binding_curse":         { t: "lock", m: "red" },
+  "e:vanishing_curse":       { t: "ghost", m: "purple" },
+});
+
+/* ---------- UI ---------- */
+const ROMAN = ["", "I", "II", "III", "IV", "V"];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+const state = {
+  edition: "java",
+  item: "sword",
+  picked: {},          // key -> level, per current item
+  mode: "xp",
+  itemUses: 0,
+  creative: false,
+};
+
+function fullSet(item, edition) {
+  const out = {};
+  for (const k of enchantsFor(item, edition)) {
+    const e = ENCH[k];
+    if (e.curse) continue;
+    if (Object.keys(out).some(o => conflicts(o, k))) continue;
+    out[k] = e.max;
+  }
+  return out;
+}
+
+const currentItem = () => ITEMS.find(i => i.k === state.item);
+// v2: the default goal changed to XP points, so older saved choices are dropped once.
+const STORE_KEY = "anvil-planner-v2";
+
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (s && ITEMS.some(i => i.k === s.item)) Object.assign(state, s);
+  } catch (_) {}
+  if (!Object.keys(state.picked).length) state.picked = fullSet(currentItem(), state.edition);
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (_) {}
+}
+
+function sanitizePicked() {
+  const allowed = new Set(enchantsFor(currentItem(), state.edition));
+  for (const k of Object.keys(state.picked)) if (!allowed.has(k)) delete state.picked[k];
+}
+
+// Slots: enchanted things get the moving glint, masked to the icon's shape.
+const plainSlot = (name, cls = "") => `<span class="slot ${cls}">${iconImg(name)}</span>`;
+const glintSlot = (name, cls = "") => `<span class="slot glint ${cls}" style="--m:url('${icon(name)}')">${iconImg(name)}</span>`;
+const levelText = (k, l) => `${esc(ENCH[k].n)}${ENCH[k].max > 1 ? " " + ROMAN[l] : ""}`;
+
+function renderEdition() {
+  for (const b of $("edition").querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.ed === state.edition);
+}
+
+function renderItems() {
+  const cats = [...new Set(ITEMS.map(i => i.cat))];
+  $("items").innerHTML = cats.map(c => `
+    <div>
+      <div class="cat-label">${c}</div>
+      <div class="slot-grid">${ITEMS.filter(i => i.cat === c).map(i =>
+        `<button type="button" class="slot slot-btn" id="item-${i.k}" data-item="${i.k}" data-name="${esc(i.n)}" aria-label="${esc(i.n)}" aria-pressed="${i.k === state.item}">${iconImg(i.k)}</button>`).join("")}
+      </div>
+    </div>`).join("");
+  $("item-name").textContent = currentItem().n;
+}
+
+function renderEnchants() {
+  const item = currentItem();
+  $("ench-title").textContent = `Enchantments for ${item.n}`;
+  $("enchants").innerHTML = enchantsFor(item, state.edition).map(k => {
+    const e = ENCH[k];
+    const on = k in state.picked;
+    const lvl = state.picked[k] ?? e.max;
+    const m = bookMultiplier(k, state.edition);
+    const clash = Object.keys(state.picked).filter(o => conflicts(o, k));
+    const levels = e.max > 1
+      ? `<div class="levels" role="group" aria-label="${esc(e.n)} level">${Array.from({ length: e.max }, (_, i) => i + 1).map(l =>
+          `<button type="button" data-lvl="${l}" data-ench="${k}" aria-pressed="${on && l === lvl}">${ROMAN[l]}</button>`).join("")}</div>`
+      : "";
+    const meta = !on && clash.length
+      ? `<span class="warn">Conflicts with ${clash.map(c => ENCH[c].n).join(", ")}. Selecting swaps it.</span>`
+      : `${m} level${m > 1 ? "s" : ""} per enchantment level · book worth ${m * lvl}`;
+    return `<div class="ench ${on ? "on" : ""} ${!on && clash.length ? "blocked" : ""}" data-ench="${k}" role="checkbox" aria-checked="${on}" tabindex="0">
+      ${on ? glintSlot("e:" + k, "sm") : plainSlot("e:" + k, "sm")}
+      <span class="ench-name">${esc(e.n)}${e.curse ? `<span class="curse">curse</span>` : ""}</span>
+      ${levels}
+      <span class="ench-meta">${meta}</span>
+    </div>`;
+  }).join("");
+}
+
+function renderResult() {
+  const item = currentItem();
+  const books = Object.entries(state.picked).map(([key, level]) => ({
+    key, level, val: level * bookMultiplier(key, state.edition),
+  }));
+  const el = $("result");
+
+  if (!books.length) {
+    el.innerHTML = `<div class="empty">${iconImg("ui:book")}<p>Select at least one enchantment to see the cheapest anvil order for your ${esc(item.n.toLowerCase())}.</p></div>`;
+    return;
+  }
+
+  const opts = { itemUses: state.itemUses, mode: state.mode };
+  let res = solve(books, { ...opts, cap: !state.creative });
+  let overLimit = false;
+  if (!res) { res = solve(books, { ...opts, cap: false }); overLimit = true; }
+
+  const steps = toSteps(res.tree);
+  const priciest = Math.max(...steps.map(s => s.cost));
+  const nv = naive(books, state.itemUses);
+  const saved = nv.levels - res.levels;
+  let compare;
+  if (books.length === 1) compare = `One book, one anvil job.`;
+  else if (saved > 0) compare = `Adding the books one at a time would cost <b>${nv.levels} levels</b>${nv.worst > MAX_COST ? `, and would hit “Too Expensive!” at ${nv.worst}` : ""}. This order saves <b>${saved}</b>.`;
+  else compare = nv.worst > MAX_COST && !overLimit
+    ? `Adding the books one at a time costs the same in total but would hit “Too Expensive!” at ${nv.worst}.`
+    : `Adding the books one at a time costs the same here.`;
+
+  const contents = node => books.filter((_, i) => node.mask & (1 << (i + 1)));
+  const slotFor = node => {
+    const isItem = node.mask & 1;
+    const name = isItem ? item.k : "ui:book";
+    return !isItem || node.leaf === undefined || state.itemUses ? glintSlot(name) : plainSlot(name);
+  };
+  const describe = node => {
+    if (node.mask & 1) {
+      const sub = node.leaf === 0
+        ? (state.itemUses ? `${state.itemUses} previous anvil use${state.itemUses > 1 ? "s" : ""}` : "no enchantments yet")
+        : `from step ${node.step}`;
+      return `${esc(item.n)} <span class="sub">(${sub})</span>`;
+    }
+    const sub = node.leaf !== undefined ? "fresh" : `from step ${node.step}`;
+    return `Book <span class="sub">(${sub})</span><div class="tips">${contents(node).map(b =>
+      `<span class="tip ${ENCH[b.key].curse ? "curse" : ""}">${levelText(b.key, b.level)}</span>`).join("")}</div>`;
+  };
+
+  const stepHtml = steps.map(s => `
+    <li class="step">
+      <div class="step-top">
+        <span class="step-no">Step ${s.step}</span>
+        <span class="cost ${s.cost > MAX_COST ? "bad" : ""}">${s.cost > MAX_COST && !state.creative ? `Too Expensive! (${s.cost})` : `Enchantment Cost: ${s.cost}`}</span>
+      </div>
+      <div class="anvil-row">
+        ${slotFor(s.left)}<span class="op">+</span>${slotFor(s.right)}${iconImg("ui:arrow")}${slotFor(s)}
+      </div>
+      <div class="what">
+        <div><span class="lbl">Left:</span> ${describe(s.left)}</div>
+        <div><span class="lbl">Right:</span> ${describe(s.right)}</div>
+      </div>
+      <div class="breakdown">Enchantments ${s.parts.ench} + left penalty ${s.parts.leftPen} + right penalty ${s.parts.rightPen}</div>
+    </li>`).join("");
+
+  const goal = mode => state.mode === mode ? `<span class="goal">Goal</span>` : "";
+  const nextPen = penalty(res.uses);
+  el.innerHTML = `
+    <div class="res-top">
+      <div class="res-title">${iconImg("ui:anvil")}<h2>Anvil plan · ${state.edition === "java" ? "Java" : "Bedrock"} ${esc(item.n)}</h2></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Total cost ${goal("levels")}</div><div class="v">${res.levels}<small>levels</small></div></div>
+        <div class="stat"><div class="k">XP points ${goal("xp")}</div><div class="v">${Math.round(res.xp).toLocaleString()}<small>points</small></div></div>
+      </div>
+      <div class="mini">
+        <span>Anvil jobs <b>${steps.length}</b></span>
+        <span>Priciest job <b>${priciest}</b> levels</span>
+      </div>
+      <p class="compare">${compare}</p>
+      ${overLimit ? `<div class="banner">Every possible order has a job of 40+ levels, so this can't be done in Survival. Drop an enchantment, use an item with fewer previous anvil uses, or switch to Creative.</div>` : ""}
+    </div>
+    <ol class="steps">${stepHtml}</ol>
+    <div class="final">
+      <div class="mc-tooltip">
+        ${glintSlot(item.k)}
+        <div>
+          <div class="tname">${esc(item.n)}</div>
+          <ul>${books.map(b => `<li class="${ENCH[b.key].curse ? "curse" : ""}">${levelText(b.key, b.level)}</li>`).join("")}</ul>
+          <div class="foot">Anvil uses: ${res.uses}. The next anvil job on it adds a penalty of ${nextPen} level${nextPen === 1 ? "" : "s"}.</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function render() {
+  sanitizePicked();
+  renderEdition();
+  renderItems();
+  renderEnchants();
+  renderResult();
+  $("opt-mode").value = state.mode;
+  $("opt-work").value = String(state.itemUses);
+  $("opt-creative").checked = state.creative;
+  save();
+}
+
+function toggleEnchant(k) {
+  if (k in state.picked) { delete state.picked[k]; return; }
+  for (const o of Object.keys(state.picked)) if (conflicts(o, k)) delete state.picked[o];
+  state.picked[k] = ENCH[k].max;
+}
+const refocus = sel => document.querySelector(sel)?.focus();
+
+$("edition").addEventListener("click", e => {
+  const b = e.target.closest("button[data-ed]");
+  if (!b) return;
+  state.edition = b.dataset.ed;
+  render();
+  refocus(`#ed-${state.edition}`);
+});
+$("items").addEventListener("click", e => {
+  const b = e.target.closest("button[data-item]");
+  if (!b || b.dataset.item === state.item) return;
+  state.item = b.dataset.item;
+  state.picked = fullSet(currentItem(), state.edition);
+  render();
+  refocus(`#item-${state.item}`);
+});
+$("enchants").addEventListener("click", e => {
+  const lv = e.target.closest("button[data-lvl]");
+  if (lv) {
+    state.picked[lv.dataset.ench] = +lv.dataset.lvl;
+    for (const o of Object.keys(state.picked)) if (conflicts(o, lv.dataset.ench)) delete state.picked[o];
+    render();
+    return;
+  }
+  const row = e.target.closest(".ench");
+  if (!row) return;
+  toggleEnchant(row.dataset.ench);
+  render();
+  refocus(`.ench[data-ench="${row.dataset.ench}"]`);
+});
+$("enchants").addEventListener("keydown", e => {
+  const row = e.target.closest(".ench");
+  if (!row || e.target !== row || (e.key !== " " && e.key !== "Enter")) return;
+  e.preventDefault();
+  toggleEnchant(row.dataset.ench);
+  render();
+  refocus(`.ench[data-ench="${row.dataset.ench}"]`);
+});
+$("btn-full").addEventListener("click", () => { state.picked = fullSet(currentItem(), state.edition); render(); });
+$("btn-clear").addEventListener("click", () => { state.picked = {}; render(); });
+$("opt-mode").addEventListener("change", e => { state.mode = e.target.value; render(); });
+$("opt-work").addEventListener("change", e => { state.itemUses = +e.target.value; render(); });
+$("opt-creative").addEventListener("change", e => { state.creative = e.target.checked; render(); });
+
+try { document.body.style.setProperty("--stone", `url(${stoneTile()})`); } catch (_) {}
+document.querySelectorAll("img[data-icon]").forEach(im => { im.src = icon(im.dataset.icon); });
+load();
+render();
+</script>
+</body>
+</html>
