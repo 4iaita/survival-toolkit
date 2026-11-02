@@ -1,5 +1,22 @@
 /* ---------- Enchantment and interface icons ---------- */
 Object.assign(TPL, {
+  // Site logo: an enchanted book resting on an anvil. build.py also renders it as the favicon.
+  logo: [
+    "................",
+    "................",
+    "....abbbbbbc....",
+    "....bbbyybbc....",
+    "....wwwwwwwG....",
+    "................",
+    ".11111111111111.",
+    ".22222222222223.",
+    ".....222223.....",
+    ".....122223.....",
+    "....12222223....",
+    "...1222222223...",
+    "..122222222223..",
+    "..333333333333..",
+  ],
   anvil: [
     "................",
     "................",
@@ -312,6 +329,7 @@ function stoneTile() {
 
 Object.assign(ICONS, {
   "ui:anvil":   { t: "anvil", m: "stone" },
+  "ui:logo":    { t: "logo", m: "iron", s: "purple" },
   "ui:book":    { t: "book", m: "book", s: "string" },
   "ui:orb":     { t: "orb", m: "xp" },
   "ui:grass":   { gen: grassBlock },
