@@ -27,10 +27,4 @@ After editing, rebuild the page and the site icons:
 python3 build.py
 ```
 
-## Credits
-
-Item and block textures in `art/` come from [Pixel Perfection CE](https://github.com/Athemis/PixelPerfectionCE) by XSSheep and contributors, licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The page tints some of them (potion liquid, leather, grass) and arranges block textures into isometric icons; those adapted icons are shared under the same license. Items the pack doesn't have (newer ones like the mace, spear and candles) use original pixel art drawn from templates in `src/`.
-
-To change an icon, replace or add a 16×16 PNG in `art/` and run `python3 build.py`.
-
-Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
+Icons are original pixel art in a Minecraft style, not Mojang textures. Not an official Minecraft product.
