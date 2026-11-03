@@ -41,5 +41,3 @@ python3 build.py
 ```
 
 The name map from pack files to icons is in `import_textures.py`.
-
-Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
