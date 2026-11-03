@@ -403,11 +403,12 @@ function rng(seed) {
   };
 }
 
-function paint(size, px) {
+function paint(size, px, height = size) {
   const cv = document.createElement("canvas");
-  cv.width = cv.height = size;
+  cv.width = size;
+  cv.height = height;
   const ctx = cv.getContext("2d");
-  const img = ctx.createImageData(size, size);
+  const img = ctx.createImageData(size, height);
   px.forEach((p, i) => { if (p) img.data.set([p[0], p[1], p[2], 255], i * 4); });
   ctx.putImageData(img, 0, 0);
   return cv.toDataURL();

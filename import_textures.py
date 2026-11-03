@@ -84,6 +84,27 @@ FILES = {
     "quartz_pillar": "blocks/quartz_block_lines", "quartz_pillar_top": "blocks/quartz_block_lines_top",
     "slime_block": "blocks/slime", "stone": "blocks/stone", "terracotta": "blocks/hardened_clay",
     "tripwire_hook": "blocks/trip_wire_source",
+    # Job site blocks
+    "barrel_side": "blocks/barrel_side", "barrel_top": "blocks/barrel_top",
+    "blast_furnace_front": "blocks/blast_furnace_front_off", "blast_furnace_side": "blocks/blast_furnace_side",
+    "blast_furnace_top": "blocks/blast_furnace_top", "brewing_stand": "items/brewing_stand",
+    "cartography_table_front": "blocks/cartography_table_side1", "cartography_table_side": "blocks/cartography_table_side2",
+    "cartography_table_top": "blocks/cartography_table_top", "cauldron_side": "blocks/cauldron_side",
+    "cauldron_top": "blocks/cauldron_top", "cauldron_inner": "blocks/cauldron_inner",
+    "composter_side": "blocks/composter_side", "composter_top": "blocks/composter_top", "composter_bottom": "blocks/composter_bottom",
+    "fletching_table_front": "blocks/fletcher_table_side1", "fletching_table_side": "blocks/fletcher_table_side2",
+    "fletching_table_top": "blocks/fletcher_table_top", "grindstone_side": "blocks/grindstone_side",
+    "grindstone_round": "blocks/grindstone_round", "grindstone_pivot": "blocks/grindstone_pivot",
+    "lectern_front": "blocks/lectern_front", "lectern_sides": "blocks/lectern_sides", "lectern_top": "blocks/lectern_top",
+    "lectern_base": "blocks/lectern_base", "loom_front": "blocks/loom_front", "loom_side": "blocks/loom_side", "loom_top": "blocks/loom_top",
+    "smithing_table_front": "blocks/smithing_table_front", "smithing_table_side": "blocks/smithing_table_side",
+    "smithing_table_top": "blocks/smithing_table_top", "smoker_front": "blocks/smoker_front_off", "smoker_side": "blocks/smoker_side",
+    "smoker_top": "blocks/smoker_top", "stonecutter_side": "blocks/stonecutter2_side", "stonecutter_top": "blocks/stonecutter2_top",
+    "stonecutter_saw": "blocks/stonecutter2_saw",
+    # Village biomes
+    "sand": "blocks/sand", "coarse_dirt": "blocks/coarse_dirt", "acacia_log": "blocks/log_acacia", "acacia_log_top": "blocks/log_acacia_top",
+    "snowy_grass_side": "blocks/grass_side_snowed", "snow": "blocks/snow", "podzol_side": "blocks/dirt_podzol_side",
+    "podzol_top": "blocks/dirt_podzol_top", "jungle_log": "blocks/log_jungle", "jungle_log_top": "blocks/log_jungle_top", "mud": "blocks/mud",
 }
 for color in COLORS:
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"

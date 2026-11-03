@@ -47,29 +47,41 @@ function potionArt(bottle, color) {
 }
 
 // Block models made of boxes (the anvil), in 16-unit block space, seen from the same angle as cube().
-// Each pixel looks along the view ray and takes the nearest box face: top, left (+z) or right (+x).
-// boxes: [x0, y0, z0, x1, y1, z1]; art textures the sides, top textures the model's top face.
+// Each pixel looks along the view ray and takes the nearest box face: top, left (+z) or right (+x);
+// where that face's texel is see-through, the next box behind it shows instead.
+// A box is [x0, y0, z0, x1, y1, z1], textured with art on the sides and top on the model's top face,
+// or { b: [x0, …], faces: [right, top, left] } for model textures, each face [art name, du, dv, turn]:
+// the texel offset that lines the face up with its corner of the texture, and turn swaps u and v on the top.
 function boxModel({ boxes, art: side, top }, size = 32) {
-  const sideTex = art(side), topTex = art(top), out = new Array(size * size).fill(null), k = size / 16;
-  const texel = (tex, u, v) => tex[(Math.min(15, Math.floor(v)) & 15) * 16 + (Math.min(15, Math.floor(u)) & 15)];
+  const out = new Array(size * size).fill(null), k = size / 16;
+  const plain = [[side], [top], [side]];
+  const models = boxes.map(box => ({ b: box.b || box, plain: !box.b, faces: (box.faces || plain).map(([n, du = 0, dv = 0, turn]) => [art(n), du, dv, turn]) }));
+  const texel = (tex, u, v) => tex && tex[(Math.min(15, Math.floor(v)) & 15) * 16 + (Math.min(15, Math.floor(u)) & 15)];
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
     const a = 2 * ((x + 0.5) / k - 8), b = 4 * ((y + 0.5) / k - 8);
     const p = [(a + b) / 2, 0, (b - a) / 2];
-    let best = -Infinity, face = -1;
-    for (const box of boxes) {
+    const hits = [];
+    for (const m of models) {
       let enter = -Infinity, exit = Infinity, axis = -1;
       for (let i = 0; i < 3; i++) {
-        enter = Math.max(enter, box[i] - p[i]);
-        if (box[i + 3] - p[i] < exit) { exit = box[i + 3] - p[i]; axis = i; }
+        enter = Math.max(enter, m.b[i] - p[i]);
+        if (m.b[i + 3] - p[i] < exit) { exit = m.b[i + 3] - p[i]; axis = i; }
       }
-      if (enter < exit && exit > best) { best = exit; face = axis; }
+      if (enter < exit) hits.push([exit, axis, m]);
     }
-    if (face < 0) continue;
-    const [X, Y, Z] = p.map(v => v + best);
-    const px = face === 1 ? texel(Y >= 16 && topTex ? topTex : sideTex, X, Z)
-      : face === 2 ? texel(sideTex, X, 16 - Y) : texel(sideTex, 16 - Z, 16 - Y);
-    const f = [0.62, 1, 0.8][face];
-    out[y * size + x] = px && px.map(c => Math.round(c * f));
+    hits.sort((h, g) => g[0] - h[0]);
+    for (const [t, face, m] of hits) {
+      const [X, Y, Z] = p.map(v => v + t);
+      let [tex, du, dv, turn] = m.faces[face];
+      // Plain boxes use the top texture only on the model's top face.
+      if (m.plain && face === 1 && !(Y >= 16 && tex)) tex = m.faces[0][0];
+      const px = face === 1 ? (turn ? texel(tex, Z + du, X + dv) : texel(tex, X + du, Z + dv))
+        : face === 2 ? texel(tex, X + du, 16 - Y + dv) : texel(tex, 16 - Z + du, 16 - Y + dv);
+      if (!px) continue;
+      const f = [0.62, 1, 0.8][face];
+      out[y * size + x] = px.map(c => Math.round(c * f));
+      break;
+    }
   }
   return out;
 }
@@ -84,7 +96,9 @@ function uprightRod(name) {
 }
 
 // Every texture a spec needs, as [name] entries.
-const artNeeds = spec => (spec.rod ? [[spec.rod]] : spec.boxes ? [[spec.art], [spec.top]] : spec.cube ? spec.cube.flat() : spec.layers);
+const artNeeds = spec => (spec.rod ? [[spec.rod]]
+  : spec.boxes ? (spec.art ? [[spec.art], [spec.top]] : spec.boxes.flatMap(box => box.faces))
+  : spec.cube ? spec.cube.flat() : spec.layers);
 
 function artPixels(spec) {
   if (spec.rod) return uprightRod(spec.rod);

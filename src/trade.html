@@ -8,7 +8,20 @@
             <span class="picked-name" id="villager-name"></span>
           </div>
           <div class="slot-grid" id="villagers"></div>
-          <p class="choice-hint" id="villager-site"></p>
+          <div class="stage" id="villager-stage">
+            <img class="stage-villager" id="villager-art" alt="" width="72" height="136">
+            <img class="stage-block" id="villager-block" alt="" width="64" height="64">
+          </div>
+          <div class="villager-facts">
+            <div class="fact">
+              <span class="cat-label">Job site block</span>
+              <span class="site-name" id="villager-site"></span>
+            </div>
+            <div class="fact">
+              <span class="cat-label" id="biome-label">Biome</span>
+              <div class="slot-grid" id="biomes" role="group" aria-labelledby="biome-label"></div>
+            </div>
+          </div>
         </section>
 
         <section class="panel">

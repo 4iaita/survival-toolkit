@@ -1,8 +1,9 @@
 /* ---------- Villager trades ---------- */
-const trade = { villager: "librarian", query: "" };
+const trade = { villager: "librarian", biome: "plains", query: "" };
 const TRADE_KEY = "villager-trades-v1";
 try { Object.assign(trade, JSON.parse(localStorage.getItem(TRADE_KEY) || "{}")); } catch (_) {}
 if (!VILLAGERS.some(v => v.k === trade.villager)) trade.villager = "librarian";
+if (!BIOMES.some(b => b.k === trade.biome)) trade.biome = "plains";
 
 const currentVillager = () => VILLAGERS.find(v => v.k === trade.villager);
 const villagerName = v => (state.edition === "bedrock" && v.bedrockName) || v.n;
@@ -38,7 +39,17 @@ function renderVillagers() {
   $("villagers").innerHTML = VILLAGERS.map(x =>
     `<button type="button" class="slot slot-btn" id="villager-${x.k}" data-villager="${x.k}" data-name="${esc(villagerName(x))}" aria-label="${esc(villagerName(x))}" aria-pressed="${x.k === v.k}">${iconImg(villagerIcon(x))}</button>`).join("");
   $("villager-name").textContent = villagerName(v);
-  $("villager-site").textContent = `Job site block: ${v.site}`;
+  $("villager-site").textContent = v.site;
+  $("biomes").innerHTML = BIOMES.map(b =>
+    `<button type="button" class="slot slot-btn biome" id="biome-${b.k}" data-biome="${b.k}" data-name="${b.n}" aria-label="${b.n}" aria-pressed="${b.k === trade.biome}">${iconImg(`biome:${b.k}`)}</button>`).join("");
+  const biome = BIOMES.find(b => b.k === trade.biome);
+  $("villager-art").src = villagerArt(biome.k, v.k);
+  $("villager-art").alt = `${biome.n} ${villagerName(v)}`;
+  const block = $("villager-block");
+  block.hidden = !ICONS[`site:${v.site}`];
+  if (!block.hidden) block.src = icon(`site:${v.site}`);
+  block.alt = v.site;
+  $("villager-stage").style.setProperty("--ground", `url('${groundArt(biome.k)}')`);
 }
 
 function renderTradeResult() {
@@ -97,6 +108,14 @@ $("villagers").addEventListener("click", e => {
   trade.villager = b.dataset.villager;
   renderTrades();
   refocus(`#villager-${trade.villager}`);
+});
+$("biomes").addEventListener("click", e => {
+  const b = e.target.closest("button[data-biome]");
+  if (!b) return;
+  trade.biome = b.dataset.biome;
+  renderVillagers();
+  try { localStorage.setItem(TRADE_KEY, JSON.stringify(trade)); } catch (_) {}
+  refocus(`#biome-${trade.biome}`);
 });
 $("trade-results").addEventListener("click", e => {
   const b = e.target.closest("button[data-villager]");
