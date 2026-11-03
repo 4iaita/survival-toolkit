@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Anvil Order Planner</title>
-<meta name="description" content="Find the cheapest Minecraft anvil order for your enchantments, Java and Bedrock.">
+<title>Survival Toolkit</title>
+<meta name="description" content="Anvil enchanting planner and potion brewing guide for Minecraft, Java and Bedrock.">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -268,6 +268,44 @@ details.rules summary { cursor: pointer; font: 600 18px/1.2 var(--font-pixel); c
 details.rules ul { padding-left: 20px; margin: 10px 0 0; max-width: 78ch; }
 details.rules li { margin: 6px 0; }
 details.rules code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; background: var(--well); padding: 1px 4px; }
+
+/* Tool tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+a.mc-btn { text-decoration: none; }
+.mc-btn[aria-current="page"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -3px 0 var(--btn-on-lo); }
+.view-intro { margin: 0 0 18px; color: #dedede; max-width: 70ch; text-shadow: 1px 1px 0 #000; }
+
+/* Brewing choices */
+.choices { display: flex; flex-direction: column; gap: 14px; }
+.choice-label { font-weight: 800; font-size: 14.5px; margin-bottom: 6px; }
+.choice-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.choice-row .mc-btn { font-size: 15px; }
+.choice-row .mc-btn[disabled] { opacity: .45; cursor: not-allowed; border-color: var(--edge); }
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.stepper output { min-width: 44px; text-align: center; font: 800 20px/1 var(--font-body); color: var(--ink); font-variant-numeric: tabular-nums; }
+.choice-hint { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; }
+
+/* Stack counts, drawn like item counts in an inventory slot */
+.slot .count {
+  position: absolute; right: 3px; bottom: 1px; z-index: 2;
+  font: 800 14px/1 var(--font-body); color: var(--white); text-shadow: 2px 2px 0 var(--shadow);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ingredient list */
+.need { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; margin-top: 12px; }
+@media (max-width: 460px) { .need { grid-template-columns: minmax(0, 1fr); } }
+.need-item { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; min-width: 0; }
+.need-item .sub { font-weight: 500; color: var(--ink-soft); font-size: 12.5px; display: block; }
+
+/* Brewing steps */
+.brew-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.brew-row .ico { flex: none; }
+
+/* Potion tooltip lines use the game's effect colors, lifted a little for contrast */
+.mc-tooltip .tname.plain { color: var(--white); }
+.mc-tooltip li.good { color: #7f7fff; }
+.mc-tooltip li.bad { color: var(--tip-curse); }
 </style>
 </head>
 <body>
@@ -277,10 +315,10 @@ details.rules code { font-family: ui-monospace, "SF Mono", Menlo, monospace; fon
       <img class="ico logo" data-icon="ui:logo" alt="" width="64" height="64">
       <div>
         <div class="title-row">
-          <h1>Anvil Order Planner</h1>
-          <span class="splash" aria-hidden="true">Never Too Expensive!</span>
+          <h1>Survival Toolkit</h1>
+          <span class="splash" id="splash" aria-hidden="true">Never Too Expensive!</span>
         </div>
-        <p class="lede">Pick your edition, the item and the books you have. The planner finds the anvil order that costs the least XP, with no job over 39 levels.</p>
+        <p class="lede">Planners for the fiddly parts of survival: enchanting on an anvil and brewing potions, for Java and Bedrock.</p>
       </div>
     </div>
     <div class="edition" id="edition" role="group" aria-label="Game edition">
@@ -288,6 +326,14 @@ details.rules code { font-family: ui-monospace, "SF Mono", Menlo, monospace; fon
       <button type="button" class="mc-btn" id="ed-bedrock" data-ed="bedrock"><img class="ico" data-icon="ui:bedrock" alt="">Bedrock Edition</button>
     </div>
   </header>
+
+  <nav class="tabs" aria-label="Tools">
+    <a class="mc-btn" href="#anvil" id="tab-anvil"><img class="ico" data-icon="ui:enchant" alt="">Anvil Planner</a>
+    <a class="mc-btn" href="#brewing" id="tab-brewing"><img class="ico" data-icon="ui:potion" alt="">Brewing Guide</a>
+  </nav>
+
+  <section id="view-anvil" aria-label="Anvil Planner">
+  <p class="view-intro">Pick the item and the enchantment books you have. The planner finds the anvil order that costs the least XP, with no job over 39 levels.</p>
 
   <div class="grid">
     <div class="col">
@@ -357,6 +403,60 @@ details.rules code { font-family: ui-monospace, "SF Mono", Menlo, monospace; fon
       <li>Icons are original pixel art drawn for this page.</li>
     </ul>
   </details>
+  </section>
+
+  <section id="view-brewing" aria-label="Brewing Guide" hidden>
+    <p class="view-intro">Pick a potion and how you want it. The guide lists every brewing step, what goes into the stand, and how many ingredients and blaze powder you need.</p>
+    <div class="grid">
+      <div class="col">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Potion</h2>
+            <span class="picked-name" id="potion-name"></span>
+          </div>
+          <div class="cats" id="potions"></div>
+        </section>
+
+        <section class="panel">
+          <h2>How to brew it</h2>
+          <div class="choices">
+            <div>
+              <div class="choice-label">Strength</div>
+              <div class="choice-row" id="brew-mod" role="group" aria-label="Potion strength"></div>
+              <div class="choice-hint" id="brew-mod-hint"></div>
+            </div>
+            <div>
+              <div class="choice-label">Bottle</div>
+              <div class="choice-row" id="brew-form" role="group" aria-label="Bottle type"></div>
+            </div>
+            <div>
+              <div class="choice-label">How many bottles</div>
+              <div class="stepper">
+                <button type="button" class="mc-btn sm" id="brew-less" aria-label="Fewer bottles">−</button>
+                <output id="brew-count" aria-live="polite">3</output>
+                <button type="button" class="mc-btn sm" id="brew-more" aria-label="More bottles">+</button>
+              </div>
+              <div class="choice-hint">A brewing stand holds 3 bottles, so ingredients are counted per batch of 3.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel result" id="brew-result" aria-live="polite"></aside>
+    </div>
+
+    <details class="panel rules">
+      <summary>How brewing works</summary>
+      <ul>
+        <li>Each step puts one ingredient in the top slot and brews up to three bottles below it. A step takes 20 seconds and uses one charge of fuel; one blaze powder gives 20 charges.</li>
+        <li>Most potions start as an Awkward Potion: water bottles brewed with nether wart. Weakness is the exception and starts straight from water bottles.</li>
+        <li>Redstone Dust makes the effect last longer. Glowstone Dust makes it stronger but shorter. A potion takes one or the other, not both.</li>
+        <li>A Fermented Spider Eye corrupts a potion into another one, such as Swiftness into Slowness or Night Vision into Invisibility.</li>
+        <li>Gunpowder turns a potion into a splash potion with the same duration. Dragon’s Breath turns a splash potion into a lingering one, whose cloud gives a quarter of the duration.</li>
+        <li>On Bedrock, extended Regeneration and Poison last 2:00 instead of 1:30, and Poison II lasts 0:22 instead of 0:21.</li>
+      </ul>
+    </details>
+  </section>
 </div>
 
 <script id="solver">
@@ -597,6 +697,124 @@ function toSteps(tree) {
 if (typeof module !== "undefined") module.exports = { ENCH, ITEMS, solve, naive, toSteps, enchantsFor, bookMultiplier, conflicts, xpForLevel, penalty };
 </script>
 <script>
+/* ---------- Brewing data ----------
+ * Durations are in seconds (0 = instant). A value of { java, bedrock } differs by edition.
+ * path: [ingredient, resulting potion] pairs, starting from a water bottle.
+ */
+const BREW_ITEMS = {
+  water_bottle: "Water Bottle",
+  nether_wart: "Nether Wart",
+  sugar: "Sugar",
+  rabbit_foot: "Rabbit's Foot",
+  glistering_melon: "Glistering Melon Slice",
+  blaze_powder: "Blaze Powder",
+  ghast_tear: "Ghast Tear",
+  magma_cream: "Magma Cream",
+  pufferfish: "Pufferfish",
+  golden_carrot: "Golden Carrot",
+  turtle_shell: "Turtle Shell",
+  phantom_membrane: "Phantom Membrane",
+  spider_eye: "Spider Eye",
+  fermented_spider_eye: "Fermented Spider Eye",
+  breeze_rod: "Breeze Rod",
+  cobweb: "Cobweb",
+  slime_block: "Slime Block",
+  stone: "Stone",
+  redstone: "Redstone Dust",
+  glowstone: "Glowstone Dust",
+  gunpowder: "Gunpowder",
+  dragon_breath: "Dragon's Breath",
+};
+
+const WART = ["nether_wart", "awkward"];
+const POTIONS = [
+  { k: "swiftness", n: "Swiftness", cat: "Helpful", color: "#33ebff", fx: [["Speed", 1]], strongFx: [["Speed", 2]],
+    path: [WART, ["sugar", "swiftness"]], dur: { base: 180, long: 480, strong: 90 } },
+  { k: "leaping", n: "Leaping", cat: "Helpful", color: "#fdff84", fx: [["Jump Boost", 1]], strongFx: [["Jump Boost", 2]],
+    path: [WART, ["rabbit_foot", "leaping"]], dur: { base: 180, long: 480, strong: 90 } },
+  { k: "strength", n: "Strength", cat: "Helpful", color: "#ffc700", fx: [["Strength", 1]], strongFx: [["Strength", 2]],
+    path: [WART, ["blaze_powder", "strength"]], dur: { base: 180, long: 480, strong: 90 } },
+  { k: "healing", n: "Healing", cat: "Helpful", color: "#f82423", fx: [["Instant Health", 1]], strongFx: [["Instant Health", 2]],
+    path: [WART, ["glistering_melon", "healing"]], dur: { base: 0, strong: 0 } },
+  { k: "regeneration", n: "Regeneration", cat: "Helpful", color: "#cd5cab", fx: [["Regeneration", 1]], strongFx: [["Regeneration", 2]],
+    path: [WART, ["ghast_tear", "regeneration"]], dur: { base: 45, long: { java: 90, bedrock: 120 }, strong: 22 } },
+  { k: "fire_resistance", n: "Fire Resistance", cat: "Helpful", color: "#ff9900", fx: [["Fire Resistance", 1]],
+    path: [WART, ["magma_cream", "fire_resistance"]], dur: { base: 180, long: 480 } },
+  { k: "water_breathing", n: "Water Breathing", cat: "Helpful", color: "#98dac0", fx: [["Water Breathing", 1]],
+    path: [WART, ["pufferfish", "water_breathing"]], dur: { base: 180, long: 480 } },
+  { k: "night_vision", n: "Night Vision", cat: "Helpful", color: "#c2ff66", fx: [["Night Vision", 1]],
+    path: [WART, ["golden_carrot", "night_vision"]], dur: { base: 180, long: 480 } },
+  { k: "invisibility", n: "Invisibility", cat: "Helpful", color: "#f6f6f6", fx: [["Invisibility", 1]],
+    path: [WART, ["golden_carrot", "night_vision"], ["fermented_spider_eye", "invisibility"]], dur: { base: 180, long: 480 } },
+  { k: "slow_falling", n: "Slow Falling", cat: "Helpful", color: "#f3cfb9", fx: [["Slow Falling", 1]],
+    path: [WART, ["phantom_membrane", "slow_falling"]], dur: { base: 90, long: 240 } },
+  { k: "turtle_master", n: "the Turtle Master", short: "Turtle Master", cat: "Helpful", color: "#8e7ae8",
+    fx: [["Slowness", 4], ["Resistance", 3]], strongFx: [["Slowness", 6], ["Resistance", 4]],
+    path: [WART, ["turtle_shell", "turtle_master"]], dur: { base: 20, long: 40, strong: 20 } },
+  { k: "slowness", n: "Slowness", cat: "Harmful", color: "#8bafe0", fx: [["Slowness", 1]], strongFx: [["Slowness", 4]],
+    path: [WART, ["sugar", "swiftness"], ["fermented_spider_eye", "slowness"]], dur: { base: 90, long: 240, strong: 20 } },
+  { k: "harming", n: "Harming", cat: "Harmful", color: "#a9656a", fx: [["Instant Damage", 1]], strongFx: [["Instant Damage", 2]],
+    path: [WART, ["glistering_melon", "healing"], ["fermented_spider_eye", "harming"]], dur: { base: 0, strong: 0 } },
+  { k: "poison", n: "Poison", cat: "Harmful", color: "#87a363", fx: [["Poison", 1]], strongFx: [["Poison", 2]],
+    path: [WART, ["spider_eye", "poison"]], dur: { base: 45, long: { java: 90, bedrock: 120 }, strong: { java: 21, bedrock: 22 } } },
+  { k: "weakness", n: "Weakness", cat: "Harmful", color: "#484d48", fx: [["Weakness", 1]],
+    path: [["fermented_spider_eye", "weakness"]], dur: { base: 90, long: 240 } },
+  { k: "wind_charging", n: "Wind Charging", cat: "Trial", color: "#bdc9ff", fx: [["Wind Charged", 1]],
+    path: [WART, ["breeze_rod", "wind_charging"]], dur: { base: 180 } },
+  { k: "weaving", n: "Weaving", cat: "Trial", color: "#78695a", fx: [["Weaving", 1]],
+    path: [WART, ["cobweb", "weaving"]], dur: { base: 180 } },
+  { k: "oozing", n: "Oozing", cat: "Trial", color: "#99ffa3", fx: [["Oozing", 1]],
+    path: [WART, ["slime_block", "oozing"]], dur: { base: 180 } },
+  { k: "infestation", n: "Infestation", cat: "Trial", color: "#8c9b8c", fx: [["Infested", 1]],
+    path: [WART, ["stone", "infestation"]], dur: { base: 180 } },
+];
+
+const HARMFUL = new Set(["Slowness", "Instant Damage", "Poison", "Weakness", "Wind Charged", "Weaving", "Oozing", "Infested"]);
+const WATER_COLOR = "#385dc6";
+const BOTTLES_PER_BATCH = 3;
+const BREWS_PER_BLAZE = 20;
+const BREW_SECONDS = 20;
+
+const potionByKey = k => POTIONS.find(p => p.k === k);
+const byEdition = (v, edition) => (v && typeof v === "object" ? v[edition] : v);
+const fmtTime = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
+function potionTitle(key, form = "drink") {
+  if (key === "water") return "Water Bottle";
+  if (key === "awkward") return "Awkward Potion";
+  const base = `Potion of ${potionByKey(key).n}`;
+  return form === "splash" ? `Splash ${base}` : form === "lingering" ? `Lingering ${base}` : base;
+}
+
+// Which modifiers a potion accepts, in display order.
+const modsFor = p => ["base", ...("long" in p.dur ? ["long"] : []), ...("strong" in p.dur ? ["strong"] : [])];
+
+// Effects of the finished potion. Lingering clouds apply a quarter of the duration.
+function potionEffects(p, mod, form, edition) {
+  const fx = mod === "strong" && p.strongFx ? p.strongFx : p.fx;
+  let secs = byEdition(p.dur[mod], edition) || 0;
+  if (form === "lingering") secs = Math.floor(secs / 4);
+  return fx.map(([name, level]) => ({ name, level, secs, bad: HARMFUL.has(name) }));
+}
+
+// Brewing steps for `count` bottles. Each step is one 20-second brew on a full stand of up to 3 bottles.
+function brewPlan(p, { mod = "base", form = "drink", count = 3 } = {}) {
+  const steps = [];
+  let cur = { key: "water", mod: "base", form: "drink" };
+  const add = (item, next) => { steps.push({ item, from: cur, to: next }); cur = next; };
+  for (const [item, key] of p.path) add(item, { key, mod: "base", form: "drink" });
+  if (mod === "long") add("redstone", { ...cur, mod: "long" });
+  if (mod === "strong") add("glowstone", { ...cur, mod: "strong" });
+  if (form !== "drink") add("gunpowder", { ...cur, form: "splash" });
+  if (form === "lingering") add("dragon_breath", { ...cur, form: "lingering" });
+
+  const batches = Math.ceil(count / BOTTLES_PER_BATCH);
+  const brews = steps.length * batches;
+  const items = new Map([["water_bottle", count]]);
+  for (const s of steps) items.set(s.item, (items.get(s.item) || 0) + batches);
+  return { steps, batches, brews, fuel: Math.ceil(brews / BREWS_PER_BLAZE), seconds: brews * BREW_SECONDS, items: [...items] };
+}
+
 /* ---------- Pixel icons ----------
  * Original 16×16 pixel art drawn for this page. Templates use shade letters:
  * 1-4 = main material (light → dark), a-d = second material, other letters are fixed colors.
@@ -1366,7 +1584,6 @@ function stoneTile() {
 
 Object.assign(ICONS, {
   "ui:anvil":   { t: "anvil", m: "stone" },
-  "ui:logo":    { t: "logo", m: "iron", s: "purple" },
   "ui:book":    { t: "book", m: "book", s: "string" },
   "ui:orb":     { t: "orb", m: "xp" },
   "ui:grass":   { gen: grassBlock },
@@ -1417,6 +1634,253 @@ Object.assign(ICONS, {
   "e:mending":               { t: "orb", m: "xp" },
   "e:binding_curse":         { t: "lock", m: "red" },
   "e:vanishing_curse":       { t: "ghost", m: "purple" },
+});
+
+/* ---------- Brewing and site icons ---------- */
+Object.assign(FIXED, { n: "#a0703c", N: "#6b4520", s: "#e9f6ff", S: "#a9c4d8" }); // cork and glass
+MAT.fermented = ["#f6c2d0", "#c96a86", "#8c3d55", "#4a1a2b"];
+
+Object.assign(TPL, {
+  // Site logo: a storage chest, the toolkit everything lives in. build.py also renders it as the favicon.
+  chest: [
+    "................",
+    "................",
+    "..111111111111..",
+    "..122222222223..",
+    "..122222222223..",
+    "..122222222223..",
+    "..33333ab33333..",
+    "..44444bc44444..",
+    "..12222cc22223..",
+    "..122222222223..",
+    "..122222222223..",
+    "..122222222223..",
+    "..333333333333..",
+  ],
+  potion: [
+    "................",
+    "......nnnn......",
+    "......NNNN......",
+    "......sssS......",
+    ".....s1122S.....",
+    "....s112222S....",
+    "...sw1222222S...",
+    "...s12222222S...",
+    "...s22222223S...",
+    "...s22222233S...",
+    "...S22222333S...",
+    "....S233333S....",
+    ".....SSSSSS.....",
+  ],
+  splash: [
+    "................",
+    "................",
+    "........nn......",
+    ".......sNS......",
+    "......s12S......",
+    "....ss1122SS....",
+    "...s11222222S...",
+    "..s1w22222223S..",
+    "..s1222222233S..",
+    "..s2222222233S..",
+    "..S2222222333S..",
+    "...S22233333S...",
+    "....SSSSSSSS....",
+  ],
+  lingering: [
+    "................",
+    "......nnnn......",
+    "......NNNN......",
+    "......sssS......",
+    "......s12S......",
+    ".....s1122S.....",
+    "....s112222S....",
+    "....s122222S....",
+    "...s11222222S...",
+    "...s12222223S...",
+    "..s1222222233S..",
+    "..s2222222333S..",
+    "..SSSSSSSSSSSS..",
+  ],
+  dust: [
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    ".......1........",
+    "......122.......",
+    ".....12223......",
+    "....1222233.....",
+    "...122222333....",
+    "..12222223333...",
+    "..33333333333...",
+  ],
+  wart: [
+    "................",
+    "................",
+    "................",
+    "................",
+    "......12........",
+    ".....1223..12...",
+    ".....2233.1223..",
+    "..12..33..2233..",
+    ".1223..3..33....",
+    ".2233..3..3.....",
+    "..33...3..3.....",
+    ".....3333333....",
+    "......33333.....",
+  ],
+  foot: [
+    "................",
+    "................",
+    "......1.1.1.....",
+    "......2.2.2.....",
+    ".....122222.....",
+    ".....122222.....",
+    ".....122223.....",
+    "......12223.....",
+    "......12233.....",
+    ".......1233.....",
+    ".......2233.....",
+    "......abbba.....",
+    "......bbbbb.....",
+  ],
+  melon: [
+    "................",
+    "................",
+    "................",
+    "................",
+    ".......1........",
+    "......121.......",
+    ".....12k21......",
+    "....122y221.....",
+    "...12k2222k1....",
+    "..1222y22y221...",
+    "..aaaaaaaaaaa...",
+    "..bbbbbbbbbbb...",
+  ],
+  carrot: [
+    "................",
+    "................",
+    "............gg..",
+    "...........gg...",
+    ".........122....",
+    "........1223....",
+    ".......1223.....",
+    "......1223......",
+    ".....1223.......",
+    "....123.........",
+    "...123..........",
+    "..12............",
+    "..3.............",
+  ],
+  membrane: [
+    "................",
+    "................",
+    "................",
+    "...1111.........",
+    "..122221111.....",
+    "..12222222211...",
+    "...1222222223...",
+    "....122222223...",
+    ".....1222223....",
+    "......122233....",
+    ".......2333.....",
+    "........33......",
+  ],
+  eye: [
+    "................",
+    "................",
+    "................",
+    "................",
+    "......1111......",
+    ".....122222.....",
+    "....12222223....",
+    "....12wkk223....",
+    "....12kkk233....",
+    "....22kkk333....",
+    ".....223333.....",
+    "......3333......",
+  ],
+  web: [
+    "................",
+    "................",
+    "................",
+    "..1....1....1...",
+    "...1...1...1....",
+    "....1111111.....",
+    ".....1.1.1......",
+    "..11111111111...",
+    ".....1.1.1......",
+    "....1111111.....",
+    "...1...1...1....",
+    "..1....1....1...",
+  ],
+  breezerod: [
+    "................",
+    "................",
+    "............12..",
+    "...........123..",
+    "..........123...",
+    ".........123....",
+    "........123.....",
+    ".......123......",
+    "......123.......",
+    ".....123........",
+    "....123.........",
+    "...123..........",
+    "..23............",
+  ],
+});
+
+const stoneBlock = () => speckle(13, 16, ["#8a8a8a", "#7d7d7d", "#959595", "#727272"]);
+const slimeBlock = () => speckle(5, 16, [], (r, x, y) => {
+  const edge = x < 2 || y < 2 || x > 13 || y > 13, core = x > 4 && x < 11 && y > 4 && y < 11;
+  return hex(edge ? "#86dc63" : core ? (r() < 0.5 ? "#4f9a35" : "#5aa83e") : (r() < 0.5 ? "#7fd165" : "#73c45a"));
+});
+
+// Lighter (f > 0) or darker (f < 0) version of a hex color.
+function tint(color, f) {
+  return "#" + hex(color).map(v => Math.round(f > 0 ? v + (255 - v) * f : v * (1 + f)).toString(16).padStart(2, "0")).join("");
+}
+
+// Bottle icons are made on demand for any liquid color and bottle shape.
+function potionIcon(form, color) {
+  const name = `p:${form}:${color}`;
+  if (!ICONS[name]) {
+    ICONS[name] = { t: form === "drink" ? "potion" : form, c: { 1: tint(color, 0.5), 2: color, 3: tint(color, -0.3), 4: tint(color, -0.55) } };
+  }
+  return name;
+}
+
+Object.assign(ICONS, {
+  "ui:logo":    { t: "chest", m: "wood", s: "iron" },
+  "ui:enchant": { t: "logo", m: "iron", s: "purple" },
+  "ui:potion":  ICONS[potionIcon("drink", "#b05ad8")],
+
+  "b:water_bottle":         ICONS[potionIcon("drink", WATER_COLOR)],
+  "b:dragon_breath":        ICONS[potionIcon("drink", "#e08ccf")],
+  "b:nether_wart":          { t: "wart", m: "red" },
+  "b:sugar":                { t: "dust", m: "string" },
+  "b:rabbit_foot":          { t: "foot", m: "book", s: "string" },
+  "b:glistering_melon":     { t: "melon", m: "red", s: "green" },
+  "b:blaze_powder":         { t: "dust", m: "fire" },
+  "b:ghast_tear":           { t: "drop", m: "ice" },
+  "b:magma_cream":          { t: "orb", m: "fire" },
+  "b:pufferfish":           { t: "fish", m: "gold" },
+  "b:golden_carrot":        { t: "carrot", m: "gold" },
+  "b:turtle_shell":         ICONS.turtle_shell,
+  "b:phantom_membrane":     { t: "membrane", m: "elytra" },
+  "b:spider_eye":           { t: "eye", m: "red" },
+  "b:fermented_spider_eye": { t: "eye", m: "fermented" },
+  "b:breeze_rod":           { t: "breezerod", m: "ice" },
+  "b:cobweb":               { t: "web", m: "string" },
+  "b:slime_block":          { gen: slimeBlock },
+  "b:stone":                { gen: stoneBlock },
+  "b:redstone":             { t: "dust", m: "red" },
+  "b:glowstone":            { t: "dust", m: "gold" },
+  "b:gunpowder":            { t: "dust", m: "flint" },
 });
 
 /* ---------- UI ---------- */
@@ -1667,6 +2131,164 @@ try { document.body.style.setProperty("--stone", `url(${stoneTile()})`); } catch
 document.querySelectorAll("img[data-icon]").forEach(im => { im.src = icon(im.dataset.icon); });
 load();
 render();
+
+/* ---------- Brewing guide ---------- */
+const brew = { potion: "swiftness", mod: "base", form: "drink", count: 3 };
+const BREW_KEY = "brewing-guide-v1";
+try { Object.assign(brew, JSON.parse(localStorage.getItem(BREW_KEY) || "{}")); } catch (_) {}
+if (!potionByKey(brew.potion)) brew.potion = "swiftness";
+
+const ROMAN_FX = ["", "I", "II", "III", "IV", "V", "VI"];
+const CAT_LABEL = { Helpful: "Helpful", Harmful: "Harmful", Trial: "Tricky Trials" };
+const FORM_LABEL = { drink: "Drinkable", splash: "Splash", lingering: "Lingering" };
+
+const strongSuffix = p => (p.strongFx && p.strongFx.length === 1 ? ROMAN_FX[p.strongFx[0][1]] : "II");
+const stateColor = st => (st.key === "water" || st.key === "awkward" ? WATER_COLOR : potionByKey(st.key).color);
+const stateIcon = st => potionIcon(st.form, stateColor(st));
+function stateTitle(st) {
+  let t = potionTitle(st.key, st.form);
+  if (st.mod === "strong") t += " " + strongSuffix(potionByKey(st.key));
+  if (st.mod === "long") t += " (extended)";
+  return t;
+}
+// "Speed II (1:30)", the way the game's tooltip writes an effect.
+const fxText = e => `${e.name}${e.level > 1 ? " " + ROMAN_FX[e.level] : ""}${e.secs ? ` (${fmtTime(e.secs)})` : ""}`;
+const countSlot = (name, n) => `<span class="slot">${iconImg(name)}${n > 1 ? `<span class="count">${n}</span>` : ""}</span>`;
+
+function renderPotions() {
+  const p = potionByKey(brew.potion);
+  $("potions").innerHTML = Object.keys(CAT_LABEL).map(c => `
+    <div>
+      <div class="cat-label">${CAT_LABEL[c]}</div>
+      <div class="slot-grid">${POTIONS.filter(x => x.cat === c).map(x =>
+        `<button type="button" class="slot slot-btn" id="potion-${x.k}" data-potion="${x.k}" data-name="${esc(x.short || x.n)}" aria-label="${esc(potionTitle(x.k))}" aria-pressed="${x.k === p.k}">${iconImg(potionIcon(brew.form, x.color))}</button>`).join("")}
+      </div>
+    </div>`).join("");
+  $("potion-name").textContent = potionTitle(p.k);
+}
+
+function renderChoices() {
+  const p = potionByKey(brew.potion);
+  const mods = modsFor(p);
+  const modBtn = (mod, label, icon) => `<button type="button" class="mc-btn" data-mod="${mod}" aria-pressed="${brew.mod === mod}" ${mods.includes(mod) ? "" : "disabled"}>${icon ? iconImg(icon) : ""}${label}</button>`;
+  $("brew-mod").innerHTML =
+    modBtn("base", "Normal") +
+    modBtn("long", "Extended", "b:redstone") +
+    modBtn("strong", `Level ${strongSuffix(p)}`, "b:glowstone");
+  const fx = potionEffects(p, brew.mod, "drink", state.edition);
+  const missing = ["long", "strong"].filter(m => !mods.includes(m)).map(m => (m === "long" ? "extended" : "made stronger"));
+  $("brew-mod-hint").textContent = fx.map(fxText).join(" + ") + (missing.length ? `. This potion can't be ${missing.join(" or ")}.` : ".");
+  $("brew-form").innerHTML = Object.entries(FORM_LABEL).map(([form, label]) =>
+    `<button type="button" class="mc-btn" data-form="${form}" aria-pressed="${brew.form === form}">${iconImg(potionIcon(form, p.color))}${label}</button>`).join("");
+  $("brew-count").textContent = brew.count;
+}
+
+function renderBrewResult() {
+  const p = potionByKey(brew.potion);
+  const plan = brewPlan(p, brew);
+  const final = plan.steps[plan.steps.length - 1].to;
+  const fx = potionEffects(p, brew.mod, brew.form, state.edition);
+  const perBatch = Math.min(brew.count, BOTTLES_PER_BATCH);
+
+  const need = plan.items.map(([item, n]) =>
+    `<div class="need-item">${countSlot("b:" + item, n)}<span>${esc(BREW_ITEMS[item])}<span class="sub">× ${n}</span></span></div>`).join("") +
+    `<div class="need-item">${countSlot("b:blaze_powder", plan.fuel)}<span>Blaze Powder<span class="sub">× ${plan.fuel} as fuel</span></span></div>`;
+
+  const steps = plan.steps.map((s, i) => `
+    <li class="step">
+      <div class="step-top">
+        <span class="step-no">Step ${i + 1}</span>
+        <span class="cost">Brewing time: 20 s</span>
+      </div>
+      <div class="brew-row">
+        ${plainSlot("b:" + s.item)}<span class="op">+</span>${countSlot(stateIcon(s.from), perBatch)}${iconImg("ui:arrow")}${countSlot(stateIcon(s.to), perBatch)}
+      </div>
+      <div class="what">
+        <div><span class="lbl">Top slot:</span> ${esc(BREW_ITEMS[s.item])}</div>
+        <div><span class="lbl">Bottles:</span> ${esc(stateTitle(s.from))} <span class="sub">→</span> ${esc(stateTitle(s.to))}</div>
+      </div>
+    </li>`).join("");
+
+  const foot = brew.form === "lingering" ? "Thrown as a cloud that gives a quarter of the potion’s duration."
+    : brew.form === "splash" ? "Thrown. Gives the same duration as drinking it." : "Drink it.";
+  $("brew-result").innerHTML = `
+    <div class="res-top">
+      <div class="res-title">${iconImg(stateIcon(final))}<h2>Brewing plan · ${state.edition === "java" ? "Java" : "Bedrock"}</h2></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Brewing time</div><div class="v">${fmtTime(plan.seconds)}<small>min</small></div></div>
+        <div class="stat"><div class="k">Blaze powder</div><div class="v">${plan.fuel}<small>fuel</small></div></div>
+      </div>
+      <div class="mini">
+        <span>Bottles <b>${brew.count}</b></span>
+        <span>Batches <b>${plan.batches}</b></span>
+        <span>Steps per batch <b>${plan.steps.length}</b></span>
+      </div>
+      <p class="compare">${plan.batches > 1 ? `Run the steps below once for each of the <b>${plan.batches}</b> batches. Time is for a single brewing stand.` : "Time is for a single brewing stand."}</p>
+      <div class="need">${need}</div>
+    </div>
+    <ol class="steps">${steps}</ol>
+    <div class="final">
+      <div class="mc-tooltip">
+        ${plainSlot(stateIcon(final))}
+        <div>
+          <div class="tname plain">${esc(potionTitle(final.key, final.form))}</div>
+          <ul>${fx.map(e => `<li class="${e.bad ? "bad" : "good"}">${esc(fxText(e))}</li>`).join("")}</ul>
+          <div class="foot">${foot}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderBrew() {
+  if (!modsFor(potionByKey(brew.potion)).includes(brew.mod)) brew.mod = "base";
+  renderPotions();
+  renderChoices();
+  renderBrewResult();
+  try { localStorage.setItem(BREW_KEY, JSON.stringify(brew)); } catch (_) {}
+}
+
+$("potions").addEventListener("click", e => {
+  const b = e.target.closest("button[data-potion]");
+  if (!b) return;
+  brew.potion = b.dataset.potion;
+  renderBrew();
+  refocus(`#potion-${brew.potion}`);
+});
+$("brew-mod").addEventListener("click", e => {
+  const b = e.target.closest("button[data-mod]:not([disabled])");
+  if (!b) return;
+  brew.mod = b.dataset.mod;
+  renderBrew();
+  refocus(`#brew-mod [data-mod="${brew.mod}"]`);
+});
+$("brew-form").addEventListener("click", e => {
+  const b = e.target.closest("button[data-form]");
+  if (!b) return;
+  brew.form = b.dataset.form;
+  renderBrew();
+  refocus(`#brew-form [data-form="${brew.form}"]`);
+});
+$("brew-less").addEventListener("click", () => { brew.count = Math.max(1, brew.count - 1); renderBrew(); });
+$("brew-more").addEventListener("click", () => { brew.count = Math.min(64, brew.count + 1); renderBrew(); });
+$("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderBrew(); });
+
+/* ---------- Tool tabs ---------- */
+const VIEWS = ["anvil", "brewing"];
+function showView() {
+  const current = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "anvil";
+  for (const v of VIEWS) {
+    $("view-" + v).hidden = v !== current;
+    if (v === current) $("tab-" + v).setAttribute("aria-current", "page");
+    else $("tab-" + v).removeAttribute("aria-current");
+  }
+}
+window.addEventListener("hashchange", showView);
+
+const SPLASHES = ["Never Too Expensive!", "Now with potions!", "Brew responsibly!", "Also try nether wart!", "XP well spent!", "Mind the blaze powder!"];
+$("splash").textContent = SPLASHES[Math.floor(Math.random() * SPLASHES.length)];
+
+renderBrew();
+showView();
 </script>
 </body>
 </html>

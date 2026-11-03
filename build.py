@@ -13,8 +13,8 @@ head = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Anvil Order Planner</title>
-<meta name="description" content="Find the cheapest Minecraft anvil order for your enchantments, Java and Bedrock.">
+<title>Survival Toolkit</title>
+<meta name="description" content="Anvil enchanting planner and potion brewing guide for Minecraft, Java and Bedrock.">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -28,19 +28,21 @@ body { margin: 0; }
 
 
 def build_page():
-    out = (head + read("style.css") + "</style>\n</head>\n<body>\n" + read("body.html") +
+    body = read("body.html").replace("<!-- brew.html -->\n", read("brew.html"))
+    scripts = ["brew-data.js", "icons.js", "icons2.js", "icons3.js", "ui.js", "brew-ui.js"]
+    out = (head + read("style.css") + read("brew.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
-           read("icons.js") + "\n" + read("icons2.js") + "\n" + read("ui.js") + "</script>\n</body>\n</html>\n")
+           "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")
     (root / "index.html").write_text(out)
     print(f"index.html: {len(out)} bytes")
 
 
 # ---------- Icons ----------
-# The favicon is the page's own "ui:logo" pixel template from src/icons2.js,
+# The favicon is the page's own "ui:logo" pixel template from src/icons3.js,
 # drawn with the same outline rule as the browser renderer so both match.
 
 def logo_pixels():
-    icons, icons2 = read("icons.js"), read("icons2.js")
+    icons, icons2 = read("icons.js"), read("icons2.js") + read("icons3.js")
     t, m, s = re.search(r'"ui:logo":\s*\{ t: "(\w+)", m: "(\w+)", s: "(\w+)" \}', icons2).groups()
     rows = re.findall(r'"([^"]*)"', re.search(rf"\b{t}: \[(.*?)\]", icons2, re.S).group(1))
     colors = lambda name: re.findall(r"#[0-9a-fA-F]{6}", re.search(rf"\b{name}:\s*\[([^\]]*)\]", icons).group(1))

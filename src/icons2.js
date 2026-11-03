@@ -329,7 +329,6 @@ function stoneTile() {
 
 Object.assign(ICONS, {
   "ui:anvil":   { t: "anvil", m: "stone" },
-  "ui:logo":    { t: "logo", m: "iron", s: "purple" },
   "ui:book":    { t: "book", m: "book", s: "string" },
   "ui:orb":     { t: "orb", m: "xp" },
   "ui:grass":   { gen: grassBlock },

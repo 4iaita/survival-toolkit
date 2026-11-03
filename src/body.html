@@ -4,10 +4,10 @@
       <img class="ico logo" data-icon="ui:logo" alt="" width="64" height="64">
       <div>
         <div class="title-row">
-          <h1>Anvil Order Planner</h1>
-          <span class="splash" aria-hidden="true">Never Too Expensive!</span>
+          <h1>Survival Toolkit</h1>
+          <span class="splash" id="splash" aria-hidden="true">Never Too Expensive!</span>
         </div>
-        <p class="lede">Pick your edition, the item and the books you have. The planner finds the anvil order that costs the least XP, with no job over 39 levels.</p>
+        <p class="lede">Planners for the fiddly parts of survival: enchanting on an anvil and brewing potions, for Java and Bedrock.</p>
       </div>
     </div>
     <div class="edition" id="edition" role="group" aria-label="Game edition">
@@ -15,6 +15,14 @@
       <button type="button" class="mc-btn" id="ed-bedrock" data-ed="bedrock"><img class="ico" data-icon="ui:bedrock" alt="">Bedrock Edition</button>
     </div>
   </header>
+
+  <nav class="tabs" aria-label="Tools">
+    <a class="mc-btn" href="#anvil" id="tab-anvil"><img class="ico" data-icon="ui:enchant" alt="">Anvil Planner</a>
+    <a class="mc-btn" href="#brewing" id="tab-brewing"><img class="ico" data-icon="ui:potion" alt="">Brewing Guide</a>
+  </nav>
+
+  <section id="view-anvil" aria-label="Anvil Planner">
+  <p class="view-intro">Pick the item and the enchantment books you have. The planner finds the anvil order that costs the least XP, with no job over 39 levels.</p>
 
   <div class="grid">
     <div class="col">
@@ -84,4 +92,7 @@
       <li>Icons are original pixel art drawn for this page.</li>
     </ul>
   </details>
+  </section>
+
+<!-- brew.html -->
 </div>

@@ -1,0 +1,52 @@
+  <section id="view-brewing" aria-label="Brewing Guide" hidden>
+    <p class="view-intro">Pick a potion and how you want it. The guide lists every brewing step, what goes into the stand, and how many ingredients and blaze powder you need.</p>
+    <div class="grid">
+      <div class="col">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Potion</h2>
+            <span class="picked-name" id="potion-name"></span>
+          </div>
+          <div class="cats" id="potions"></div>
+        </section>
+
+        <section class="panel">
+          <h2>How to brew it</h2>
+          <div class="choices">
+            <div>
+              <div class="choice-label">Strength</div>
+              <div class="choice-row" id="brew-mod" role="group" aria-label="Potion strength"></div>
+              <div class="choice-hint" id="brew-mod-hint"></div>
+            </div>
+            <div>
+              <div class="choice-label">Bottle</div>
+              <div class="choice-row" id="brew-form" role="group" aria-label="Bottle type"></div>
+            </div>
+            <div>
+              <div class="choice-label">How many bottles</div>
+              <div class="stepper">
+                <button type="button" class="mc-btn sm" id="brew-less" aria-label="Fewer bottles">−</button>
+                <output id="brew-count" aria-live="polite">3</output>
+                <button type="button" class="mc-btn sm" id="brew-more" aria-label="More bottles">+</button>
+              </div>
+              <div class="choice-hint">A brewing stand holds 3 bottles, so ingredients are counted per batch of 3.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="panel result" id="brew-result" aria-live="polite"></aside>
+    </div>
+
+    <details class="panel rules">
+      <summary>How brewing works</summary>
+      <ul>
+        <li>Each step puts one ingredient in the top slot and brews up to three bottles below it. A step takes 20 seconds and uses one charge of fuel; one blaze powder gives 20 charges.</li>
+        <li>Most potions start as an Awkward Potion: water bottles brewed with nether wart. Weakness is the exception and starts straight from water bottles.</li>
+        <li>Redstone Dust makes the effect last longer. Glowstone Dust makes it stronger but shorter. A potion takes one or the other, not both.</li>
+        <li>A Fermented Spider Eye corrupts a potion into another one, such as Swiftness into Slowness or Night Vision into Invisibility.</li>
+        <li>Gunpowder turns a potion into a splash potion with the same duration. Dragon’s Breath turns a splash potion into a lingering one, whose cloud gives a quarter of the duration.</li>
+        <li>On Bedrock, extended Regeneration and Poison last 2:00 instead of 1:30, and Poison II lasts 0:22 instead of 0:21.</li>
+      </ul>
+    </details>
+  </section>
