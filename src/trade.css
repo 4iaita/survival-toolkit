@@ -176,6 +176,28 @@
 .pill.earn { background: var(--xp-shadow); color: var(--xp); }
 .pill.buy { background: var(--slot-lo); color: var(--white); }
 .trade.hit { background: var(--picked); box-shadow: inset 0 0 0 2px var(--picked-edge); }
+/* Trades that hand over one of several kinds: a toggle for the list of every kind, then the list itself. */
+.kinds-btn {
+  display: inline-flex; align-items: center; gap: 6px; margin: 4px 0 0 8px; padding: 3px 7px 4px; vertical-align: 1px;
+  font: 800 11.5px/1 var(--font-body); color: var(--ink); cursor: pointer;
+  background: var(--panel); border: 2px solid var(--edge);
+  box-shadow: inset 2px 2px 0 var(--panel-hi), inset -2px -2px 0 var(--panel-lo);
+}
+.kinds-btn:hover { border-color: var(--white); }
+.kinds-btn::after { content: ""; border: 4px solid transparent; border-top-color: currentColor; margin-top: 4px; }
+.kinds-btn[aria-expanded="true"]::after { border-top-color: transparent; border-bottom-color: currentColor; margin: -4px 0 0; }
+.kinds {
+  flex-basis: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 4px 10px;
+  margin-top: 2px; padding-top: 8px; border-top: 2px solid rgba(0, 0, 0, .12);
+}
+.kinds-note { grid-column: 1 / -1; margin: 0 0 4px; font-size: 12.5px; color: var(--ink-soft); }
+.kind { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; font-weight: 700; line-height: 1.2; }
+.kind .slot.sm { width: 32px; height: 32px; }
+.kind .ico { width: 24px; height: 24px; }
+.kind-name { min-width: 0; }
+.kind-detail { display: block; font-weight: 500; font-size: 11.5px; color: var(--ink-soft); }
+.kind.hit .kind-name { color: var(--picked-edge); }
+.kind.here .slot { box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi), 0 0 0 2px var(--picked-edge); }
 @media (prefers-reduced-motion: no-preference) {
   .lvl.flash .trades { animation: flash 1.2s ease-out; }
   @keyframes flash { from { outline: 3px solid var(--yellow); outline-offset: 3px; } to { outline: 3px solid transparent; outline-offset: 3px; } }

@@ -16,7 +16,7 @@ The source lives in `src/`:
 
 - `solver.js`: enchantment data and the anvil merge-order search
 - `brew-data.js`: potion recipes and durations
-- `trade-data.js`: villager trades by profession and level
+- `trade-data.js`: villager trades by profession and level, the kinds an item can come in (colors, tipped arrows, boat woods) and the enchantments villager gear can carry
 - `icons.js` … `icons4.js`: original 16×16 pixel-art icons, drawn from text templates (used where the texture pack has no match)
 - `art.js`, `icons5.js`: texture pack icons and which item uses which texture, including job site blocks and village biomes
 - `villager.js`: the villager scene: the pack's villager model and skins for each biome and profession, beside its job site block as a 3D block model, turned together by dragging

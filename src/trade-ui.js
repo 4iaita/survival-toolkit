@@ -56,28 +56,91 @@ async function drawBusts() {
   }
 }
 
-// A trade matches the search by any item name; enchantment names match the librarian's random books.
+// What an item in a trade can turn out to be, or null: list, its kinds; cycle, whether its slot steps
+// through them (enchanted things look the same whatever they carry, so they stay still); button, the label
+// of the button that shows the list; note, a line above the list.
+const inEdition = k => ENCH[k] && (!ENCH[k].only || ENCH[k].only === state.edition);
+const enchantKind = k => ({ name: ENCH[k].n, short: ENCH[k].n, icon: `e:${k}` });
+const GEAR = /^Enchanted (?:.+ )?(Helmet|Chestplate|Leggings|Boots|Sword|Axe|Pickaxe|Shovel|Bow|Crossbow|Fishing Rod)$/;
+function kindsOf(it) {
+  if (it.name === "Enchanted Book") {
+    const list = Object.keys(ENCH).filter(k => !UNSOLD_BOOKS.includes(k) && inEdition(k))
+      .map(k => ({ ...enchantKind(k), detail: ENCH[k].max > 1 ? `I–${ROMAN[ENCH[k].max]}` : "" }));
+    return { list, cycle: false, button: `All ${list.length} enchantments`,
+      note: "One enchantment, at any of its levels: anything but Soul Speed, Swift Sneak and Wind Burst." };
+  }
+  const gear = it.name.match(GEAR);
+  if (gear) {
+    const keys = [...TABLE_ENCHANTS[gear[1]], ...((state.edition === "bedrock" && BEDROCK_TABLE_EXTRA[gear[1]]) || [])];
+    const list = keys.filter(inEdition).map(enchantKind);
+    return { list, cycle: false, button: `${list.length} possible enchantments`,
+      note: "Enchanted like an enchanting table at level 5 to 19: one or more of these, never Mending or another treasure enchantment." };
+  }
+  const kinds = KINDS[it.name];
+  return kinds ? { list: kinds.list, cycle: true, button: `All ${kinds.list.length} ${kinds.noun}`, note: kinds.note } : null;
+}
+const kindHit = (k, q) => Boolean(q) && k.name.toLowerCase().includes(q);
+// The kinds a slot steps through: the ones the search matches, if any; otherwise all of them, starting with
+// the kind the villager's biome gives.
+function cycleKinds(list, q) {
+  const hits = list.filter(k => kindHit(k, q));
+  if (hits.length) return hits;
+  const first = Math.max(0, list.findIndex(k => k.biomes && k.biomes.includes(trade.biome)));
+  return [...list.slice(first), ...list.slice(0, first)];
+}
+
+// A trade matches the search by any item name or kind (so an enchantment name finds the gear that can carry it).
 function matches(t, q) {
   if (!q) return false;
-  if ([...t.wants, t.gives].some(it => it.name.toLowerCase().includes(q))) return true;
+  const items = [...t.wants, t.gives];
+  if (items.some(it => it.name.toLowerCase().includes(q) || (kindsOf(it)?.list || []).some(k => kindHit(k, q)))) return true;
   return t.gives.name === "Enchanted Book" && ENCH_NAMES.some(n => n.includes(q));
 }
 
-function itemSlot(it) {
+// An item's slot. For an item that comes in several kinds, the slot steps through them (data-cycle: their
+// icon keys); see the timer at the bottom.
+function itemSlot(it, q) {
   const { key, glint } = tradeIcon(it.name);
   const count = /^\d+$/.test(it.count) && +it.count > 1 ? `<span class="count">${it.count}</span>` : "";
+  const kinds = kindsOf(it);
+  if (kinds && kinds.cycle) {
+    const keys = cycleKinds(kinds.list, q).map(k => tradeIcon(k.name).key);
+    return `<span class="slot sm" data-cycle="${esc(keys.join("|"))}">${iconImg(keys[cycleStep % keys.length])}${count}</span>`;
+  }
   return glint
     ? `<span class="slot sm glint" style="--m:url('${icon(key)}')">${iconImg(key)}${count}</span>`
     : `<span class="slot sm">${iconImg(key)}${count}</span>`;
 }
 
-function tradeRow(t, q) {
+// One kind in a trade's list of kinds: its icon and name, the search's matches marked, and for boats the
+// biomes that use it, noting the one the picked villager comes from.
+function kindChip(k, q) {
+  const here = Boolean(k.biomes) && k.biomes.includes(trade.biome);
+  const detail = [k.detail, here && "this villager"].filter(Boolean).join(" · ");
+  return `<span class="kind${kindHit(k, q) ? " hit" : ""}${here ? " here" : ""}">
+    <span class="slot sm">${iconImg(k.icon || tradeIcon(k.name).key)}</span>
+    <span class="kind-name">${esc(k.short)}${detail ? `<span class="kind-detail">${esc(detail)}</span>` : ""}</span>
+  </span>`;
+}
+
+// A trade. id names it (villager, level, place) so a list of its kinds stays open while the page redraws.
+const openKinds = new Set();
+function tradeRow(t, q, id) {
   const { verb, html } = deal(t);
-  const note = t.note ? `<span class="sub">${esc(t.note[0].toUpperCase() + t.note.slice(1))}</span>` : "";
+  const varying = [t.gives, ...t.wants].find(it => kindsOf(it));
+  const kinds = varying ? kindsOf(varying) : null, open = Boolean(kinds) && openKinds.has(id);
+  const more = kinds
+    ? `<button type="button" class="kinds-btn" data-kinds="${id}" aria-expanded="${open}" aria-controls="kinds-${id}">${kinds.button}</button>` : "";
+  const noteText = t.note ? esc(t.note[0].toUpperCase() + t.note.slice(1)) : kinds && !kinds.cycle ? "Random enchantments" : "";
+  const note = noteText || more ? `<span class="sub">${noteText}${more}</span>` : "";
+  const list = kinds ? `<div class="kinds" id="kinds-${id}"${open ? "" : " hidden"}>
+    ${kinds.note ? `<p class="kinds-note">${esc(kinds.note)}</p>` : ""}${kinds.list.map(k => kindChip(k, q)).join("")}
+  </div>` : "";
   return `
   <li class="trade${matches(t, q) ? " hit" : ""}">
-    <div class="trade-slots">${t.wants.map(itemSlot).join('<span class="op">+</span>')}${iconImg("ui:arrow")}${itemSlot(t.gives)}</div>
+    <div class="trade-slots">${t.wants.map(it => itemSlot(it, q)).join('<span class="op">+</span>')}${iconImg("ui:arrow")}${itemSlot(t.gives, q)}</div>
     <div class="trade-text"><span class="pill ${verb === "Sell" ? "earn" : "buy"}">${verb}</span>${html}${note}</div>
+    ${list}
   </li>`;
 }
 
@@ -127,7 +190,7 @@ function renderTradeResult() {
     ${v.trades.map((list, i) => `
       <section class="lvl" id="trade-level-${i}">
         <div class="lvl-head">${levelBadge(i, "h3")}<span class="lvl-note">${offers(list)}</span></div>
-        <ul class="trades">${list.map(t => tradeRow(t, q)).join("")}</ul>
+        <ul class="trades">${list.map((t, j) => tradeRow(t, q, `${v.k}-${i}-${j}`)).join("")}</ul>
       </section>`).join("")}`;
 }
 
@@ -197,7 +260,14 @@ $("biomes").addEventListener("click", e => {
 });
 $("trade-result").addEventListener("click", e => {
   const b = e.target.closest("button[data-level]");
-  if (b) showLevel(+b.dataset.level);
+  if (b) return showLevel(+b.dataset.level);
+  const more = e.target.closest("button[data-kinds]");
+  if (!more) return;
+  const id = more.dataset.kinds, open = !openKinds.has(id);
+  if (open) openKinds.add(id);
+  else openKinds.delete(id);
+  more.setAttribute("aria-expanded", open);
+  $(`kinds-${id}`).hidden = !open;
 });
 $("trade-results").addEventListener("click", e => {
   const s = e.target.closest("button[data-suggest]");
@@ -214,6 +284,18 @@ $("trade-results").addEventListener("click", e => {
 });
 $("trade-search").addEventListener("input", e => setQuery(e.target.value));
 $("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderTrades(); });
+
+// Slots of items that come in several kinds step through them together, unless the reader asks for less motion.
+const CYCLE_MS = 1400;
+let cycleStep = 0;
+setInterval(() => {
+  if (calmMotion() || document.hidden || $("view-trading").hidden) return;
+  cycleStep++;
+  for (const slot of $("trade-result").querySelectorAll("[data-cycle]")) {
+    const keys = slot.dataset.cycle.split("|");
+    slot.querySelector("img").src = icon(keys[cycleStep % keys.length]);
+  }
+}, CYCLE_MS);
 
 $("trade-search").value = trade.query;
 renderTrades();

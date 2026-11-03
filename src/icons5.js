@@ -73,12 +73,23 @@ const ART_TRADES = {
   "Leather Cap": L("leather_helmet"), "Leather Tunic": L("leather_chestplate"), "Leather Pants": L("leather_leggings"),
   "Leather Boots": L("leather_boots"), "Leather Horse Armor": L("leather_horse_armor"),
 };
+// Colored kinds, for the trades that hand over any color: wool, carpet, terracotta, glazed terracotta, beds,
+// and leather armor, which the pack only has in brown, so it is dyed by recoloring its shading.
+const LEATHER = { "Leather Cap": "leather_helmet", "Leather Tunic": "leather_chestplate", "Leather Pants": "leather_leggings",
+  "Leather Boots": "leather_boots", "Leather Horse Armor": "leather_horse_armor" };
 for (const color of Object.keys(DYES)) {
   const name = color.replace(/(^| )\w/g, s => s.toUpperCase()), file = color.replace(" ", "_");
   ART_TRADES[`${name} Wool`] = C(`${file}_wool`);
   ART_TRADES[`${name} Carpet`] = C(`${file}_wool`);
   ART_TRADES[`${name} Dye`] = L(`${file}_dye`);
+  ART_TRADES[`${name} Terracotta`] = C(`${file}_terracotta`);
+  ART_TRADES[`${name} Glazed Terracotta`] = C(`${file}_glazed_terracotta`);
+  ART_TRADES[`${name} Bed`] = L(`${file}_bed`);
+  for (const [item, tex] of Object.entries(LEATHER)) ART_TRADES[`${name} ${item}`] = L([tex, DYES[color]]);
 }
+for (const wood of ["Oak", "Spruce", "Jungle", "Acacia", "Dark Oak"]) ART_TRADES[`${wood} Boat`] = L(`${wood.toLowerCase().replace(" ", "_")}_boat`);
+// Tipped arrows of each potion: the head takes the potion's color.
+for (const p of POTIONS) ART_TRADES[`Arrow of ${p.n}`] = L(["tipped_arrow_base"], ["tipped_arrow_head", p.color]);
 for (const metal of ["Iron", "Chainmail", "Diamond", "Stone", "Golden"]) {
   for (const piece of ["Helmet", "Chestplate", "Leggings", "Boots", "Axe", "Shovel", "Pickaxe", "Hoe", "Sword"]) {
     ART_TRADES[`${metal} ${piece}`] = L(`${metal.toLowerCase()}_${piece.toLowerCase()}`);

@@ -68,7 +68,7 @@ const VILLAGERS = [
       ["26 Flint > Emerald", "2 Emerald > Bow"],
       ["14 String > Emerald", "3 Emerald > Crossbow"],
       ["24 Feather > Emerald", "7–21 Emerald > Enchanted Bow"],
-      ["8 Tripwire Hook > Emerald", "8–22 Emerald > Enchanted Crossbow", "2 Emerald + 5 Arrow > 5 Tipped Arrow"],
+      ["8 Tripwire Hook > Emerald", "8–22 Emerald > Enchanted Crossbow", "2 Emerald + 5 Arrow > 5 Tipped Arrow # random effect"],
     ] },
   { k: "leatherworker", n: "Leatherworker", site: "Cauldron",
     tip: "Buys leather, rabbit hide and flint. Sells dyed leather armor, horse armor and saddles.",
@@ -125,6 +125,59 @@ const VILLAGERS = [
       ["13–27 Emerald > Enchanted Diamond Sword"],
     ] },
 ];
+
+// Some trades hand over one of several kinds of an item: any of the 16 colors, a randomly dyed color, a
+// random tipped arrow, or the boat of the villager's biome. KINDS lists them by the item the trade names: noun
+// for the button that lists them, note for a line above the list, and each kind's name (as the icons and
+// search know it), short (as the list shows it) and detail.
+const COLOR_NAMES = ["White", "Orange", "Magenta", "Light Blue", "Yellow", "Lime", "Pink", "Gray", "Light Gray",
+  "Cyan", "Purple", "Blue", "Brown", "Green", "Red", "Black"];
+const colorKinds = item => COLOR_NAMES.map(c => ({ name: `${c} ${item}`, short: c }));
+// The longer and stronger forms a potion also comes in, as the tipped arrows the fletcher sells do.
+const potionForms = p => ["long" in p.dur && "long", "strong" in p.dur && "II"].filter(Boolean);
+const KINDS = {
+  ...Object.fromEntries(["Wool", "Carpet", "Bed", "Banner", "Terracotta", "Glazed Terracotta"]
+    .map(item => [item, { noun: "colors", list: colorKinds(item) }])),
+  ...Object.fromEntries(["Leather Cap", "Leather Tunic", "Leather Pants", "Leather Boots", "Leather Horse Armor"]
+    .map(item => [item, { noun: "colors", list: colorKinds(item), note: "Dyed a random color, sometimes a mix of two dyes. These are the 16 plain dye colors." }])),
+  "Tipped Arrow": {
+    noun: "effects", note: "A random tipped arrow: any effect a potion can be brewed with, in its long or strong form where it has one.",
+    list: POTIONS.map(p => {
+      const forms = potionForms(p);
+      return { name: `Arrow of ${p.n}`, short: p.short || p.n, detail: forms.length ? `Also ${forms.join(" and ")}` : "" };
+    }),
+  },
+  "Boat": {
+    noun: "wood types",
+    list: [
+      { name: "Oak Boat", short: "Oak", detail: "Plains", biomes: ["plains"] },
+      { name: "Spruce Boat", short: "Spruce", detail: "Snowy, taiga", biomes: ["snowy", "taiga"] },
+      { name: "Jungle Boat", short: "Jungle", detail: "Desert, jungle", biomes: ["desert", "jungle"] },
+      { name: "Acacia Boat", short: "Acacia", detail: "Savanna", biomes: ["savanna"] },
+      { name: "Dark Oak Boat", short: "Dark Oak", detail: "Swamp", biomes: ["swamp"] },
+    ],
+  },
+};
+
+// Enchanted books from librarians carry one enchantment, at any level: any but UNSOLD_BOOKS.
+const UNSOLD_BOOKS = ["soul_speed", "swift_sneak", "wind_burst"];
+// Enchanted gear from villagers is enchanted like an enchanting table at level 5 to 19: one or more of the
+// enchantments the table gives that kind of item, never treasure ones. Bedrock's table also gives axes
+// Sharpness, Smite and Bane of Arthropods; Sweeping Edge is Java only (see ENCH).
+const PROTECTIONS = ["protection", "fire_protection", "blast_protection", "projectile_protection"];
+const MINING = ["efficiency", "fortune", "silk_touch", "unbreaking"];
+const TABLE_ENCHANTS = {
+  Helmet: [...PROTECTIONS, "respiration", "aqua_affinity", "unbreaking"],
+  Chestplate: [...PROTECTIONS, "thorns", "unbreaking"],
+  Leggings: [...PROTECTIONS, "unbreaking"],
+  Boots: [...PROTECTIONS, "feather_falling", "depth_strider", "unbreaking"],
+  Sword: ["sharpness", "smite", "bane_of_arthropods", "knockback", "fire_aspect", "looting", "sweeping_edge", "unbreaking"],
+  Axe: MINING, Pickaxe: MINING, Shovel: MINING,
+  Bow: ["power", "punch", "flame", "infinity", "unbreaking"],
+  Crossbow: ["multishot", "piercing", "quick_charge", "unbreaking"],
+  "Fishing Rod": ["luck_of_the_sea", "lure", "unbreaking"],
+};
+const BEDROCK_TABLE_EXTRA = { Axe: ["sharpness", "smite", "bane_of_arthropods"] };
 
 function parseTrade(text) {
   const [main, note = ""] = text.split(" # ");

@@ -19,6 +19,24 @@ Object.assign(MAT, {
 });
 
 Object.assign(TPL, {
+  // A banner hanging from its crossbar: 1-4 the cloth (any dye color), a-d the wood.
+  banner: [
+    "................",
+    "..abbbbbbbbbbc..",
+    "...1111111111...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...1222222223...",
+    "...3333333334...",
+    ".......bc.......",
+  ],
   ingot: [
     "................",
     "................",
@@ -191,7 +209,7 @@ const TRADE_ICONS = {
   "Paper": { t: "paper", m: "string", s: "stone" }, "Empty Map": { t: "paper", m: "map", s: "map" },
   "Village Map": { t: "paper", m: "map", s: "green" }, "Ocean Explorer Map": { t: "paper", m: "map", s: "water" },
   "Trial Explorer Map": { t: "paper", m: "map", s: "orange" }, "Woodland Explorer Map": { t: "paper", m: "map", s: "emerald" },
-  "Banner": { t: "paper", m: "string", s: "red" }, "Globe Banner Pattern": { t: "paper", m: "map", s: "water" },
+  "Banner": { t: "banner", m: "string", s: "wood" }, "Globe Banner Pattern": { t: "paper", m: "map", s: "water" },
   "Wheat": { t: "wheat", m: "gold", s: "straw" }, "Carrot": { t: "carrot", m: "orange" }, "Golden Carrot": "b:golden_carrot",
   "Potato": { t: "potato", m: "potato" }, "Beetroot": { t: "orb", m: "beet" }, "Apple": { t: "orb", m: "red" },
   "Sweet Berries": { t: "orb", m: "red" }, "Cookie": { t: "orb", m: "cooked" }, "Pumpkin Pie": { t: "orb", m: "orange" },
@@ -234,6 +252,8 @@ function tradeSpec(name) {
   if (name === "Wool" || name === "Carpet") return { gen: blockGen(DYES.white, 30) };
   m = name.match(/^(.+) Dye$/);
   if (m && DYES[m[1].toLowerCase()]) return { t: "dust", c: shades(DYES[m[1].toLowerCase()]) };
+  m = name.match(/^(.+) Banner$/);
+  if (m && DYES[m[1].toLowerCase()]) return { t: "banner", s: "wood", c: shades(DYES[m[1].toLowerCase()]) };
   m = name.match(/^(Iron|Chainmail|Diamond|Leather|Stone) (.+)$/);
   if (m && ARMOR_TPL[m[2]]) return { t: ARMOR_TPL[m[2]], m: ARMOR_MAT[m[1]], s: "wood" };
   return { gen: blockGen("#8b8b8b", 31) };

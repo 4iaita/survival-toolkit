@@ -44,13 +44,15 @@ FILES = {
     "map": "items/map_empty", "filled_map": "items/map_filled", "ocean_explorer_map": "items/map_monument",
     "woodland_explorer_map": "items/map_mansion", "trial_explorer_map": "items/map_trial_chambers",
     "mutton": "items/mutton_raw", "nether_wart": "items/nether_wart", "oak_boat": "items/boat_oak", "painting": "items/painting",
+    "spruce_boat": "items/boat_spruce", "jungle_boat": "items/boat_jungle", "acacia_boat": "items/boat_acacia",
+    "dark_oak_boat": "items/boat_dark_oak",
     "paper": "items/paper", "phantom_membrane": "items/phantom_membrane", "porkchop": "items/porkchop_raw", "potato": "items/potato",
     "potion": "items/potion_bottle_drinkable", "splash_potion": "items/potion_bottle_splash",
     "lingering_potion": "items/potion_bottle_lingering", "potion_heal": "items/potion_bottle_heal",
     "splash_potion_heal": "items/potion_bottle_splash_heal", "lingering_potion_heal": "items/potion_bottle_lingering_heal",
     "pufferfish": "items/fish_pufferfish_raw", "pumpkin_pie": "items/pumpkin_pie", "quartz": "items/quartz",
     "rabbit": "items/rabbit_raw", "rabbit_foot": "items/rabbit_foot", "rabbit_hide": "items/rabbit_hide",
-    "rabbit_stew": "items/rabbit_stew", "red_bed": "items/bed_red", "redstone": "items/redstone_dust",
+    "rabbit_stew": "items/rabbit_stew", "redstone": "items/redstone_dust",
     "rotten_flesh": "items/rotten_flesh", "saddle": "items/saddle", "salmon": "items/fish_salmon_raw", "scute": "items/turtle_shell_piece",
     "shears": "items/shears", "spear": "items/spear/diamond_spear", "spider_eye": "items/spider_eye", "stick": "items/stick",
     "string": "items/string", "sugar": "items/sugar", "suspicious_stew": "items/suspicious_stew", "sweet_berries": "items/sweet_berries",
@@ -118,7 +120,6 @@ FILES = {
     "door_spruce_upper": "blocks/door_spruce_upper", "door_spruce_lower": "blocks/door_spruce_lower",
     "door_acacia_upper": "blocks/door_acacia_upper", "door_acacia_lower": "blocks/door_acacia_lower",
     "smooth_sandstone": "blocks/sandstone_smooth", "chiseled_sandstone": "blocks/sandstone_carved",
-    "orange_terracotta": "blocks/hardened_clay_stained_orange", "yellow_terracotta": "blocks/hardened_clay_stained_yellow",
     "hay_side": "blocks/hay_block_side", "wheat_crop": "blocks/wheat_stage_7", "dirt": "blocks/dirt", "packed_ice": "blocks/ice_packed",
     "poppy": "blocks/flower_rose", "dandelion": "blocks/flower_dandelion", "cornflower": "blocks/flower_cornflower",
     "short_grass": "blocks/tallgrass", "fern": "blocks/fern", "dead_bush": "blocks/deadbush",
@@ -128,8 +129,12 @@ FILES = {
     "large_fern_bottom": "blocks/double_plant_fern_bottom", "mossy_stone_bricks": "blocks/stonebrick_mossy",
 }
 for color in COLORS:
+    pack_color = "silver" if color == "light_gray" else color
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"
-    FILES[f"{color}_wool"] = f"blocks/wool_colored_{'silver' if color == 'light_gray' else color}"
+    FILES[f"{color}_wool"] = f"blocks/wool_colored_{pack_color}"
+    FILES[f"{color}_terracotta"] = f"blocks/hardened_clay_stained_{pack_color}"
+    FILES[f"{color}_glazed_terracotta"] = f"blocks/glazed_terracotta_{pack_color}"
+    FILES[f"{color}_bed"] = f"items/bed_{pack_color}"
 for metal, file in METALS.items():
     for piece in PIECES:
         path = pack / f"items/{file}_{piece}.png"
