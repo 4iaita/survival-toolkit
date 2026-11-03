@@ -1,12 +1,13 @@
 /* ---------- Texture pack icons ----------
  * Point icons at texture pack art where the pack has the item. Each spec is layers (flat item),
- * cube: [left, top, right] face layers, shape: a drawn silhouette filled with a texture, or rod: an upright rod block.
+ * cube: [left, top, right] face layers, boxes: a block model made of boxes, or rod: an upright rod block.
  * Entries whose textures are missing are skipped.
  */
 const TIPPED = "#8932b8";
 const L = (...names) => ({ layers: names.map(n => (Array.isArray(n) ? n : [n])) });
 const C = (side, top = side, right = side) => ({ cube: [[[side]], [[top]], [[right]]] });
-const ANVIL = { shape: "anvil", art: "anvil" };
+// The anvil model: base, step, waist and the long top, in block units.
+const ANVIL = { boxes: [[2, 0, 2, 14, 4, 14], [4, 4, 3, 12, 5, 13], [6, 5, 4, 10, 10, 12], [3, 10, 0, 13, 16, 16]], art: "anvil", top: "anvil_top" };
 const GRASS_CUBE = C("grass_block_side", "grass_block_top");
 
 const ART_ICONS = {
