@@ -1,61 +1,171 @@
 
-/* Villager trades */
-/* The picked villager standing beside its job site block, on its biome's ground. */
+/* ---------- Villager trades ---------- */
+/* Villager panel: the scene and its biome bar beside the profession picker; stacked on phones. */
+.villager-panel { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 18px 26px; align-items: start; }
+@media (max-width: 880px) { .villager-panel { grid-template-columns: minmax(0, 1fr); } }
+
+/* The picked villager beside its job site block, under its biome's sky and on its ground. */
 .stage {
-  position: relative; height: 188px; margin-top: 14px; overflow: hidden;
-  display: flex; align-items: flex-end; justify-content: center; gap: 22px; padding-bottom: 22px;
-  background: linear-gradient(#5f8ff2, #a9c9ff 78%);
+  --sky: #6f9cf5; --haze: #bcd5ff;
+  position: relative; height: 268px; overflow: hidden;
+  display: flex; align-items: flex-end; justify-content: center; gap: 4px; padding: 0 12px 22px;
+  background: linear-gradient(var(--sky), var(--haze) 78%);
   box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi);
 }
-.stage::after {
-  content: ""; position: absolute; left: 2px; right: 2px; bottom: 2px; height: 34px;
-  background: var(--ground, #5fae3a) 0 0 / 32px 32px repeat;
-  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .18), inset 0 -2px 0 rgba(0, 0, 0, .35);
+.stage[data-biome="desert"] { --sky: #7fb0ee; --haze: #f1dfb4; }
+.stage[data-biome="savanna"] { --sky: #79a9e6; --haze: #f0d29c; }
+.stage[data-biome="snowy"] { --sky: #9db6e4; --haze: #eef3fb; }
+.stage[data-biome="taiga"] { --sky: #6c90c6; --haze: #c8d8e6; }
+.stage[data-biome="jungle"] { --sky: #5c9ce2; --haze: #c4e6c6; }
+.stage[data-biome="swamp"] { --sky: #5f7d97; --haze: #b1bd9f; }
+/* Flat blocky clouds, and the ground: the biome's top texture, darker toward the front. */
+.stage::before {
+  content: ""; position: absolute; top: 34px; left: 8%; width: 44px; height: 12px;
+  background: rgba(255, 255, 255, .78);
+  box-shadow: 20px -8px 0 rgba(255, 255, 255, .78), 236px 20px 0 rgba(255, 255, 255, .62), 262px 12px 0 rgba(255, 255, 255, .62);
 }
-.stage img { position: relative; z-index: 1; image-rendering: pixelated; flex: none; }
-.stage-villager { width: 72px; height: 136px; }
-.stage-block { width: 64px; height: 64px; margin-bottom: -10px; }
-.villager-facts { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 12px; }
-.fact { display: flex; flex-direction: column; min-width: 0; }
-.site-name { font-weight: 800; font-size: 15px; line-height: 1.25; }
-.slot-btn.biome { width: 40px; height: 40px; }
-.slot-btn.biome .ico { width: 28px; height: 28px; }
+.stage::after {
+  content: ""; position: absolute; left: 2px; right: 2px; bottom: 2px; height: 48px;
+  background: linear-gradient(rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, .3)), var(--ground, #5fae3a) 0 0 / 32px 32px repeat;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, .22), inset 0 -2px 0 rgba(0, 0, 0, .35);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stage::before { animation: clouds 45s linear infinite alternate; }
+  @keyframes clouds { to { transform: translateX(70px); } }
+}
+.stage > * { position: relative; z-index: 1; }
+.actor { display: flex; flex-direction: column; align-items: center; margin-bottom: -4px; }
+.stage-villager { width: 140px; height: 200px; image-rendering: pixelated; cursor: grab; touch-action: pan-y; }
+.stage-villager:active { cursor: grabbing; }
+.stage-villager:focus-visible { outline-offset: -3px; }
+.nametag {
+  margin-bottom: -6px; padding: 3px 7px 4px; white-space: nowrap;
+  font: 400 15px/1 var(--font-pixel); color: var(--white); background: rgba(0, 0, 0, .45);
+}
+.stage-block { width: 80px; height: 80px; image-rendering: pixelated; margin-bottom: 4px; flex: none; }
+.stage-hint {
+  position: absolute; top: 9px; right: 10px; z-index: 2; display: flex; align-items: center; gap: 6px;
+  font: 400 13px/1 var(--font-pixel); color: var(--white); text-shadow: 1px 1px 0 rgba(0, 0, 0, .5);
+  transition: opacity .6s; pointer-events: none;
+}
+.stage.turned .stage-hint { opacity: 0; }
 
+/* Biome picker, drawn like the hotbar: one strip of slots with a white frame round the picked one. */
+.biome-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; }
+.biome-label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.biome-label .cat-label { margin: 0; }
+.biome-name { font: 600 19px/1 var(--font-pixel); color: var(--ink); }
+.hotbar { display: flex; flex-wrap: wrap; padding: 2px; background: var(--slot-lo); border: 2px solid var(--edge); }
+.hotbar .slot-btn { width: 40px; height: 40px; }
+.hotbar .slot-btn .ico { width: 28px; height: 28px; }
+.hotbar .slot-btn[aria-pressed="true"] {
+  z-index: 2; background: var(--slot);
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--edge), inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi);
+}
+
+/* Profession picker: each villager's head in a slot, with its name. */
+.villager-pick h2 { margin-bottom: 12px; }
+.prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.prof {
+  display: flex; align-items: center; gap: 9px; min-width: 0; padding: 3px 8px 3px 3px; text-align: left; cursor: pointer;
+  font: 800 13.5px/1.15 var(--font-body); color: var(--ink);
+  background: var(--well); border: 2px solid transparent;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .5), inset -2px -2px 0 rgba(0, 0, 0, .16);
+}
+.prof:hover { background: #d3d3d3; }
+.prof[aria-pressed="true"] { background: var(--picked); border-color: var(--picked-edge); box-shadow: none; }
+.prof-name { min-width: 0; overflow-wrap: anywhere; }
+.prof-site { display: block; margin-top: 2px; font-weight: 600; font-size: 12px; color: var(--ink-soft); }
+.bust {
+  width: 38px; height: 38px; flex: none; image-rendering: pixelated;
+  background: var(--slot); box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi);
+}
+.bust.lg { width: 56px; height: 56px; }
+@media (max-width: 520px) {
+  .prof-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .prof { gap: 7px; padding-right: 4px; font-size: 12.5px; letter-spacing: -.01em; }
+  .prof .bust { width: 32px; height: 32px; }
+  .prof-site { display: none; }
+}
+.site-line { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; font-size: 14px; line-height: 1.4; }
+.site-line .slot { flex: none; }
+.site-line b { font-weight: 800; }
+
+/* Trades beside a search column that stays in view; on phones the search comes first. */
+.trade-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: start; margin-top: 20px; }
+.trade-side { display: flex; flex-direction: column; gap: 20px; min-width: 0; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+.trade-side details.rules { margin-top: 0; }
+.trade-side details.rules ul { font-size: 14px; }
+@media (max-width: 880px) {
+  .trade-grid { grid-template-columns: minmax(0, 1fr); }
+  .trade-side { position: static; order: -1; }
+}
+
+/* Search */
+.search-box { position: relative; }
+.search-icon { position: absolute; left: 12px; top: 50%; margin-top: -7px; color: #8f8f8f; pointer-events: none; }
 .mc-input {
   width: 100%; margin-top: 2px; border-radius: 0;
   font: 600 15px/1.2 var(--font-body); color: var(--white);
-  background: #000; border: 2px solid #a0a0a0; padding: 9px 10px;
+  background: #000; border: 2px solid #a0a0a0; padding: 9px 10px 9px 36px;
 }
 .mc-input::placeholder { color: #8f8f8f; }
+.mc-input:focus { border-color: var(--white); outline: none; }
 .search-results { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
+@media (min-width: 881px) { .search-results { max-height: min(56vh, 540px); overflow-y: auto; } }
 .search-results .choice-hint { margin: 0; }
+.suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.suggest .mc-btn { font-size: 13px; padding: 5px 9px 7px; }
 .search-hit {
   display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 10px;
   width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
-  background: transparent; border: 2px solid transparent; padding: 4px 6px;
+  background: transparent; border: 2px solid transparent; padding: 3px 6px 3px 3px;
 }
 .search-hit:hover { background: #d3d3d3; }
-.search-hit .who { font-weight: 800; font-size: 14px; }
-.search-hit .deal { font-size: 13px; color: var(--ink-soft); }
+.search-hit .bust { width: 34px; height: 34px; }
+.search-hit .who { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 8px; font-weight: 800; font-size: 14px; }
+.search-hit .deal { display: block; font-size: 13px; color: var(--ink-soft); }
+.search-hit .deal b { color: var(--ink); }
 
-.lvl { padding: 6px 18px 10px; }
-.lvl-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
-.badge { font: 600 15px/1 var(--font-pixel); color: #1b1b1b; padding: 5px 8px 6px; border: 2px solid var(--edge); box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .45), inset -2px -2px 0 rgba(0, 0, 0, .25); }
+/* Trades, one section per level, each marked with the badge a villager wears at that level. */
+.trade-result .res-top { padding: 16px 18px 6px; }
+.trade-result .res-title { gap: 12px; margin-bottom: 4px; }
+.trade-result .res-title h2 { font-size: 24px; }
+.res-sub { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin-top: 3px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0;
+  font: 600 15px/1 var(--font-pixel); color: #1b1b1b; padding: 3px 8px 4px 4px; border: 2px solid var(--edge);
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .45), inset -2px -2px 0 rgba(0, 0, 0, .25);
+}
+.badge .ico { width: 20px; height: 20px; }
 .badge.l0 { background: #a3a3a3; }
 .badge.l1 { background: #e2e2e2; }
 .badge.l2 { background: #f5d04a; }
 .badge.l3 { background: #4ef28e; }
 .badge.l4 { background: #6ff0e0; }
+.level-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
+.level-nav .cat-label { margin: 0 4px 0 0; }
+.level-nav button { cursor: pointer; font-size: 13px; padding: 2px 7px 3px 3px; }
+.level-nav button .ico { width: 16px; height: 16px; }
+.level-nav button:hover { border-color: var(--white); }
+.lvl { padding: 12px 18px 10px; scroll-margin-top: 16px; }
+.lvl:last-child { padding-bottom: 18px; }
+.lvl-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
 .lvl-note { font-size: 12.5px; color: var(--ink-soft); }
 .trades { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .trade {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 10px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 8px 10px;
   background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
 }
 .trade-slots { display: flex; align-items: center; gap: 6px; flex: none; }
-.trade-text { flex: 1 1 180px; min-width: 0; font-size: 14px; font-weight: 700; }
+.trade-text { flex: 1 1 180px; min-width: 0; font-size: 14px; font-weight: 600; }
+.trade-text b { font-weight: 800; }
 .trade-text .sub { display: block; font-weight: 500; font-size: 12.5px; color: var(--ink-soft); }
-.pill { display: inline-block; vertical-align: 1px; margin-right: 6px; padding: 3px 6px 4px; border: 2px solid var(--edge); font: 800 11px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; }
+.pill { display: inline-block; vertical-align: 1px; margin-right: 7px; padding: 3px 6px 4px; border: 2px solid var(--edge); font: 800 11px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; }
 .pill.earn { background: var(--xp-shadow); color: var(--xp); }
 .pill.buy { background: var(--slot-lo); color: var(--white); }
 .trade.hit { background: var(--picked); box-shadow: inset 0 0 0 2px var(--picked-edge); }
+@media (prefers-reduced-motion: no-preference) {
+  .lvl.flash .trades { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { outline: 3px solid var(--yellow); outline-offset: 3px; } to { outline: 3px solid transparent; outline-offset: 3px; } }
+}

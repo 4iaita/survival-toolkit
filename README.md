@@ -19,7 +19,7 @@ The source lives in `src/`:
 - `trade-data.js`: villager trades by profession and level
 - `icons.js` … `icons4.js`: original 16×16 pixel-art icons, drawn from text templates (used where the texture pack has no match)
 - `art.js`, `icons5.js`: texture pack icons and which item uses which texture, including job site blocks and village biomes
-- `villager.js`: original pixel-art villagers, dressed by biome and profession (the pack has no villager skins)
+- `villager.js`: the villager as a 3D model you can turn, with the pack's skins for each biome and profession
 - `ui.js`, `brew-ui.js`, `trade-ui.js`: the three tools and the tool tabs
 - `body.html`, `brew.html`, `trade.html` and the matching `.css` files: the page
 
@@ -31,7 +31,7 @@ python3 build.py
 
 ## Credits
 
-Item and block textures in `art/` come from my own texture pack (Bedrock layout, kept next to this project in `../textures`). Every icon uses them: items, blocks (arranged into isometric icons), enchantments, the page backdrop and the site icon (the chest). The page recolors potion liquid and tipped arrow heads for each effect. Only what the pack doesn’t have (the shield, banner, the arrow between trade slots and the villagers) uses original pixel art drawn from templates in `src/`.
+Item and block textures in `art/` come from my own texture pack (Bedrock layout, kept next to this project in `../textures`). Every icon uses them: items, blocks (arranged into isometric icons), enchantments, villagers (skins in `art/villager/`, drawn on the 3D villager model), the page backdrop and the site icon (the chest). The page recolors potion liquid and tipped arrow heads for each effect. Only what the pack doesn’t have (the shield, banner and the arrow between trade slots) uses original pixel art drawn from templates in `src/`.
 
 To pick up changes to the pack, copy its textures into `art/` and rebuild:
 

@@ -7,7 +7,9 @@ Run after changing the pack, then run build.py:
 """
 import pathlib
 import shutil
+import struct
 import sys
+import zlib
 
 root = pathlib.Path(__file__).parent
 pack = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else root.parent / "textures"
@@ -115,6 +117,60 @@ for metal, file in METALS.items():
         if path.exists():
             FILES[f"{metal}_{piece}"] = f"items/{file}_{piece}"
 
+# Villager skins: art/villager/ name -> file in the pack. The pack keeps its own villagers under
+# scrambled names in oreville/ans; its entity/villager2 files are empty placeholders.
+# Layers: 12 base skins, the outfit of each village biome and of each profession.
+VILLAGER_DIR = "_base/oreville/ans/cxwybzn/nyktkbm_wytmhbn2_"
+VILLAGER = {f"skin_{n}": f"vhlfbbj_{n}.png" for n in range(1, 13)}
+VILLAGER.update({f"biome_{biome}": f"tsxw_{file}.png" for biome, file in {
+    "plains": "fvrtlky", "desert": "nrrwoaf", "savanna": "jfvysxz", "snowy": "ercwnlh",
+    "taiga": "uxzcqwd", "jungle": "jungle", "swamp": "lyuidaf"}.items()})
+VILLAGER.update({f"profession_{job}": f"{file}.tga" for job, file in {
+    "armorer": "kmlueng", "butcher": "amaalfo", "cartographer": "dbpkyyk", "cleric": "jhbmbmf",
+    "farmer": "cmyiayh", "fisherman": "gajncax", "fletcher": "oumexto", "leatherworker": "ehcxrhb",
+    "librarian": "kvrsbvs", "mason": "zcburpx", "shepherd": "uyliprf", "toolsmith": "acsxpro",
+    "weaponsmith": "cytwzec"}.items()})
+
+
+def tga_to_png(src, dst):
+    """Rewrite a 32-bit TGA (plain or run-length) as an RGBA PNG."""
+    d = src.read_bytes()
+    kind, w, h, desc = d[2], d[12] | d[13] << 8, d[14] | d[15] << 8, d[17]
+    pos, px = 18 + d[0], []
+    while len(px) < w * h:
+        if kind == 10 and d[pos] & 128:
+            px += [d[pos + 1:pos + 5]] * ((d[pos] & 127) + 1)
+            pos += 5
+            continue
+        count = (d[pos] & 127) + 1 if kind == 10 else 1
+        pos += kind == 10
+        px += [d[pos + 4 * i:pos + 4 * i + 4] for i in range(count)]
+        pos += 4 * count
+    rows = [px[y * w:(y + 1) * w] for y in range(h)]
+    if not desc & 32:
+        rows.reverse()
+    raw = b"".join(b"\0" + b"".join(bytes((p[2], p[1], p[0], p[3])) for p in row) for row in rows)
+    chunk = lambda tag, data: struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data))
+    dst.write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)) +
+                    chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
+
+
+def import_villagers():
+    out = root / "art" / "villager"
+    out.mkdir(parents=True, exist_ok=True)
+    missing = []
+    for name, file in sorted(VILLAGER.items()):
+        src = pack / f"{VILLAGER_DIR}{file}"
+        if not src.exists():
+            missing.append(file)
+        elif src.suffix == ".tga":
+            tga_to_png(src, out / f"{name}.png")
+        else:
+            shutil.copyfile(src, out / f"{name}.png")
+    print(f"art/villager/: {len(VILLAGER) - len(missing)} villager skins")
+    if missing:
+        print("missing villager skins:", ", ".join(missing))
+
 
 def main():
     out = root / "art"
@@ -129,6 +185,7 @@ def main():
     print(f"art/: {len(FILES) - len(missing)} textures from {pack}")
     if missing:
         print("missing (the drawn icon is used instead):", ", ".join(missing))
+    import_villagers()
 
 
 if __name__ == "__main__":

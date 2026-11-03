@@ -32,7 +32,7 @@ def build_page():
                "villager.js", "trade-data.js", "ui.js", "brew-ui.js", "trade-ui.js"]
     out = (head + read("style.css") + read("brew.css") + read("trade.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
-           art_script() + "\n" + "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")
+           art_script() + "\n" + skins_script() + "\n" + "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")
     (root / "index.html").write_text(out)
     print(f"index.html: {len(out)} bytes")
 
@@ -104,6 +104,13 @@ def art_script():
     files = sorted((root / "art").glob("*.png"))
     entries = ",".join(f'"{f.stem}":"{base64.b64encode(read_png(f)).decode()}"' for f in files)
     return f"const ART = {{{entries}}};"
+
+
+def skins_script():
+    """Villager skins from art/villager/, kept as PNG data URLs; the page decodes them when it draws a villager."""
+    files = sorted((root / "art" / "villager").glob("*.png"))
+    entries = ",".join(f'"{f.stem}":"data:image/png;base64,{base64.b64encode(f.read_bytes()).decode()}"' for f in files)
+    return f"const SKINS = {{{entries}}};"
 
 
 # ---------- Icons ----------

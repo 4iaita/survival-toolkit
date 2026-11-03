@@ -1,48 +1,59 @@
   <section id="view-trading" aria-label="Villager Trades" hidden>
-    <p class="view-intro">Pick a villager to see everything it can buy and sell at each level, or search for an item to find who trades it.</p>
-    <div class="grid">
-      <div class="col">
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Villager</h2>
-            <span class="picked-name" id="villager-name"></span>
-          </div>
-          <div class="slot-grid" id="villagers"></div>
-          <div class="stage" id="villager-stage">
-            <img class="stage-villager" id="villager-art" alt="" width="72" height="136">
-            <img class="stage-block" id="villager-block" alt="" width="64" height="64">
-          </div>
-          <div class="villager-facts">
-            <div class="fact">
-              <span class="cat-label">Job site block</span>
-              <span class="site-name" id="villager-site"></span>
-            </div>
-            <div class="fact">
-              <span class="cat-label" id="biome-label">Biome</span>
-              <div class="slot-grid" id="biomes" role="group" aria-labelledby="biome-label"></div>
-            </div>
-          </div>
-        </section>
+    <p class="view-intro">Pick a villager to see everything it buys and sells at each level, or search for an item to find who trades it.</p>
 
-        <section class="panel">
-          <h2><label for="trade-search">Find a trade</label></h2>
-          <input type="search" class="mc-input" id="trade-search" placeholder="Try Mending, Bell, Golden Carrot…" autocomplete="off" spellcheck="false">
-          <div class="search-results" id="trade-results" aria-live="polite"></div>
-        </section>
+    <section class="panel villager-panel" aria-label="Villager">
+      <div class="villager-scene">
+        <div class="stage" id="villager-stage" data-biome="plains">
+          <div class="actor">
+            <span class="nametag" id="villager-tag"></span>
+            <canvas class="stage-villager" id="villager-art" width="140" height="200" tabindex="0" role="img"></canvas>
+          </div>
+          <img class="stage-block" id="villager-block" alt="" width="80" height="80">
+          <span class="stage-hint" aria-hidden="true">
+            <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
+            Drag to turn
+          </span>
+        </div>
+        <div class="biome-bar">
+          <div class="biome-label">
+            <span class="cat-label" id="biome-label">Village biome</span>
+            <span class="biome-name" id="biome-name"></span>
+          </div>
+          <div class="hotbar" id="biomes" role="group" aria-labelledby="biome-label"></div>
+        </div>
       </div>
 
-      <aside class="panel result" id="trade-result" aria-live="polite"></aside>
-    </div>
+      <div class="villager-pick">
+        <h2 id="profession-label">Villager</h2>
+        <div class="prof-grid" id="villagers" role="group" aria-labelledby="profession-label"></div>
+        <p class="site-line" id="villager-site"></p>
+      </div>
+    </section>
 
-    <details class="panel rules">
-      <summary>How trading works</summary>
-      <ul>
-        <li>A villager gets its profession from the job site block it claims, such as a Lectern for a Librarian. Nitwits never trade.</li>
-        <li>Trading gives the villager experience. Each time it levels up (Novice, Apprentice, Journeyman, Expert, Master) it unlocks trades from the next level.</li>
-        <li>A villager offers only some of each level’s trades. Java picks two at random when a level lists more; Bedrock fills each trade slot from its own pool.</li>
-        <li>Each trade can be used a limited number of times, then it locks until the villager restocks at its job site block, up to twice a day.</li>
-        <li>Prices go up when a trade is used a lot or villagers are hurt, and go down after you cure a zombie villager or while you have Hero of the Village.</li>
-        <li>Enchanted book prices depend on the enchantment and its level. Mending and other treasure enchantments cost more.</li>
-      </ul>
-    </details>
+    <div class="trade-grid">
+      <article class="panel result trade-result" id="trade-result"></article>
+
+      <div class="trade-side">
+        <section class="panel">
+          <h2><label for="trade-search">Find a trade</label></h2>
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 8 8" width="16" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7z"/></svg>
+            <input type="search" class="mc-input" id="trade-search" placeholder="Mending, Bell, Golden Carrot…" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="search-results" id="trade-results" aria-live="polite"></div>
+        </section>
+
+        <details class="panel rules">
+          <summary>How trading works</summary>
+          <ul>
+            <li>A villager gets its profession from the job site block it claims, such as a Lectern for a Librarian. Nitwits never trade.</li>
+            <li>Trading gives the villager experience. Each time it levels up (Novice, Apprentice, Journeyman, Expert, Master) it unlocks trades from the next level, and the badge on its belt changes from stone to iron, gold, emerald and diamond.</li>
+            <li>A villager offers only some of each level’s trades. Java picks two at random when a level lists more; Bedrock fills each trade slot from its own pool.</li>
+            <li>Each trade can be used a limited number of times, then it locks until the villager restocks at its job site block, up to twice a day.</li>
+            <li>Prices go up when a trade is used a lot or villagers are hurt, and go down after you cure a zombie villager or while you have Hero of the Village.</li>
+            <li>Enchanted book prices depend on the enchantment and its level. Mending and other treasure enchantments cost more.</li>
+          </ul>
+        </details>
+      </div>
+    </div>
   </section>
