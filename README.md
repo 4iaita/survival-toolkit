@@ -30,7 +30,7 @@ python3 build.py
 
 ## Credits
 
-Item and block textures in `art/` come from my own texture pack (Bedrock layout, kept next to this project in `../textures`). The page arranges block textures into isometric icons and recolors potion liquid and tipped arrow heads for each effect. Items the pack doesn't have (like the shield and banner) use original pixel art drawn from templates in `src/`.
+Item and block textures in `art/` come from my own texture pack (Bedrock layout, kept next to this project in `../textures`). Every icon uses them: items, blocks (arranged into isometric icons), enchantments, the page backdrop and the site icon (the chest). The page recolors potion liquid and tipped arrow heads for each effect. Only what the pack doesn't have (the shield, banner and the arrow between trade slots) uses original pixel art drawn from templates in `src/`.
 
 To pick up changes to the pack, copy its textures into `art/` and rebuild:
 

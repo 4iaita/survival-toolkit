@@ -1,10 +1,12 @@
 /* ---------- Texture pack icons ----------
- * Point icons at texture pack art where the pack has the item. Each spec is layers (flat item)
- * or cube: [side layers, top layers]. Entries whose textures are missing are skipped.
+ * Point icons at texture pack art where the pack has the item. Each spec is layers (flat item),
+ * cube: [left, top, right] face layers, shape: a drawn silhouette filled with a texture, or rod: an upright rod block.
+ * Entries whose textures are missing are skipped.
  */
 const TIPPED = "#8932b8";
 const L = (...names) => ({ layers: names.map(n => (Array.isArray(n) ? n : [n])) });
-const C = (side, top = side) => ({ cube: [[[side]], [[top]]] });
+const C = (side, top = side, right = side) => ({ cube: [[[side]], [[top]], [[right]]] });
+const ANVIL = { shape: "anvil", art: "anvil" };
 const GRASS_CUBE = C("grass_block_side", "grass_block_top");
 
 const ART_ICONS = {
@@ -16,6 +18,8 @@ const ART_ICONS = {
   carrot_on_a_stick: L("carrot_on_a_stick"), warped_fungus_on_a_stick: L("warped_fungus_on_a_stick"),
 
   "ui:grass": GRASS_CUBE, "ui:bedrock": C("bedrock"), "ui:book": L("book"), "ui:emerald": L("emerald"),
+  "ui:logo": C("chest_front", "chest_top", "chest_side"), "ui:enchant": L("enchanted_book"), "ui:anvil": ANVIL,
+  "ui:orb": L("experience_bottle"), "ui:command": C("command_block_front", "command_block_side"),
 
   "b:dragon_breath": L("dragon_breath"), "b:nether_wart": L("nether_wart"), "b:sugar": L("sugar"), "b:rabbit_foot": L("rabbit_foot"),
   "b:glistering_melon": L("glistering_melon_slice"), "b:blaze_powder": L("blaze_powder"), "b:ghast_tear": L("ghast_tear"),
@@ -24,11 +28,19 @@ const ART_ICONS = {
   "b:fermented_spider_eye": L("fermented_spider_eye"), "b:breeze_rod": L("breeze_rod"), "b:cobweb": L("cobweb"), "b:slime_block": C("slime_block"),
   "b:stone": C("stone"), "b:redstone": L("redstone"), "b:glowstone": L("glowstone_dust"), "b:gunpowder": L("gunpowder"),
 
-  "e:sharpness": L("iron_sword"), "e:smite": L("golden_sword"), "e:bane_of_arthropods": L("stone_sword"),
-  "e:efficiency": L("golden_pickaxe"), "e:fortune": L("diamond"), "e:looting": L("emerald"), "e:silk_touch": GRASS_CUBE,
-  "e:feather_falling": L("feather"), "e:impaling": L("trident"), "e:piercing": L("arrow"), "e:mending": L("experience_bottle"),
-  "e:power": L("bow"), "e:quick_charge": L("crossbow_standby"), "e:lure": L("cod"), "e:luck_of_the_sea": L("tropical_fish"),
-  "e:fire_aspect": L("blaze_powder"), "e:flame": L("campfire"), "e:infinity": L(["tipped_arrow_base"], ["tipped_arrow_head", TIPPED]),
+  "e:protection": L("iron_chestplate"), "e:fire_protection": L("fire_charge"), "e:blast_protection": C("tnt_side", "tnt_top"),
+  "e:projectile_protection": L("arrow"), "e:feather_falling": L("feather"), "e:respiration": L("pufferfish"),
+  "e:aqua_affinity": L("water_bucket"), "e:thorns": C("cactus_side", "cactus_top"), "e:depth_strider": L("nautilus_shell"),
+  "e:frost_walker": C("frosted_ice"), "e:soul_speed": C("soul_sand"), "e:swift_sneak": L("echo_shard"),
+  "e:sharpness": L("iron_sword"), "e:smite": L("bone"), "e:bane_of_arthropods": L("spider_eye"),
+  "e:knockback": C("piston_side", "piston_top"), "e:fire_aspect": L("blaze_rod"), "e:looting": L("emerald"),
+  "e:sweeping_edge": L("golden_sword"), "e:lunge": L("iron_spear"), "e:density": ANVIL, "e:breach": L("ominous_trial_key"),
+  "e:wind_burst": L("wind_charge"), "e:efficiency": L("golden_pickaxe"), "e:fortune": L("diamond"), "e:silk_touch": GRASS_CUBE,
+  "e:unbreaking": C("obsidian"), "e:mending": L("experience_bottle"),
+  "e:power": L("bow"), "e:punch": L("slime_ball"), "e:flame": L("campfire"), "e:infinity": L(["tipped_arrow_base"], ["tipped_arrow_head", TIPPED]),
+  "e:multishot": L("crossbow_firework"), "e:piercing": L("crossbow_arrow"), "e:quick_charge": L("sugar"),
+  "e:impaling": L("trident"), "e:loyalty": L("lead"), "e:riptide": L("heart_of_the_sea"), "e:channeling": { rod: "lightning_rod" },
+  "e:luck_of_the_sea": L("tropical_fish"), "e:lure": L("cod"), "e:binding_curse": L("chain"), "e:vanishing_curse": L("phantom_membrane"),
 };
 
 const ART_TRADES = {
@@ -72,6 +84,6 @@ for (const metal of ["Iron", "Chainmail", "Diamond", "Stone", "Golden"]) {
   }
 }
 
-const artReady = spec => (spec.cube ? spec.cube.flat() : spec.layers).every(([n]) => art(n));
+const artReady = spec => artNeeds(spec).every(([n]) => art(n));
 for (const [key, spec] of Object.entries(ART_ICONS)) if (artReady(spec)) ICONS[key] = spec;
 for (const [name, spec] of Object.entries(ART_TRADES)) if (artReady(spec)) TRADE_ICONS[name] = spec;

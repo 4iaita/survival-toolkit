@@ -443,6 +443,7 @@ const iconCache = {};
 function icon(name) {
   if (iconCache[name]) return iconCache[name];
   const spec = ICONS[name] || ICONS["ui:book"];
-  return (iconCache[name] = paint(16, spec.gen ? spec.gen() : spec.layers || spec.cube ? artPixels(spec) : fromTemplate(spec)));
+  const px = spec.gen ? spec.gen() : spec.layers || spec.cube || spec.shape || spec.rod ? artPixels(spec) : fromTemplate(spec);
+  return (iconCache[name] = paint(Math.sqrt(px.length), px));
 }
 const iconImg = (name, cls = "ico") => `<img class="${cls}" src="${icon(name)}" alt="" width="32" height="32">`;

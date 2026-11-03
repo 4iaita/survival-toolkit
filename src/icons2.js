@@ -344,18 +344,19 @@ const bedrockBlock = () => speckle(11, 16, ["#7a7a7a", "#555555", "#3a3a3a", "#2
 const grassTop = () => speckle(8, 16, ["#6cc046", "#5fae3a", "#4e9a2f", "#79c94f"]);
 
 // Inventory-style block: three faces of a cube in a 2:1 isometric view, lit from above.
-function cube(side, top = side) {
-  const out = new Array(256).fill(null);
-  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
-    const px = x + 0.5, py = y + 0.5;
+// Faces are 16×16 textures; size 32 keeps about one texel per pixel.
+function cube(side, top = side, right = side, size = 16) {
+  const out = new Array(size * size).fill(null), k = size / 16;
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const px = (x + 0.5) / k, py = (y + 0.5) / k;
     const dx = (px - 8) / 8, dy = (py - 4) / 4;
     let u, v, f, src;
     if (Math.abs(dx) + Math.abs(dy) <= 1) { u = (dx + dy + 1) / 2; v = (dy - dx + 1) / 2; f = 1; src = top; }
     else if (px < 8 && py >= 4 + px / 2 && py < 12 + px / 2) { u = px / 8; v = (py - 4 - px / 2) / 8; f = 0.8; src = side; }
-    else if (px >= 8 && py >= 12 - px / 2 && py < 20 - px / 2) { u = (px - 8) / 8; v = (py - 12 + px / 2) / 8; f = 0.62; src = side; }
+    else if (px >= 8 && py >= 12 - px / 2 && py < 20 - px / 2) { u = (px - 8) / 8; v = (py - 12 + px / 2) / 8; f = 0.62; src = right; }
     else continue;
     const p = src[Math.min(15, (v * 16) | 0) * 16 + Math.min(15, (u * 16) | 0)];
-    out[y * 16 + x] = p && p.map(c => Math.round(c * f));
+    out[y * size + x] = p && p.map(c => Math.round(c * f));
   }
   return out;
 }

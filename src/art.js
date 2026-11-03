@@ -46,4 +46,38 @@ function potionArt(bottle, color) {
   return water.map((p, i) => liquid[i] || p);
 }
 
-const artPixels = spec => (spec.cube ? cube(artLayers(spec.cube[0]), artLayers(spec.cube[1] || spec.cube[0])) : artLayers(spec.layers));
+// Drawn template silhouette filled with a texture; template shades 1-4 light or darken it.
+function artShape(t, name) {
+  const base = fromTemplate({ t }), tex = art(name), rows = TPL[t];
+  const shade = { 1: 1.3, 2: 1, 3: 0.75, 4: 0.55 };
+  return base.map((p, i) => {
+    const f = shade[(rows[(i / 16) | 0] || "")[i % 16]];
+    return f && tex[i] ? tex[i].map(v => Math.min(255, Math.round(v * f))) : p;
+  });
+}
+
+// Rod-shaped blocks (lightning rod) ship a model map: a 4×4 tip and a 2-wide shaft in the top-left corner.
+// Stand them upright in the middle of the icon.
+function uprightRod(name) {
+  const tex = art(name), out = new Array(256).fill(null);
+  for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) out[(y + 1) * 16 + 6 + x] = tex[y * 16 + x];
+  for (let y = 4; y < 15; y++) for (let x = 0; x < 2; x++) out[(y + 1) * 16 + 7 + x] = tex[y * 16 + x];
+  return out;
+}
+
+// Every texture a spec needs, as [name] entries.
+const artNeeds = spec => (spec.rod ? [[spec.rod]] : spec.shape ? [[spec.art]] : spec.cube ? spec.cube.flat() : spec.layers);
+
+function artPixels(spec) {
+  if (spec.rod) return uprightRod(spec.rod);
+  if (spec.shape) return artShape(spec.shape, spec.art);
+  if (!spec.cube) return artLayers(spec.layers);
+  const [side, top = side, right = side] = spec.cube.map(artLayers);
+  return cube(side, top, right, 32);
+}
+
+// Page backdrop: the pack's deepslate tiles, darkened so text stays readable, at 2× so the CSS size matches.
+function artBackdrop(name, f = 0.55) {
+  const tex = art(name);
+  return tex && Array.from({ length: 1024 }, (_, i) => (tex[((i / 64) | 0) * 16 + ((i % 32) >> 1)] || [0, 0, 0]).map(v => Math.round(v * f)));
+}

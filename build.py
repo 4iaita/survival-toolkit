@@ -1,8 +1,6 @@
 """Combine src/ into a single self-contained index.html and draw the site icons."""
 import base64
 import pathlib
-import random
-import re
 import struct
 import zlib
 
@@ -109,28 +107,29 @@ def art_script():
 
 
 # ---------- Icons ----------
-# The favicon is the page's own "ui:logo" pixel template from src/icons3.js,
-# drawn with the same outline rule as the browser renderer so both match.
+# The favicon is the page's "ui:logo": the texture pack's chest as an isometric block,
+# drawn with the same projection as cube() in src/icons2.js so both match.
 
-def logo_pixels():
-    icons, icons2 = read("icons.js"), read("icons2.js") + read("icons3.js")
-    t, m, s = re.search(r'"ui:logo":\s*\{ t: "(\w+)", m: "(\w+)", s: "(\w+)" \}', icons2).groups()
-    rows = re.findall(r'"([^"]*)"', re.search(rf"\b{t}: \[(.*?)\]", icons2, re.S).group(1))
-    colors = lambda name: re.findall(r"#[0-9a-fA-F]{6}", re.search(rf"\b{name}:\s*\[([^\]]*)\]", icons).group(1))
-    fixed = dict(re.findall(r'(\w): "(#[0-9a-fA-F]{6})"', re.search(r"const FIXED = \{(.*?)\};", icons).group(1)))
-    pal = {**fixed, **dict(zip("1234", colors(m))), **dict(zip("abcd", colors(s)))}
-    rgb = lambda h: tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
-    rows = [r.ljust(16, ".") for r in rows] + ["." * 16] * (16 - len(rows))
-    px = [[None if ch == "." else rgb(pal[ch]) for ch in row] for row in rows]
-    out = [row[:] for row in px]
-    for y in range(16):
-        for x in range(16):
-            if px[y][x]:
+def logo_pixels(size):
+    face = lambda n: [tuple(b[i:i + 4]) for b in [read_png(root / "art" / f"chest_{n}.png")] for i in range(0, 1024, 4)]
+    left, top, right = face("front"), face("top"), face("side")
+    k = size / 16
+    out = [[None] * size for _ in range(size)]
+    for y in range(size):
+        for x in range(size):
+            px, py = (x + 0.5) / k, (y + 0.5) / k
+            dx, dy = (px - 8) / 8, (py - 4) / 4
+            if abs(dx) + abs(dy) <= 1:
+                u, v, f, src = (dx + dy + 1) / 2, (dy - dx + 1) / 2, 1, top
+            elif px < 8 and 4 + px / 2 <= py < 12 + px / 2:
+                u, v, f, src = px / 8, (py - 4 - px / 2) / 8, 0.8, left
+            elif px >= 8 and 12 - px / 2 <= py < 20 - px / 2:
+                u, v, f, src = (px - 8) / 8, (py - 12 + px / 2) / 8, 0.62, right
+            else:
                 continue
-            for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
-                if 0 <= nx < 16 and 0 <= ny < 16 and px[ny][nx]:
-                    out[y][x] = tuple(int(v * 0.3 + 0.5) for v in px[ny][nx])
-                    break
+            p = src[min(15, int(v * 16)) * 16 + min(15, int(u * 16))]
+            if p[3] >= 64:
+                out[y][x] = tuple(round(c * f) for c in p[:3])
     return out
 
 
@@ -158,37 +157,36 @@ def ico(images):
 
 
 def svg(px):
-    rects = []
+    n, rects = len(px), []
     for y, row in enumerate(px):
         x = 0
-        while x < 16:
+        while x < n:
             p = row[x]
             if not p:
                 x += 1
                 continue
             w = 1
-            while x + w < 16 and row[x + w] == p:
+            while x + w < n and row[x + w] == p:
                 w += 1
             rects.append(f'<rect x="{x}" y="{y}" width="{w}" height="1" fill="#{p[0]:02x}{p[1]:02x}{p[2]:02x}"/>')
             x += w
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">' + "".join(rects) + "</svg>\n"
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {n} {n}" shape-rendering="crispEdges">' + "".join(rects) + "</svg>\n"
 
 
 def apple_icon(px):
-    """180×180 home-screen icon: the logo at 10× on the page's deepslate backdrop."""
-    rng = random.Random(3)
-    stone = [(42, 42, 47), (47, 47, 53), (38, 38, 43), (51, 51, 58)]
-    grid = [[rng.choice(stone) for _ in range(18)] for _ in range(18)]
+    """180×180 home-screen icon: the 32px logo at 5× on the page's deepslate backdrop."""
+    tiles = read_png(root / "art" / "deepslate_tiles.png")
+    grid = [[tuple(round(c * 0.55) for c in tiles[((y // 2) % 16 * 16 + (x // 2) % 16) * 4:][:3]) for x in range(36)] for y in range(36)]
     for y, row in enumerate(px):
         for x, p in enumerate(row):
             if p:
-                grid[y + 1][x + 1] = p
-    return png(grid, 10)
+                grid[y + 2][x + 2] = p
+    return png(grid, 5)
 
 
 def build_icons():
-    px = logo_pixels()
-    (root / "favicon.ico").write_bytes(ico([(n, png(px, n // 16)) for n in (16, 32, 48)]))
+    small, px = logo_pixels(16), logo_pixels(32)
+    (root / "favicon.ico").write_bytes(ico([(16, png(small, 1)), (32, png(px, 1)), (64, png(px, 2))]))
     (root / "icon.svg").write_text(svg(px))
     (root / "apple-touch-icon.png").write_bytes(apple_icon(px))
     print("icons: favicon.ico, icon.svg, apple-touch-icon.png")

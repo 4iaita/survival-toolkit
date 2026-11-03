@@ -242,7 +242,10 @@ $("opt-mode").addEventListener("change", e => { state.mode = e.target.value; ren
 $("opt-work").addEventListener("change", e => { state.itemUses = +e.target.value; render(); });
 $("opt-creative").addEventListener("change", e => { state.creative = e.target.checked; render(); });
 
-try { document.body.style.setProperty("--stone", `url(${stoneTile()})`); } catch (_) {}
+try {
+  const tile = artBackdrop("deepslate_tiles");
+  document.body.style.setProperty("--stone", `url(${tile ? paint(32, tile) : stoneTile()})`);
+} catch (_) {}
 document.querySelectorAll("img[data-icon]").forEach(im => { im.src = icon(im.dataset.icon); });
 load();
 render();
