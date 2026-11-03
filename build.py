@@ -1,4 +1,5 @@
 """Combine src/ into a single self-contained index.html and draw the site icons."""
+import base64
 import pathlib
 import random
 import re
@@ -29,12 +30,82 @@ body { margin: 0; }
 
 def build_page():
     body = read("body.html").replace("<!-- brew.html -->\n", read("brew.html")).replace("<!-- trade.html -->\n", read("trade.html"))
-    scripts = ["brew-data.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "trade-data.js", "ui.js", "brew-ui.js", "trade-ui.js"]
+    scripts = ["brew-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js",
+               "trade-data.js", "ui.js", "brew-ui.js", "trade-ui.js"]
     out = (head + read("style.css") + read("brew.css") + read("trade.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
-           "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")
+           art_script() + "\n" + "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")
     (root / "index.html").write_text(out)
     print(f"index.html: {len(out)} bytes")
+
+
+# ---------- Texture pack art ----------
+# Every 16x16 PNG in art/ is embedded as base64 RGBA so the page stays one self-contained file.
+
+def read_png(path):
+    """Decode a non-interlaced PNG to the RGBA bytes of its top-left 16x16 frame."""
+    data = path.read_bytes()
+    pos, idat, plte, trns = 8, b"", None, None
+    while pos < len(data):
+        n = struct.unpack(">I", data[pos:pos + 4])[0]
+        tag, body = data[pos + 4:pos + 8], data[pos + 8:pos + 8 + n]
+        pos += 12 + n
+        if tag == b"IHDR":
+            w, h, depth, ctype, _, _, interlace = struct.unpack(">IIBBBBB", body)
+        elif tag == b"PLTE":
+            plte = [tuple(body[i:i + 3]) for i in range(0, len(body), 3)]
+        elif tag == b"tRNS":
+            trns = body
+        elif tag == b"IDAT":
+            idat += body
+    assert interlace == 0, f"{path.name}: interlaced PNGs are not supported"
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[ctype]
+    bpp, stride = max(1, channels * depth // 8), (w * channels * depth + 7) // 8
+    raw, rows, prev, i = zlib.decompress(idat), [], bytearray(stride), 0
+    for _ in range(h):
+        f, line = raw[i], bytearray(raw[i + 1:i + 1 + stride])
+        i += 1 + stride
+        for x in range(stride):
+            a, b = (line[x - bpp] if x >= bpp else 0), prev[x]
+            c = prev[x - bpp] if x >= bpp else 0
+            if f == 1: line[x] = (line[x] + a) & 255
+            elif f == 2: line[x] = (line[x] + b) & 255
+            elif f == 3: line[x] = (line[x] + (a + b) // 2) & 255
+            elif f == 4:
+                p = a + b - c
+                pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+                line[x] = (line[x] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
+        rows.append(line)
+        prev = line
+
+    def sample(line, x):
+        if depth == 8:
+            return tuple(line[x * channels:(x + 1) * channels])
+        if depth == 16:
+            return tuple(line[(x * channels + k) * 2] for k in range(channels))
+        bit = x * depth
+        return ((line[bit // 8] >> (8 - depth - bit % 8)) & ((1 << depth) - 1),)
+
+    out = bytearray()
+    for y in range(16):
+        for x in range(16):
+            s = sample(rows[y], x)
+            if ctype == 6: out += bytes(s)
+            elif ctype == 4: out += bytes((s[0], s[0], s[0], s[1]))
+            elif ctype == 3: out += bytes((*plte[s[0]], trns[s[0]] if trns and s[0] < len(trns) else 255))
+            elif ctype == 2:
+                clear = trns and depth == 8 and s == tuple(struct.unpack(">HHH", trns))
+                out += bytes((*s, 0 if clear else 255))
+            else:
+                v = s[0] * 255 // ((1 << depth) - 1)
+                out += bytes((v, v, v, 255))
+    return bytes(out)
+
+
+def art_script():
+    files = sorted((root / "art").glob("*.png"))
+    entries = ",".join(f'"{f.stem}":"{base64.b64encode(read_png(f)).decode()}"' for f in files)
+    return f"const ART = {{{entries}}};"
 
 
 # ---------- Icons ----------

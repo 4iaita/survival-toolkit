@@ -257,7 +257,10 @@ function tint(color, f) {
 function potionIcon(form, color) {
   const name = `p:${form}:${color}`;
   if (!ICONS[name]) {
-    ICONS[name] = { t: form === "drink" ? "potion" : form, c: { 1: tint(color, 0.5), 2: color, 3: tint(color, -0.3), 4: tint(color, -0.55) } };
+    const bottle = { drink: "potion", splash: "splash_potion", lingering: "lingering_potion" }[form];
+    ICONS[name] = hasArt(bottle, `${bottle}_heal`)
+      ? color === WATER_COLOR ? { layers: [[bottle]] } : { gen: () => potionArt(bottle, color) }
+      : { t: form === "drink" ? "potion" : form, c: { 1: tint(color, 0.5), 2: color, 3: tint(color, -0.3), 4: tint(color, -0.55) } };
   }
   return name;
 }

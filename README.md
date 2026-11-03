@@ -17,7 +17,8 @@ The source lives in `src/`:
 - `solver.js`: enchantment data and the anvil merge-order search
 - `brew-data.js`: potion recipes and durations
 - `trade-data.js`: villager trades by profession and level
-- `icons.js` … `icons4.js`: original 16×16 pixel-art icons, drawn from text templates
+- `icons.js` … `icons4.js`: original 16×16 pixel-art icons, drawn from text templates (used where the texture pack has no match)
+- `art.js`, `icons5.js`: texture pack icons and which item uses which texture
 - `ui.js`, `brew-ui.js`, `trade-ui.js`: the three tools and the tool tabs
 - `body.html`, `brew.html`, `trade.html` and the matching `.css` files: the page
 
@@ -27,4 +28,17 @@ After editing, rebuild the page and the site icons:
 python3 build.py
 ```
 
-Icons are original pixel art in a Minecraft style, not Mojang textures. Not an official Minecraft product.
+## Credits
+
+Item and block textures in `art/` come from my own texture pack (Bedrock layout, kept next to this project in `../textures`). The page arranges block textures into isometric icons and recolors potion liquid and tipped arrow heads for each effect. Items the pack doesn't have (like the shield and banner) use original pixel art drawn from templates in `src/`.
+
+To pick up changes to the pack, copy its textures into `art/` and rebuild:
+
+```bash
+python3 import_textures.py ../textures
+python3 build.py
+```
+
+The name map from pack files to icons is in `import_textures.py`.
+
+Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
