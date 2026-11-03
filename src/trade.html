@@ -4,11 +4,9 @@
     <section class="panel villager-panel" aria-label="Villager">
       <div class="villager-scene">
         <div class="stage" id="villager-stage" data-biome="plains">
-          <div class="actor">
-            <span class="nametag" id="villager-tag"></span>
-            <canvas class="stage-villager" id="villager-art" width="140" height="200" tabindex="0" role="img"></canvas>
-          </div>
-          <img class="stage-block" id="villager-block" alt="" width="80" height="80">
+          <canvas class="stage-backdrop" id="villager-backdrop" aria-hidden="true"></canvas>
+          <canvas class="stage-scene" id="villager-art" tabindex="0" role="img"></canvas>
+          <span class="nametag" id="villager-tag"></span>
           <span class="stage-hint" aria-hidden="true">
             <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
             Drag to turn

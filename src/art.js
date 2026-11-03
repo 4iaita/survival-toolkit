@@ -20,6 +20,23 @@ function art(name) {
 }
 const hasArt = (...names) => names.every(n => art(n));
 
+// Biome colors from the game's color maps, for the gray textures it tints: foliage, grass and (swamp) water.
+const BIOME_TINTS = {
+  plains: { foliage: "#77ab2f", grass: "#91bd59" },
+  desert: { foliage: "#aea42a", grass: "#bfb755" },
+  savanna: { foliage: "#aea42a", grass: "#bfb755" },
+  snowy: { foliage: "#60a17b", grass: "#80b497" },
+  taiga: { foliage: "#68a464", grass: "#86b783" },
+  jungle: { foliage: "#30bb0b", grass: "#59c93c" },
+  swamp: { foliage: "#6a7039", grass: "#6a7039", water: "#617b64" },
+};
+
+// Grass, leaves and water are gray in the pack; the game colors them by multiplying with the biome's tint.
+const multiplied = (px, color) => {
+  const c = hex(color);
+  return px.map(p => p && p.map((v, k) => Math.round((v * c[k]) / 255)));
+};
+
 // Gray mask textures (tipped arrow heads, potion liquid) get colored the way the game does: brightness × tint.
 function tinted(px, color) {
   const lum = p => (p[0] + p[1] + p[2]) / 3;
@@ -28,11 +45,11 @@ function tinted(px, color) {
   return px.map(p => p && c.map(v => Math.round((v * lum(p)) / max)));
 }
 
-// Stack texture layers, each [name] or [name, tint]; later layers cover earlier ones.
+// Stack texture layers, each [name], [name, tint] or [name, tint, "multiply"]; later layers cover earlier ones.
 function artLayers(layers) {
   const out = new Array(256).fill(null);
-  for (const [name, color] of layers) {
-    const px = color ? tinted(art(name), color) : art(name);
+  for (const [name, color, mode] of layers) {
+    const px = !color ? art(name) : mode === "multiply" ? multiplied(art(name), color) : tinted(art(name), color);
     px.forEach((p, i) => { if (p) out[i] = p; });
   }
   return out;

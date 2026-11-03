@@ -19,7 +19,8 @@ The source lives in `src/`:
 - `trade-data.js`: villager trades by profession and level
 - `icons.js` … `icons4.js`: original 16×16 pixel-art icons, drawn from text templates (used where the texture pack has no match)
 - `art.js`, `icons5.js`: texture pack icons and which item uses which texture, including job site blocks and village biomes
-- `villager.js`: the villager as a 3D model you can turn, with the pack's skins for each biome and profession
+- `villager.js`: the villager scene: the pack's villager model and skins for each biome and profession, beside its job site block as a 3D block model, turned together by dragging
+- `backdrop.js`: each biome's countryside behind the villager scene (hills, trees, a village building and plants), built from block textures
 - `ui.js`, `brew-ui.js`, `trade-ui.js`: the three tools and the tool tabs
 - `body.html`, `brew.html`, `trade.html` and the matching `.css` files: the page
 

@@ -117,10 +117,14 @@ const ART_SITES = {
   ] },
 };
 
-// Village biomes: the block the picker shows, and the ground the villager stands on.
+// Village biomes: the ground block each biome's villages stand on, grass in the biome's own grass color.
+const grassIn = biome => {
+  const color = BIOME_TINTS[biome].grass, side = [["dirt"], ["grass_side_overlay", color, "multiply"]];
+  return { cube: [side, [["grass_top", color, "multiply"]], side] };
+};
 const ART_BIOMES = {
-  plains: GRASS_CUBE, desert: C("sand"), savanna: C("acacia_log", "acacia_log_top"), snowy: C("snowy_grass_side", "snow"),
-  taiga: C("podzol_side", "podzol_top"), jungle: C("jungle_log", "jungle_log_top"), swamp: C("mud"),
+  plains: grassIn("plains"), desert: C("sand"), savanna: grassIn("savanna"), snowy: C("snowy_grass_side", "snow"),
+  taiga: C("podzol_side", "podzol_top"), jungle: grassIn("jungle"), swamp: grassIn("swamp"),
 };
 
 const artReady = spec => artNeeds(spec).every(([n]) => art(n));

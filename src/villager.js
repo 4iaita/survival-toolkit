@@ -3,15 +3,16 @@
  * same 64×64 layout: a base skin, the outfit of its biome and the outfit of its profession. build.py embeds
  * them as SKINS (art/villager/, copied from the pack by import_textures.py).
  */
+// ground: the top of the biome's ground block (grass takes the biome's grass color);
 // skins: where the biome's villagers start among the pack's 12 base skins (darkest first).
 const BIOMES = [
-  { k: "plains", n: "Plains", ground: "grass_block_top", skins: 4 },
+  { k: "plains", n: "Plains", ground: "grass_top", skins: 4 },
   { k: "desert", n: "Desert", ground: "sand", skins: 0 },
-  { k: "savanna", n: "Savanna", ground: "coarse_dirt", skins: 0 },
+  { k: "savanna", n: "Savanna", ground: "grass_top", skins: 0 },
   { k: "snowy", n: "Snowy", ground: "snow", skins: 6 },
   { k: "taiga", n: "Taiga", ground: "podzol_top", skins: 6 },
-  { k: "jungle", n: "Jungle", ground: "grass_block_top", skins: 4 },
-  { k: "swamp", n: "Swamp", ground: "mud", skins: 4 },
+  { k: "jungle", n: "Jungle", ground: "grass_top", skins: 4 },
+  { k: "swamp", n: "Swamp", ground: "grass_top", skins: 4 },
 ];
 
 // The pack picks a villager's base skin as its biome's start plus the game's random skin id (0-5).
@@ -87,50 +88,63 @@ function skinTexel([u, v], [w, h, d], face, fx, fy, fz) {
 }
 const FACES = [["right", "left"], ["top", "bottom"], ["front", "back"]];
 
-// Ray-cast the model into RGBA pixels: an orthographic camera turned by yaw (radians) and looking down
-// by pitch, scale pixels per game unit, with the model point center at anchor (a fraction of the height).
-// Each pixel takes the nearest face whose texel isn't see-through, lit from the camera's upper left.
-const LID_TOP = 24 - 29, BLINK = 2.02;
+// ---------- Scene renderer ----------
+// A scene is boxes in game pixels: x right, y down with the ground at y = GROUND, z away from the camera
+// at rest. A box has lo and hi corners, maybe a bone (pivot, move, angles) turning it, and
+// color(axis, side, fx, fy, fz): its face's color at that 0-1 spot in the box as 0xRRGGBB, or -1 where the
+// face is see-through. side 0 is the box's low face on that axis.
+const GROUND = 24, LID_TOP = 24 - 29, BLINK = 2.02;
 const dot = (p, q) => p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
-function villagerRender(skin, { width, height, scale, yaw, pitch = 0.2, center = [0, 7, 0], anchor = 0.52, blink = false }) {
+
+// An orthographic camera turned by yaw (radians) and looking down by pitch, scale pixels per game pixel,
+// with the scene point center at the canvas point origin. project says where a scene point lands.
+function camera({ yaw, pitch = 0.2, scale, center, origin }) {
   const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
   const right = [cy, 0, -sy], down = [-sp * sy, cp, -sp * cy], dir = [cp * sy, sp, cp * cy];
+  const project = p => {
+    const rel = p.map((v, i) => v - center[i]);
+    return [origin[0] + dot(rel, right) * scale, origin[1] + dot(rel, down) * scale];
+  };
+  return { right, down, dir, scale, center, origin, project };
+}
+
+// Ray-cast a scene into RGBA pixels. Each pixel takes the nearest face that isn't see-through there,
+// lit from the camera's upper left; where nothing is hit, shadows ([x, z, radius] on the ground) darken it.
+function renderScene(boxes, { width, height, shadows = [], ...view }) {
+  const { right, down, dir, scale, center, origin } = camera(view);
   const toWorld = ([a, b, c]) => [0, 1, 2].map(i => right[i] * a + down[i] * b + dir[i] * c);
   const light = toWorld([-0.45, -1, -0.75].map(v => v / Math.hypot(0.45, 1, 0.75)));
-  const start = center.map((v, i) => v - dir[i] * 60);
+  const start = center.map((v, i) => v - dir[i] * 80);
   // The camera is orthographic, so in each box's own frame every ray has the same direction and a start
   // that moves by stepX and stepY per pixel. Faces keep one light level each: shade[axis][side].
-  const boxes = VILLAGER_MODEL.map(m => {
-    const [x, y, z, w, h, d] = m.box, g = m.grow || 0;
-    const lo = [x - g, y - g, z - g], hi = [x + w + g, y + h + g, z + d + g];
-    if (blink && m.lid) [lo[1], hi[1]] = [lo[1], hi[1]].map(v => LID_TOP + (v - LID_TOP) * BLINK);
+  const prepared = boxes.map(m => {
+    const { lo, hi, bone } = m;
     let o = start, stepX = right, stepY = down, r = dir;
-    if (m.bone) {
-      const { pivot, move, angles } = m.bone;
-      o = unturn(start.map((v, i) => v - pivot[i] - move[i]), angles).map((v, i) => v + pivot[i]);
-      [stepX, stepY, r] = [right, down, dir].map(v => unturn(v, angles));
+    if (bone) {
+      o = unturn(start.map((v, i) => v - bone.pivot[i] - bone.move[i]), bone.angles).map((v, i) => v + bone.pivot[i]);
+      [stepX, stepY, r] = [right, down, dir].map(v => unturn(v, bone.angles));
     }
     const shade = [0, 1, 2].map(axis => [-1, 1].map(side => {
       let n = [0, 0, 0];
       n[axis] = side;
-      if (m.bone) n = turn(n, m.bone.angles);
+      if (bone) n = turn(n, bone.angles);
       return 0.5 + 0.5 * Math.max(0, dot(n, light));
     }));
-    // Where the box lands on screen, in game units from the center, so pixels outside it skip the box.
+    // Where the box lands on screen, in game pixels from the center, so pixels outside it skip the box.
     const corners = [0, 1, 2, 3, 4, 5, 6, 7].map(c => {
       let p = [c & 1 ? hi[0] : lo[0], c & 2 ? hi[1] : lo[1], c & 4 ? hi[2] : lo[2]];
-      if (m.bone) p = turn(p.map((v, i) => v - m.bone.pivot[i]), m.bone.angles).map((v, i) => v + m.bone.pivot[i] + m.bone.move[i]);
+      if (bone) p = turn(p.map((v, i) => v - bone.pivot[i]), bone.angles).map((v, i) => v + bone.pivot[i] + bone.move[i]);
       const rel = p.map((v, i) => v - center[i]);
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { ...m, lo, hi, size: [w, h, d], o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
   });
   const out = new Uint8ClampedArray(width * height * 4), o = [0, 0, 0];
   for (let py = 0; py < height; py++) for (let px = 0; px < width; px++) {
-    const a = (px + 0.5 - width / 2) / scale, b = (py + 0.5 - height * anchor) / scale;
-    let bestT = Infinity, bestK = -1, bestShade = 0;
-    for (const m of boxes) {
+    const a = (px + 0.5 - origin[0]) / scale, b = (py + 0.5 - origin[1]) / scale;
+    let bestT = Infinity, bestColor = -1, bestShade = 0;
+    for (const m of prepared) {
       if (a < m.across[0] || a > m.across[1] || b < m.along[0] || b > m.along[1]) continue;
       const r = m.r;
       for (let i = 0; i < 3; i++) o[i] = m.o[i] + m.stepX[i] * a + m.stepY[i] * b;
@@ -146,28 +160,167 @@ function villagerRender(skin, { width, height, scale, yaw, pitch = 0.2, center =
       }
       if (near > far || near >= bestT) continue;
       const frac = i => (m.hi[i] > m.lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * near - m.lo[i]) / (m.hi[i] - m.lo[i]))) : 0);
-      let fx = frac(0), face = FACES[axis][r[axis] > 0 ? 0 : 1];
-      if (m.mirror) {
-        fx = 0.9999 - fx;
-        if (axis === 0) face = FACES[0][r[0] > 0 ? 1 : 0];
-      }
-      const k = skinTexel(m.uv, m.size, face, fx, frac(1), frac(2));
-      if (skin[k + 3] < 128) continue;
+      const side = r[axis] > 0 ? 0 : 1;
+      const color = m.color(axis, side, frac(0), frac(1), frac(2));
+      if (color < 0) continue;
       bestT = near;
-      bestK = k;
-      bestShade = m.shade[axis][r[axis] > 0 ? 0 : 1];
+      bestColor = color;
+      bestShade = m.shade[axis][side];
     }
-    if (bestK < 0) continue;
     const j = (py * width + px) * 4;
-    for (let c = 0; c < 3; c++) out[j + c] = skin[bestK + c] * bestShade;
-    out[j + 3] = 255;
+    if (bestColor >= 0) {
+      out[j] = (bestColor >> 16) * bestShade;
+      out[j + 1] = (bestColor >> 8 & 255) * bestShade;
+      out[j + 2] = (bestColor & 255) * bestShade;
+      out[j + 3] = 255;
+    } else if (shadows.length) {
+      const t = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
+      const gx = start[0] + right[0] * a + down[0] * b + dir[0] * t, gz = start[2] + right[2] * a + down[2] * b + dir[2] * t;
+      let dark = 0;
+      for (const [sx, sz, radius] of shadows) dark = Math.max(dark, 1 - ((gx - sx) ** 2 + (gz - sz) ** 2) / radius ** 2);
+      out[j + 3] = 90 * dark;
+    }
   }
   return out;
 }
 
+// The villager as scene boxes standing at at, colored from its skin; blink closes its eyes.
+function villagerBoxes(skin, { blink = false, at = [0, 0, 0] } = {}) {
+  const shift = p => p.map((v, i) => v + at[i]);
+  return VILLAGER_MODEL.map(m => {
+    const [x, y, z, w, h, d] = m.box, g = m.grow || 0, size = [w, h, d];
+    const lo = [x - g, y - g, z - g], hi = [x + w + g, y + h + g, z + d + g];
+    if (blink && m.lid) [lo[1], hi[1]] = [lo[1], hi[1]].map(v => LID_TOP + (v - LID_TOP) * BLINK);
+    return {
+      lo: shift(lo), hi: shift(hi), bone: m.bone && { ...m.bone, pivot: shift(m.bone.pivot) },
+      color(axis, side, fx, fy, fz) {
+        let face = FACES[axis][side];
+        if (m.mirror) {
+          fx = 0.9999 - fx;
+          if (axis === 0) face = FACES[0][1 - side];
+        }
+        const k = skinTexel(m.uv, size, face, fx, fy, fz);
+        return skin[k + 3] < 128 ? -1 : skin[k] << 16 | skin[k + 1] << 8 | skin[k + 2];
+      },
+    };
+  });
+}
+
 // A head-and-shoulders view of a villager, size pixels square.
-const villagerBust = (skin, size, yaw = 0.45) =>
-  villagerRender(skin, { width: size, height: size, scale: size / 17.5, yaw, pitch: 0.12, center: [0, -4.4, 0], anchor: 0.5 });
+const villagerBust = (skin, size, yaw = 0.45) => renderScene(villagerBoxes(skin), {
+  width: size, height: size, scale: size / 17.5, yaw, pitch: 0.12, center: [0, -4.4, 0], origin: [size / 2, size / 2],
+});
+
+// ---------- Job site blocks ----------
+// Block models the way Minecraft writes them: parts from/to in the block's 16ths (x east, y up, z south),
+// each face a texture, or [texture, [u1, v1, u2, v2]] where the spot the part's position gives won't do.
+// The block's north face, its front, turns toward the villager.
+const sides = (side, top = side, front = side, bottom = top) => ({ north: front, south: side, east: side, west: side, up: top, down: bottom });
+const part = (from, to, faces, rotation) => ({ from, to, faces, rotation });
+const solid = (front, top, side) => [part([0, 0, 0], [16, 16, 16], sides(side, top, front))];
+// Open-topped blocks: four walls two thick round a floor.
+const tub = (side, top, floor, floorFrom, floorTo) => [
+  part([0, 0, 0], [16, 16, 2], sides(side, top)), part([0, 0, 14], [16, 16, 16], sides(side, top)),
+  part([0, 0, 2], [2, 16, 14], sides(side, top)), part([14, 0, 2], [16, 16, 14], sides(side, top)),
+  part([2, floorFrom, 2], [14, floorTo, 14], { up: floor }),
+];
+const PIVOT = { east: ["grindstone_pivot", [0, 0, 6, 6]], west: ["grindstone_pivot", [0, 0, 6, 6]], north: ["grindstone_pivot", [6, 0, 8, 6]], south: ["grindstone_pivot", [6, 0, 8, 6]], up: ["grindstone_pivot", [8, 0, 10, 6]], down: ["grindstone_pivot", [8, 0, 10, 6]] };
+const RIM = ["grindstone_round", [0, 0, 8, 12]], WHEEL = ["grindstone_side", [0, 0, 12, 12]];
+const SAW = ["stonecutter_saw", [1, 9, 15, 16]];
+const SITE_MODELS = {
+  "Barrel": solid("barrel_side", "barrel_top", "barrel_side"),
+  "Blast Furnace": solid("blast_furnace_front", "blast_furnace_top", "blast_furnace_side"),
+  "Brewing Stand": [
+    part([7, 0, 7], [9, 14, 9], sides(["brewing_stand_block", [7, 2, 9, 16]])),
+    part([9, 0, 5], [15, 2, 11], sides("brewing_stand_base")),
+    part([2, 0, 1], [8, 2, 7], sides("brewing_stand_base")),
+    part([2, 0, 9], [8, 2, 15], sides("brewing_stand_base")),
+    part([0, 0, 8], [16, 16, 8], { north: "brewing_stand_block", south: "brewing_stand_block" }),
+    part([8, 0, 0], [8, 16, 16], { east: "brewing_stand_block", west: "brewing_stand_block" }),
+  ],
+  "Cartography Table": solid("cartography_table_front", "cartography_table_top", "cartography_table_side"),
+  "Cauldron": tub("cauldron_side", "cauldron_top", "cauldron_inner", 3, 4),
+  "Composter": tub("composter_side", "composter_top", "composter_bottom", 0, 2),
+  "Fletching Table": solid("fletching_table_front", "fletching_table_top", "fletching_table_side"),
+  "Grindstone": [
+    part([4, 4, 2], [12, 16, 14], { east: WHEEL, west: WHEEL, north: RIM, south: RIM, up: RIM, down: RIM }),
+    part([2, 7, 5], [4, 13, 11], PIVOT), part([12, 7, 5], [14, 13, 11], PIVOT),
+    part([2, 0, 6], [4, 7, 10], PIVOT), part([12, 0, 6], [14, 7, 10], PIVOT),
+  ],
+  "Lectern": [
+    part([0, 0, 0], [16, 2, 16], sides("lectern_sides", "lectern_top")),
+    part([4, 2, 4], [12, 15, 12], sides("lectern_sides", "lectern_top", ["lectern_front", [0, 1, 8, 14]])),
+    part([0, 12, 1], [16, 16, 15], sides("lectern_sides", "lectern_base"), { axis: "x", angle: -22.5, origin: [8, 14, 8] }),
+  ],
+  "Loom": solid("loom_front", "loom_top", "loom_side"),
+  "Smithing Table": solid("smithing_table_front", "smithing_table_top", "smithing_table_side"),
+  "Smoker": solid("smoker_front", "smoker_top", "smoker_side"),
+  "Stonecutter": [
+    part([0, 0, 0], [16, 9, 16], sides("stonecutter_side", "stonecutter_top")),
+    part([1, 9, 8], [15, 16, 8], { north: SAW, south: SAW }),
+  ],
+};
+
+// Block textures as 0xRRGGBB per texel, -1 where see-through; null when the pack lacks one.
+function packedArt(name) {
+  const cache = packedArt.cache || (packedArt.cache = {});
+  if (!(name in cache)) {
+    const px = art(name);
+    cache[name] = px && Int32Array.from(px, p => (p ? p[0] << 16 | p[1] << 8 | p[2] : -1));
+  }
+  return cache[name];
+}
+
+// The spot on its texture each face of a part shows unless told otherwise, as Minecraft works it out.
+const autoUV = ([x1, y1, z1], [x2, y2, z2]) => ({
+  north: [16 - x2, 16 - y2, 16 - x1, 16 - y1], south: [x1, 16 - y2, x2, 16 - y1],
+  west: [z1, 16 - y2, z2, 16 - y1], east: [16 - z2, 16 - y2, 16 - z1, 16 - y1],
+  up: [x1, z1, x2, z2], down: [x1, 16 - z2, x2, 16 - z1],
+});
+// Scene faces by axis and side, as block faces. The block stands turned so its north (front) faces -x,
+// toward the villager: block z runs along scene x, block x along scene z, and block y up the scene.
+const BLOCK_FACES = [["north", "south"], ["up", "down"], ["west", "east"]];
+
+// A block model as scene boxes, the middle of its bottom at at (x, height above the ground, z).
+function blockBoxes(parts, at) {
+  const place = ([x, y, z]) => [at[0] + z - 8, GROUND - at[1] - y, at[2] + x - 8];
+  return parts.map(({ from, to, faces, rotation }) => {
+    const [a, b] = [place(from), place(to)], uvs = autoUV(from, to);
+    const look = BLOCK_FACES.map(pair => pair.map(name => {
+      const face = faces[name];
+      if (!face) return null;
+      const [tex, uv = uvs[name]] = typeof face === "string" ? [face] : face;
+      return packedArt(tex) && { tex: packedArt(tex), uv };
+    }));
+    let bone;
+    if (rotation) {
+      // A turn about the block's x, y or z axis is one about the scene's z, -y or x axis.
+      const angle = rotation.angle * RAD;
+      const angles = { x: [0, 0, angle], y: [0, -angle, 0], z: [angle, 0, 0] }[rotation.axis];
+      bone = { pivot: place(rotation.origin), move: [0, 0, 0], angles };
+    }
+    return {
+      lo: [0, 1, 2].map(i => Math.min(a[i], b[i])), hi: [0, 1, 2].map(i => Math.max(a[i], b[i])), bone,
+      color(axis, side, fx, fy, fz) {
+        const face = look[axis][side];
+        if (!face) return -1;
+        // How far across (s) and down (t) the face's texture spot the point is, as seen from outside.
+        let s, t;
+        switch (axis * 2 + side) {
+          case 0: s = 1 - fz; t = fy; break; // north
+          case 1: s = fz; t = fy; break; // south
+          case 2: s = fz; t = fx; break; // up
+          case 3: s = fz; t = 1 - fx; break; // down
+          case 4: s = fx; t = fy; break; // west
+          default: s = 1 - fx; t = fy; // east
+        }
+        const [u1, v1, u2, v2] = face.uv;
+        const u = Math.min(15, Math.max(0, Math.floor(u1 + s * (u2 - u1)))), v = Math.min(15, Math.max(0, Math.floor(v1 + t * (v2 - v1))));
+        return face.tex[v * 16 + u];
+      },
+    };
+  });
+}
 
 // Decoded skin layers (RGBA, 64×64) by SKINS name; null when the pack lacks one.
 const skinLayers = {};
@@ -205,24 +358,37 @@ function rgbaURL(px, width, height) {
   return cv.toDataURL();
 }
 
-// A canvas showing one villager, turned by dragging sideways or with the arrow keys; onTurn hears the
-// first turn. Its CSS size is VIEW_W × VIEW_H at VIEW_SCALE pixels per game unit. It draws at the screen's
-// pixel density, but at 1× while dragging so turning stays smooth. Every few seconds the villager blinks,
-// unless the reader asks for less motion.
-const VIEW_W = 140, VIEW_H = 200, VIEW_SCALE = 5;
-function villagerViewer(canvas, { onTurn = () => {} } = {}) {
+// The stage scene on a canvas: the villager with its job site block beside it, turned together by
+// dragging sideways or with the arrow keys (onTurn hears the first turn). tag, an element over the canvas,
+// follows the villager's head. The scene fills the canvas at VIEW_SCALE CSS pixels per game pixel and draws
+// at the screen's pixel density, but at 1× while dragging so turning stays smooth. Every few seconds the
+// villager blinks, unless the reader asks for less motion.
+const VIEW_SCALE = 5, SITE_AT = [33, 0, 7], FEET_UP = 26;
+function villagerScene(canvas, tag, { onTurn = () => {} } = {}) {
   const ctx = canvas.getContext("2d");
-  let skin = null, yaw = 0.55, wanted = "", frame = 0, dragX = null, blink = false;
+  let skin = null, site = null, yaw = 0.55, wanted = "", frame = 0, dragX = null, blink = false;
   const draw = () => {
     frame = 0;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
     const dpr = dragX !== null ? 1 : Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
-    canvas.width = VIEW_W * dpr;
-    canvas.height = VIEW_H * dpr;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
     if (!skin) return;
-    const px = villagerRender(skin, { width: canvas.width, height: canvas.height, scale: VIEW_SCALE * dpr, yaw, blink });
+    // The camera looks at the ground halfway between the villager and its block.
+    const block = SITE_MODELS[site] ? blockBoxes(SITE_MODELS[site], SITE_AT) : [], mid = block.length ? 0.5 : 0;
+    const view = {
+      yaw, scale: VIEW_SCALE * dpr, center: [SITE_AT[0] * mid, GROUND, SITE_AT[2] * mid],
+      origin: [canvas.width / 2, canvas.height - FEET_UP * dpr],
+    };
+    const px = renderScene([...villagerBoxes(skin, { blink }), ...block], { ...view, width: canvas.width, height: canvas.height, shadows: [[0, 0, 7]] });
     ctx.putImageData(new ImageData(px, canvas.width, canvas.height), 0, 0);
+    const [x, y] = camera(view).project([0, -12.5, 0]);
+    tag.style.left = `${x / dpr}px`;
+    tag.style.top = `${y / dpr}px`;
   };
   const redraw = () => { if (!frame) frame = requestAnimationFrame(draw); };
+  new ResizeObserver(redraw).observe(canvas);
   const turnBy = step => {
     yaw += step;
     onTurn();
@@ -253,12 +419,13 @@ function villagerViewer(canvas, { onTurn = () => {} } = {}) {
   }, 2500 + Math.random() * 4000);
   blinkLater();
   return {
-    show(biome, profession) {
+    show(biome, profession, jobSite) {
       const key = wanted = `${biome}/${profession}`;
       villagerSkin(biome, profession).then(s => {
         if (wanted !== key) return;
         skin = s;
-        canvas.hidden = !s;
+        site = jobSite;
+        tag.hidden = !s;
         redraw();
       });
     },
@@ -267,6 +434,7 @@ function villagerViewer(canvas, { onTurn = () => {} } = {}) {
 
 // The biome's ground texture, tiled under the villager.
 const groundArt = biome => {
-  const tex = art(BIOMES.find(b => b.k === biome).ground);
-  return tex ? paint(16, tex) : icon(`biome:${biome}`);
+  const name = BIOMES.find(b => b.k === biome).ground, tex = art(name);
+  if (!tex) return icon(`biome:${biome}`);
+  return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };

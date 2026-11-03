@@ -8,7 +8,6 @@
 .stage {
   --sky: #6f9cf5; --haze: #bcd5ff;
   position: relative; height: 268px; overflow: hidden;
-  display: flex; align-items: flex-end; justify-content: center; gap: 4px; padding: 0 12px 22px;
   background: linear-gradient(var(--sky), var(--haze) 78%);
   box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi);
 }
@@ -18,6 +17,13 @@
 .stage[data-biome="taiga"] { --sky: #6c90c6; --haze: #c8d8e6; }
 .stage[data-biome="jungle"] { --sky: #5c9ce2; --haze: #c4e6c6; }
 .stage[data-biome="swamp"] { --sky: #5f7d97; --haze: #b1bd9f; }
+/* The jungle's giant crowns leave open sky only from 128px left of the middle to 48px right of it, and
+   clouds behind leaves would speckle through their gaps, so its clouds keep to that gap, high enough to
+   stay clear of the villager's name tag. */
+.stage[data-biome="jungle"]::before {
+  left: calc(50% - 104px); top: 14px;
+  box-shadow: 20px -8px 0 rgba(255, 255, 255, .78), 64px 10px 0 rgba(255, 255, 255, .62);
+}
 /* Flat blocky clouds, and the ground: the biome's top texture, darker toward the front. */
 .stage::before {
   content: ""; position: absolute; top: 34px; left: 8%; width: 44px; height: 12px;
@@ -31,18 +37,23 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .stage::before { animation: clouds 45s linear infinite alternate; }
+  .stage[data-biome="jungle"]::before { animation-name: clouds-in-gap; }
   @keyframes clouds { to { transform: translateX(70px); } }
+  @keyframes clouds-in-gap { to { transform: translateX(20px); } }
 }
-.stage > * { position: relative; z-index: 1; }
-.actor { display: flex; flex-direction: column; align-items: center; margin-bottom: -4px; }
-.stage-villager { width: 140px; height: 200px; image-rendering: pixelated; cursor: grab; touch-action: pan-y; }
-.stage-villager:active { cursor: grabbing; }
-.stage-villager:focus-visible { outline-offset: -3px; }
+/* The biome's countryside behind the scene (under the ground strip), then the scene itself. */
+.stage-backdrop, .stage-scene {
+  position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); image-rendering: pixelated;
+}
+.stage-scene { z-index: 1; cursor: grab; touch-action: pan-y; }
+.stage-scene:active { cursor: grabbing; }
+.stage-scene:focus-visible { outline-offset: -3px; }
+/* Name tag over the villager's head; the scene moves it as the villager turns. */
 .nametag {
-  margin-bottom: -6px; padding: 3px 7px 4px; white-space: nowrap;
+  position: absolute; z-index: 2; transform: translate(-50%, -100%); pointer-events: none;
+  padding: 3px 7px 4px; white-space: nowrap;
   font: 400 15px/1 var(--font-pixel); color: var(--white); background: rgba(0, 0, 0, .45);
 }
-.stage-block { width: 80px; height: 80px; image-rendering: pixelated; margin-bottom: 4px; flex: none; }
 .stage-hint {
   position: absolute; top: 9px; right: 10px; z-index: 2; display: flex; align-items: center; gap: 6px;
   font: 400 13px/1 var(--font-pixel); color: var(--white); text-shadow: 1px 1px 0 rgba(0, 0, 0, .5);

@@ -90,6 +90,7 @@ FILES = {
     "barrel_side": "blocks/barrel_side", "barrel_top": "blocks/barrel_top",
     "blast_furnace_front": "blocks/blast_furnace_front_off", "blast_furnace_side": "blocks/blast_furnace_side",
     "blast_furnace_top": "blocks/blast_furnace_top", "brewing_stand": "items/brewing_stand",
+    "brewing_stand_block": "blocks/brewing_stand", "brewing_stand_base": "blocks/brewing_stand_base",
     "cartography_table_front": "blocks/cartography_table_side1", "cartography_table_side": "blocks/cartography_table_side2",
     "cartography_table_top": "blocks/cartography_table_top", "cauldron_side": "blocks/cauldron_side",
     "cauldron_top": "blocks/cauldron_top", "cauldron_inner": "blocks/cauldron_inner",
@@ -107,6 +108,24 @@ FILES = {
     "sand": "blocks/sand", "coarse_dirt": "blocks/coarse_dirt", "acacia_log": "blocks/log_acacia", "acacia_log_top": "blocks/log_acacia_top",
     "snowy_grass_side": "blocks/grass_side_snowed", "snow": "blocks/snow", "podzol_side": "blocks/dirt_podzol_side",
     "podzol_top": "blocks/dirt_podzol_top", "jungle_log": "blocks/log_jungle", "jungle_log_top": "blocks/log_jungle_top", "mud": "blocks/mud",
+    # Biome backdrops: trees, buildings and plants. Leaves, grass, ferns, vines and water are gray and take
+    # the biome's tint.
+    "log_oak": "blocks/log_oak", "log_spruce": "blocks/log_spruce", "leaves_oak": "blocks/leaves_oak",
+    "leaves_spruce": "blocks/leaves_spruce", "leaves_acacia": "blocks/leaves_acacia", "leaves_jungle": "blocks/leaves_jungle",
+    "planks_spruce": "blocks/planks_spruce", "planks_acacia": "blocks/planks_acacia", "planks_dark_oak": "blocks/planks_big_oak",
+    "cobblestone": "blocks/cobblestone", "mossy_cobblestone": "blocks/cobblestone_mossy",
+    "door_oak_upper": "blocks/door_wood_upper", "door_oak_lower": "blocks/door_wood_lower",
+    "door_spruce_upper": "blocks/door_spruce_upper", "door_spruce_lower": "blocks/door_spruce_lower",
+    "door_acacia_upper": "blocks/door_acacia_upper", "door_acacia_lower": "blocks/door_acacia_lower",
+    "smooth_sandstone": "blocks/sandstone_smooth", "chiseled_sandstone": "blocks/sandstone_carved",
+    "orange_terracotta": "blocks/hardened_clay_stained_orange", "yellow_terracotta": "blocks/hardened_clay_stained_yellow",
+    "hay_side": "blocks/hay_block_side", "wheat_crop": "blocks/wheat_stage_7", "dirt": "blocks/dirt", "packed_ice": "blocks/ice_packed",
+    "poppy": "blocks/flower_rose", "dandelion": "blocks/flower_dandelion", "cornflower": "blocks/flower_cornflower",
+    "short_grass": "blocks/tallgrass", "fern": "blocks/fern", "dead_bush": "blocks/deadbush",
+    "berry_bush": "blocks/sweet_berry_bush_stage3", "vine": "blocks/vine", "lily_pad": "blocks/waterlily",
+    "water": "blocks/water_still_grey", "grass_side_overlay": "blocks/grass_side", "grass_top": "blocks/grass_top",
+    "bamboo_stem": "blocks/bamboo_stem", "bamboo_leaf": "blocks/bamboo_leaf", "large_fern_top": "blocks/double_plant_fern_top",
+    "large_fern_bottom": "blocks/double_plant_fern_bottom", "mossy_stone_bricks": "blocks/stonebrick_mossy",
 }
 for color in COLORS:
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"
@@ -180,6 +199,8 @@ def main():
         src = pack / f"{file}.png"
         if src.exists():
             shutil.copyfile(src, out / f"{name}.png")
+        elif src.with_suffix(".tga").exists():
+            tga_to_png(src.with_suffix(".tga"), out / f"{name}.png")
         else:
             missing.append(file)
     print(f"art/: {len(FILES) - len(missing)} textures from {pack}")

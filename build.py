@@ -29,7 +29,7 @@ body { margin: 0; }
 def build_page():
     body = read("body.html").replace("<!-- brew.html -->\n", read("brew.html")).replace("<!-- trade.html -->\n", read("trade.html"))
     scripts = ["brew-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js",
-               "villager.js", "trade-data.js", "ui.js", "brew-ui.js", "trade-ui.js"]
+               "villager.js", "backdrop.js", "trade-data.js", "ui.js", "brew-ui.js", "trade-ui.js"]
     out = (head + read("style.css") + read("brew.css") + read("trade.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
            art_script() + "\n" + skins_script() + "\n" + "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")

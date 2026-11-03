@@ -6,7 +6,8 @@ if (!VILLAGERS.some(v => v.k === trade.villager)) trade.villager = "librarian";
 if (!BIOMES.some(b => b.k === trade.biome)) trade.biome = "plains";
 const saveTrade = () => { try { localStorage.setItem(TRADE_KEY, JSON.stringify(trade)); } catch (_) {} };
 
-const villagerView = villagerViewer($("villager-art"), { onTurn: () => $("villager-stage").classList.add("turned") });
+const villagerView = villagerScene($("villager-art"), $("villager-tag"), { onTurn: () => $("villager-stage").classList.add("turned") });
+const backdrop = backdropView($("villager-backdrop"));
 const currentVillager = () => VILLAGERS.find(v => v.k === trade.villager);
 const currentBiome = () => BIOMES.find(b => b.k === trade.biome);
 const villagerName = v => (state.edition === "bedrock" && v.bedrockName) || v.n;
@@ -91,16 +92,13 @@ function renderVillagers() {
     `<button type="button" class="slot slot-btn" id="biome-${b.k}" data-biome="${b.k}" data-name="${b.n}" aria-label="${b.n}" aria-pressed="${b.k === biome.k}">${iconImg(`biome:${b.k}`)}</button>`).join("");
   $("biome-name").textContent = biome.n;
   $("villager-tag").textContent = name;
-  villagerView.show(biome.k, v.k);
-  $("villager-art").setAttribute("aria-label", `${name} from ${article(biome.n)} ${biome.n.toLowerCase()} village. Drag or use the arrow keys to turn it.`);
+  villagerView.show(biome.k, v.k, v.site);
+  $("villager-art").setAttribute("aria-label", `${name} from ${article(biome.n)} ${biome.n.toLowerCase()} village, next to its ${v.site}. Drag or use the arrow keys to turn them.`);
   const stage = $("villager-stage");
   stage.dataset.biome = biome.k;
   stage.style.setProperty("--ground", `url('${groundArt(biome.k)}')`);
+  backdrop.show(biome.k);
   const site = ICONS[`site:${v.site}`] ? `site:${v.site}` : null;
-  const block = $("villager-block");
-  block.hidden = !site;
-  if (site) block.src = icon(site);
-  block.alt = v.site;
   $("villager-site").innerHTML = `${site ? `<span class="slot sm">${iconImg(site)}</span>` : ""}
     <span>Job site: <b>${esc(v.site)}</b>. An unemployed villager that claims one becomes ${article(name)} ${esc(name)}.</span>`;
 }
