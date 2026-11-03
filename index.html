@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Survival Toolkit</title>
-<meta name="description" content="Anvil enchanting planner and potion brewing guide for Minecraft, Java and Bedrock.">
+<meta name="description" content="Anvil enchanting planner, potion brewing guide and villager trade guide for Minecraft, Java and Bedrock.">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -306,6 +306,46 @@ a.mc-btn { text-decoration: none; }
 .mc-tooltip .tname.plain { color: var(--white); }
 .mc-tooltip li.good { color: #7f7fff; }
 .mc-tooltip li.bad { color: var(--tip-curse); }
+
+/* Villager trades */
+.mc-input {
+  width: 100%; margin-top: 2px; border-radius: 0;
+  font: 600 15px/1.2 var(--font-body); color: var(--white);
+  background: #000; border: 2px solid #a0a0a0; padding: 9px 10px;
+}
+.mc-input::placeholder { color: #8f8f8f; }
+.search-results { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
+.search-results .choice-hint { margin: 0; }
+.search-hit {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 10px;
+  width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+  background: transparent; border: 2px solid transparent; padding: 4px 6px;
+}
+.search-hit:hover { background: #d3d3d3; }
+.search-hit .who { font-weight: 800; font-size: 14px; }
+.search-hit .deal { font-size: 13px; color: var(--ink-soft); }
+
+.lvl { padding: 6px 18px 10px; }
+.lvl-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
+.badge { font: 600 15px/1 var(--font-pixel); color: #1b1b1b; padding: 5px 8px 6px; border: 2px solid var(--edge); box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .45), inset -2px -2px 0 rgba(0, 0, 0, .25); }
+.badge.l0 { background: #a3a3a3; }
+.badge.l1 { background: #e2e2e2; }
+.badge.l2 { background: #f5d04a; }
+.badge.l3 { background: #4ef28e; }
+.badge.l4 { background: #6ff0e0; }
+.lvl-note { font-size: 12.5px; color: var(--ink-soft); }
+.trades { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.trade {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 10px;
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.trade-slots { display: flex; align-items: center; gap: 6px; flex: none; }
+.trade-text { flex: 1 1 180px; min-width: 0; font-size: 14px; font-weight: 700; }
+.trade-text .sub { display: block; font-weight: 500; font-size: 12.5px; color: var(--ink-soft); }
+.pill { display: inline-block; vertical-align: 1px; margin-right: 6px; padding: 3px 6px 4px; border: 2px solid var(--edge); font: 800 11px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; }
+.pill.earn { background: var(--xp-shadow); color: var(--xp); }
+.pill.buy { background: var(--slot-lo); color: var(--white); }
+.trade.hit { background: var(--picked); box-shadow: inset 0 0 0 2px var(--picked-edge); }
 </style>
 </head>
 <body>
@@ -318,7 +358,7 @@ a.mc-btn { text-decoration: none; }
           <h1>Survival Toolkit</h1>
           <span class="splash" id="splash" aria-hidden="true">Never Too Expensive!</span>
         </div>
-        <p class="lede">Planners for the fiddly parts of survival: enchanting on an anvil and brewing potions, for Java and Bedrock.</p>
+        <p class="lede">Planners and guides for the fiddly parts of survival: anvil enchanting, potion brewing and villager trading, for Java and Bedrock.</p>
       </div>
     </div>
     <div class="edition" id="edition" role="group" aria-label="Game edition">
@@ -330,6 +370,7 @@ a.mc-btn { text-decoration: none; }
   <nav class="tabs" aria-label="Tools">
     <a class="mc-btn" href="#anvil" id="tab-anvil"><img class="ico" data-icon="ui:enchant" alt="">Anvil Planner</a>
     <a class="mc-btn" href="#brewing" id="tab-brewing"><img class="ico" data-icon="ui:potion" alt="">Brewing Guide</a>
+    <a class="mc-btn" href="#trading" id="tab-trading"><img class="ico" data-icon="ui:emerald" alt="">Villager Trades</a>
   </nav>
 
   <section id="view-anvil" aria-label="Anvil Planner">
@@ -454,6 +495,41 @@ a.mc-btn { text-decoration: none; }
         <li>A Fermented Spider Eye corrupts a potion into another one, such as Swiftness into Slowness or Night Vision into Invisibility.</li>
         <li>Gunpowder turns a potion into a splash potion with the same duration. Dragon’s Breath turns a splash potion into a lingering one, whose cloud gives a quarter of the duration.</li>
         <li>On Bedrock, extended Regeneration and Poison last 2:00 instead of 1:30, and Poison II lasts 0:22 instead of 0:21.</li>
+      </ul>
+    </details>
+  </section>
+  <section id="view-trading" aria-label="Villager Trades" hidden>
+    <p class="view-intro">Pick a villager to see everything it can buy and sell at each level, or search for an item to find who trades it.</p>
+    <div class="grid">
+      <div class="col">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Villager</h2>
+            <span class="picked-name" id="villager-name"></span>
+          </div>
+          <div class="slot-grid" id="villagers"></div>
+          <p class="choice-hint" id="villager-site"></p>
+        </section>
+
+        <section class="panel">
+          <h2><label for="trade-search">Find a trade</label></h2>
+          <input type="search" class="mc-input" id="trade-search" placeholder="Try Mending, Bell, Golden Carrot…" autocomplete="off" spellcheck="false">
+          <div class="search-results" id="trade-results" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <aside class="panel result" id="trade-result" aria-live="polite"></aside>
+    </div>
+
+    <details class="panel rules">
+      <summary>How trading works</summary>
+      <ul>
+        <li>A villager gets its profession from the job site block it claims, such as a Lectern for a Librarian. Nitwits never trade.</li>
+        <li>Trading gives the villager experience. Each time it levels up (Novice, Apprentice, Journeyman, Expert, Master) it unlocks trades from the next level.</li>
+        <li>A villager offers only some of each level’s trades. Java picks two at random when a level lists more; Bedrock fills each trade slot from its own pool.</li>
+        <li>Each trade can be used a limited number of times, then it locks until the villager restocks at its job site block, up to twice a day.</li>
+        <li>Prices go up when a trade is used a lot or villagers are hurt, and go down after you cure a zombie villager or while you have Hero of the Village.</li>
+        <li>Enchanted book prices depend on the enchantment and its level. Mending and other treasure enchantments cost more.</li>
       </ul>
     </details>
   </section>
@@ -1883,6 +1959,365 @@ Object.assign(ICONS, {
   "b:gunpowder":            { t: "dust", m: "flint" },
 });
 
+/* ---------- Trade item icons ----------
+ * Trades name hundreds of items, so icons come from a small set of templates and
+ * generated blocks, tinted per item. Unknown names fall back to a plain block.
+ */
+Object.assign(MAT, {
+  raw:    ["#ffc9c4", "#e8706f", "#b8433f", "#6a1d1b"],
+  cooked: ["#e9b07a", "#b06a35", "#7a3f18", "#3f1e08"],
+  rotten: ["#c9c98a", "#8f8f45", "#5f6a2c", "#2f3812"],
+  bread:  ["#f6d894", "#d39a4a", "#9a6326", "#4f2f0f"],
+  map:    ["#fff6d5", "#e9d9a6", "#c4ad74", "#7a6a3f"],
+  hide:   ["#e8cfa8", "#c49a68", "#8f6a3f", "#4f3a20"],
+  cod:    ["#e6d8b8", "#b9a27a", "#8a7350", "#4a3c26"],
+  potato: ["#f0d58f", "#c9a35a", "#937033", "#4f3a14"],
+  beet:   ["#e07a8f", "#a52a4a", "#6e1430", "#3a0718"],
+  clay:   ["#d2d8e4", "#a3abbd", "#7a8296", "#454b5a"],
+  ink:    ["#6a6a7a", "#3a3a48", "#20202a", "#0c0c12"],
+});
+
+Object.assign(TPL, {
+  ingot: [
+    "................", "................", "................", "................", "................",
+    "....1111111111..",
+    "...122222222223.",
+    "..1222222222223.",
+    "..2222222222233.",
+    "..3333333333333.",
+    "..4444444444444.",
+  ],
+  meat: [
+    "................", "................", "................", "................",
+    ".....11111......",
+    "...1122222211...",
+    "..122222222221..",
+    "..1222a2222222..",
+    "..12222222a222..",
+    "..222222222223..",
+    "...2222222233...",
+    "....33333333....",
+  ],
+  bowl: [
+    "................", "................", "................", "................", "................", "................",
+    "..1aaaaaaaaaa1..",
+    "..122222222223..",
+    "...1222222223...",
+    "....12222223....",
+    ".....333333.....",
+  ],
+  paper: [
+    "................", "................",
+    "...1111111111...",
+    "...1222222223...",
+    "...12aaaaaa23...",
+    "...1222222223...",
+    "...12aaaaa223...",
+    "...1222222223...",
+    "...12aaaaaa23...",
+    "...1222222223...",
+    "...12aaaa2223...",
+    "...1222222223...",
+    "...3333333333...",
+  ],
+  bucket: [
+    "................", "................",
+    "....22222222....",
+    "...2........2...",
+    "...1111111111...",
+    "...1aaaaaaaa3...",
+    "...1222222223...",
+    "...1222222223...",
+    "....12222223....",
+    "....12222223....",
+    "....12222233....",
+    ".....333333.....",
+  ],
+  bell: [
+    "................", "................",
+    ".......11.......",
+    "......1222......",
+    ".....122223.....",
+    ".....122223.....",
+    ".....122223.....",
+    "....12222223....",
+    "...1222222223...",
+    "..122222222223..",
+    "..333333333333..",
+    ".......33.......",
+  ],
+  wheat: [
+    "................",
+    "..........121...",
+    ".......1.12221..",
+    "......121.121...",
+    ".....12221.2....",
+    "......121.a.....",
+    ".......2.a......",
+    "........a.......",
+    ".......a........",
+    "......a.........",
+    ".....a..........",
+    "....a...........",
+    "...a............",
+  ],
+  candle: [
+    "................", "................",
+    ".......y........",
+    ".......k........",
+    "......1223......", "......1223......", "......1223......", "......1223......",
+    "......1223......", "......1223......", "......1223......", "......1223......",
+    "......3333......",
+  ],
+  boat: [
+    "................", "................", "................", "................", "................", "................", "................",
+    "..1..........1..",
+    "..12cccccccc21..",
+    "...1222222221...",
+    "....33333333....",
+  ],
+});
+
+const DYES = {
+  white: "#f9fffe", orange: "#f9801d", magenta: "#c74ebd", "light blue": "#3ab3da", yellow: "#fed83d", lime: "#80c71f",
+  pink: "#f38baa", gray: "#474f52", "light gray": "#9d9d97", cyan: "#169c9c", purple: "#8932b8", blue: "#3c44aa",
+  brown: "#835432", green: "#5e7c16", red: "#b02e26", black: "#1d1d21",
+};
+const shades = color => ({ 1: tint(color, 0.45), 2: color, 3: tint(color, -0.3), 4: tint(color, -0.55) });
+
+// A flat block face: speckled color with a light top-left and dark bottom-right edge.
+function blockGen(color, seed = 1, paint = null) {
+  const pal = [tint(color, 0.1), color, tint(color, -0.08), tint(color, -0.16)].map(hex);
+  return () => speckle(seed, 16, [], (r, x, y) => {
+    const custom = paint && paint(x, y, r);
+    if (custom) return hex(custom);
+    if (x === 0 || y === 0) return hex(tint(color, 0.25));
+    if (x === 15 || y === 15) return hex(tint(color, -0.35));
+    return pal[(r() * pal.length) | 0];
+  });
+}
+
+const TRADE_ICONS = {
+  "Emerald": { t: "gem", m: "emerald" }, "Diamond": { t: "gem", m: "diamond" }, "Lapis Lazuli": { t: "gem", m: "water" },
+  "Nether Quartz": { t: "gem", m: "string" }, "Flint": { t: "gem", m: "flint" }, "Coal": { t: "gem", m: "ink" },
+  "Iron Ingot": { t: "ingot", m: "iron" }, "Gold Ingot": { t: "ingot", m: "gold" }, "Brick": { t: "ingot", c: shades("#b5583d") },
+  "Lava Bucket": { t: "bucket", m: "iron", s: "fire" }, "Bucket of Cod": { t: "bucket", m: "iron", s: "water" },
+  "Bell": { t: "bell", m: "gold" }, "Shield": "shield", "Shears": "shears", "Bow": "bow", "Crossbow": "crossbow",
+  "Fishing Rod": "fishing_rod", "Book": "ui:book", "Book and Quill": "ui:book",
+  "Raw Chicken": { t: "meat", m: "raw", s: "string" }, "Raw Rabbit": { t: "meat", m: "raw", s: "string" },
+  "Raw Porkchop": { t: "meat", m: "raw", s: "string" }, "Raw Beef": { t: "meat", m: "raw", s: "string" },
+  "Raw Mutton": { t: "meat", m: "raw", s: "string" }, "Cooked Chicken": { t: "meat", m: "cooked", s: "bread" },
+  "Cooked Porkchop": { t: "meat", m: "cooked", s: "bread" }, "Rotten Flesh": { t: "meat", m: "rotten", s: "cooked" },
+  "Bread": { t: "meat", m: "bread", s: "bread" }, "Saddle": { t: "meat", m: "cooked", s: "iron" },
+  "Rabbit Stew": { t: "bowl", m: "wood", s: "cooked" }, "Suspicious Stew": { t: "bowl", m: "wood", s: "orange" },
+  "Raw Cod": { t: "fish", m: "cod" }, "Cooked Cod": { t: "fish", m: "cooked" }, "Raw Salmon": { t: "fish", m: "red" },
+  "Cooked Salmon": { t: "fish", m: "cooked" }, "Tropical Fish": { t: "fish", m: "orange" }, "Pufferfish": "b:pufferfish",
+  "Paper": { t: "paper", m: "string", s: "stone" }, "Empty Map": { t: "paper", m: "map", s: "map" },
+  "Village Map": { t: "paper", m: "map", s: "green" }, "Ocean Explorer Map": { t: "paper", m: "map", s: "water" },
+  "Trial Explorer Map": { t: "paper", m: "map", s: "orange" }, "Woodland Explorer Map": { t: "paper", m: "map", s: "emerald" },
+  "Banner": { t: "paper", m: "string", s: "red" }, "Globe Banner Pattern": { t: "paper", m: "map", s: "water" },
+  "Wheat": { t: "wheat", m: "gold", s: "green" }, "Carrot": { t: "carrot", m: "orange" }, "Golden Carrot": "b:golden_carrot",
+  "Potato": { t: "orb", m: "potato" }, "Beetroot": { t: "orb", m: "beet" }, "Apple": { t: "orb", m: "red" },
+  "Sweet Berries": { t: "orb", m: "red" }, "Cookie": { t: "orb", m: "cooked" }, "Pumpkin Pie": { t: "orb", m: "orange" },
+  "Ender Pearl": { t: "orb", m: "teal" }, "Clay Ball": { t: "orb", m: "clay" }, "Ink Sac": { t: "orb", m: "ink" },
+  "Compass": { t: "orb", m: "iron" }, "Clock": { t: "orb", m: "gold" }, "Glistering Melon Slice": "b:glistering_melon",
+  "Rabbit's Foot": "b:rabbit_foot", "Nether Wart": "b:nether_wart", "Redstone Dust": "b:redstone",
+  "Turtle Scute": { t: "crest", m: "turtle" }, "Glass Bottle": { t: "potion", c: shades("#dcecf5") },
+  "Bottle o' Enchanting": { t: "potion", c: shades("#a8e04a") }, "Lantern": { t: "potion", c: shades("#ffb340") },
+  "Campfire": { t: "flame", m: "fire" }, "String": { t: "web", m: "string" }, "Feather": { t: "feather", m: "string", s: "stone" },
+  "Stick": { t: "breezerod", m: "wood" }, "Arrow": { t: "arrow", m: "iron", s: "wood" }, "Tipped Arrow": { t: "arrow", m: "purple", s: "wood" },
+  "Tripwire Hook": { t: "lock", m: "iron" }, "Leather": { t: "membrane", m: "cooked" }, "Rabbit Hide": { t: "membrane", m: "hide" },
+  "Boat": { t: "boat", m: "wood", s: "wood" }, "Red Candle": { t: "candle", m: "red" }, "Yellow Candle": { t: "candle", m: "gold" },
+  "Glowstone": { gen: blockGen("#e9c46a", 3) }, "Pumpkin": { gen: blockGen("#e38a1d", 4) }, "Melon": { gen: blockGen("#7fa33a", 5) },
+  "Dried Kelp Block": { gen: blockGen("#3b4a2a", 6) }, "Gravel": { gen: blockGen("#8a8380", 7) }, "Stone": "b:stone",
+  "Granite": { gen: blockGen("#9f6b58", 8) }, "Andesite": { gen: blockGen("#8a8b8d", 9) }, "Diorite": { gen: blockGen("#cfcfd0", 10) },
+  "Polished Granite": { gen: blockGen("#a8705c", 11) }, "Polished Andesite": { gen: blockGen("#868889", 12) },
+  "Polished Diorite": { gen: blockGen("#c9c9ca", 13) }, "Chiseled Stone Bricks": { gen: blockGen("#7d7d7d", 14, (x, y) => (x % 8 === 7 || y % 8 === 7) && "#5a5a5a") },
+  "Dripstone Block": { gen: blockGen("#86644f", 15) }, "Terracotta": { gen: blockGen("#9e5b3e", 16) },
+  "Glazed Terracotta": { gen: blockGen("#3ab3da", 17, (x, y) => ((x >> 2) + (y >> 2)) % 2 === 0 && "#f9d77e") },
+  "Block of Quartz": { gen: blockGen("#ebe5de", 18) }, "Quartz Pillar": { gen: blockGen("#ebe5de", 19, x => x % 5 === 2 && "#cfc7bd") },
+  "Glass": { gen: blockGen("#dff3ff", 20, (x, y) => (x === y || x === y + 1) && x > 3 && x < 9 && "#ffffff") },
+  "Glass Pane": { gen: blockGen("#dff3ff", 21, (x, y) => (x === y || x === y + 1) && x > 3 && x < 9 && "#ffffff") },
+  "Bookshelf": { gen: blockGen("#9b7440", 22, (x, y) => y > 2 && y < 13 && y !== 7 && y !== 8 && x > 0 && x < 15 && ["#b02e26", "#3c44aa", "#5e7c16", "#835432"][(x >> 1) % 4]) },
+  "Item Frame": { gen: blockGen("#9b7440", 23, (x, y) => x > 2 && x < 13 && y > 2 && y < 13 && "#b06a35") },
+  "Painting": { gen: blockGen("#9b7440", 24, (x, y) => x > 1 && x < 14 && y > 1 && y < 14 && (y < 8 ? "#69a9ff" : "#5fbf2a")) },
+  "Bed": { gen: blockGen("#b02e26", 25, (x, y) => y < 5 && "#f9fffe") },
+  "Cake": { gen: blockGen("#e9c48a", 26, (x, y, r) => (y < 5 ? "#f9fffe" : y < 6 && r() < 0.4 && "#d42c2c")) },
+};
+
+const ARMOR_TPL = { Helmet: "helmet", Cap: "helmet", Chestplate: "chestplate", Tunic: "chestplate", "Horse Armor": "chestplate",
+  Leggings: "leggings", Pants: "leggings", Boots: "boots", Axe: "axe", Shovel: "shovel", Pickaxe: "pickaxe", Hoe: "hoe", Sword: "sword" };
+const ARMOR_MAT = { Iron: "iron", Chainmail: "stone", Diamond: "diamond", Leather: "cooked", Stone: "stone" };
+
+function tradeSpec(name) {
+  const known = TRADE_ICONS[name];
+  if (typeof known === "string") return ICONS[known];
+  if (known) return known;
+  let m = name.match(/^(.+) (Wool|Carpet)$/);
+  if (m) return { gen: blockGen(DYES[m[1].toLowerCase()] || DYES.white, 30) };
+  if (name === "Wool" || name === "Carpet") return { gen: blockGen(DYES.white, 30) };
+  m = name.match(/^(.+) Dye$/);
+  if (m && DYES[m[1].toLowerCase()]) return { t: "dust", c: shades(DYES[m[1].toLowerCase()]) };
+  m = name.match(/^(Iron|Chainmail|Diamond|Leather|Stone) (.+)$/);
+  if (m && ARMOR_TPL[m[2]]) return { t: ARMOR_TPL[m[2]], m: ARMOR_MAT[m[1]], s: "wood" };
+  return { gen: blockGen("#8b8b8b", 31) };
+}
+
+// Icon for a trade item; "Enchanted …" items get the glint.
+function tradeIcon(name) {
+  const glint = name.startsWith("Enchanted ");
+  const base = glint ? name.slice("Enchanted ".length) : name;
+  const key = "t:" + base;
+  if (!ICONS[key]) ICONS[key] = tradeSpec(base);
+  return { key, glint };
+}
+
+const VILLAGER_ICON = {
+  armorer: "Iron Chestplate", butcher: "Raw Beef", cartographer: "Empty Map", cleric: "Bottle o' Enchanting",
+  farmer: "Wheat", fisherman: "Fishing Rod", fletcher: "Arrow", leatherworker: "Leather Tunic", librarian: "Book",
+  mason: "Brick", shepherd: "White Wool", toolsmith: "Iron Pickaxe", weaponsmith: "Iron Sword",
+};
+ICONS["ui:emerald"] = TRADE_ICONS.Emerald;
+
+/* ---------- Villager trade data ----------
+ * From the Minecraft Wiki trading tables (26.x). Java and Bedrock share these trades;
+ * they differ in which of a level's trades a villager ends up offering.
+ * Trade format: "wants > gives # note", with "+" between two wanted items and an
+ * optional count or price range before each item.
+ */
+const LEVELS = ["Novice", "Apprentice", "Journeyman", "Expert", "Master"];
+
+const VILLAGERS = [
+  { k: "armorer", n: "Armorer", site: "Blast Furnace",
+    tip: "Turns coal, iron, lava and diamonds into emeralds. Expert and Master sell enchanted diamond armor.",
+    levels: [
+      ["15 Coal > Emerald", "5 Emerald > Iron Helmet", "9 Emerald > Iron Chestplate", "7 Emerald > Iron Leggings", "4 Emerald > Iron Boots"],
+      ["4 Iron Ingot > Emerald", "36 Emerald > Bell", "3 Emerald > Chainmail Leggings", "Emerald > Chainmail Boots"],
+      ["Lava Bucket > Emerald", "Diamond > Emerald", "Emerald > Chainmail Helmet", "4 Emerald > Chainmail Chestplate", "5 Emerald > Shield"],
+      ["19–33 Emerald > Enchanted Diamond Leggings", "13–27 Emerald > Enchanted Diamond Boots"],
+      ["13–27 Emerald > Enchanted Diamond Helmet", "21–35 Emerald > Enchanted Diamond Chestplate"],
+    ] },
+  { k: "butcher", n: "Butcher", site: "Smoker",
+    tip: "Buys raw meat, kelp and sweet berries, so it pairs well with an animal or berry farm.",
+    levels: [
+      ["14 Raw Chicken > Emerald", "4 Raw Rabbit > Emerald", "7 Raw Porkchop > Emerald", "Emerald > Rabbit Stew"],
+      ["15 Coal > Emerald", "Emerald > 8 Cooked Chicken", "Emerald > 5 Cooked Porkchop"],
+      ["10 Raw Beef > Emerald", "7 Raw Mutton > Emerald"],
+      ["10 Dried Kelp Block > Emerald"],
+      ["10 Sweet Berries > Emerald"],
+    ] },
+  { k: "cartographer", n: "Cartographer", site: "Cartography Table",
+    tip: "Sells explorer maps that lead to villages, ocean monuments, trial chambers and woodland mansions.",
+    levels: [
+      ["24 Paper > Emerald", "7 Emerald > Empty Map"],
+      ["11 Glass Pane > Emerald", "8 Emerald + Compass > Village Map"],
+      ["Compass > Emerald", "13 Emerald + Compass > Ocean Explorer Map", "12 Emerald + Compass > Trial Explorer Map"],
+      ["7 Emerald > Item Frame", "3 Emerald > Banner # any color"],
+      ["8 Emerald > Globe Banner Pattern", "14 Emerald + Compass > Woodland Explorer Map"],
+    ] },
+  { k: "cleric", n: "Cleric", site: "Brewing Stand",
+    tip: "Buys rotten flesh, a free drop from zombies. Sells ender pearls and Bottles o’ Enchanting.",
+    levels: [
+      ["32 Rotten Flesh > Emerald", "Emerald > 2 Redstone Dust"],
+      ["3 Gold Ingot > Emerald", "Emerald > Lapis Lazuli"],
+      ["2 Rabbit's Foot > Emerald", "4 Emerald > Glowstone"],
+      ["4 Turtle Scute > Emerald", "9 Glass Bottle > Emerald", "5 Emerald > Ender Pearl"],
+      ["22 Nether Wart > Emerald", "3 Emerald > Bottle o' Enchanting"],
+    ] },
+  { k: "farmer", n: "Farmer", site: "Composter",
+    tip: "Buys crops, the easiest emeralds in the game. Sells golden carrots, great food for long trips.",
+    levels: [
+      ["20 Wheat > Emerald", "26 Potato > Emerald", "22 Carrot > Emerald", "15 Beetroot > Emerald", "Emerald > 6 Bread"],
+      ["6 Pumpkin > Emerald", "Emerald > 4 Pumpkin Pie", "Emerald > 4 Apple"],
+      ["4 Melon > Emerald", "3 Emerald > 18 Cookie"],
+      ["Emerald > Suspicious Stew", "Emerald > Cake"],
+      ["3 Emerald > 3 Golden Carrot", "4 Emerald > 3 Glistering Melon Slice"],
+    ] },
+  { k: "fisherman", n: "Fisherman", site: "Barrel",
+    tip: "Buys string, coal, fish and boats. Sells enchanted fishing rods and campfires.",
+    levels: [
+      ["20 String > Emerald", "10 Coal > Emerald", "3 Emerald > Bucket of Cod", "6 Raw Cod + Emerald > 6 Cooked Cod"],
+      ["15 Raw Cod > Emerald", "2 Emerald > Campfire", "6 Raw Salmon + Emerald > 6 Cooked Salmon"],
+      ["13 Raw Salmon > Emerald", "8–22 Emerald > Enchanted Fishing Rod"],
+      ["6 Tropical Fish > Emerald"],
+      ["4 Pufferfish > Emerald", "Boat > Emerald # wood type depends on the biome"],
+    ] },
+  { k: "fletcher", n: "Fletcher", site: "Fletching Table",
+    tip: "Buys 32 sticks for an emerald, an easy trade next to a tree farm. Sells enchanted bows and crossbows.",
+    levels: [
+      ["32 Stick > Emerald", "Emerald > 16 Arrow", "10 Gravel + Emerald > 10 Flint"],
+      ["26 Flint > Emerald", "2 Emerald > Bow"],
+      ["14 String > Emerald", "3 Emerald > Crossbow"],
+      ["24 Feather > Emerald", "7–21 Emerald > Enchanted Bow"],
+      ["8 Tripwire Hook > Emerald", "8–22 Emerald > Enchanted Crossbow", "2 Emerald + 5 Arrow > 5 Tipped Arrow"],
+    ] },
+  { k: "leatherworker", n: "Leatherworker", site: "Cauldron",
+    tip: "Buys leather, rabbit hide and flint. Sells dyed leather armor, horse armor and saddles.",
+    levels: [
+      ["6 Leather > Emerald", "3 Emerald > Leather Pants # random color", "7 Emerald > Leather Tunic # random color"],
+      ["26 Flint > Emerald", "5 Emerald > Leather Cap # random color", "4 Emerald > Leather Boots # random color"],
+      ["9 Rabbit Hide > Emerald", "7 Emerald > Leather Tunic # random color"],
+      ["4 Turtle Scute > Emerald", "6 Emerald > Leather Horse Armor # random color"],
+      ["5 Emerald > Leather Cap # random color", "6 Emerald > Saddle"],
+    ] },
+  { k: "librarian", n: "Librarian", site: "Lectern",
+    tip: "The most useful villager: sells enchanted books, including Mending. Before its first trade, break and replace the lectern to roll new offers.",
+    levels: [
+      ["24 Paper > Emerald", "9 Emerald > Bookshelf", "5–64 Emerald + Book > Enchanted Book # random enchantment"],
+      ["4 Book > Emerald", "Emerald > Lantern", "5–64 Emerald + Book > Enchanted Book # random enchantment"],
+      ["5 Ink Sac > Emerald", "Emerald > 4 Glass", "5–64 Emerald + Book > Enchanted Book # random enchantment"],
+      ["Book and Quill > Emerald # Bedrock asks for 2", "4 Emerald > Compass", "5 Emerald > Clock", "5–64 Emerald + Book > Enchanted Book # random enchantment"],
+      ["3 Emerald > Red Candle", "3 Emerald > Yellow Candle"],
+    ] },
+  { k: "mason", n: "Mason", bedrockName: "Stone Mason", site: "Stonecutter",
+    tip: "Buys clay, stone and quartz. Sells polished stone, dripstone, terracotta and quartz blocks for building.",
+    levels: [
+      ["10 Clay Ball > Emerald", "Emerald > 10 Brick"],
+      ["20 Stone > Emerald", "Emerald > 4 Chiseled Stone Bricks"],
+      ["16 Granite > Emerald", "16 Andesite > Emerald", "16 Diorite > Emerald", "Emerald > 4 Dripstone Block", "Emerald > 4 Polished Andesite", "Emerald > 4 Polished Diorite", "Emerald > 4 Polished Granite"],
+      ["12 Nether Quartz > Emerald", "Emerald > Terracotta # any color", "Emerald > Glazed Terracotta # any color"],
+      ["Emerald > Quartz Pillar", "Emerald > Block of Quartz"],
+    ] },
+  { k: "shepherd", n: "Shepherd", site: "Loom",
+    tip: "Buys wool and dyes. Sells shears, beds, banners, carpets and paintings.",
+    levels: [
+      ["18 White Wool > Emerald", "18 Brown Wool > Emerald", "18 Black Wool > Emerald", "18 Gray Wool > Emerald", "2 Emerald > Shears"],
+      ["12 White Dye > Emerald", "12 Gray Dye > Emerald", "12 Black Dye > Emerald", "12 Light Blue Dye > Emerald", "12 Lime Dye > Emerald", "Emerald > Wool # any color", "Emerald > 4 Carpet # any color"],
+      ["12 Yellow Dye > Emerald", "12 Light Gray Dye > Emerald", "12 Orange Dye > Emerald", "12 Red Dye > Emerald", "12 Pink Dye > Emerald", "3 Emerald > Bed # any color"],
+      ["12 Brown Dye > Emerald", "12 Purple Dye > Emerald", "12 Blue Dye > Emerald", "12 Green Dye > Emerald", "12 Magenta Dye > Emerald", "12 Cyan Dye > Emerald", "3 Emerald > Banner # any color"],
+      ["2 Emerald > 3 Painting"],
+    ] },
+  { k: "toolsmith", n: "Toolsmith", site: "Smithing Table",
+    tip: "Buys coal, iron, flint and diamonds. Sells enchanted iron and diamond tools.",
+    levels: [
+      ["15 Coal > Emerald", "Emerald > Stone Axe", "Emerald > Stone Shovel", "Emerald > Stone Pickaxe", "Emerald > Stone Hoe"],
+      ["4 Iron Ingot > Emerald", "36 Emerald > Bell"],
+      ["30 Flint > Emerald", "6–20 Emerald > Enchanted Iron Axe", "7–21 Emerald > Enchanted Iron Shovel", "8–22 Emerald > Enchanted Iron Pickaxe", "4 Emerald > Diamond Hoe"],
+      ["Diamond > Emerald", "17–31 Emerald > Enchanted Diamond Axe", "10–24 Emerald > Enchanted Diamond Shovel"],
+      ["18–32 Emerald > Enchanted Diamond Pickaxe"],
+    ] },
+  { k: "weaponsmith", n: "Weaponsmith", site: "Grindstone",
+    tip: "Buys coal, iron, flint and diamonds. Sells iron axes and enchanted swords and axes.",
+    levels: [
+      ["15 Coal > Emerald", "3 Emerald > Iron Axe", "7–21 Emerald > Enchanted Iron Sword"],
+      ["4 Iron Ingot > Emerald", "36 Emerald > Bell"],
+      ["24 Flint > Emerald"],
+      ["Diamond > Emerald", "17–31 Emerald > Enchanted Diamond Axe"],
+      ["13–27 Emerald > Enchanted Diamond Sword"],
+    ] },
+];
+
+function parseTrade(text) {
+  const [main, note = ""] = text.split(" # ");
+  const [wants, gives] = main.split(" > ");
+  const item = t => {
+    const m = t.match(/^(\d+(?:–\d+)?) (.+)$/);
+    return m ? { count: m[1], name: m[2] } : { count: "1", name: t };
+  };
+  return { wants: wants.split(" + ").map(item), gives: item(gives), note };
+}
+for (const v of VILLAGERS) v.trades = v.levels.map(list => list.map(parseTrade));
+
 /* ---------- UI ---------- */
 const ROMAN = ["", "I", "II", "III", "IV", "V"];
 const $ = id => document.getElementById(id);
@@ -2273,7 +2708,7 @@ $("brew-more").addEventListener("click", () => { brew.count = Math.min(64, brew.
 $("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderBrew(); });
 
 /* ---------- Tool tabs ---------- */
-const VIEWS = ["anvil", "brewing"];
+const VIEWS = ["anvil", "brewing", "trading"];
 function showView() {
   const current = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "anvil";
   for (const v of VIEWS) {
@@ -2284,11 +2719,129 @@ function showView() {
 }
 window.addEventListener("hashchange", showView);
 
-const SPLASHES = ["Never Too Expensive!", "Now with potions!", "Brew responsibly!", "Also try nether wart!", "XP well spent!", "Mind the blaze powder!"];
+const SPLASHES = ["Never Too Expensive!", "Now with potions!", "Brew responsibly!", "Also try nether wart!", "XP well spent!", "Mind the blaze powder!", "Hrmm!", "Emeralds welcome!"];
 $("splash").textContent = SPLASHES[Math.floor(Math.random() * SPLASHES.length)];
 
 renderBrew();
 showView();
+
+/* ---------- Villager trades ---------- */
+const trade = { villager: "librarian", query: "" };
+const TRADE_KEY = "villager-trades-v1";
+try { Object.assign(trade, JSON.parse(localStorage.getItem(TRADE_KEY) || "{}")); } catch (_) {}
+if (!VILLAGERS.some(v => v.k === trade.villager)) trade.villager = "librarian";
+
+const currentVillager = () => VILLAGERS.find(v => v.k === trade.villager);
+const villagerName = v => (state.edition === "bedrock" && v.bedrockName) || v.n;
+const villagerIcon = v => tradeIcon(VILLAGER_ICON[v.k]).key;
+const isEarn = t => t.gives.name === "Emerald";
+const itemText = it => `${it.count === "1" ? "" : it.count + " "}${it.name}`;
+const dealText = t => `${t.wants.map(itemText).join(" + ")} → ${itemText(t.gives)}`;
+const ENCH_NAMES = Object.values(ENCH).map(e => e.n.toLowerCase());
+
+// A trade matches the search by any item name; enchantment names match the librarian's random books.
+function matches(t, q) {
+  if (!q) return false;
+  if ([...t.wants, t.gives].some(it => it.name.toLowerCase().includes(q))) return true;
+  return t.gives.name === "Enchanted Book" && ENCH_NAMES.some(n => n.includes(q));
+}
+
+function itemSlot(it) {
+  const { key, glint } = tradeIcon(it.name);
+  const count = /^\d+$/.test(it.count) && +it.count > 1 ? `<span class="count">${it.count}</span>` : "";
+  return glint
+    ? `<span class="slot sm glint" style="--m:url('${icon(key)}')">${iconImg(key)}${count}</span>`
+    : `<span class="slot sm">${iconImg(key)}${count}</span>`;
+}
+
+const tradeRow = (t, q) => `
+  <li class="trade${matches(t, q) ? " hit" : ""}">
+    <div class="trade-slots">${t.wants.map(itemSlot).join('<span class="op">+</span>')}${iconImg("ui:arrow")}${itemSlot(t.gives)}</div>
+    <div class="trade-text"><span class="pill ${isEarn(t) ? "earn" : "buy"}">${isEarn(t) ? "Sell" : "Buy"}</span>${esc(dealText(t))}${t.note ? `<span class="sub">${esc(t.note[0].toUpperCase() + t.note.slice(1))}</span>` : ""}</div>
+  </li>`;
+
+function renderVillagers() {
+  const v = currentVillager();
+  $("villagers").innerHTML = VILLAGERS.map(x =>
+    `<button type="button" class="slot slot-btn" id="villager-${x.k}" data-villager="${x.k}" data-name="${esc(villagerName(x))}" aria-label="${esc(villagerName(x))}" aria-pressed="${x.k === v.k}">${iconImg(villagerIcon(x))}</button>`).join("");
+  $("villager-name").textContent = villagerName(v);
+  $("villager-site").textContent = `Job site block: ${v.site}`;
+}
+
+function renderTradeResult() {
+  const v = currentVillager();
+  const q = trade.query.trim().toLowerCase();
+  const all = v.trades.flat();
+  const offers = list => list.length <= 2 ? "Offers both"
+    : state.edition === "java" ? `Offers 2 of these ${list.length} at random` : `Offers some of these ${list.length} at random`;
+  $("trade-result").innerHTML = `
+    <div class="res-top">
+      <div class="res-title">${iconImg(villagerIcon(v))}<h2>${esc(villagerName(v))} · ${state.edition === "java" ? "Java" : "Bedrock"}</h2></div>
+      <p class="compare">${esc(v.tip)}</p>
+      <div class="mini">
+        <span>Job site <b>${esc(v.site)}</b></span>
+        <span>Trades <b>${all.length}</b></span>
+        <span>Pay you emeralds <b>${all.filter(isEarn).length}</b></span>
+      </div>
+    </div>
+    ${v.trades.map((list, i) => `
+      <section class="lvl">
+        <div class="lvl-head"><span class="badge l${i}">${LEVELS[i]}</span><span class="lvl-note">${list.length === 1 ? "One trade" : offers(list)}</span></div>
+        <ul class="trades">${list.map(t => tradeRow(t, q)).join("")}</ul>
+      </section>`).join("")}`;
+}
+
+function renderSearch() {
+  const q = trade.query.trim().toLowerCase();
+  const box = $("trade-results");
+  if (!q) {
+    box.innerHTML = `<p class="choice-hint">Matches from every villager show here as you type.</p>`;
+    return;
+  }
+  const hits = [];
+  for (const v of VILLAGERS) v.trades.forEach((list, i) => list.forEach(t => { if (matches(t, q)) hits.push({ v, i, t }); }));
+  const enchNote = ENCH_NAMES.some(n => n.includes(q))
+    ? `<p class="choice-hint">Enchantments come on random Enchanted Books from Librarians, so keep rerolling a novice Librarian’s lectern until the one you want shows up.</p>` : "";
+  box.innerHTML = enchNote + (hits.length
+    ? hits.slice(0, 25).map(h => `
+        <button type="button" class="search-hit" data-villager="${h.v.k}">
+          ${iconImg(villagerIcon(h.v))}
+          <span><span class="who">${esc(villagerName(h.v))} · ${LEVELS[h.i]}</span><br><span class="deal">${esc(dealText(h.t))}</span></span>
+        </button>`).join("") + (hits.length > 25 ? `<p class="choice-hint">And ${hits.length - 25} more. Type more of the name to narrow it down.</p>` : "")
+    : `<p class="choice-hint">No villager trades anything called “${esc(trade.query.trim())}”.</p>`);
+}
+
+function renderTrades() {
+  renderVillagers();
+  renderTradeResult();
+  renderSearch();
+  try { localStorage.setItem(TRADE_KEY, JSON.stringify(trade)); } catch (_) {}
+}
+
+$("villagers").addEventListener("click", e => {
+  const b = e.target.closest("button[data-villager]");
+  if (!b) return;
+  trade.villager = b.dataset.villager;
+  renderTrades();
+  refocus(`#villager-${trade.villager}`);
+});
+$("trade-results").addEventListener("click", e => {
+  const b = e.target.closest("button[data-villager]");
+  if (!b) return;
+  trade.villager = b.dataset.villager;
+  renderTrades();
+  if (window.innerWidth < 880) $("trade-result").scrollIntoView({ block: "start" });
+});
+$("trade-search").addEventListener("input", e => {
+  trade.query = e.target.value;
+  renderTradeResult();
+  renderSearch();
+  try { localStorage.setItem(TRADE_KEY, JSON.stringify(trade)); } catch (_) {}
+});
+$("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderTrades(); });
+
+$("trade-search").value = trade.query;
+renderTrades();
 </script>
 </body>
 </html>

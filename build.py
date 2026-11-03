@@ -14,7 +14,7 @@ head = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Survival Toolkit</title>
-<meta name="description" content="Anvil enchanting planner and potion brewing guide for Minecraft, Java and Bedrock.">
+<meta name="description" content="Anvil enchanting planner, potion brewing guide and villager trade guide for Minecraft, Java and Bedrock.">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -28,9 +28,9 @@ body { margin: 0; }
 
 
 def build_page():
-    body = read("body.html").replace("<!-- brew.html -->\n", read("brew.html"))
-    scripts = ["brew-data.js", "icons.js", "icons2.js", "icons3.js", "ui.js", "brew-ui.js"]
-    out = (head + read("style.css") + read("brew.css") + "</style>\n</head>\n<body>\n" + body +
+    body = read("body.html").replace("<!-- brew.html -->\n", read("brew.html")).replace("<!-- trade.html -->\n", read("trade.html"))
+    scripts = ["brew-data.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "trade-data.js", "ui.js", "brew-ui.js", "trade-ui.js"]
+    out = (head + read("style.css") + read("brew.css") + read("trade.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
            "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")
     (root / "index.html").write_text(out)

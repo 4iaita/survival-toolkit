@@ -1,0 +1,40 @@
+
+/* Villager trades */
+.mc-input {
+  width: 100%; margin-top: 2px; border-radius: 0;
+  font: 600 15px/1.2 var(--font-body); color: var(--white);
+  background: #000; border: 2px solid #a0a0a0; padding: 9px 10px;
+}
+.mc-input::placeholder { color: #8f8f8f; }
+.search-results { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
+.search-results .choice-hint { margin: 0; }
+.search-hit {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 10px;
+  width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+  background: transparent; border: 2px solid transparent; padding: 4px 6px;
+}
+.search-hit:hover { background: #d3d3d3; }
+.search-hit .who { font-weight: 800; font-size: 14px; }
+.search-hit .deal { font-size: 13px; color: var(--ink-soft); }
+
+.lvl { padding: 6px 18px 10px; }
+.lvl-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
+.badge { font: 600 15px/1 var(--font-pixel); color: #1b1b1b; padding: 5px 8px 6px; border: 2px solid var(--edge); box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .45), inset -2px -2px 0 rgba(0, 0, 0, .25); }
+.badge.l0 { background: #a3a3a3; }
+.badge.l1 { background: #e2e2e2; }
+.badge.l2 { background: #f5d04a; }
+.badge.l3 { background: #4ef28e; }
+.badge.l4 { background: #6ff0e0; }
+.lvl-note { font-size: 12.5px; color: var(--ink-soft); }
+.trades { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.trade {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 10px;
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.trade-slots { display: flex; align-items: center; gap: 6px; flex: none; }
+.trade-text { flex: 1 1 180px; min-width: 0; font-size: 14px; font-weight: 700; }
+.trade-text .sub { display: block; font-weight: 500; font-size: 12.5px; color: var(--ink-soft); }
+.pill { display: inline-block; vertical-align: 1px; margin-right: 6px; padding: 3px 6px 4px; border: 2px solid var(--edge); font: 800 11px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; }
+.pill.earn { background: var(--xp-shadow); color: var(--xp); }
+.pill.buy { background: var(--slot-lo); color: var(--white); }
+.trade.hit { background: var(--picked); box-shadow: inset 0 0 0 2px var(--picked-edge); }

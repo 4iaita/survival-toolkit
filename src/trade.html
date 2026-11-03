@@ -1,0 +1,35 @@
+  <section id="view-trading" aria-label="Villager Trades" hidden>
+    <p class="view-intro">Pick a villager to see everything it can buy and sell at each level, or search for an item to find who trades it.</p>
+    <div class="grid">
+      <div class="col">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Villager</h2>
+            <span class="picked-name" id="villager-name"></span>
+          </div>
+          <div class="slot-grid" id="villagers"></div>
+          <p class="choice-hint" id="villager-site"></p>
+        </section>
+
+        <section class="panel">
+          <h2><label for="trade-search">Find a trade</label></h2>
+          <input type="search" class="mc-input" id="trade-search" placeholder="Try Mending, Bell, Golden Carrot…" autocomplete="off" spellcheck="false">
+          <div class="search-results" id="trade-results" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <aside class="panel result" id="trade-result" aria-live="polite"></aside>
+    </div>
+
+    <details class="panel rules">
+      <summary>How trading works</summary>
+      <ul>
+        <li>A villager gets its profession from the job site block it claims, such as a Lectern for a Librarian. Nitwits never trade.</li>
+        <li>Trading gives the villager experience. Each time it levels up (Novice, Apprentice, Journeyman, Expert, Master) it unlocks trades from the next level.</li>
+        <li>A villager offers only some of each level’s trades. Java picks two at random when a level lists more; Bedrock fills each trade slot from its own pool.</li>
+        <li>Each trade can be used a limited number of times, then it locks until the villager restocks at its job site block, up to twice a day.</li>
+        <li>Prices go up when a trade is used a lot or villagers are hurt, and go down after you cure a zombie villager or while you have Hero of the Village.</li>
+        <li>Enchanted book prices depend on the enchantment and its level. Mending and other treasure enchantments cost more.</li>
+      </ul>
+    </details>
+  </section>
