@@ -14,17 +14,23 @@ Object.assign(MAT, {
   beet:   ["#e07a8f", "#a52a4a", "#6e1430", "#3a0718"],
   clay:   ["#d2d8e4", "#a3abbd", "#7a8296", "#454b5a"],
   ink:    ["#6a6a7a", "#3a3a48", "#20202a", "#0c0c12"],
+  coal:   ["#7a7a84", "#3c3c44", "#25252b", "#101014"],
+  straw:  ["#e4cf72", "#b89d3e", "#7f6a22", "#4a3d12"],
 });
 
 Object.assign(TPL, {
   ingot: [
-    "................", "................", "................", "................", "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
     "....1111111111..",
-    "...122222222223.",
-    "..1222222222223.",
-    "..2222222222233.",
-    "..3333333333333.",
-    "..4444444444444.",
+    "...122222222221.",
+    "..1222222222221.",
+    "..3333333333332.",
+    "..3333333333332.",
+    "..4444444444443.",
   ],
   meat: [
     "................", "................", "................", "................",
@@ -87,18 +93,48 @@ Object.assign(TPL, {
   ],
   wheat: [
     "................",
-    "..........121...",
-    ".......1.12221..",
-    "......121.121...",
-    ".....12221.2....",
-    "......121.a.....",
-    ".......2.a......",
-    "........a.......",
-    ".......a........",
-    "......a.........",
+    ".............12.",
+    "...........123..",
+    "..........1y3...",
+    ".........123....",
+    "........1y3.....",
+    ".......123......",
+    "......123.......",
+    "......aa........",
+    ".....a.a........",
+    "....a..a........",
+    "...a..a.........",
+    "..a...a.........",
+    ".a...a..........",
     ".....a..........",
-    "....a...........",
-    "...a............",
+  ],
+  potato: [
+    "................",
+    "................",
+    "................",
+    "................",
+    ".....11111......",
+    "...11222221.....",
+    "..12223222221...",
+    "..122222232223..",
+    "..222322222223..",
+    "...22222232233..",
+    "....223222333...",
+    ".....3333333....",
+  ],
+  lump: [
+    "................",
+    "................",
+    "................",
+    ".....1111.......",
+    "....1222211.....",
+    "...122232222....",
+    "..122222232222..",
+    "..123222222223..",
+    "...22222322233..",
+    "...2232222333...",
+    "....2223333.....",
+    "......333.......",
   ],
   candle: [
     "................", "................",
@@ -124,21 +160,22 @@ const DYES = {
 };
 const shades = color => ({ 1: tint(color, 0.45), 2: color, 3: tint(color, -0.3), 4: tint(color, -0.55) });
 
-// A flat block face: speckled color with a light top-left and dark bottom-right edge.
-function blockGen(color, seed = 1, paint = null) {
+// A block icon: a speckled face drawn as an inventory cube, or flat for things that hang on a wall.
+function blockGen(color, seed = 1, paint = null, flat = false) {
   const pal = [tint(color, 0.1), color, tint(color, -0.08), tint(color, -0.16)].map(hex);
-  return () => speckle(seed, 16, [], (r, x, y) => {
+  const face = () => speckle(seed, 16, [], (r, x, y) => {
     const custom = paint && paint(x, y, r);
     if (custom) return hex(custom);
-    if (x === 0 || y === 0) return hex(tint(color, 0.25));
-    if (x === 15 || y === 15) return hex(tint(color, -0.35));
+    if (flat && (x === 0 || y === 0)) return hex(tint(color, 0.25));
+    if (flat && (x === 15 || y === 15)) return hex(tint(color, -0.35));
     return pal[(r() * pal.length) | 0];
   });
+  return flat ? face : () => cube(face());
 }
 
 const TRADE_ICONS = {
   "Emerald": { t: "gem", m: "emerald" }, "Diamond": { t: "gem", m: "diamond" }, "Lapis Lazuli": { t: "gem", m: "water" },
-  "Nether Quartz": { t: "gem", m: "string" }, "Flint": { t: "gem", m: "flint" }, "Coal": { t: "gem", m: "ink" },
+  "Nether Quartz": { t: "gem", m: "string" }, "Flint": { t: "gem", m: "flint" }, "Coal": { t: "lump", m: "coal" },
   "Iron Ingot": { t: "ingot", m: "iron" }, "Gold Ingot": { t: "ingot", m: "gold" }, "Brick": { t: "ingot", c: shades("#b5583d") },
   "Lava Bucket": { t: "bucket", m: "iron", s: "fire" }, "Bucket of Cod": { t: "bucket", m: "iron", s: "water" },
   "Bell": { t: "bell", m: "gold" }, "Shield": "shield", "Shears": "shears", "Bow": "bow", "Crossbow": "crossbow",
@@ -155,8 +192,8 @@ const TRADE_ICONS = {
   "Village Map": { t: "paper", m: "map", s: "green" }, "Ocean Explorer Map": { t: "paper", m: "map", s: "water" },
   "Trial Explorer Map": { t: "paper", m: "map", s: "orange" }, "Woodland Explorer Map": { t: "paper", m: "map", s: "emerald" },
   "Banner": { t: "paper", m: "string", s: "red" }, "Globe Banner Pattern": { t: "paper", m: "map", s: "water" },
-  "Wheat": { t: "wheat", m: "gold", s: "green" }, "Carrot": { t: "carrot", m: "orange" }, "Golden Carrot": "b:golden_carrot",
-  "Potato": { t: "orb", m: "potato" }, "Beetroot": { t: "orb", m: "beet" }, "Apple": { t: "orb", m: "red" },
+  "Wheat": { t: "wheat", m: "gold", s: "straw" }, "Carrot": { t: "carrot", m: "orange" }, "Golden Carrot": "b:golden_carrot",
+  "Potato": { t: "potato", m: "potato" }, "Beetroot": { t: "orb", m: "beet" }, "Apple": { t: "orb", m: "red" },
   "Sweet Berries": { t: "orb", m: "red" }, "Cookie": { t: "orb", m: "cooked" }, "Pumpkin Pie": { t: "orb", m: "orange" },
   "Ender Pearl": { t: "orb", m: "teal" }, "Clay Ball": { t: "orb", m: "clay" }, "Ink Sac": { t: "orb", m: "ink" },
   "Compass": { t: "orb", m: "iron" }, "Clock": { t: "orb", m: "gold" }, "Glistering Melon Slice": "b:glistering_melon",
@@ -178,8 +215,8 @@ const TRADE_ICONS = {
   "Glass": { gen: blockGen("#dff3ff", 20, (x, y) => (x === y || x === y + 1) && x > 3 && x < 9 && "#ffffff") },
   "Glass Pane": { gen: blockGen("#dff3ff", 21, (x, y) => (x === y || x === y + 1) && x > 3 && x < 9 && "#ffffff") },
   "Bookshelf": { gen: blockGen("#9b7440", 22, (x, y) => y > 2 && y < 13 && y !== 7 && y !== 8 && x > 0 && x < 15 && ["#b02e26", "#3c44aa", "#5e7c16", "#835432"][(x >> 1) % 4]) },
-  "Item Frame": { gen: blockGen("#9b7440", 23, (x, y) => x > 2 && x < 13 && y > 2 && y < 13 && "#b06a35") },
-  "Painting": { gen: blockGen("#9b7440", 24, (x, y) => x > 1 && x < 14 && y > 1 && y < 14 && (y < 8 ? "#69a9ff" : "#5fbf2a")) },
+  "Item Frame": { gen: blockGen("#9b7440", 23, (x, y) => x > 2 && x < 13 && y > 2 && y < 13 && "#b06a35", true) },
+  "Painting": { gen: blockGen("#9b7440", 24, (x, y) => x > 1 && x < 14 && y > 1 && y < 14 && (y < 8 ? "#69a9ff" : "#5fbf2a"), true) },
   "Bed": { gen: blockGen("#b02e26", 25, (x, y) => y < 5 && "#f9fffe") },
   "Cake": { gen: blockGen("#e9c48a", 26, (x, y, r) => (y < 5 ? "#f9fffe" : y < 6 && r() < 0.4 && "#d42c2c")) },
 };

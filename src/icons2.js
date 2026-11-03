@@ -109,16 +109,19 @@ Object.assign(TPL, {
   ],
   feather: [
     "................",
-    "...........112..",
-    ".........112222.",
-    "........1222223.",
-    ".......12222233.",
-    "......12222333..",
-    ".....1222333....",
-    "....122333......",
-    "...1233.........",
-    "..cb............",
-    ".c..............",
+    ".............1..",
+    "...........11c2.",
+    "..........11c22.",
+    ".........11c22..",
+    "........11c23...",
+    ".......11c23....",
+    "......11c23.....",
+    ".....11c23......",
+    ".....1c3........",
+    "....1c3.........",
+    "....c...........",
+    "...c............",
+    "..c.............",
   ],
   bubbles: [
     "................",
@@ -241,19 +244,20 @@ Object.assign(TPL, {
   ],
   arrow: [
     "................",
-    "...........1111.",
+    "..........11111.",
     "............221.",
     "............b21.",
     "...........b..1.",
-    "..........b.....",
+    "..........b...1.",
     ".........b......",
     "........b.......",
     ".......b........",
     "....w.b.........",
     "...w.b..........",
     "..w.b.G.........",
-    "...b.G..........",
+    ".w.b.G..........",
     "..c.G...........",
+    "...G............",
   ],
   arrows3: [
     "................",
@@ -337,6 +341,25 @@ function grassBlock() {
   return speckle(7, 16, [], (r, x, y) => hex((y < depth[x] ? grass : dirt)[(r() * 4) | 0]));
 }
 const bedrockBlock = () => speckle(11, 16, ["#7a7a7a", "#555555", "#3a3a3a", "#2a2a2a", "#9a9a9a"]);
+const grassTop = () => speckle(8, 16, ["#6cc046", "#5fae3a", "#4e9a2f", "#79c94f"]);
+
+// Inventory-style block: three faces of a cube in a 2:1 isometric view, lit from above.
+function cube(side, top = side) {
+  const out = new Array(256).fill(null);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const px = x + 0.5, py = y + 0.5;
+    const dx = (px - 8) / 8, dy = (py - 4) / 4;
+    let u, v, f, src;
+    if (Math.abs(dx) + Math.abs(dy) <= 1) { u = (dx + dy + 1) / 2; v = (dy - dx + 1) / 2; f = 1; src = top; }
+    else if (px < 8 && py >= 4 + px / 2 && py < 12 + px / 2) { u = px / 8; v = (py - 4 - px / 2) / 8; f = 0.8; src = side; }
+    else if (px >= 8 && py >= 12 - px / 2 && py < 20 - px / 2) { u = (px - 8) / 8; v = (py - 12 + px / 2) / 8; f = 0.62; src = side; }
+    else continue;
+    const p = src[Math.min(15, (v * 16) | 0) * 16 + Math.min(15, (u * 16) | 0)];
+    out[y * 16 + x] = p && p.map(c => Math.round(c * f));
+  }
+  return out;
+}
+const grassCube = () => cube(grassBlock(), grassTop());
 
 // Deepslate-like page backdrop, 32×32, with the faint horizontal seams of cut tiles.
 function stoneTile() {
@@ -349,8 +372,8 @@ Object.assign(ICONS, {
   "ui:anvil":   { t: "anvil", m: "stone" },
   "ui:book":    { t: "book", m: "book", s: "string" },
   "ui:orb":     { t: "orb", m: "xp" },
-  "ui:grass":   { gen: grassBlock },
-  "ui:bedrock": { gen: bedrockBlock },
+  "ui:grass":   { gen: grassCube },
+  "ui:bedrock": { gen: () => cube(bedrockBlock()) },
   "ui:command": { t: "cmdblock", m: "orange" },
   "ui:arrow":   { t: "arrowR", m: "string" },
 
@@ -379,7 +402,7 @@ Object.assign(ICONS, {
   "e:wind_burst":            { t: "gust", m: "ice" },
   "e:efficiency":            { t: "pickaxe", m: "gold", s: "wood" },
   "e:fortune":               { t: "gem", m: "diamond" },
-  "e:silk_touch":            { gen: grassBlock },
+  "e:silk_touch":            { gen: grassCube },
   "e:power":                 { t: "bow", m: "gold", s: "wood" },
   "e:punch":                 { t: "burst", m: "orange" },
   "e:flame":                 { t: "arrow", m: "fire", s: "wood" },
