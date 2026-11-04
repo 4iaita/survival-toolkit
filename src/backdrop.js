@@ -3,6 +3,15 @@
  * far hills dotted with small trees, then a village building, trees and plants nearer by. Each layer fades
  * toward the horizon's haze, the far one more, so they read as distance. Foliage, grass and water take the
  * biome's tint the way the game colors them, and in snowy biomes everything wears a layer of snow.
+ * The forest, for the Mobs tab, is no village either: oaks and birches, with flowers and mushrooms underneath.
+ * So is the mineshaft: timber supports along a rock wall, cobwebs thick in their corners, a spawner and torches.
+ * The cave and the nether, for the Mobs tab, aren't village biomes: a dark rock wall full of ore instead
+ * of hills, a ceiling with stalactites or weeping vines, and lanterns or lava for light. Nor is the End: end stone
+ * hills under the pack's End sky, with crystal-topped obsidian pillars, end city towers and chorus plants; and the
+ * dragon's own island, a ring of great crystal-topped pillars round the unlit exit portal. And the ocean is seen from
+ * underwater: sand hills and a far monument, kelp and coral nearby, sunlight slanting down from the surface, bubbles.
+ * The lush cave is flooded too: a mossy wall and a ceiling hung with glow berries, dripleaves and azaleas below.
+ * So is the deep cave the glow squid swims in: dark rock streaked with glow lichen, lit only by that and sea pickles.
  */
 // Spruce leaves keep one color everywhere; other tints come from BIOME_TINTS.
 const SPRUCE_TINT = "#619961";
@@ -26,6 +35,27 @@ const oakTree = t => prop([
   "LLLLL",
   "..T..",
   "..T..",
+], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak") });
+// A birch: taller and slimmer than an oak, its leaves a paler green whatever the biome, as in the game.
+const birchTree = () => prop([
+  ".LLL.",
+  "LLLLL",
+  "LLLLL",
+  ".LLL.",
+  "..T..",
+  "..T..",
+  "..T..",
+], { L: leavesTex("leaves_birch", "#80a755"), T: blockTex("log_birch") });
+const tallOak = t => prop([
+  ".LLLL.",
+  "LLLLLL",
+  "LLLLLL",
+  "LLLLLL",
+  ".LTLL.",
+  "..T...",
+  "..T...",
+  "..T...",
+  "..T...",
 ], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak") });
 const spruceTree = () => prop([
   "..L..",
@@ -161,7 +191,135 @@ const pond = t => prop([
 // Each biome's scene: hills (top and fill blocks, height in blocks, trees at fractions of the width) and
 // nearer props at offsets in blocks from the middle.
 const grassyTop = t => ({ layers: [["dirt"], ["grass_side_overlay", t.grass]] });
+const oreMound = (ore, rows) => prop(rows, { R: blockTex("stone"), T: blockTex("tuff"), O: blockTex(ore) });
+const stalagmite = prop(["t", "f", "D"], { t: plantTex("dripstone_up_tip"), f: plantTex("dripstone_up_frustum"), D: blockTex("dripstone_block") });
+const netherMound = (rows) => prop(rows, { N: blockTex("netherrack"), C: blockTex("crimson_nylium"), M: blockTex("magma"), G: blockTex("glowstone"), Q: blockTex("quartz_ore") });
+const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava") });
+const monument = prop([
+  "......PPPP......",
+  "....PPPLLPPP....",
+  "....PDDDDDDP....",
+  "..PPPPPPPPPPPP..",
+  "..PLDDLDDLDDLP..",
+  "PPPPPPPPPPPPPPPP",
+  "PDDP.DP..PD.PDDP",
+  "PDDP.DP..PD.PDDP",
+], { P: blockTex("prismarine_bricks"), D: blockTex("prismarine_dark"), L: blockTex("sea_lantern") });
+const kelp = height => prop(["B", ...Array(height - 2).fill("K"), "K"], { B: plantTex("kelp_top"), K: plantTex("kelp") });
+const bulbKelp = height => prop(["T", "B", ...Array(height - 2).fill("K")], { T: plantTex("kelp_bulb"), B: plantTex("kelp_top"), K: plantTex("kelp") });
+const tallSeagrass = prop(["T", "B"], { T: plantTex("tall_seagrass_top"), B: plantTex("tall_seagrass_bottom") });
+// A coral reef's clump: blocks of one color with plants and fans of it, or of another, growing on top.
+const reef = (a, b, rows) => prop(rows, {
+  A: blockTex(`coral_${a}`), B: blockTex(`coral_${b}`), p: plantTex(`coral_plant_${a}`), q: plantTex(`coral_plant_${b}`),
+  f: plantTex(`coral_fan_${a}`), g: plantTex(`coral_fan_${b}`), s: plantTex("sea_pickle"),
+});
+// Rock with glow lichen growing over it.
+const lichen = rock => ({ layers: [[rock], ["glow_lichen"]] });
+const lichenMound = rows => prop(rows, { R: blockTex("stone"), D: blockTex("deepslate"), L: lichen("stone"), K: lichen("deepslate") });
+const dripleaf = height => prop(["L", ...Array(height - 1).fill("S")], { L: plantTex("big_dripleaf_top"), S: plantTex("big_dripleaf_stem") });
+const azaleaBush = prop([".AF.", "AFAA", "AAFA"], { A: blockTex("azalea_leaves"), F: blockTex("azalea_leaves_flowers") });
+const mossMound = rows => prop(rows, { M: blockTex("moss_block"), C: blockTex("clay") });
+// An obsidian pillar, how many blocks tall and wide, capped with bedrock and holding an end crystal (crystal, how high
+// it sits); caged, with iron bars round the crystal.
+const obsidianPillar = (height, width = 1, caged = false) => {
+  const side = ".".repeat((width - 1) / 2), cap = `${side}B${side}`;
+  const top = caged ? ["I".repeat(width), `I${".".repeat(width - 2)}I`, `I${cap.slice(1, -1)}I`] : [cap];
+  return { ...prop([...top, ...Array(height).fill("O".repeat(width))],
+    { B: blockTex("bedrock"), O: blockTex("obsidian"), I: plantTex("iron_bars") }), crystal: height + 1 };
+};
+// The exit portal before the dragon falls: an empty bedrock bowl round a pillar with torches, side on.
+const exitPortal = prop(["....B....", "...TBT...", "....B....", "B...B...B", "BBBBBBBBB"], { B: blockTex("bedrock"), T: plantTex("torch") });
+const endTower = prop(["..E..", ".PPP.", "PPPPP", ".IGI.", ".IEI.", "PPPPP", ".IGI.", ".IEI.", ".IEI.", ".EEE."],
+  { P: blockTex("purpur_block"), I: blockTex("purpur_pillar"), E: blockTex("end_bricks"), G: DOORWAY });
+const farTower = prop(["..E..", ".PPP.", "PPPPP", ".IGI.", ".IEI.", "PPPPP", ".IGI.", ".IEI.", ".IEI.", "PPPPP", ".IGI.", ".IEI.", ".IEI.", ".EEE."],
+  { P: blockTex("purpur_block"), I: blockTex("purpur_pillar"), E: blockTex("end_bricks"), G: DOORWAY });
+const chorus = prop(["F...", "C.F.", "C.C.", "CCC.", ".C.F", ".CCC", ".C.."], { C: plantTex("chorus_plant"), F: plantTex("chorus_flower") });
+const smallChorus = prop(["F.", "CF", "CC", "C."], { C: plantTex("chorus_plant"), F: plantTex("chorus_flower") });
+// A mineshaft's support: two posts under a beam, webs thick in its top corners, a torch on one post (torch, -1 left or 1 right).
+const mineSupport = (width, height, torch = 0) => {
+  const inside = width - 2, line = (left, right) => `L${left}${".".repeat(inside - left.length - right.length)}${right}L`;
+  const rows = ["W".repeat(Math.ceil(inside / 3)), "W"];
+  return prop(["P".repeat(width), ...Array.from({ length: height }, (_, i) => {
+    if (i < 2) return line(rows[i], rows[i]);
+    if (i === 3 && torch) return torch < 0 ? line("T", "") : line("", "T");
+    return line("", "");
+  })], { P: blockTex("oak_planks"), L: blockTex("log_oak"), W: plantTex("cobweb"), T: plantTex("torch") });
+};
+const spawnerCage = block("mob_spawner");
 const BACKDROPS = {
+  flooded_cave: () => ({
+    mist: { far: 0.7, near: 0.06 },
+    water: { wash: "rgba(16, 70, 140, .12)" },
+    wall: { rock: ["deepslate", "deepslate", "stone", "deepslate", "tuff"], ores: [lichen("deepslate"), lichen("deepslate"), lichen("stone"), "lapis_ore", "diamond_ore", "copper_ore"] },
+    ceiling: { rock: ["deepslate", "stone", "deepslate", "tuff"], drip: ["dripstone_down_frustum", "dripstone_down_middle", "dripstone_down_tip"] },
+    near: [[lichenMound(["..K.", ".KDR", "KDDL"]), -22], [stalagmite, -17], [lichenMound(["L.", "DK"]), -14], [plant("sea_pickle"), -11], [stalagmite, -9], [lichenMound([".K", "LD"]), -7],
+      [plant("sea_pickle"), 5], [lichenMound(["K.", "DL"]), 7], [stalagmite, 10], [lichenMound([".L.", "KDK"]), 12], [plant("sea_pickle"), 15], [stalagmite, 17], [lichenMound(["..KL", ".LDD", "KDDK"]), 19]],
+    // Glow lichen and sea pickles cast a cold light through the water.
+    lights: [-20, -13, -7, 8, 13, 20], lightColor: "90, 210, 255",
+  }),
+  lush: () => ({
+    mist: { far: 0.8, near: 0.04 },
+    water: { wash: "rgba(30, 130, 140, .1)" },
+    // Glow berries light the water under the ceiling.
+    lights: [[-15, 11], [-9, 11.5], [-2, 11], [6, 11.5], [13, 11]],
+    wall: { rock: ["stone", "moss_block", "moss_block", "stone", "mossy_cobblestone"], ores: ["moss_block", "clay", "clay", "mossy_cobblestone", "coal_ore"] },
+    ceiling: { rock: ["moss_block", "moss_block", "stone", "mossy_cobblestone"], drip: ["cave_vines_body", "cave_vines_berries", "cave_vines_tip"] },
+    near: [[mossMound(["..M.", ".MMM", "MMCM"]), -23], [dripleaf(6), -18], [azaleaBush, -14], [dripleaf(5), -10], [dripleaf(3), -8], [plant("small_dripleaf_side"), -6],
+      [mossMound(["M.", "MC"]), -5], [plant("small_dripleaf_side"), 5], [mossMound([".M", "CM"]), 6], [dripleaf(4), 8], [azaleaBush, 10], [plant("flowering_azalea_side"), 14], [dripleaf(6), 16], [mossMound(["..MM", ".MMM", "MCMM"]), 20]],
+  }),
+  ocean: () => ({
+    mist: { far: 0.62, near: 0.16 },
+    water: { sun: true },
+    hills: { top: blockTex("sand"), fill: blockTex("sand"), base: 2, rise: 4, landmarks: [[monument, 0.56]] },
+    near: [[kelp(9), -24], [bulbKelp(12), -23], [reef("red", "yellow", [".pf.", "pABq", "AABB"]), -20], [kelp(11), -17], [bulbKelp(8), -16],
+      [tallSeagrass, -14], [reef("pink", "blue", ["g..", "Bq.", "BAf"]), -12], [plant("seagrass"), -9], [bulbKelp(6), -8], [plant("seagrass"), -5],
+      [plant("sea_pickle"), -3], [plant("seagrass"), 4], [reef("yellow", "pink", [".q", "fB"]), 6], [tallSeagrass, 9], [bulbKelp(7), 11], [kelp(10), 12],
+      [reef("blue", "red", ["p.g.", "AABq", "AABB"]), 14], [bulbKelp(13), 18], [kelp(9), 19], [reef("red", "pink", ["fq", "AB"]), 21], [kelp(11), 24]],
+  }),
+  end: () => ({
+    mist: { far: 0.6, near: 0.1 },
+    // A pale violet glow low in the middle, so that the dark mobs that live here stand out against it.
+    sky: { texture: "end_sky", tint: "#1e1634", glow: "150, 105, 215" },
+    hills: { top: blockTex("end_stone"), fill: blockTex("end_stone"), base: 1, rise: 3,
+      landmarks: [[obsidianPillar(13), 0.07], [farTower, 0.2], [obsidianPillar(19), 0.34], [obsidianPillar(10), 0.47], [obsidianPillar(16), 0.63], [farTower, 0.75], [obsidianPillar(21), 0.92]] },
+    crystals: true,
+    near: [[endTower, -21], [chorus, -13], [smallChorus, -8], [block("end_stone", [".B", "BB"]), -6], [smallChorus, 7], [chorus, 11], [block("end_stone", ["..B", ".BB", "BBB"]), 15], [endTower, 18]],
+    // Chorus flowers give off a faint violet light.
+    lights: [[-13, 6], [11, 6]], lightColor: "120, 70, 180",
+  }),
+  end_island: () => ({
+    mist: { far: 0.55, near: 0.08 },
+    sky: { texture: "end_sky", tint: "#1e1634", glow: "170, 95, 205" },
+    hills: { top: blockTex("end_stone"), fill: blockTex("end_stone"), base: 1, rise: 2,
+      landmarks: [[0.03, 15], [0.13, 22], [0.25, 18], [0.36, 25], [0.47, 16], [0.56, 24], [0.68, 19], [0.79, 26], [0.9, 17], [0.97, 21]].map(([at, height]) => [obsidianPillar(height), at]) },
+    crystals: true,
+    near: [[obsidianPillar(9, 3), -23], [obsidianPillar(6, 3, true), -17], [obsidianPillar(8, 3), -10], [exitPortal, -4.5], [block("end_stone", [".B", "BB"]), 5], [obsidianPillar(7, 3, true), 7], [obsidianPillar(10, 3), 14], [obsidianPillar(6, 3), 20]],
+  }),
+  nether: () => ({
+    mist: { far: 0.5, near: 0.12 },
+    wall: { rock: ["netherrack", "netherrack", "netherrack", "blackstone"], ores: ["quartz_ore", "quartz_ore", "nether_gold_ore", "glowstone"] },
+    ceiling: { rock: ["netherrack", "netherrack", "blackstone", "glowstone"], drip: ["weeping_vines_base", "weeping_vines_base", "weeping_vines"] },
+    near: [[lavafall, -18], [netherMound(["..C.", ".CNC", "CMNQ"]), -23], [plant("crimson_roots"), -8], [plant("crimson_fungus"), -6],
+      [plant("crimson_fungus"), 6], [netherMound(["G.", "CC"]), 8], [lavafall, 14], [netherMound(["..CC", ".CNN", "CQMN"]), 16], [plant("crimson_roots"), 11]],
+    lights: [-18, 14],
+  }),
+  mineshaft: () => ({
+    mist: { far: 0.66, near: 0.12 },
+    wall: { rock: ["stone", "stone", "andesite", "stone", "tuff"], ores: ["coal_ore", "coal_ore", "coal_ore", "iron_ore"] },
+    ceiling: { rock: ["stone", "andesite", "stone", "cobblestone"], drip: ["stone"] },
+    // Webs hang thick in the supports' top corners, as they do in a real mineshaft; a spawner sits at the side.
+    near: [[mineSupport(7, 8, 1), -24], [mineSupport(9, 10, -1), -4.5], [spawnerCage, -10], [mineSupport(7, 8, -1), 17]],
+    // The torches on the posts, and the spawner's faint light.
+    lights: [[-18.5, 4.5], [-3.5, 6.5], [18, 4.5], [-10, 0.6]],
+  }),
+  cave: () => ({
+    mist: { far: 0.62, near: 0.3 },
+    wall: { rock: ["stone", "stone", "stone", "andesite", "tuff"], ores: ["coal_ore", "coal_ore", "iron_ore", "copper_ore", "redstone_ore", "gold_ore", "lapis_ore", "diamond_ore"] },
+    ceiling: { rock: ["stone", "andesite", "stone", "cobblestone"], drip: ["dripstone_down_frustum", "dripstone_down_middle", "dripstone_down_tip"] },
+    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"]), -21], [plant("lantern"), -15], [stalagmite, -12], [oreMound("coal_ore", ["O.", "RR"]), -9],
+      [stalagmite, 8], [oreMound("gold_ore", [".T.", "ROR"]), 10], [plant("lantern"), 14], [oreMound("diamond_ore", ["..RR", ".ROR", "TRRR"]), 17]],
+    lights: [-15, 14],
+  }),
   plains: t => ({
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[oakTree(t), 0.06], [oakTree(t), 0.3], [oakTree(t), 0.55], [oakTree(t), 0.86]] },
     near: [[house({ roof: "planks_dark_oak", wall: "oak_planks", frame: "log_oak", base: "cobblestone", door: "oak" }), -14],
@@ -180,6 +338,13 @@ const BACKDROPS = {
   snowy: () => ({
     hills: { top: blockTex("snowy_grass_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[spruceTree(), 0.08], [spruceTree(), 0.3], [spruceTree(), 0.58], [spruceTree(), 0.9]] },
     near: [[igloo, -14], [spruceTree(), -7], [block("packed_ice", [".B", "BB"]), 2], [spruceTree(), 7], [spruceTree(), 12]],
+  }),
+  forest: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [
+      [oakTree(t), 0.01], [birchTree(), 0.08], [oakTree(t), 0.15], [oakTree(t), 0.22], [birchTree(), 0.29], [oakTree(t), 0.36], [birchTree(), 0.43], [oakTree(t), 0.5],
+      [oakTree(t), 0.57], [birchTree(), 0.64], [oakTree(t), 0.71], [oakTree(t), 0.78], [birchTree(), 0.85], [oakTree(t), 0.92]] },
+    near: [[tallOak(t), -24], [birchTree(), -18], [plant("fern", t.grass), -19], [oakTree(t), -14], [plant("short_grass", t.grass), -13], [plant("mushroom_brown"), -10], [plant("short_grass", t.grass), -9], [birchTree(), -8], [plant("oxeye_daisy"), -5],
+      [plant("short_grass", t.grass), -3], [plant("poppy"), 3], [plant("short_grass", t.grass), 5], [plant("fern", t.grass), 6], [birchTree(), 7], [plant("mushroom_red"), 12], [oakTree(t), 13], [plant("short_grass", t.grass), 18], [birchTree(), 19], [plant("dandelion"), 18], [tallOak(t), 23]],
   }),
   taiga: t => ({
     hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [0.04, 0.16, 0.3, 0.45, 0.6, 0.74, 0.88].map(at => [spruceTree(), at]) },
@@ -257,22 +422,133 @@ function drawProp(ctx, { rows, legend }, left, bottom, size, snowy) {
 
 // Hills along the horizon: a column of blocks every size pixels, rising and falling smoothly (in steps
 // for plateaus), with trees and landmarks standing on top.
-function drawHills(ctx, hills, width, horizon, size, snowy, seed) {
-  const random = rng(seed), phase = [random() * 6, random() * 6], cols = Math.ceil(width / size) + 1;
+// How tall the hills are at each column, and where their landmarks stand: [prop, left edge, ground under it].
+function hillHeights(hills, seed) {
+  const random = rng(seed), phase = [random() * 6, random() * 6];
   const wave = c => (0.6 * Math.sin(c * 0.29 + phase[0]) + 0.4 * Math.sin(c * 0.71 + phase[1]) + 1) / 2;
-  const heightAt = c => {
+  return c => {
     const h = hills.base + hills.rise * wave(c);
     return hills.steps ? Math.round(h / hills.steps) * hills.steps : Math.round(h);
   };
+}
+function hillSpots(hills, width, horizon, size, seed) {
+  const heightAt = hillHeights(hills, seed);
+  return [...(hills.trees || []), ...(hills.landmarks || [])].map(([p, at]) => {
+    const c = Math.round((at * width) / size), w = p.rows[0].length;
+    return [p, c * size, horizon - Math.min(...Array.from({ length: w }, (_, i) => heightAt(c + i))) * size];
+  });
+}
+function drawHills(ctx, hills, width, horizon, size, snowy, seed) {
+  const heightAt = hillHeights(hills, seed), cols = Math.ceil(width / size) + 1;
   for (let c = 0; c < cols; c++) {
     const h = heightAt(c);
     for (let k = 0; k < h; k++) drawBlock(ctx, k === h - 1 ? hills.top : hills.fill, c * size, horizon - (k + 1) * size, size);
     if (snowy && hills.top.cap !== false) drawSnowCap(ctx, c * size, horizon - h * size, size);
   }
-  for (const [p, at] of [...(hills.trees || []), ...(hills.landmarks || [])]) {
-    const c = Math.round((at * width) / size), w = p.rows[0].length;
-    const ground = Math.min(...Array.from({ length: w }, (_, i) => heightAt(c + i)));
-    drawProp(ctx, p, c * size, horizon - ground * size, size, snowy);
+  for (const [p, left, ground] of hillSpots(hills, width, horizon, size, seed)) drawProp(ctx, p, left, ground, size, snowy);
+}
+
+// A sky of one tiled texture, each tile flipped its own way so the pattern doesn't show.
+function drawSky(ctx, { texture, tint, glow }, width, height, size, seed) {
+  const cv = textureCanvas(texture, tint), random = rng(seed);
+  if (!cv) return;
+  ctx.imageSmoothingEnabled = false;
+  for (let y = 0; y < height; y += size) for (let x = 0; x < width; x += size) {
+    const fx = random() < 0.5 ? -1 : 1, fy = random() < 0.5 ? -1 : 1;
+    ctx.setTransform(fx, 0, 0, fy, x + size / 2, y + size / 2);
+    ctx.drawImage(cv, -size / 2, -size / 2, size, size);
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (!glow) return;
+  const x = width / 2, y = height * 0.58, r = Math.max(width * 0.42, height * 0.8);
+  const light = ctx.createRadialGradient(x, y, 0, x, y, r);
+  light.addColorStop(0, `rgba(${glow}, .62)`);
+  light.addColorStop(0.45, `rgba(${glow}, .24)`);
+  light.addColorStop(1, `rgba(${glow}, 0)`);
+  ctx.fillStyle = light;
+  ctx.fillRect(0, 0, width, height);
+}
+
+// Where a stand of pillars' crystals sit, as [middle, bottom]: each pillar in spots, as [prop, left edge, ground].
+const crystalsOf = (spots, size) => spots.filter(([p]) => p.crystal).map(([p, left, ground]) => [left + (p.rows[0].length * size) / 2, ground - p.crystal * size]);
+// End crystals: a small pink cube, each with the glow round it.
+function drawCrystals(ctx, crystals, size) {
+  ctx.globalCompositeOperation = "lighter";
+  for (const [x, bottom] of crystals) {
+    const y = bottom - 0.7 * size, r = 2.6 * size;
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+    glow.addColorStop(0, "rgba(255, 150, 235, .85)");
+    glow.addColorStop(0.3, "rgba(225, 90, 225, .28)");
+    glow.addColorStop(1, "rgba(200, 80, 220, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "#f7c9f4";
+  for (const [x, bottom] of crystals) ctx.fillRect(x - size * 0.28, bottom - size * 0.9, size * 0.56, size * 0.56);
+}
+// Sunlight slanting down from the surface in soft bands that fade with depth, drawn in steps like the blocks.
+function drawSunShafts(ctx, width, height, step, seed) {
+  const random = rng(seed), bottom = height * 0.82;
+  for (let i = 0; i < 6; i++) {
+    const start = (i / 6 + random() * 0.1) * width * 1.15 - width * 0.2, wide = (2 + Math.round(random() * 3)) * step * 2;
+    for (let y = 0; y < bottom; y += step) {
+      ctx.fillStyle = `rgba(190, 235, 255, ${(0.2 * (1 - y / bottom)).toFixed(3)})`;
+      ctx.fillRect(Math.round((start + y * 0.34) / step) * step, y, wide, step);
+    }
+  }
+}
+
+// The surface seen from below: rippling water across the top edge.
+function drawSurface(ctx, width, size) {
+  ctx.globalAlpha = 0.5;
+  for (let c = 0; c < Math.ceil(width / size); c++) drawBlock(ctx, blockTex("water", "#a8e4ff"), c * size, 0, size);
+  ctx.globalAlpha = 1;
+}
+
+// Columns of little bubbles on their way up, to either side of the mob in the middle.
+function drawBubbles(ctx, width, height, size, seed) {
+  const random = rng(seed), px = size / 8;
+  for (const at of [0.06, 0.17, 0.27, 0.74, 0.85, 0.95]) {
+    let x = (at + (random() - 0.5) * 0.05) * width, y = height * (0.4 + random() * 0.35);
+    for (let n = 2 + Math.floor(random() * 4); n > 0; n--) {
+      const r = (1 + Math.floor(random() * 2)) * px, sx = Math.round(x / px) * px, sy = Math.round(y / px) * px;
+      ctx.fillStyle = "rgba(225, 248, 255, .75)";
+      ctx.fillRect(sx, sy - r, r * 2, px);
+      ctx.fillRect(sx, sy + r, r * 2, px);
+      ctx.fillRect(sx - px, sy, px, r);
+      ctx.fillRect(sx + r * 2, sy, px, r);
+      y -= (3 + random() * 5) * px * 2;
+      x += (random() - 0.5) * px * 6;
+    }
+  }
+}
+
+// A rock wall filling the canvas, with drifts of other rock and ore here and there in small clusters.
+function drawWall(ctx, { rock, ores }, width, height, size, seed) {
+  const random = rng(seed), cols = Math.ceil(width / size), rows = Math.ceil(height / size), ore = {};
+  for (let i = Math.round((cols * rows) / 34); i > 0; i--) {
+    const c = Math.floor(random() * cols), r = Math.floor(random() * rows), name = ores[Math.floor(random() * ores.length)];
+    ore[`${c},${r}`] = name;
+    if (random() < 0.6) ore[`${c + (random() < 0.5 ? 1 : 0)},${r + 1}`] = name;
+  }
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const drift = (Math.sin(c * 0.37 + r * 0.21) + Math.sin(r * 0.53 - c * 0.13) + 2) / 4;
+    const name = ore[`${c},${r}`] || rock[Math.min(rock.length - 1, Math.floor(drift * rock.length))];
+    drawBlock(ctx, typeof name === "string" ? blockTex(name) : name, c * size, r * size, size);
+  }
+}
+
+// The ceiling: rock hanging from the top edge to an uneven depth, with stalactites under it.
+function drawCeiling(ctx, { rock, drip }, width, size, seed) {
+  const random = rng(seed);
+  for (let c = 0; c < Math.ceil(width / size); c++) {
+    const depth = 1 + Math.round(2 * ((Math.sin(c * 0.43 + seed) + Math.sin(c * 0.97) + 2) / 4));
+    for (let k = 0; k < depth; k++) drawBlock(ctx, blockTex(rock[Math.floor(random() * rock.length)]), c * size, k * size, size);
+    if (random() < 0.24) {
+      const hang = random() < 0.4 ? drip : drip.slice(-2);
+      hang.forEach((name, k) => drawBlock(ctx, blockTex(name), c * size, (depth + k) * size, size));
+    }
   }
 }
 
@@ -289,7 +565,7 @@ function backdropView(canvas) {
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     const ctx = canvas.getContext("2d");
-    const t = BIOME_TINTS[biome], scene = BACKDROPS[biome](t), snowy = biome === "snowy";
+    const t = BIOME_TINTS[biome], scene = BACKDROPS[biome](t), snowy = biome === "snowy", mist = scene.mist || HAZE;
     const haze = getComputedStyle(canvas).getPropertyValue("--haze").trim() || "#bcd5ff";
     const horizon = (h - GROUND_STRIP + 2) * dpr;
     // Each layer is drawn on its own canvas, then washed with the haze where it has pixels.
@@ -304,10 +580,37 @@ function backdropView(canvas) {
       lc.fillRect(0, 0, cv.width, cv.height);
       ctx.drawImage(cv, 0, 0);
     };
-    layer(lc => drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, BIOMES.findIndex(b => b.k === biome) + 1), HAZE.far);
+    if (scene.sky) drawSky(ctx, scene.sky, canvas.width, canvas.height, 2 * NEAR * dpr, 13);
+    layer(lc => (scene.wall ? drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7)
+      : drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, BIOMES.findIndex(b => b.k === biome) + 1)), mist.far);
+    if (scene.crystals) drawCrystals(ctx, crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, BIOMES.findIndex(b => b.k === biome) + 1), FAR * dpr), FAR * dpr);
+    if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11);
     layer(lc => {
+      if (scene.ceiling) drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5);
       for (const [p, at] of scene.near) drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
-    }, HAZE.near);
+    }, mist.near);
+    if (scene.crystals) drawCrystals(ctx, crystalsOf(scene.near.map(([p, at]) => [p, canvas.width / 2 + at * NEAR * dpr, horizon]), NEAR * dpr), NEAR * dpr);
+    if (scene.water) {
+      if (scene.water.sun) drawSurface(ctx, canvas.width, NEAR * dpr);
+      if (scene.water.wash) {
+        ctx.fillStyle = scene.water.wash;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      drawBubbles(ctx, canvas.width, canvas.height, NEAR * dpr, 3);
+    }
+    // Warm light round each lantern, up that many blocks if it isn't on the ground.
+    for (const light of scene.lights || []) {
+      const [at, up = 0.6] = [].concat(light);
+      const x = canvas.width / 2 + (at + 0.5) * NEAR * dpr, y = horizon - up * NEAR * dpr, r = 6 * NEAR * dpr;
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+      const color = scene.lightColor || "255, 176, 84";
+      glow.addColorStop(0, `rgba(${color}, .34)`);
+      glow.addColorStop(1, `rgba(${color}, 0)`);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+      ctx.globalCompositeOperation = "source-over";
+    }
   };
   new ResizeObserver(draw).observe(canvas);
   return {

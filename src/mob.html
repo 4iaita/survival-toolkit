@@ -1,0 +1,85 @@
+  <section id="view-mobs" aria-label="Mobs" hidden>
+    <p class="view-intro" id="mob-intro"></p>
+
+    <section class="panel villager-panel mob-panel" aria-label="Mob">
+      <div class="villager-scene">
+        <div class="stage" id="mob-stage" data-biome="plains">
+          <canvas class="stage-backdrop" id="mob-backdrop" aria-hidden="true"></canvas>
+          <canvas class="stage-scene" id="mob-art" tabindex="0" role="img"></canvas>
+          <span class="nametag" id="mob-tag" hidden></span>
+          <span class="stage-hint" aria-hidden="true">
+            <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
+            Drag to turn
+          </span>
+        </div>
+        <div class="try-bar" id="size-bar" hidden>
+          <span class="cat-label" id="size-label">Size</span>
+          <div class="try-tags" id="size-try" role="group" aria-labelledby="size-label"></div>
+        </div>
+        <div class="try-bar" id="mood-bar" hidden>
+          <span class="cat-label" id="mood-label">Mood</span>
+          <div class="try-tags" id="mood-try" role="group" aria-labelledby="mood-label"></div>
+          <div class="collar-row" id="collar-row" hidden>
+            <span class="cat-label" id="collar-label"></span>
+            <div class="try-tags" id="collar-try" role="group" aria-labelledby="collar-label"></div>
+          </div>
+          <div class="collar-row" id="armor-row" hidden>
+            <span class="cat-label" id="armor-label">Armor</span>
+            <div class="try-tags" id="armor-try" role="group" aria-labelledby="armor-label"></div>
+          </div>
+          <div class="collar-row" id="armor-dye-row" hidden>
+            <span class="cat-label" id="armor-dye-label"></span>
+            <div class="try-tags" id="armor-dye-try" role="group" aria-labelledby="armor-dye-label"></div>
+          </div>
+          <div class="collar-row" id="armor-wear-row" hidden>
+            <span class="cat-label" id="armor-wear-label">Condition</span>
+            <div class="try-tags" id="armor-wear-try" role="group" aria-labelledby="armor-wear-label"></div>
+          </div>
+          <div class="collar-row" id="armor-glint-row" hidden>
+            <span class="cat-label" id="armor-glint-label">Enchantment</span>
+            <div class="try-tags" id="armor-glint-try" role="group" aria-labelledby="armor-glint-label"></div>
+          </div>
+        </div>
+        <div class="try-bar">
+          <span class="cat-label" id="tag-try-label">Name tag</span>
+          <div class="try-tags" id="tag-try" role="group" aria-labelledby="tag-try-label"></div>
+        </div>
+      </div>
+
+      <div class="villager-pick">
+        <div class="panel-head">
+          <h2 id="mob-label">Mob</h2>
+          <span class="picked-name" id="mob-name"></span>
+        </div>
+        <div class="cats" id="mob-picker" role="group" aria-labelledby="mob-label"></div>
+      </div>
+    </section>
+
+    <div class="trade-grid">
+      <article class="panel result mob-result" id="mob-result"></article>
+
+      <div class="trade-side">
+        <section class="panel">
+          <h2><label for="tag-search">Find a name</label></h2>
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 8 8" width="16" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7z"/></svg>
+            <input type="search" class="mc-input" id="tag-search" placeholder="Toast, Elf, Snowy, Wolf…" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="search-results" id="tag-results" aria-live="polite"></div>
+        </section>
+
+        <details class="panel rules">
+          <summary>How name tags work</summary>
+          <ul>
+            <li>Craft a name tag from paper and an iron, gold or copper nugget, or find one in dungeon and mineshaft chests, while fishing, or for sale from a wandering trader.</li>
+            <li>Rename it in an anvil, which costs 1 level, then use it on the mob. The tag is used up, and a named mob no longer despawns (wandering traders still do).</li>
+            <li>The game’s own names are case sensitive: Toast works, toast doesn’t.</li>
+            <li data-ed="bedrock">Actions &amp; Stuff takes its names with a capital first letter or all in lower case.</li>
+            <li data-ed="bedrock">Actions &amp; Stuff is a resource pack, so its names only change looks. A mob that looks like a baby is still grown up, with a grown mob’s health, size and drops.</li>
+            <li data-ed="bedrock">The pack also gives some looks to a few mobs at random. It picks again each time the mob loads, so name it to keep the look.</li>
+            <li data-ed="bedrock">The pack’s names here are from Actions &amp; Stuff 1.9, read from the pack itself.</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </section>

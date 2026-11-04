@@ -21,6 +21,7 @@ const ART_ICONS = {
   "ui:grass": GRASS_CUBE, "ui:bedrock": C("bedrock"), "ui:book": L("book"), "ui:emerald": L("emerald"),
   "ui:logo": C("chest_front", "chest_top", "chest_side"), "ui:enchant": L("enchanted_book"), "ui:anvil": ANVIL,
   "ui:orb": L("experience_bottle"), "ui:command": C("command_block_front", "command_block_side"),
+  "ui:mob": L("egg_creeper"), "ui:name_tag": L("name_tag"), "ui:armor_stand": L("armor_stand"),
 
   "b:dragon_breath": L("dragon_breath"), "b:nether_wart": L("nether_wart"), "b:sugar": L("sugar"), "b:rabbit_foot": L("rabbit_foot"),
   "b:glistering_melon": L("glistering_melon_slice"), "b:blaze_powder": L("blaze_powder"), "b:ghast_tear": L("ghast_tear"),

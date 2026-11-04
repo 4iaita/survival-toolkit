@@ -1,0 +1,97 @@
+
+/* ---------- Mobs ---------- */
+/* The pack's names are marked pink, the game's own green. */
+:root { --pack: #ff8bd8; }
+/* The mob's stage (the villager panel's layout), with the names to try under it and the mob picker beside it.
+   At night (for names that only make a mob glow) the sky, clouds, countryside and ground go dark. */
+.mob-panel .stage { height: 300px; }
+/* The forest: a soft sky, hazy green where the far trees meet it. */
+.stage[data-biome="forest"] { --sky: #6fa3dc; --haze: #cfe6c6; }
+/* In the cave there's no sky to see: a dark haze over the far rock and no clouds. */
+.stage[data-biome="cave"] { --sky: #0b0b10; --haze: #0d0d13; }
+/* The mineshaft: dark rock, with a dim gravel floor. */
+.stage[data-biome="mineshaft"] { --sky: #0b0b10; --haze: #100d0a; }
+.stage[data-biome="mineshaft"]::after { filter: brightness(.6); }
+.stage[data-biome="mineshaft"]::before { display: none; }
+.stage[data-biome="nether"] { --sky: #1c0605; --haze: #3a0f08; }
+/* The End: a dark violet void, and end stone in the dim light it gets there. */
+.stage[data-biome="end"], .stage[data-biome="end_island"] { --sky: #120c20; --haze: #2a2140; }
+.stage[data-biome="end"]::after, .stage[data-biome="end_island"]::after { filter: brightness(.72) saturate(.8); }
+/* Underwater: bright near the surface, deep blue below, and the sand on the sea floor in shade. */
+.stage[data-biome="ocean"] { --sky: #3a9ad8; --haze: #0f5487; }
+.stage[data-biome="ocean"]::after { filter: brightness(.7) saturate(.7); }
+/* The flooded lush cave: dim green-blue water over mossy rock and a moss floor. */
+.stage[data-biome="lush"] { --sky: #0a2528; --haze: #0d3336; }
+.stage[data-biome="lush"]::after { filter: brightness(.85); }
+/* The glow squid's flooded cave: nearly black water over dark rock and gravel. */
+.stage[data-biome="flooded_cave"] { --sky: #02060f; --haze: #04121f; }
+.stage[data-biome="flooded_cave"]::after { filter: brightness(.45) saturate(.7); }
+.stage[data-biome="cave"]::before, .stage[data-biome="nether"]::before, .stage[data-biome="end"]::before, .stage[data-biome="end_island"]::before, .stage[data-biome="ocean"]::before, .stage[data-biome="lush"]::before, .stage[data-biome="flooded_cave"]::before { display: none; }
+.stage[data-time="night"] { --sky: #070a1f; --haze: #1f2a52; }
+.stage[data-time="night"]::before { opacity: .12; }
+.stage[data-time="night"]::after, .stage[data-time="night"] .stage-backdrop { filter: brightness(.38) saturate(.75); }
+.try-bar { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.try-bar .cat-label { margin: 0; }
+.try-bar[hidden] + .try-bar { margin-top: 12px; }
+/* A pet's collar: a swatch for each dye, under the moods. */
+.collar-row { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.collar-row[hidden] { display: none; }
+.collar-swatch { width: 24px; height: 24px; padding: 0; border: 2px solid #101010; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .28), inset -2px -2px 0 rgba(0, 0, 0, .28); cursor: pointer; }
+.collar-swatch:hover { border-color: #6b6b6b; }
+.collar-swatch[aria-pressed="true"] { border-color: var(--white); outline: 2px solid #101010; }
+.try-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* A name, drawn like the plate over a named mob: white pixel letters on dark glass. As a button it puts that
+   name on the mob on the stage. */
+.name-chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  font: 400 15px/1 var(--font-pixel); color: var(--white); text-shadow: 1px 1px 0 #3f3f3f;
+  background: rgba(16, 16, 16, .78); border: 2px solid transparent; padding: 4px 8px 6px; overflow-wrap: anywhere;
+}
+button.name-chip { cursor: pointer; }
+button.name-chip:hover { border-color: var(--white); }
+button.name-chip[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -2px 0 var(--btn-on-lo); border-color: var(--edge); }
+.name-chip.none { color: #cfcfcf; font-style: italic; }
+.name-chip .src { width: 8px; height: 8px; flex: none; background: var(--pack); box-shadow: 0 0 0 1px #000; }
+.name-chip .src.game { background: var(--xp); }
+.name-chip.code { flex: none; white-space: nowrap; font: 800 15px/1 var(--font-body); letter-spacing: .08em; }
+
+/* Mob picker: spawn eggs in creative-inventory groups. */
+.mob-panel .cats { gap: 10px; }
+.mob-panel .cat-label { margin-bottom: 4px; }
+.mob-panel .slot-btn .ico { width: 30px; height: 30px; }
+
+/* The picked mob's page: its title, then a section for each thing to know about it. */
+.mob-result .res-top { padding: 16px 18px 6px; }
+.mob-result .res-title { gap: 12px; margin-bottom: 4px; }
+.mob-result .res-title h2 { font-size: 24px; }
+.mob-section { padding: 10px 18px 18px; }
+.mob-section-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.mob-section-head h3 { margin: 0; font: 600 20px/1.1 var(--font-pixel); color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.mob-section-head h3 .ico { width: 24px; height: 24px; }
+/* Its name tags: the game's first, then the pack's. */
+.tag-group { margin-top: 12px; }
+.tag-group-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
+.tag-group-head h4 { margin: 0; font: 600 17px/1.1 var(--font-pixel); color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.tag-group-head h4 .src { width: 12px; height: 12px; background: var(--pack); box-shadow: 0 0 0 2px var(--edge); }
+.tag-group-head h4 .src.game { background: var(--xp); }
+.tag-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.tag-row {
+  display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr); align-items: start; gap: 6px 14px; padding: 8px 10px;
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.tag-row.on { background: var(--picked); box-shadow: inset 0 0 0 2px var(--picked-edge); }
+.tag-names { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag-text { font-size: 14px; font-weight: 600; line-height: 1.4; min-width: 0; }
+.tag-text .sub { display: block; margin-top: 3px; font-weight: 500; font-size: 12.5px; color: var(--ink-soft); }
+.tag-text .sub b { color: var(--ink); font-weight: 800; }
+.tag-note { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+.tag-note b { color: var(--ink); }
+@media (max-width: 560px) {
+  .tag-row { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Search hits: the mob's egg, then the name and what it does. */
+.search-hit .slot.sm { width: 36px; height: 36px; }
+.search-hit .slot.sm .ico { width: 26px; height: 26px; }
+.search-hit .name-chip { font-size: 13px; padding: 2px 6px 4px; }

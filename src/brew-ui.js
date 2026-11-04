@@ -139,7 +139,7 @@ $("brew-more").addEventListener("click", () => { brew.count = Math.min(64, brew.
 $("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderBrew(); });
 
 /* ---------- Tool tabs ---------- */
-const VIEWS = ["anvil", "brewing", "trading"];
+const VIEWS = ["anvil", "brewing", "trading", "mobs", "armorstands"];
 function showView() {
   const current = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "anvil";
   for (const v of VIEWS) {

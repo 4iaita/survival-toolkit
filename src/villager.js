@@ -61,16 +61,16 @@ const VILLAGER_MODEL = VILLAGER_CUBES.map(c => ({
   uv: c.uv, grow: c.inflate, mirror: c.mirror, lid: c.lid,
   bone: c.rotation && {
     pivot: [c.pivot[0], 24 - c.pivot[1], c.pivot[2]], move: flipY(c.position || [0, 0, 0]),
-    angles: [c.rotation[0] * RAD, -c.rotation[1] * RAD, c.rotation[2] * RAD],
+    angles: [c.rotation[0] * RAD, c.rotation[1] * RAD, c.rotation[2] * RAD],
   },
 }));
 
-// Turn [x, y, z] by [x, y, z] angles: about Z, then Y, then X. unturn undoes it.
+// Turn [x, y, z] by [x, y, z] angles as the game does: about X, then Y, then Z. unturn undoes it.
 const rotX = ([x, y, z], a) => [x, y * Math.cos(a) - z * Math.sin(a), y * Math.sin(a) + z * Math.cos(a)];
 const rotY = ([x, y, z], a) => [x * Math.cos(a) + z * Math.sin(a), y, z * Math.cos(a) - x * Math.sin(a)];
 const rotZ = ([x, y, z], a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a), z];
-const turn = (p, [ax, ay, az]) => rotX(rotY(rotZ(p, az), ay), ax);
-const unturn = (p, [ax, ay, az]) => rotZ(rotY(rotX(p, -ax), -ay), -az);
+const turn = (p, [ax, ay, az]) => rotZ(rotY(rotX(p, ax), ay), az);
+const unturn = (p, [ax, ay, az]) => rotX(rotY(rotZ(p, -az), -ay), -ax);
 
 // Where a box face lands on the skin, as the texel's byte offset, from the face's own 0-1 position
 // (fx, fy, fz) in the box. The usual box layout: top and bottom in the first row, then right, front,
@@ -90,11 +90,17 @@ const FACES = [["right", "left"], ["top", "bottom"], ["front", "back"]];
 
 // ---------- Scene renderer ----------
 // A scene is boxes in game pixels: x right, y down with the ground at y = GROUND, z away from the camera
-// at rest. A box has lo and hi corners, maybe a bone (pivot, move, angles) turning it, and
-// color(axis, side, fx, fy, fz): its face's color at that 0-1 spot in the box as 0xRRGGBB, or -1 where the
-// face is see-through. side 0 is the box's low face on that axis.
+// at rest. A box has lo and hi corners, maybe a bone (pivot, move, angles, maybe scale) turning it, or bones: a
+// chain of them, innermost first, as a model's bones nest; and color(axis, side, fx, fy, fz): its face's color at that
+// 0-1 spot in the box as 0xRRGGBB, or -1 where the face is see-through. side 0 is the box's low face on that axis.
+// A glowing box (glow) isn't shaded.
 const GROUND = 24, LID_TOP = 24 - 29, BLINK = 2.02;
 const dot = (p, q) => p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
+const NO_MOVE = [0, 0, 0], NO_SCALE = [1, 1, 1];
+// Where a point of a box ends up once its bones (innermost first) have scaled and turned it about their pivots
+// and moved it.
+const placeBy = (chain, p) => chain.reduce((q, { pivot, move = NO_MOVE, angles, scale = NO_SCALE }) =>
+  turn(q.map((v, i) => (v - pivot[i]) * scale[i]), angles).map((v, i) => v + pivot[i] + move[i]), p);
 
 // An orthographic camera turned by yaw (radians) and looking down by pitch, scale pixels per game pixel,
 // with the scene point center at the canvas point origin. project says where a scene point lands.
@@ -118,67 +124,91 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
   // The camera is orthographic, so in each box's own frame every ray has the same direction and a start
   // that moves by stepX and stepY per pixel. Faces keep one light level each: shade[axis][side].
   const prepared = boxes.map(m => {
-    const { lo, hi, bone } = m;
+    const { lo, hi } = m, chain = m.bones || (m.bone ? [m.bone] : []);
+    // Into the box's own frame: undo the outermost turn first.
     let o = start, stepX = right, stepY = down, r = dir;
-    if (bone) {
-      o = unturn(start.map((v, i) => v - bone.pivot[i] - bone.move[i]), bone.angles).map((v, i) => v + bone.pivot[i]);
-      [stepX, stepY, r] = [right, down, dir].map(v => unturn(v, bone.angles));
+    for (let k = chain.length - 1; k >= 0; k--) {
+      const { pivot, move = NO_MOVE, angles, scale = NO_SCALE } = chain[k];
+      o = unturn(o.map((v, i) => v - pivot[i] - move[i]), angles).map((v, i) => v / scale[i] + pivot[i]);
+      [stepX, stepY, r] = [stepX, stepY, r].map(v => unturn(v, angles).map((x, i) => x / scale[i]));
     }
     const shade = [0, 1, 2].map(axis => [-1, 1].map(side => {
-      let n = [0, 0, 0];
-      n[axis] = side;
-      if (bone) n = turn(n, bone.angles);
+      const n = chain.reduce((q, { angles }) => turn(q, angles), [0, 1, 2].map(i => (i === axis ? side : 0)));
       return 0.5 + 0.5 * Math.max(0, dot(n, light));
     }));
     // Where the box lands on screen, in game pixels from the center, so pixels outside it skip the box.
     const corners = [0, 1, 2, 3, 4, 5, 6, 7].map(c => {
-      let p = [c & 1 ? hi[0] : lo[0], c & 2 ? hi[1] : lo[1], c & 4 ? hi[2] : lo[2]];
-      if (bone) p = turn(p.map((v, i) => v - bone.pivot[i]), bone.angles).map((v, i) => v + bone.pivot[i] + bone.move[i]);
-      const rel = p.map((v, i) => v - center[i]);
+      const rel = placeBy(chain, [c & 1 ? hi[0] : lo[0], c & 2 ? hi[1] : lo[1], c & 4 ? hi[2] : lo[2]]).map((v, i) => v - center[i]);
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { lo, hi, color: m.color, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, glow: m.glow, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+  });
+  // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
+  const shadowSpans = shadows.map(([sx, sz, radius]) => {
+    const corners = [-1, 1].flatMap(i => [-1, 1].map(k => {
+      const rel = [sx + i * radius - center[0], GROUND - center[1], sz + k * radius - center[2]];
+      return [dot(rel, right), dot(rel, down)];
+    }));
+    return [0, 1].flatMap(k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))]);
   });
   const out = new Uint8ClampedArray(width * height * 4), o = [0, 0, 0];
-  for (let py = 0; py < height; py++) for (let px = 0; px < width; px++) {
-    const a = (px + 0.5 - origin[0]) / scale, b = (py + 0.5 - origin[1]) / scale;
-    let bestT = Infinity, bestColor = -1, bestShade = 0;
-    for (const m of prepared) {
-      if (a < m.across[0] || a > m.across[1] || b < m.along[0] || b > m.along[1]) continue;
-      const r = m.r;
-      for (let i = 0; i < 3; i++) o[i] = m.o[i] + m.stepX[i] * a + m.stepY[i] * b;
-      let near = -Infinity, far = Infinity, axis = 0;
-      for (let i = 0; i < 3; i++) {
-        if (Math.abs(r[i]) < 1e-9) {
-          if (o[i] < m.lo[i] || o[i] > m.hi[i]) far = -Infinity;
-          continue;
+  for (let py = 0; py < height; py++) {
+    const b = (py + 0.5 - origin[1]) / scale, row = prepared.filter(m => b >= m.along[0] && b <= m.along[1]);
+    // Most of the canvas is empty, so each row only works out the pixels a box or shadow can reach.
+    let first = Infinity, last = -Infinity;
+    for (const m of row) { first = Math.min(first, m.across[0]); last = Math.max(last, m.across[1]); }
+    for (const s of shadowSpans) if (b >= s[2] && b <= s[3]) { first = Math.min(first, s[0]); last = Math.max(last, s[1]); }
+    if (first > last) continue;
+    const from = Math.max(0, Math.floor(origin[0] + first * scale) - 1), to = Math.min(width, Math.ceil(origin[0] + last * scale) + 1);
+    for (let px = from; px < to; px++) {
+      const a = (px + 0.5 - origin[0]) / scale;
+      let bestT = Infinity, bestColor = -1, bestShade = 0;
+      for (const m of row) {
+        if (a < m.across[0] || a > m.across[1]) continue;
+        const r = m.r;
+        for (let i = 0; i < 3; i++) o[i] = m.o[i] + m.stepX[i] * a + m.stepY[i] * b;
+        let near = -Infinity, far = Infinity, axis = 0, backAxis = 0;
+        for (let i = 0; i < 3; i++) {
+          if (Math.abs(r[i]) < 1e-9) {
+            if (o[i] < m.lo[i] || o[i] > m.hi[i]) far = -Infinity;
+            continue;
+          }
+          const t1 = (m.lo[i] - o[i]) / r[i], t2 = (m.hi[i] - o[i]) / r[i];
+          if (Math.min(t1, t2) > near) { near = Math.min(t1, t2); axis = i; }
+          if (Math.max(t1, t2) < far) { far = Math.max(t1, t2); backAxis = i; }
         }
-        const t1 = (m.lo[i] - o[i]) / r[i], t2 = (m.hi[i] - o[i]) / r[i];
-        if (Math.min(t1, t2) > near) { near = Math.min(t1, t2); axis = i; }
-        far = Math.min(far, Math.max(t1, t2));
+        if (near > far || near >= bestT) continue;
+        const frac = (i, t) => (m.hi[i] > m.lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * t - m.lo[i]) / (m.hi[i] - m.lo[i]))) : 0);
+        const side = r[axis] > 0 ? 0 : 1;
+        const color = m.color(axis, side, frac(0, near), frac(1, near), frac(2, near));
+        if (color >= 0) {
+          bestT = near;
+          bestColor = color;
+          bestShade = m.glow ? 1 : m.shade[axis][side];
+        } else if (far < bestT) {
+          // Through a see-through texel, the inside of the box's far face shows: the game draws both sides.
+          const backSide = r[backAxis] > 0 ? 1 : 0, back = m.color(backAxis, backSide, frac(0, far), frac(1, far), frac(2, far));
+          if (back >= 0) {
+            bestT = far;
+            bestColor = back;
+            bestShade = m.glow ? 1 : m.shade[backAxis][backSide];
+          }
+        }
       }
-      if (near > far || near >= bestT) continue;
-      const frac = i => (m.hi[i] > m.lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * near - m.lo[i]) / (m.hi[i] - m.lo[i]))) : 0);
-      const side = r[axis] > 0 ? 0 : 1;
-      const color = m.color(axis, side, frac(0), frac(1), frac(2));
-      if (color < 0) continue;
-      bestT = near;
-      bestColor = color;
-      bestShade = m.shade[axis][side];
-    }
-    const j = (py * width + px) * 4;
-    if (bestColor >= 0) {
-      out[j] = (bestColor >> 16) * bestShade;
-      out[j + 1] = (bestColor >> 8 & 255) * bestShade;
-      out[j + 2] = (bestColor & 255) * bestShade;
-      out[j + 3] = 255;
-    } else if (shadows.length) {
-      const t = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
-      const gx = start[0] + right[0] * a + down[0] * b + dir[0] * t, gz = start[2] + right[2] * a + down[2] * b + dir[2] * t;
-      let dark = 0;
-      for (const [sx, sz, radius] of shadows) dark = Math.max(dark, 1 - ((gx - sx) ** 2 + (gz - sz) ** 2) / radius ** 2);
-      out[j + 3] = 90 * dark;
+      const j = (py * width + px) * 4;
+      if (bestColor >= 0) {
+        out[j] = (bestColor >> 16) * bestShade;
+        out[j + 1] = (bestColor >> 8 & 255) * bestShade;
+        out[j + 2] = (bestColor & 255) * bestShade;
+        out[j + 3] = 255;
+      } else if (shadows.length) {
+        const t = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
+        const gx = start[0] + right[0] * a + down[0] * b + dir[0] * t, gz = start[2] + right[2] * a + down[2] * b + dir[2] * t;
+        let dark = 0;
+        for (const [sx, sz, radius] of shadows) dark = Math.max(dark, 1 - ((gx - sx) ** 2 + (gz - sz) ** 2) / radius ** 2);
+        out[j + 3] = 90 * dark;
+      }
     }
   }
   return out;
@@ -434,7 +464,8 @@ function villagerScene(canvas, tag, { onTurn = () => {} } = {}) {
 
 // The biome's ground texture, tiled under the villager.
 const groundArt = biome => {
-  const name = BIOMES.find(b => b.k === biome).ground, tex = art(name);
+  // Only villages are BIOMES; the Mobs tab's cave, nether, End, ocean, lush and flooded caves have floors of their own.
+  const name = (BIOMES.find(b => b.k === biome) || { ground: { forest: "grass_top", mineshaft: "gravel", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel" }[biome] || "stone" }).ground, tex = art(name);
   if (!tex) return icon(`biome:${biome}`);
   return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };

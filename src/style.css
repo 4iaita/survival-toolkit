@@ -41,6 +41,7 @@
 * { box-sizing: border-box; }
 html { background: var(--page); }
 body {
+  min-height: 100dvh;
   background-color: var(--page);
   background-image: var(--stone, none);
   background-size: 128px 128px;

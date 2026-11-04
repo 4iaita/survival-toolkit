@@ -37,9 +37,9 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .stage::before { animation: clouds 45s linear infinite alternate; }
-  .stage[data-biome="jungle"]::before { animation-name: clouds-in-gap; }
+  .stage[data-biome="jungle"]::before { animation: clouds-in-gap 26s linear infinite alternate; }
   @keyframes clouds { to { transform: translateX(70px); } }
-  @keyframes clouds-in-gap { to { transform: translateX(20px); } }
+  @keyframes clouds-in-gap { to { transform: translateX(40px); } }
 }
 /* The biome's countryside behind the scene (under the ground strip), then the scene itself. */
 .stage-backdrop, .stage-scene {

@@ -13,7 +13,7 @@ head = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Survival Toolkit</title>
-<meta name="description" content="Anvil enchanting planner, potion brewing guide and villager trade guide for Minecraft, Java and Bedrock.">
+<meta name="description" content="Anvil enchanting planner, potion brewing guide, villager trade guide, mobs and name tag secrets, and armor stand props for Minecraft, Java and Bedrock.">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -27,12 +27,16 @@ body { margin: 0; }
 
 
 def build_page():
-    body = read("body.html").replace("<!-- brew.html -->\n", read("brew.html")).replace("<!-- trade.html -->\n", read("trade.html"))
+    body = read("body.html")
+    for part in ("brew.html", "trade.html", "mob.html", "prop.html"):
+        body = body.replace(f"<!-- {part} -->\n", read(part))
     scripts = ["brew-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js",
-               "villager.js", "backdrop.js", "trade-data.js", "ui.js", "brew-ui.js", "trade-ui.js"]
-    out = (head + read("style.css") + read("brew.css") + read("trade.css") + "</style>\n</head>\n<body>\n" + body +
+               "villager.js", "backdrop.js", "trade-data.js", "mob-models.js", "mobs.js", "mob-data.js", "tag-data.js", "prop-data.js",
+               "ui.js", "brew-ui.js", "trade-ui.js", "mob-ui.js", "prop-ui.js"]
+    out = (head + read("style.css") + read("brew.css") + read("trade.css") + read("mob.css") + read("prop.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
-           art_script() + "\n" + skins_script() + "\n" + "\n".join(read(f) for f in scripts) + "</script>\n</body>\n</html>\n")
+           art_script() + "\n" + skins_script() + "\n" + mob_skins_script() + "\n" + "\n".join(read(f) for f in scripts) +
+           "</script>\n</body>\n</html>\n")
     (root / "index.html").write_text(out)
     print(f"index.html: {len(out)} bytes")
 
@@ -41,7 +45,8 @@ def build_page():
 # Every 16x16 PNG in art/ is embedded as base64 RGBA so the page stays one self-contained file.
 
 def read_png(path):
-    """Decode a non-interlaced PNG to the RGBA bytes of its top-left 16x16 frame."""
+    """Decode a non-interlaced PNG to the RGBA bytes of its top-left 16x16 frame. A wider texture is a bigger picture of
+    the same block, so it's sampled down to 16x16 (a tall one of width 16 is frames of animation, one under the next)."""
     data = path.read_bytes()
     pos, idat, plte, trns = 8, b"", None, None
     while pos < len(data):
@@ -85,9 +90,10 @@ def read_png(path):
         return ((line[bit // 8] >> (8 - depth - bit % 8)) & ((1 << depth) - 1),)
 
     out = bytearray()
+    step = max(1, w // 16)
     for y in range(16):
         for x in range(16):
-            s = sample(rows[y], x)
+            s = sample(rows[y * step], x * step)
             if ctype == 6: out += bytes(s)
             elif ctype == 4: out += bytes((s[0], s[0], s[0], s[1]))
             elif ctype == 3: out += bytes((*plte[s[0]], trns[s[0]] if trns and s[0] < len(trns) else 255))
@@ -111,6 +117,13 @@ def skins_script():
     files = sorted((root / "art" / "villager").glob("*.png"))
     entries = ",".join(f'"{f.stem}":"data:image/png;base64,{base64.b64encode(f.read_bytes()).decode()}"' for f in files)
     return f"const SKINS = {{{entries}}};"
+
+
+def mob_skins_script():
+    """Mob textures from art/mobs/ (copied from the pack by import_models.py), kept as PNG data URLs like SKINS."""
+    files = sorted((root / "art" / "mobs").glob("*.png"))
+    entries = ",".join(f'"{f.stem}":"data:image/png;base64,{base64.b64encode(f.read_bytes()).decode()}"' for f in files)
+    return f"const MOB_SKINS = {{{entries}}};"
 
 
 # ---------- Icons ----------

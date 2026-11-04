@@ -67,7 +67,7 @@ FILES = {
     "heart_of_the_sea": "items/heartofthesea_closed", "chain": "items/chain",
     "leather_helmet": "items/leather_helmet", "leather_chestplate": "items/leather_chestplate",
     "leather_leggings": "items/leather_leggings", "leather_boots": "items/leather_boots",
-    "leather_horse_armor": "items/leather_horse_armor",
+    "leather_horse_armor": "items/leather_horse_armor", "name_tag": "items/name_tag", "armor_stand": "items/armor_stand",
     # Blocks
     "andesite": "blocks/stone_andesite", "anvil": "blocks/anvil_base", "anvil_top": "blocks/anvil_top_damaged_0", "bedrock": "blocks/bedrock", "bookshelf": "blocks/bookshelf",
     "cactus_side": "blocks/cactus_side", "cactus_top": "blocks/cactus_top",
@@ -120,6 +120,35 @@ FILES = {
     "door_spruce_upper": "blocks/door_spruce_upper", "door_spruce_lower": "blocks/door_spruce_lower",
     "door_acacia_upper": "blocks/door_acacia_upper", "door_acacia_lower": "blocks/door_acacia_lower",
     "smooth_sandstone": "blocks/sandstone_smooth", "chiseled_sandstone": "blocks/sandstone_carved",
+    # The nether backdrop.
+    "deepslate": "blocks/deepslate/deepslate", "glow_lichen": "blocks/glow_lichen",
+    "moss_block": "blocks/moss_block", "clay": "blocks/clay", "big_dripleaf_top": "blocks/big_dripleaf_top", "big_dripleaf_stem": "blocks/big_dripleaf_stem",
+    "small_dripleaf_side": "blocks/small_dripleaf_side", "azalea_side": "blocks/azalea_side", "flowering_azalea_side": "blocks/flowering_azalea_side",
+    "azalea_leaves": "blocks/azalea_leaves_opaque", "azalea_leaves_flowers": "blocks/azalea_leaves_flowers_opaque", "cave_vines_body": "blocks/cave_vines_body",
+    "cave_vines_berries": "blocks/cave_vines_body_berries", "cave_vines_tip": "blocks/cave_vines_head_berries",
+    "kelp": "blocks/kelp_a", "kelp_top": "blocks/kelp_top", "kelp_bulb": "blocks/kelp_top_bulb", "seagrass": "blocks/seagrass",
+    "tall_seagrass_top": "blocks/seagrass_doubletall_top_a", "tall_seagrass_bottom": "blocks/seagrass_doubletall_bottom_a",
+    "sea_pickle": "blocks/sea_pickle", "sea_lantern": "blocks/sea_lantern", "prismarine": "blocks/prismarine_rough",
+    "prismarine_bricks": "blocks/prismarine_bricks", "prismarine_dark": "blocks/prismarine_dark",
+    "coral_red": "blocks/coral_red", "coral_yellow": "blocks/coral_yellow", "coral_pink": "blocks/coral_pink", "coral_blue": "blocks/coral_blue",
+    "coral_plant_red": "blocks/coral_plant_red", "coral_plant_yellow": "blocks/coral_plant_yellow", "coral_plant_pink": "blocks/coral_plant_pink",
+    "coral_plant_blue": "blocks/coral_plant_blue", "coral_fan_red": "blocks/coral_fan_red", "coral_fan_yellow": "blocks/coral_fan_yellow",
+    "coral_fan_pink": "blocks/coral_fan_pink", "coral_fan_blue": "blocks/coral_fan_blue",
+    "end_stone": "blocks/end_stone", "end_bricks": "blocks/end_bricks", "purpur_block": "blocks/purpur_block", "purpur_pillar": "blocks/purpur_pillar",
+    "chorus_plant": "blocks/chorus_plant", "chorus_flower": "blocks/chorus_flower",
+    "end_sky": "environment/end_sky", "torch": "blocks/torch_on", "iron_bars": "blocks/iron_bars",
+    "leaves_birch": "blocks/leaves_birch", "log_birch": "blocks/log_birch", "mushroom_red": "blocks/mushroom_red", "mushroom_brown": "blocks/mushroom_brown",
+    "oxeye_daisy": "blocks/flower_oxeye_daisy", "mob_spawner": "blocks/mob_spawner",
+    "netherrack": "blocks/netherrack", "nether_brick": "blocks/nether_brick", "blackstone": "blocks/blackstone", "quartz_ore": "blocks/quartz_ore",
+    "nether_gold_ore": "blocks/nether_gold_ore", "magma": "blocks/magma", "lava": "blocks/lava_still", "crimson_nylium": "blocks/crimson_nylium_side",
+    "crimson_roots": "blocks/crimson_roots", "crimson_fungus": "blocks/crimson_fungus", "weeping_vines": "blocks/weeping_vines",
+    "weeping_vines_base": "blocks/weeping_vines_base",
+    # The cave backdrop.
+    "coal_ore": "blocks/coal_ore", "iron_ore": "blocks/iron_ore", "copper_ore": "blocks/copper_ore", "gold_ore": "blocks/gold_ore",
+    "redstone_ore": "blocks/redstone_ore", "lapis_ore": "blocks/lapis_ore", "diamond_ore": "blocks/diamond_ore", "tuff": "blocks/tuff",
+    "dripstone_down_frustum": "blocks/pointed_dripstone_down_frustum",
+    "dripstone_down_middle": "blocks/pointed_dripstone_down_middle", "dripstone_down_tip": "blocks/pointed_dripstone_down_tip",
+    "dripstone_up_frustum": "blocks/pointed_dripstone_up_frustum", "dripstone_up_tip": "blocks/pointed_dripstone_up_tip",
     "hay_side": "blocks/hay_block_side", "wheat_crop": "blocks/wheat_stage_7", "dirt": "blocks/dirt", "packed_ice": "blocks/ice_packed",
     "poppy": "blocks/flower_rose", "dandelion": "blocks/flower_dandelion", "cornflower": "blocks/flower_cornflower",
     "short_grass": "blocks/tallgrass", "fern": "blocks/fern", "dead_bush": "blocks/deadbush",
@@ -135,6 +164,9 @@ for color in COLORS:
     FILES[f"{color}_terracotta"] = f"blocks/hardened_clay_stained_{pack_color}"
     FILES[f"{color}_glazed_terracotta"] = f"blocks/glazed_terracotta_{pack_color}"
     FILES[f"{color}_bed"] = f"items/bed_{pack_color}"
+# Spawn eggs: the Mobs tab's icons, egg_<mob>.
+for egg in sorted((pack / "items" / "spawn_eggs").glob("spawn_egg_*.png")):
+    FILES[f"egg_{egg.stem[len('spawn_egg_'):]}"] = f"items/spawn_eggs/{egg.stem}"
 for metal, file in METALS.items():
     for piece in PIECES:
         path = pack / f"items/{file}_{piece}.png"
@@ -157,23 +189,23 @@ VILLAGER.update({f"profession_{job}": f"{file}.tga" for job, file in {
 
 
 def tga_to_png(src, dst):
-    """Rewrite a 32-bit TGA (plain or run-length) as an RGBA PNG."""
+    """Rewrite a 24- or 32-bit TGA (plain or run-length) as an RGBA PNG."""
     d = src.read_bytes()
-    kind, w, h, desc = d[2], d[12] | d[13] << 8, d[14] | d[15] << 8, d[17]
+    kind, w, h, n, desc = d[2], d[12] | d[13] << 8, d[14] | d[15] << 8, d[16] // 8, d[17]
     pos, px = 18 + d[0], []
     while len(px) < w * h:
         if kind == 10 and d[pos] & 128:
-            px += [d[pos + 1:pos + 5]] * ((d[pos] & 127) + 1)
-            pos += 5
+            px += [d[pos + 1:pos + 1 + n]] * ((d[pos] & 127) + 1)
+            pos += 1 + n
             continue
         count = (d[pos] & 127) + 1 if kind == 10 else 1
         pos += kind == 10
-        px += [d[pos + 4 * i:pos + 4 * i + 4] for i in range(count)]
-        pos += 4 * count
+        px += [d[pos + n * i:pos + n * i + n] for i in range(count)]
+        pos += n * count
     rows = [px[y * w:(y + 1) * w] for y in range(h)]
     if not desc & 32:
         rows.reverse()
-    raw = b"".join(b"\0" + b"".join(bytes((p[2], p[1], p[0], p[3])) for p in row) for row in rows)
+    raw = b"".join(b"\0" + b"".join(bytes((p[2], p[1], p[0], p[3] if n == 4 else 255)) for p in row) for row in rows)
     chunk = lambda tag, data: struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data))
     dst.write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)) +
                     chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))

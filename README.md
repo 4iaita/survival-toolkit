@@ -5,6 +5,8 @@ Planners for the fiddly parts of Minecraft survival, for Java and Bedrock:
 - **Anvil Planner**: pick an item and the enchantments you want. It finds the anvil order that costs the fewest XP points (or levels), without any job hitting "Too Expensive!". It searches every possible merge order, so the plan is the true minimum, not a rule of thumb.
 - **Brewing Guide**: pick a potion, how strong it should be and the bottle type. It lists every brewing step, what goes into the stand, and how many ingredients and blaze powder you need.
 - **Villager Trades**: pick a villager to see everything it buys and sells at each level, or search for an item (or an enchantment like Mending) to find who trades it.
+- **Mobs**: every mob and boss you can meet in survival, in 3D. Pick one to see it up close and read about it. Slimes and magma cubes come in three sizes. Some have moods to switch between (the wolf: calm, angry, or a pet with a collar in any dye color and wolf armor, dyed, cracked or enchanted). Its page has one section for now: name tags, with every name that does something to it: the game's own (Dinnerbone, Grumm, jeb_, Toast, Johnny) and the Actions & Stuff pack's for Bedrock (Goldie, Dapper, Krampus, the baby and snowy names and the rest). Try them on its model, or search for a name.
+- **Armor Stands**: the Actions & Stuff pack's armor stand props for Bedrock: the decoration each item becomes in the hand of an armor stand named §§. Pick an item to see its prop in 3D.
 
 ## Run it
 
@@ -20,9 +22,14 @@ The source lives in `src/`:
 - `icons.js` … `icons4.js`: original 16×16 pixel-art icons, drawn from text templates (used where the texture pack has no match)
 - `art.js`, `icons5.js`: texture pack icons and which item uses which texture, including job site blocks and village biomes
 - `villager.js`: the villager scene: the pack's villager model and skins for each biome and profession, beside its job site block as a 3D block model, turned together by dragging
-- `backdrop.js`: each biome's countryside behind the villager scene (hills, trees, a village building and plants), built from block textures
-- `ui.js`, `brew-ui.js`, `trade-ui.js`: the three tools and the tool tabs
-- `body.html`, `brew.html`, `trade.html` and the matching `.css` files: the page
+- `backdrop.js`: each biome's countryside behind the villager scene (hills, trees, a village building and plants), and the forest, cave, nether, End, dragon's island, underwater, lush cave and flooded cave scenes behind the mobs, built from block textures
+- `mob-models.js`: the pack's mob and prop models and how each mob looks with each name (written by `import_models.py`, see below)
+- `mobs.js`: draws those models with the villager scene's renderer, plays their animations, and the stage the Mobs and Armor Stands tabs show them on
+- `mob-data.js`: the mobs and bosses: their groups (the End's mobs have their own), names and stages
+- `tag-data.js`: name tags: what each name does, by mob
+- `prop-data.js`: the armor stand props: the decoration each item becomes
+- `ui.js`, `brew-ui.js`, `trade-ui.js`, `mob-ui.js`, `prop-ui.js`: the five tools and the tool tabs
+- `body.html`, `brew.html`, `trade.html`, `mob.html`, `prop.html` and the matching `.css` files: the page
 
 After editing, rebuild the page and the site icons:
 
@@ -42,3 +49,10 @@ python3 build.py
 ```
 
 The name map from pack files to icons is in `import_textures.py`.
+
+The Mobs tab's mobs and the Armor Stands tab's props come from the Actions & Stuff pack itself (`.mcpack`), which keeps its entities, render controllers, models and animations in packed `__brarchive` files under scrambled names. `import_models.py` reads them and runs the pack's own entity scripts and render controllers (with `molang.py`, a small Molang interpreter) once with no name and once for each name the pack checks (mobs that react to no name are listed in `NAMELESS_MOBS`; the tadpole isn't in the pack, so its small model is written out there), to find which model, textures and parts each look uses. It writes `src/mob-models.js` and copies the textures from `../textures` into `art/mobs/`. After updating the pack, run it again with the pack's path, then rebuild:
+
+```bash
+python3 import_models.py path/to/actions_and_stuff.mcpack ../textures
+python3 build.py
+```
