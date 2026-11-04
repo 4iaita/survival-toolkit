@@ -94,6 +94,11 @@ h1 { font: 600 clamp(28px, 4.4vw, 42px)/1.05 var(--font-pixel); color: var(--whi
 .mc-btn:hover { border-color: var(--white); }
 .mc-btn[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -3px 0 var(--btn-on-lo); }
 .mc-btn .ico { width: 24px; height: 24px; }
+/* What's happening to a tool, under its name on the tab: changes on the way, or still being built. */
+.tabs .mc-btn { display: inline-grid; grid-template-columns: auto auto; justify-content: center; row-gap: 4px; }
+.tab-status { grid-column: 1 / -1; padding: 2px 5px 3px; font: 800 11px/1.1 var(--font-body); letter-spacing: .02em; text-align: center; white-space: nowrap; text-shadow: none; border: 1px solid #101010; }
+.tab-status.changes { color: #fff4c2; background: #1f4e7a; }
+.tab-status.building { color: #101010; background: repeating-linear-gradient(-45deg, #f6c531 0 7px, #e8a916 7px 14px); box-shadow: inset 0 -2px 0 #101010; }
 .mc-btn.sm { font-size: 14px; padding: 6px 10px 8px; }
 .edition { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -649,11 +654,11 @@ button.name-chip[aria-pressed="true"] { background: var(--btn-on); box-shadow: i
   </header>
 
   <nav class="tabs" aria-label="Tools">
-    <a class="mc-btn" href="#anvil" id="tab-anvil"><img class="ico" data-icon="ui:enchant" alt="">Anvil Planner</a>
-    <a class="mc-btn" href="#brewing" id="tab-brewing"><img class="ico" data-icon="ui:potion" alt="">Brewing Guide</a>
-    <a class="mc-btn" href="#trading" id="tab-trading"><img class="ico" data-icon="ui:emerald" alt="">Villager Trades</a>
-    <a class="mc-btn" href="#mobs" id="tab-mobs"><img class="ico" data-icon="ui:mob" alt="">Mobs</a>
-    <a class="mc-btn" href="#armorstands" id="tab-armorstands"><img class="ico" data-icon="ui:armor_stand" alt="">Armor Stands</a>
+    <a class="mc-btn" href="#anvil" id="tab-anvil"><img class="ico" data-icon="ui:enchant" alt="">Anvil Planner<span class="tab-status changes">Changes coming</span></a>
+    <a class="mc-btn" href="#brewing" id="tab-brewing"><img class="ico" data-icon="ui:potion" alt="">Brewing Guide<span class="tab-status changes">Changes coming</span></a>
+    <a class="mc-btn" href="#trading" id="tab-trading"><img class="ico" data-icon="ui:emerald" alt="">Villager Trades<span class="tab-status changes">Changes coming</span></a>
+    <a class="mc-btn" href="#mobs" id="tab-mobs"><img class="ico" data-icon="ui:mob" alt="">Mobs<span class="tab-status building">Under construction</span></a>
+    <a class="mc-btn" href="#armorstands" id="tab-armorstands"><img class="ico" data-icon="ui:armor_stand" alt="">Armor Stands<span class="tab-status building">Under construction</span></a>
   </nav>
 
   <section id="view-anvil" aria-label="Anvil Planner">
