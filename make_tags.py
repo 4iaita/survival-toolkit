@@ -68,7 +68,7 @@ WHAT = {
     ("chicken", "baby zombified"): "A zombie chick, rotting.",
     ("chicken", "skeleton"): "A skeleton chicken, all bones.",
     ("chicken", "baby skeleton"): "A skeleton chick, all bones.",
-    ("chicken", "peep"): "A little yellow chick shaped like a hen, half a hen’s size, that moves like one.",
+    ("chicken", "peep"): "The old-style chick: a little yellow hen with a big head, half a hen’s size, that moves like one.",
     ("chicken", "egg head"): "A chick still in its eggshell. Now and then it pops the top of the shell to peek out, then shuts it again.",
     ("chicken", "chickzilla"): "A giant chick, sixteen times a chicken’s size, stomping slowly on the spot.",
     ("chicken", "chickle"): "A green chicken like a sea pickle.",
@@ -94,8 +94,10 @@ WHAT = {
 # climate, which the stage switches to, and what the row says it needs.
 CLIMATE = {
     ("chicken", "cherry"): "temperate", ("chicken", "dappled"): "cold", ("cow", "strawberry"): "temperate", ("cow", "dappled"): "cold",
+    ("cow", "cherry"): ["temperate", "warm"],
 }
-NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only cold {mob}s, the kind from snowy biomes."}
+NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only cold {mob}s, the kind from snowy biomes.",
+         ("temperate", "warm"): "Not on cold {mob}s: their woolly heads hide the crown."}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
@@ -148,7 +150,7 @@ def main():
                 row["what"] = describe(mob, look["names"])
                 climate = CLIMATE.get((mob, look["names"][0].lower()))
                 if climate:
-                    row["needs"] = NEEDS[climate].format(mob=mob)
+                    row["needs"] = NEEDS[tuple(climate) if isinstance(climate, list) else climate].format(mob=mob)
                     row["climate"] = climate
             rows.setdefault(mob, []).append(row)
 

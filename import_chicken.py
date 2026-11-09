@@ -50,4 +50,5 @@ NAMED = ["chicken jockey", "cooked", "lava chicken", "snowy", "halloween", "baby
 DAPPLED = [["dappled", "Dappled"]]
 
 if __name__ == "__main__":
-    port("chicken", variants=[""], acts=ACTS, motions=MOTIONS, remodel=NAMED, new_looks=DAPPLED, sets=SETS, plays=PLAYS, climates=CLIMATES)
+    port("chicken", variants=[""], acts=ACTS, motions=MOTIONS, remodel=NAMED, new_looks=DAPPLED, sets=SETS, plays=PLAYS, climates=CLIMATES,
+         nested_poses=True)

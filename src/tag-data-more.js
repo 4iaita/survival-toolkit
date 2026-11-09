@@ -56,7 +56,7 @@ const PACK_TAGS_MORE = {
     { names: ["Baby Zombified"], more: ["baby Zombified", "Baby zombified"], what: "A zombie chick, rotting." },
     { names: ["Skeleton"], what: "A skeleton chicken, all bones." },
     { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A skeleton chick, all bones." },
-    { names: ["Peep", "Hatchling"], what: "A little yellow chick shaped like a hen, half a hen’s size, that moves like one." },
+    { names: ["Peep", "Hatchling"], what: "The old-style chick: a little yellow hen with a big head, half a hen’s size, that moves like one." },
     { names: ["Egg Head"], more: ["egg Head", "Egg head"], what: "A chick still in its eggshell. Now and then it pops the top of the shell to peek out, then shuts it again." },
     { names: ["Chickzilla"], more: ["CHICKZILLA"], what: "A giant chick, sixteen times a chicken’s size, stomping slowly on the spot." },
     { names: ["Chickle", "Sea Chickle"], more: ["sea Chickle", "Sea chickle"], what: "A green chicken like a sea pickle." },
@@ -77,7 +77,7 @@ const PACK_TAGS_MORE = {
   ],
   cow: [
     { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "A zombie calf, rotting." },
-    { names: ["Cherry"], what: "A crown of cherry blossoms." },
+    { names: ["Cherry"], what: "A crown of cherry blossoms.", needs: "Not on cold cows: their woolly heads hide the crown.", climate: ["temperate", "warm"] },
     { names: ["Strawberry"], what: "A pink strawberry cow with pale spots.", needs: "Only temperate cows, the usual kind.", climate: "temperate" },
     { names: ["Halloween", "Zombified"], what: "A zombie cow, rotting, its ribs showing." },
     { names: ["Dappled"], what: "Orange leaves on its head.", needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },

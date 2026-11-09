@@ -19,8 +19,8 @@ const GAME_TAGS = [
 // What the Actions & Stuff pack (Bedrock) does with names, by mob, from its entity scripts. names: the spellings
 // it checks, in capitals (it also takes all lower case; a few take more, listed in more). kind marks the looks
 // most mobs share (BABY, SNOWY); rare: which mobs get the look without the name, picked again each time one loads;
-// needs: what has to be true first; climate: the only climate (a MOB_VARIANTS climate, or temperate) the look shows in,
-// which the stage switches to. On the stage: night for a name whose difference only shows in the dark,
+// needs: what has to be true first; climate: the climate (a MOB_VARIANTS climate, or temperate) or climates the look
+// shows in, the only variants the name can be tried on. On the stage: night for a name whose difference only shows in the dark,
 // moving for a texture that runs, still for a dance it can't show.
 const BABY = "baby", SNOWY = "snowy";
 const snowyIn = mobs => ({ names: ["Snowy", "Frosty"], kind: SNOWY, rare: `15% of ${mobs} in snowy biomes` });

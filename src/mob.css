@@ -58,6 +58,8 @@
 }
 button.name-chip { cursor: pointer; }
 button.name-chip:hover { border-color: var(--white); }
+button.name-chip:disabled { cursor: not-allowed; opacity: 0.45; }
+button.name-chip:disabled:hover { border-color: inherit; }
 button.name-chip[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -2px 0 var(--btn-on-lo); border-color: var(--edge); }
 .name-chip.none { color: #cfcfcf; font-style: italic; }
 .name-chip .src { width: 8px; height: 8px; flex: none; background: var(--pack); box-shadow: 0 0 0 1px #000; }

@@ -94,9 +94,18 @@ function showOnStage() {
   $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : variant && variant.say !== "" ? variant.say || variant.n : mobName(m))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
 }
 
+// A name that only shows on some of the mob's variants (climate: the climates it shows in, a MOB_VARIANTS climate or
+// temperate) can only be tried on those: on the others its buttons are off, saying which variants it needs.
+const climatesOf = t => (t && t.climate ? [].concat(t.climate) : null);
+const variantClimate = v => (v && v.climate) || "temperate";
+const fitsVariant = (t, v = variantInfo()) => !climatesOf(t) || !MOB_VARIANTS[mobTab.mob] || climatesOf(t).includes(variantClimate(v));
+const fitVariants = t => (MOB_VARIANTS[mobTab.mob] || []).filter(v => fitsVariant(t, v));
+
 // A name as a button that tries it on the mob: spelling say of the name t.
-const nameChip = (t, say, pressed) =>
-  `<button type="button" class="name-chip" data-tag="${esc(t.names[0])}" data-say="${esc(say)}" aria-pressed="${pressed}"><span class="src ${t.src}" aria-hidden="true"></span>${esc(say)}</button>`;
+const nameChip = (t, say, pressed) => {
+  const off = !fitsVariant(t), why = off ? ` title="${esc(`Only on a ${fitVariants(t).map(v => v.n.toLowerCase()).join(" or ")} ${mobName(mobOf(mobTab.mob)).toLowerCase()}`)}" disabled` : "";
+  return `<button type="button" class="name-chip" data-tag="${esc(t.names[0])}" data-say="${esc(say)}" aria-pressed="${pressed}"${why}><span class="src ${t.src}" aria-hidden="true"></span>${esc(say)}</button>`;
+};
 
 function renderMobPicker() {
   $("mob-picker").innerHTML = MOB_GROUPS.map(g => `
@@ -262,10 +271,11 @@ function renderMobs() {
   saveMobTab();
 }
 
-// A name whose look only shows in one climate (climate: a cold chicken's Snowy) turns the mob into that climate's variant.
+// A name picked from the search, or kept from last time, that doesn't fit the mob's variant starts it on the first
+// variant it fits (a cold chicken for Snowy).
 function fitClimate() {
-  const t = currentTag(), v = t && t.climate && (MOB_VARIANTS[mobTab.mob] || []).find(x => (x.climate || "temperate") === t.climate);
-  if (v) mobVariant = v.k;
+  const t = currentTag();
+  if (t && !fitsVariant(t) && fitVariants(t).length) mobVariant = fitVariants(t)[0].k;
 }
 
 function pickMob(k, name) {
@@ -286,8 +296,6 @@ function pickMob(k, name) {
 function pickTag(name, say = name) {
   mobTab.name = name;
   mobTab.say = say;
-  fitClimate();
-  renderVariants();
   renderMoods();
   renderTry();
   renderMobResult();
@@ -322,9 +330,14 @@ $("variant-try").addEventListener("click", e => {
   const b = e.target.closest("button[data-variant]");
   if (!b || b.dataset.variant === (variantInfo() || {}).k) return;
   mobVariant = b.dataset.variant;
+  // A name that doesn't show on this variant goes.
+  if (currentTag() && !fitsVariant(currentTag())) mobTab.name = mobTab.say = "";
   mobView.turnBack();
   renderVariants();
+  renderTry();
+  renderMobResult();
   showOnStage();
+  saveMobTab();
   refocus(`#variant-try button[data-variant="${mobVariant}"]`);
 });
 $("size-try").addEventListener("click", e => {
@@ -358,7 +371,7 @@ armorButton("armor-wear-try", "armor-wear", v => ({ crack: v }));
 armorButton("armor-glint-try", "armor-glint", v => ({ glint: Boolean(v) }));
 for (const id of ["tag-try", "mob-result"]) $(id).addEventListener("click", e => {
   const b = e.target.closest("button[data-tag]");
-  if (!b) return;
+  if (!b || b.disabled) return;
   pickTag(b.dataset.tag, b.dataset.say);
   refocus(`#${id} button[data-say="${CSS.escape(b.dataset.say || "")}"][data-tag="${CSS.escape(b.dataset.tag)}"]`);
 });
@@ -393,4 +406,5 @@ setInterval(() => {
 }, 160);
 
 $("tag-search").value = mobTab.query;
+fitClimate();
 renderMobs();

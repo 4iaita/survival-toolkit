@@ -19,8 +19,53 @@ def renamed(bones):
     return {ia.ren(b): v for b, v in bones.items()}
 
 
+def controller_animations(d, played=()):
+    """The animations the entity's animation controllers play in their first state (the pack's animation_controllers
+    folder), as scripts.animate entries {key: condition}, each condition the controller's own and the animation's
+    together. Some looks' poses are there (the chicken jockey's rider sitting up, Peep's big head), not in
+    scripts.animate. played: animations the stage plays as loops or acts, left out (they'd be frozen in a pose too)."""
+    ctl = {}
+    for top in (im.pack, im.pack / "subpacks" / im.SUBPACK):
+        folder = top / "animation_controllers"
+        for f in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+            ctl.update(json.loads(f.read_text(encoding="utf-8")).get("animation_controllers", {}))
+    out = []
+    keys = d.get("animations", {})
+
+    def walk(key, cond, depth):
+        c = ctl.get(keys.get(key, ""))
+        if not c or depth > 4:
+            return
+        states = c.get("states", {})
+        state = states.get(c.get("initial_state") or "default") or next(iter(states.values()), {})
+        for a in state.get("animations", []):
+            k, inner = (a, None) if isinstance(a, str) else next(iter(a.items()))
+            if ";" in str(inner):
+                continue  # a script (a walk's blend weight), not a condition: movement, not a pose
+            both = "&&".join(f"({x})" for x in (cond, inner) if x) or "1"
+            if keys.get(k, "").startswith("controller."):
+                walk(k, both, depth + 1)
+            elif k in keys and k not in played:
+                out.append({k: both})
+
+    for a in d.get("scripts", {}).get("animate", []):
+        k, cond = (a, None) if isinstance(a, str) else next(iter(a.items()))
+        walk(k, cond, 0)
+    return out
+
+
+def still(pose):
+    """A pose without the bones it leaves as they are (no turn, no shift, full size)."""
+    out = {}
+    for bone, p in pose.items():
+        p = {k: v for k, v in p.items() if any(abs(x - (1 if k == "s" else 0)) > 1e-6 for x in v)}
+        if p:
+            out[bone] = p
+    return out
+
+
 def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
-         sets=None, plays=None, climates=None, climate_acts=None):
+         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -28,18 +73,29 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     pack's current models too (the bat's vampire), as the plain looks do, with their size and pose; own_motions: first
     name -> the loops a named look plays in place of the mob's (and no acts), as motions; new_looks: the names of looks
     the page doesn't have yet (the bee's moths), each a list whose first is the one the pack is asked about, added after
-    the others and built as remodel's are. A motion can say how fast it plays (a third item, its speed).
+    the others and built as remodel's are. A motion can say how fast it plays (a third item, its speed), or "held"
+    for an animation held at its last frame.
     sets: other animations the pack plays for some looks (the chicken's babies), set name -> {motions, acts}, written to
     MOB_MOTIONS and MOB_ACTS as "<mob>:<set>"; plays: first name -> the set that look plays in place of the mob's.
     climates: climate -> what the game says in it (the chicken's and cow's warm and cold kinds): the looks that come out
     different there go into MOB_CLIMATES, by their place in the mob's looks, with only their layers (the stage keeps the
-    rest of the look); climate_acts: climate -> acts it plays in place of the mob's (the cold cow sneezes too)."""
+    rest of the look); climate_acts: climate -> acts it plays in place of the mob's (the cold cow sneezes too).
+    nested_poses: the poses a name turns on are looked for in the entity's animation controllers too (see
+    controller_animations)."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
     d = ents[f"minecraft:{mob}"]
     if fix:
         fix(d)
+    if nested_poses:
+        def act_keys(a):
+            return [k for x in (a if isinstance(a, list) else [a]) for k, *_ in x["parts"]]
+        played = {k for k, *_ in motions} | set(act_keys(acts))
+        played |= {k for loops in (own_motions or {}).values() for k, *_ in loops}
+        played |= {k for s in (sets or {}).values() for k, *_ in s["motions"]} | {k for s in (sets or {}).values() for k in act_keys(s.get("acts", []))}
+        played |= {k for a in (climate_acts or {}).values() for k in act_keys(a)}
+        d["scripts"]["animate"] = [*d["scripts"].get("animate", []), *controller_animations(d, played)]
     text = ia.MODELS_JS.read_text()
     current = ia.parse_section(text, "MOB_LOOKS")[mob]
 
@@ -69,6 +125,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
 
     base_layers, base_scale, _ = im.look(d, rcs, mats, anims, "", mood=answers(0))
     baby_layers, baby_scale, baby_pose = im.look(d, rcs, mats, anims, "Baby", mood=answers(0))
+    if nested_poses:
+        baby_pose = still(baby_pose)
     adult = layers_out("", base_layers)
     baby = layers_out("baby", baby_layers)
     looks = json.loads(json.dumps(current))
@@ -108,6 +166,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         if name not in named and name not in remodel:
             continue
         lay0, scale, pose = im.look(d, rcs, mats, anims, name, mood=answers(0))
+        if nested_poses:
+            pose = still(pose)
         if name in remodel:
             look["layers"] = layers_out(name.lower().replace(" ", "_"), lay0)
             look["scale"] = round(scale / base_scale, 3)
@@ -152,7 +212,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     def baked_loops(motions):
         out = []
         for key, weight, *rate in motions:
-            loop = im.baked_loop(d, anims, key, weight, *rate)
+            # "held": an animation that plays once and holds its last frame (the axolotl tucking its legs in).
+            loop = im.baked_held(d, anims, key) if rate == ["held"] else im.baked_loop(d, anims, key, weight, *rate)
             loop["bones"] = renamed(loop["bones"])
             out.append(loop)
         return out
