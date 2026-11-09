@@ -15,7 +15,7 @@
  * The wolves' wild biomes, for the Mobs tab, have no villages either: the snowy taiga and the grove under snowy peaks,
  * the old growth taigas' giant spruces and pines over mossy boulders, a sparse jungle, a savanna plateau's high steps
  * and the wooded badlands' banded terracotta mesas with oaks on top. The panda's bamboo jungle has none either: thick
- * bamboo under jungle trees.
+ * bamboo under jungle trees. Nor do the mooshroom's mushroom fields: huge mushrooms on mycelium.
  */
 // Spruce leaves keep one color everywhere; other tints come from BIOME_TINTS.
 const SPRUCE_TINT = "#619961";
@@ -135,6 +135,12 @@ const swampOak = t => prop([
   "...T...",
 ], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak"), V: plantTex("vine", t.foliage) });
 
+// The mushroom fields' huge mushrooms, as the game grows them: a red one's domed cap hangs down round its stem, a brown
+// one's is a flat, wide plate.
+const hugeRedMushroom = (stem = 2) => prop([".RRR.", "RRRRR", "RRRRR", "RRRRR", ...Array(stem).fill("..S..")],
+  { R: blockTex("red_mushroom_block"), S: blockTex("mushroom_stem") });
+const hugeBrownMushroom = (stem = 4) => prop(["BBBBBBB", ...Array(stem).fill("...S...")],
+  { B: blockTex("brown_mushroom_block"), S: blockTex("mushroom_stem") });
 // One block of a plant, or a short stack (cacti).
 const plant = (name, tint, height = 1) => prop(Array(height).fill("P"), { P: plantTex(name, tint) });
 const block = (name, rows = ["B"]) => prop(rows, { B: blockTex(name) });
@@ -478,6 +484,17 @@ const BACKDROPS = {
       ...bambooClump(6, [9]), [plant("bamboo_sapling"), 7], ...bambooClump(8, [11, 13]), [block("melon_side"), 10], ...bambooClump(11, [14, 12, 15]),
       [largeFern(t), 14], ...bambooClump(15, [13, 16, 12]), [jungleBush(t), 18], ...bambooClump(20, [15, 12, 16, 14, 13])],
     seed: 35,
+  }),
+  // The mooshroom's mushroom fields: mycelium hills with no trees at all, only huge red and brown mushrooms, and small
+  // ones underneath.
+  mushroom_fields: () => ({
+    hills: { top: blockTex("mycelium_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [
+      [hugeRedMushroom(2), 0.04], [hugeBrownMushroom(3), 0.17], [hugeRedMushroom(1), 0.33], [hugeBrownMushroom(4), 0.5],
+      [hugeRedMushroom(3), 0.64], [hugeBrownMushroom(2), 0.78], [hugeRedMushroom(2), 0.91]] },
+    near: [[hugeBrownMushroom(6), -26], [hugeRedMushroom(4), -17], [plant("mushroom_red"), -12], [plant("mushroom_brown"), -10],
+      [plant("mushroom_brown"), -6], [plant("mushroom_red"), 5], [plant("mushroom_brown"), 8], [hugeRedMushroom(5), 10],
+      [plant("mushroom_red"), 16], [hugeBrownMushroom(5), 18]],
+    seed: 37,
   }),
   swamp: t => ({
     hills: { top: grassyTop(t), fill: blockTex("mud"), base: 2, rise: 1, trees: [[swampOak(t), 0.2], [swampOak(t), 0.5], [swampOak(t), 0.82]] },

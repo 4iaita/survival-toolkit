@@ -161,6 +161,10 @@ FILES = {
     "tall_grass_bottom": "blocks/double_plant_grass_bottom",
     # The panda's bamboo jungle: the small leaves partway up a stalk and the shoots coming up beside it.
     "bamboo_small_leaf": "blocks/bamboo_small_leaf", "bamboo_sapling": "blocks/bamboo_sapling",
+    # The mooshroom's mushroom fields: mycelium and the huge mushrooms' blocks.
+    "mycelium_side": "blocks/mycelium_side", "mycelium_top": "blocks/mycelium_top",
+    "red_mushroom_block": "blocks/mushroom_block_skin_red", "brown_mushroom_block": "blocks/mushroom_block_skin_brown",
+    "mushroom_stem": "blocks/mushroom_block_skin_stem",
 }
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color

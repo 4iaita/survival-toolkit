@@ -362,7 +362,8 @@ def read_pack():
             files = {}
             for top in (pack, pack / "subpacks" / SUBPACK):
                 folder = top / tail.removesuffix(".brarchive")
-                for f in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+                # Materials are .material files, the rest .json.
+                for f in sorted([*folder.glob("*.json"), *folder.glob("*.material")]) if folder.is_dir() else []:
                     files[str(f.relative_to(pack))] = json.loads(f.read_text(encoding="utf-8"))
             return files
     else:

@@ -1,7 +1,7 @@
 /* ---------- Mobs ---------- */
 // Mobs on the Mobs tab, in groups like the creative inventory's. k is the MOB_LOOKS key and the spawn egg
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; biome, the village biome its stage shows
-// (a BIOMES key, forest, bamboo_jungle, cave, mineshaft, nether, end, end_island, ocean, lush or flooded_cave; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, forest, bamboo_jungle, mushroom_fields, cave, mineshaft, nether, end, end_island, ocean, lush or flooded_cave; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -65,6 +65,13 @@ const MOB_VARIANTS = {
     { k: "weak", n: "Weak", where: "Sneezes a lot and has less health" },
     { k: "aggressive", n: "Aggressive", where: "Fights back when it’s hit" },
   ].map((v, i) => (i ? { ...v, skins: pandaSkins(v.k) } : v)),
+  // The mooshroom's two kinds (the pack's q.variant 0 and 1) share its model, mushrooms and all, and differ in skin, the
+  // calf's too.
+  mooshroom: [
+    { k: "red", n: "Red", where: "Mushroom Fields" },
+    { k: "brown", n: "Brown", where: "A red one struck by lightning", skins: { new_mooshroom: "new_mooshroom_brown", new_mooshroom_baby: "new_mooshroom_brown_baby",
+      new_mooshroom_halloween: "new_mooshroom_brown_halloween", new_mooshroom_zombified_calf: "new_mooshroom_brown_zombified_calf" } },
+  ],
   // A camel with a saddle shows it as the pack's render controller does for q.is_saddled (its reins only with a rider).
   camel: [
     { k: "plain", n: "No saddle", say: "" },
@@ -82,7 +89,7 @@ const MOBS = [
   { k: "camel", n: "Camel", g: "Animals", biome: "desert" }, { k: "cat", n: "Cat", g: "Animals" }, { k: "chicken", n: "Chicken", g: "Animals" },
   { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
   { k: "goat", n: "Goat", g: "Animals" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals" },
-  { k: "mooshroom", n: "Mooshroom", g: "Animals" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
+  { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
   { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals" }, { k: "pig", n: "Pig", g: "Animals" },
   { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy" }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
   { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "taiga" },
