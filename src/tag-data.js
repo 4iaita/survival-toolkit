@@ -56,7 +56,7 @@ const PACK_TAGS = {
   copper_golem: [{ names: ["Robot", "Windup"], what: "A wind-up toy robot." }],
   cow: [
     { names: ["Baby", "Calf", "Mr Mooch"], more: ["mr Mooch", "Mr mooch"], kind: BABY },
-    { ...snowyIn("cold cows"), needs: "Only cold cows, the kind from snowy biomes." },
+    { ...snowyIn("cold cows"), needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
   ],
   creaking: [
     { names: ["Baby", "Twiggy", "Creakling"], kind: BABY },

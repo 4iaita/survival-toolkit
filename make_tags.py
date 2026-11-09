@@ -64,8 +64,8 @@ WHAT = {
     ("camel", "halloween"): "Wrapped in bandages like a mummy.",
     ("cat", "witch kitten"): "A kitten in a witch’s hat.",
     ("cat", "halloween"): "A witch’s hat.",
-    ("chicken", "halloween"): "A zombie chicken, rotting, its eyes glowing faintly.",
-    ("chicken", "baby zombified"): "A zombie chick, rotting, its eyes glowing faintly.",
+    ("chicken", "halloween"): "A zombie chicken, rotting.",
+    ("chicken", "baby zombified"): "A zombie chick, rotting.",
     ("chicken", "skeleton"): "A skeleton chicken, all bones.",
     ("chicken", "baby skeleton"): "A skeleton chick, all bones.",
     ("chicken", "peep"): "A little yellow chick shaped like a hen, half a hen’s size, that moves like one.",
@@ -78,6 +78,11 @@ WHAT = {
     ("chicken", "cherry"): "A cherry blossom on its comb.",
     ("chicken", "villager"): "Dressed as a villager, with a villager’s big nose and eyes that move about and blink.",
     ("chicken", "dappled"): "Orange leaves on its head and tail.",
+    ("cow", "zombified calf"): "A zombie calf, rotting.",
+    ("cow", "cherry"): "A crown of cherry blossoms.",
+    ("cow", "strawberry"): "A pink strawberry cow with pale spots.",
+    ("cow", "halloween"): "A zombie cow, rotting, its ribs showing.",
+    ("cow", "dappled"): "Orange leaves on its head.",
     ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
     ("panda", "freddy"): "A brown bear in a little top hat and bow tie.",
@@ -86,7 +91,7 @@ WHAT = {
 # Looks that only show in one climate (the pack checks the mob's climate too): (mob, the lower-case name) -> that
 # climate, which the stage switches to, and what the row says it needs.
 CLIMATE = {
-    ("chicken", "cherry"): "temperate", ("chicken", "dappled"): "cold",
+    ("chicken", "cherry"): "temperate", ("chicken", "dappled"): "cold", ("cow", "strawberry"): "temperate", ("cow", "dappled"): "cold",
 }
 NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only cold {mob}s, the kind from snowy biomes."}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}

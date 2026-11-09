@@ -52,8 +52,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Skull"], what: "A Halloween costume." },
   ],
   chicken: [
-    { names: ["Halloween", "Zombified"], what: "A zombie chicken, rotting, its eyes glowing faintly." },
-    { names: ["Baby Zombified"], more: ["baby Zombified", "Baby zombified"], what: "A zombie chick, rotting, its eyes glowing faintly." },
+    { names: ["Halloween", "Zombified"], what: "A zombie chicken, rotting." },
+    { names: ["Baby Zombified"], more: ["baby Zombified", "Baby zombified"], what: "A zombie chick, rotting." },
     { names: ["Skeleton"], what: "A skeleton chicken, all bones." },
     { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A skeleton chick, all bones." },
     { names: ["Peep", "Hatchling"], what: "A little yellow chick shaped like a hen, half a hen’s size, that moves like one." },
@@ -76,10 +76,11 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Voodoo Doll", "Voodoo", "Doll"], more: ["voodoo Doll", "Voodoo doll"], what: "A Halloween costume." },
   ],
   cow: [
-    { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "The Zombified Calf look." },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Strawberry"], what: "The Strawberry look." },
-    { names: ["Halloween", "Zombified"], what: "A Halloween costume." },
+    { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "A zombie calf, rotting." },
+    { names: ["Cherry"], what: "A crown of cherry blossoms." },
+    { names: ["Strawberry"], what: "A pink strawberry cow with pale spots.", needs: "Only temperate cows, the usual kind.", climate: "temperate" },
+    { names: ["Halloween", "Zombified"], what: "A zombie cow, rotting, its ribs showing." },
+    { names: ["Dappled"], what: "Orange leaves on its head.", needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
   ],
   creaking: [
     { names: ["Dappled"], what: "The dappled look." },
