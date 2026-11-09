@@ -43,7 +43,7 @@ const PACK_TAGS = {
     { names: ["Baby", "Kitten", "Kitty"], kind: BABY },
     { names: ["Party", "Purrty"], what: "A party hat." },
     { names: ["Elf", "Jingle"], what: "An elf hat for Christmas." },
-    { names: ["OIIA OIIA", "OIIA"], more: ["Oiia Oiia", "Oiia oiia", "Oiia"], still: true, what: "Spins on the spot like the OIIA OIIA cat meme. It’s a dance, so the stage shows it standing still." },
+    { names: ["OIIA OIIA", "OIIA"], more: ["Oiia Oiia", "Oiia oiia", "Oiia"], what: "Spins on the spot like the OIIA OIIA cat meme, bobbing up and down." },
   ],
   chicken: [
     { names: ["Baby", "Chick"], kind: BABY },

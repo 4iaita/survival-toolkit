@@ -1019,7 +1019,7 @@ def main():
           " * day), mask (the texture's alpha is a dye mask), lit (its alpha is how much it glows), dyeBones (bone patterns dyed on their own), shellBones (bone patterns that are see-through shells), litBones (bone patterns",
           " * lit on their own), sheer (its faint texels are see-through), scroll (u and v per",
           " * second), openEyes (its blink bone is the open eye), dyes (a color name per texture), soft (a glow drawn as soft light facing the camera) eyes (a soft glow at its bone's pivot, on the face, gone from behind), halo (the same, seen from any side) and bright (how strong a soft glow is); pose, bone -> {r: rotation, p: position,",
-          " * s: scale} from animations the name turns on. Textures are in MOB_SKINS (art/mobs/).",
+          " * s: scale} from animations the name turns on; motions, loops it plays in place of the mob's (MOB_MOTIONS), without its acts. Textures are in MOB_SKINS (art/mobs/).",
           " * PROP_LOOKS: item -> the look it takes in the hand of an armor stand named §§, like a mob's look.",
           " * MOB_MOTIONS: mob -> the animations the stage plays, layered: { length in seconds, bones: bone -> {r, p, s}, each",
           " * a list of [x, y, z] frames over the loop }.",

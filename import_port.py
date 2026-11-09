@@ -19,13 +19,14 @@ def renamed(bones):
     return {ia.ren(b): v for b, v in bones.items()}
 
 
-def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=()):
+def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
     pack forgot); named: the first names of named looks to refresh too (see below); remodel: those of them that take the
-    pack's current models too (the bat's vampire), as the plain looks do. A motion can say how fast it plays (a third
-    item, its speed)."""
+    pack's current models too (the bat's vampire), as the plain looks do, with their size and pose; own_motions: first
+    name -> the loops a named look plays in place of the mob's (and no acts), as motions. A motion can say how fast it
+    plays (a third item, its speed)."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
@@ -94,19 +95,24 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         name = (look["names"] or [""])[0]
         if name not in named and name not in remodel:
             continue
-        lay0, _, _ = im.look(d, rcs, mats, anims, name, mood=answers(0))
+        lay0, scale, pose = im.look(d, rcs, mats, anims, name, mood=answers(0))
         if name in remodel:
             look["layers"] = layers_out(name.lower().replace(" ", "_"), lay0)
-            continue
-        if len(lay0) != len(look["layers"]):
+            look["scale"] = round(scale / base_scale, 3)
+            if pose:
+                look["pose"] = im.compact({ia.ren(b): p for b, p in pose.items()})
+            else:
+                look.pop("pose", None)
+        elif len(lay0) != len(look["layers"]):
             print(f"{mob} {name}: the pack has {len(lay0)} layers, the look {len(look['layers'])}; left as it is")
             continue
-        for layer, (_, texs, _, flags) in zip(look["layers"], lay0):
-            del layer[3:]
-            if flags:
-                layer.append(flags)
-            for t, key in zip(texs, layer[1]):
-                tex_keys.setdefault(t, key)
+        else:
+            for layer, (_, texs, _, flags) in zip(look["layers"], lay0):
+                del layer[3:]
+                if flags:
+                    layer.append(flags)
+                for t, key in zip(texs, layer[1]):
+                    tex_keys.setdefault(t, key)
         for v, kind in enumerate(variants):
             if not v:
                 continue
@@ -118,11 +124,19 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
                         tex_keys.setdefault(o, key.replace(f"{ia.PREFIX}{mob}", f"{ia.PREFIX}{mob}_{kind}", 1))
                         skins.setdefault(key, {})[kind] = tex_keys[o]
 
-    motion = []
-    for key, weight, *rate in motions:
-        loop = im.baked_loop(d, anims, key, weight, *rate)
-        loop["bones"] = renamed(loop["bones"])
-        motion.append(loop)
+    def baked_loops(motions):
+        out = []
+        for key, weight, *rate in motions:
+            loop = im.baked_loop(d, anims, key, weight, *rate)
+            loop["bones"] = renamed(loop["bones"])
+            out.append(loop)
+        return out
+
+    motion = baked_loops(motions)
+    for look in looks:
+        name = (look["names"] or [""])[0]
+        if own_motions and name in own_motions:
+            look["motions"] = baked_loops(own_motions[name])
     act = im.baked_act(d, anims, acts)
     for a in act:
         for part in a["parts"]:

@@ -573,7 +573,8 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         const cx = (lo[0] + hi[0]) / 2, cz = (lo[2] + hi[2]) / 2;
         return Object.assign([lo, hi], { radius: Math.max(4, Math.hypot(hi[0] - cx, hi[2] - cz)) });
       };
-      const loops = mooded ? mooded.motions : MOB_MOTIONS[mob] || null, nextAct_ = mooded ? mooded.act : MOB_ACTS[mob] || null;
+      // A look can have animations of its own (motions: the OIIA cat spins), in place of the mob's loops and acts.
+      const loops = look.motions || (mooded ? mooded.motions : MOB_MOTIONS[mob] || null), nextAct_ = look.motions ? null : mooded ? mooded.act : MOB_ACTS[mob] || null;
       // A look's boxes as it starts, and the space it moves through as it animates: its bounds and, for a swimmer, the
       // corners of what shows of its boxes at each moment (spots).
       const reachOf = async (shape, options) => {

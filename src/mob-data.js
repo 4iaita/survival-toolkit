@@ -36,6 +36,7 @@ const ARMOR_WEAR = [["", "New"], ["low", "Slightly cracked"], ["medium", "Cracke
 // The wolf's are in art/mobs/ as wolf_<variant> (see import_models.py), with angry and baby skins of their own.
 const wolfSkins = v => Object.fromEntries(["", "_angry", "_baby", "_angry_baby"].map(s => [`wolf${s}`, `wolf_${v}${s}`]));
 const pandaSkins = v => ({ new_panda: `new_panda_${v}`, new_panda_baby: `new_panda_${v}_baby` });
+const catSkins = v => Object.fromEntries(["", "_baby", "_halloween_2", "_witch_kitten_2"].map(s => [`new_cat${s}`, `new_cat_${v}${s}`]));
 const MOB_VARIANTS = {
   // The chickens' climates: the warm one has its own skin, the cold one its own model and skin too (MOB_CLIMATES).
   chicken: [
@@ -72,6 +73,21 @@ const MOB_VARIANTS = {
     { k: "brown", n: "Brown", where: "A red one struck by lightning", skins: { new_mooshroom: "new_mooshroom_brown", new_mooshroom_baby: "new_mooshroom_brown_baby",
       new_mooshroom_halloween: "new_mooshroom_brown_halloween", new_mooshroom_zombified_calf: "new_mooshroom_brown_zombified_calf" } },
   ],
+  // The cat's eleven kinds (the pack's q.variant 0 to 10) share its model and differ in skin, the kitten's and the
+  // Halloween hat's too. All but the black one turn up in villages; the black one lives with the witch in a swamp hut.
+  cat: [
+    { k: "white", n: "White", where: "Villages" },
+    { k: "tuxedo", n: "Tuxedo", where: "Villages" },
+    { k: "red", n: "Red", where: "Villages" },
+    { k: "siamese", n: "Siamese", where: "Villages" },
+    { k: "british_shorthair", n: "British Shorthair", where: "Villages" },
+    { k: "calico", n: "Calico", where: "Villages" },
+    { k: "persian", n: "Persian", where: "Villages" },
+    { k: "ragdoll", n: "Ragdoll", where: "Villages" },
+    { k: "tabby", n: "Tabby", where: "Villages" },
+    { k: "black", n: "Black", where: "Swamp huts", biome: "swamp" },
+    { k: "jellie", n: "Jellie", where: "Villages" },
+  ].map((v, i) => (i ? { ...v, skins: catSkins(v.k) } : v)),
   // A camel with a saddle shows it as the pack's render controller does for q.is_saddled (its reins only with a rider).
   camel: [
     { k: "plain", n: "No saddle", say: "" },
