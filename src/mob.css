@@ -27,6 +27,14 @@
 .stage[data-biome="flooded_cave"] { --sky: #02060f; --haze: #04121f; }
 .stage[data-biome="flooded_cave"]::after { filter: brightness(.45) saturate(.7); }
 .stage[data-biome="cave"]::before, .stage[data-biome="nether"]::before, .stage[data-biome="end"]::before, .stage[data-biome="end_island"]::before, .stage[data-biome="ocean"]::before, .stage[data-biome="lush"]::before, .stage[data-biome="flooded_cave"]::before { display: none; }
+/* The wolves' wild biomes: snowy forests in a white haze, the old growth taigas' cool green-gray, the badlands' warm dust. */
+.stage[data-biome="snowy_taiga"] { --sky: #9db6e4; --haze: #eef3fb; }
+.stage[data-biome="grove"] { --sky: #a8bfe8; --haze: #f2f6fc; }
+.stage[data-biome="pine_taiga"] { --sky: #6a8ec2; --haze: #bfd0d8; }
+.stage[data-biome="spruce_taiga"] { --sky: #6c90c6; --haze: #c6d6df; }
+.stage[data-biome="sparse_jungle"] { --sky: #5c9ce2; --haze: #c9e8c4; }
+.stage[data-biome="savanna_plateau"] { --sky: #79a9e6; --haze: #f0d29c; }
+.stage[data-biome="badlands"] { --sky: #87b3ea; --haze: #f1c9a2; }
 .stage[data-time="night"] { --sky: #070a1f; --haze: #1f2a52; }
 .stage[data-time="night"]::before { opacity: .12; }
 .stage[data-time="night"]::after, .stage[data-time="night"] .stage-backdrop { filter: brightness(.38) saturate(.75); }

@@ -464,8 +464,10 @@ function villagerScene(canvas, tag, { onTurn = () => {} } = {}) {
 
 // The biome's ground texture, tiled under the villager.
 const groundArt = biome => {
-  // Only villages are BIOMES; the Mobs tab's cave, nether, End, ocean, lush and flooded caves have floors of their own.
-  const name = (BIOMES.find(b => b.k === biome) || { ground: { forest: "grass_top", mineshaft: "gravel", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel" }[biome] || "stone" }).ground, tex = art(name);
+  // Only villages are BIOMES; the Mobs tab's cave, nether, End, ocean, lush and flooded caves, and the wolves' wild
+  // biomes, have floors of their own.
+  const name = (BIOMES.find(b => b.k === biome) || { ground: { forest: "grass_top", snowy_taiga: "snow", grove: "snow", pine_taiga: "podzol_top",
+    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel" }[biome] || "stone" }).ground, tex = art(name);
   if (!tex) return icon(`biome:${biome}`);
   return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };

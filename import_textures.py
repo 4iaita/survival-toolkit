@@ -156,6 +156,9 @@ FILES = {
     "water": "blocks/water_still_grey", "grass_side_overlay": "blocks/grass_side", "grass_top": "blocks/grass_top",
     "bamboo_stem": "blocks/bamboo_stem", "bamboo_leaf": "blocks/bamboo_leaf", "large_fern_top": "blocks/double_plant_fern_top",
     "large_fern_bottom": "blocks/double_plant_fern_bottom", "mossy_stone_bricks": "blocks/stonebrick_mossy",
+    # The wolf's wild biomes on the Mobs tab: badlands, groves and old growth taigas.
+    "red_sand": "blocks/red_sand", "powder_snow": "blocks/powder_snow", "tall_grass_top": "blocks/double_plant_grass_top",
+    "tall_grass_bottom": "blocks/double_plant_grass_bottom",
 }
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color

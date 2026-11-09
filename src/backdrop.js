@@ -12,6 +12,9 @@
  * underwater: sand hills and a far monument, kelp and coral nearby, sunlight slanting down from the surface, bubbles.
  * The lush cave is flooded too: a mossy wall and a ceiling hung with glow berries, dripleaves and azaleas below.
  * So is the deep cave the glow squid swims in: dark rock streaked with glow lichen, lit only by that and sea pickles.
+ * The wolves' wild biomes, for the Mobs tab, have no villages either: the snowy taiga and the grove under snowy peaks,
+ * the old growth taigas' giant spruces and pines over mossy boulders, a sparse jungle, a savanna plateau's high steps
+ * and the wooded badlands' banded terracotta mesas with oaks on top.
  */
 // Spruce leaves keep one color everywhere; other tints come from BIOME_TINTS.
 const SPRUCE_TINT = "#619961";
@@ -246,6 +249,50 @@ const mineSupport = (width, height, torch = 0) => {
   })], { P: blockTex("oak_planks"), L: blockTex("log_oak"), W: plantTex("cobweb"), T: plantTex("torch") });
 };
 const spawnerCage = block("mob_spawner");
+// A giant spruce of the old growth spruce taiga: a two-wide trunk under a broad cone, rising out of the top of the stage.
+const giantSpruce = () => prop([
+  "...LL...",
+  "..LLLL..",
+  "...LL...",
+  "..LLLL..",
+  ".LLLLLL.",
+  "..LTTL..",
+  ".LLLLLL.",
+  "LLLLLLLL",
+  "..LTTL..",
+  "LLLLLLLL",
+  "LLLLLLLL",
+  "...TT...",
+  "...TT...",
+  "...TT...",
+  "...TT...",
+], { L: leavesTex("leaves_spruce", SPRUCE_TINT), T: blockTex("log_spruce") });
+// A giant pine of the old growth pine taiga: a tall bare two-wide trunk with a small crown at the very top.
+const giantPine = () => prop([
+  "..LL..",
+  ".LLLL.",
+  "LLLLLL",
+  ".LTTL.",
+  "LLTTLL",
+  "..TT..",
+  "..TT..",
+  "..TT..",
+  "..TT..",
+  "..TT..",
+  "..TT..",
+  "..TT..",
+  "..TT..",
+], { L: leavesTex("leaves_spruce", SPRUCE_TINT), T: blockTex("log_spruce") });
+// A small spruce for the far hills, where the full one would stand too tall.
+const smallSpruce = () => prop(["..L..", ".LLL.", "LLLLL", ".LLL.", "LLLLL", "..T.."], { L: leavesTex("leaves_spruce", SPRUCE_TINT), T: blockTex("log_spruce") });
+// The old growth taigas' mossy cobblestone boulders.
+const boulder = rows => prop(rows, { M: blockTex("mossy_cobblestone"), C: blockTex("cobblestone") });
+const tallGrass = t => prop(["T", "B"], { T: plantTex("tall_grass_top", t.grass), B: plantTex("tall_grass_bottom", t.grass) });
+// A badlands mesa's bands of terracotta, top down; and a small mound of them nearby.
+const TERRACOTTA_BANDS = ["terracotta", "orange_terracotta", "terracotta", "yellow_terracotta", "brown_terracotta", "terracotta",
+  "white_terracotta", "orange_terracotta", "light_gray_terracotta", "red_terracotta", "terracotta", "orange_terracotta"].map(n => blockTex(n));
+const mesa = rows => prop(rows, { T: blockTex("terracotta"), O: blockTex("orange_terracotta"), Y: blockTex("yellow_terracotta"), R: blockTex("red_sand") });
+const snowDrift = rows => prop(rows, { S: blockTex("snow"), P: blockTex("powder_snow"), R: blockTex("stone") });
 const BACKDROPS = {
   flooded_cave: () => ({
     mist: { far: 0.7, near: 0.06 },
@@ -319,6 +366,53 @@ const BACKDROPS = {
     near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"]), -21], [plant("lantern"), -15], [stalagmite, -12], [oreMound("coal_ore", ["O.", "RR"]), -9],
       [stalagmite, 8], [oreMound("gold_ore", [".T.", "ROR"]), 10], [plant("lantern"), 14], [oreMound("diamond_ore", ["..RR", ".ROR", "TRRR"]), 17]],
     lights: [-15, 14],
+  }),
+  // The wolves' wild biomes, each the one its variant spawns in.
+  snowy_taiga: t => ({
+    hills: { top: blockTex("snowy_grass_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [0.03, 0.12, 0.22, 0.34, 0.47, 0.58, 0.7, 0.81, 0.93].map(at => [spruceTree(), at]) },
+    near: [[spruceTree(), -23], [spruceTree(), -17], [plant("fern", t.grass), -13], [spruceTree(), -11], [plant("berry_bush"), -7], [largeFern(t), -5],
+      [plant("fern", t.grass), 4], [spruceTree(), 6], [plant("berry_bush"), 11], [spruceTree(), 13], [largeFern(t), 17], [spruceTree(), 19]],
+    snowy: true, seed: 21,
+  }),
+  // Snowy peaks behind; a snowy spruce wood with drifts of powder snow on the slope below them.
+  grove: () => ({
+    hills: { top: blockTex("snow"), fill: blockTex("stone"), base: 6, rise: 9, trees: [0.05, 0.19, 0.4, 0.66, 0.88].map(at => [smallSpruce(), at]) },
+    near: [[spruceTree(), -24], [snowDrift(["..S", "SPP"]), -19], [spruceTree(), -16], [spruceTree(), -10], [snowDrift(["S.", "PS"]), -6],
+      [snowDrift([".S", "SP"]), 5], [spruceTree(), 8], [snowDrift(["..SR", "SPPS"]), 13], [spruceTree(), 18]],
+    snowy: true, seed: 23,
+  }),
+  pine_taiga: t => ({
+    hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 3, trees: [0.02, 0.1, 0.18, 0.27, 0.36, 0.45, 0.55, 0.64, 0.73, 0.82, 0.91].map(at => [smallSpruce(), at]) },
+    near: [[giantPine(), -24], [boulder([".M.", "MCM"]), -18], [giantPine(), -14], [plant("fern", t.grass), -10], [largeFern(t), -7], [plant("mushroom_brown"), -4],
+      [plant("dead_bush"), 3], [largeFern(t), 5], [giantPine(), 8], [plant("fern", t.grass), 13], [boulder(["M.", "MM"]), 15], [giantPine(), 19]],
+    seed: 25,
+  }),
+  spruce_taiga: t => ({
+    hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [0.03, 0.15, 0.27, 0.39, 0.51, 0.63, 0.75, 0.87].map(at => [spruceTree(), at]) },
+    near: [[giantSpruce(), -25], [boulder(["..M.", ".MMC", "MCMM"]), -17], [largeFern(t), -13], [giantSpruce(), -11], [plant("berry_bush"), -5],
+      [plant("fern", t.grass), 4], [plant("berry_bush"), 6], [giantSpruce(), 8], [boulder([".M", "MC"]), 16], [largeFern(t), 18], [spruceTree(), 21]],
+    seed: 27,
+  }),
+  // Jungle trees standing apart in open grass, with bushes and melons between them.
+  sparse_jungle: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [[jungleTree(t, 4), 0.08], [jungleTree(t, 3), 0.3], [jungleTree(t, 5), 0.55], [jungleTree(t, 3), 0.84]] },
+    near: [[jungleTree(t, 6), -21], [jungleBush(t), -15], [plant("short_grass", t.grass), -12], [block("melon_side"), -9], [largeFern(t), -6],
+      [plant("short_grass", t.grass), 4], [jungleBush(t), 6], [jungleTree(t, 5), 11], [tallGrass(t), 17], [jungleBush(t), 19], [plant("short_grass", t.grass), 22]],
+    seed: 29,
+  }),
+  // High on the plateau: its stepped edge falls away behind, acacias dot the top.
+  savanna_plateau: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("coarse_dirt"), base: 6, rise: 6, steps: 3, trees: [[acaciaTree(t), 0.1], [acaciaTree(t), 0.42], [acaciaTree(t), 0.78]] },
+    near: [[acaciaTree(t), -21], [tallGrass(t), -14], [plant("short_grass", t.grass), -11], [plant("short_grass", t.grass), -7], [tallGrass(t), -5],
+      [plant("short_grass", t.grass), 4], [tallGrass(t), 6], [acaciaTree(t), 10], [plant("short_grass", t.grass), 18], [tallGrass(t), 21]],
+    seed: 31,
+  }),
+  // Banded terracotta mesas behind, oaks on their grassy tops; red sand, dead bushes and a cactus below.
+  badlands: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("terracotta"), bands: TERRACOTTA_BANDS, base: 6, rise: 8, steps: 3, trees: [[oakTree(t), 0.14], [oakTree(t), 0.5], [oakTree(t), 0.83]] },
+    near: [[mesa(["..TT", ".OOT", "YYOO", "RRRR"]), -24], [oakTree(t), -17], [plant("dead_bush"), -12], [plant("cactus_side", null, 2), -9], [mesa(["R.", "RR"]), -6],
+      [plant("dead_bush"), 4], [mesa([".R", "RR"]), 6], [oakTree(t), 10], [plant("dead_bush"), 15], [mesa(["..T.", ".TOO", "OYYT", "RRRR"]), 19]],
+    seed: 33,
   }),
   plains: t => ({
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[oakTree(t), 0.06], [oakTree(t), 0.3], [oakTree(t), 0.55], [oakTree(t), 0.86]] },
@@ -442,7 +536,9 @@ function drawHills(ctx, hills, width, horizon, size, snowy, seed) {
   const heightAt = hillHeights(hills, seed), cols = Math.ceil(width / size) + 1;
   for (let c = 0; c < cols; c++) {
     const h = heightAt(c);
-    for (let k = 0; k < h; k++) drawBlock(ctx, k === h - 1 ? hills.top : hills.fill, c * size, horizon - (k + 1) * size, size);
+    // Bands (a mesa's) run level across the hills, counted down from the highest top.
+    const top = hills.base + hills.rise;
+    for (let k = 0; k < h; k++) drawBlock(ctx, k === h - 1 ? hills.top : hills.bands ? hills.bands[(top - k) % hills.bands.length] : hills.fill, c * size, horizon - (k + 1) * size, size);
     if (snowy && hills.top.cap !== false) drawSnowCap(ctx, c * size, horizon - h * size, size);
   }
   for (const [p, left, ground] of hillSpots(hills, width, horizon, size, seed)) drawProp(ctx, p, left, ground, size, snowy);
@@ -565,7 +661,9 @@ function backdropView(canvas) {
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     const ctx = canvas.getContext("2d");
-    const t = BIOME_TINTS[biome], scene = BACKDROPS[biome](t), snowy = biome === "snowy", mist = scene.mist || HAZE;
+    const t = BIOME_TINTS[biome], scene = BACKDROPS[biome](t), snowy = biome === "snowy" || Boolean(scene.snowy), mist = scene.mist || HAZE;
+    // The hills' shape: a village biome's by its place in BIOMES, a scene's own seed otherwise.
+    const seed = scene.seed || BIOMES.findIndex(b => b.k === biome) + 1;
     const haze = getComputedStyle(canvas).getPropertyValue("--haze").trim() || "#bcd5ff";
     const horizon = (h - GROUND_STRIP + 2) * dpr;
     // Each layer is drawn on its own canvas, then washed with the haze where it has pixels.
@@ -582,8 +680,8 @@ function backdropView(canvas) {
     };
     if (scene.sky) drawSky(ctx, scene.sky, canvas.width, canvas.height, 2 * NEAR * dpr, 13);
     layer(lc => (scene.wall ? drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7)
-      : drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, BIOMES.findIndex(b => b.k === biome) + 1)), mist.far);
-    if (scene.crystals) drawCrystals(ctx, crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, BIOMES.findIndex(b => b.k === biome) + 1), FAR * dpr), FAR * dpr);
+      : drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, seed)), mist.far);
+    if (scene.crystals) drawCrystals(ctx, crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, seed), FAR * dpr), FAR * dpr);
     if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11);
     layer(lc => {
       if (scene.ceiling) drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5);

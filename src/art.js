@@ -30,6 +30,14 @@ const BIOME_TINTS = {
   forest: { foliage: "#59ae30", grass: "#79c05a" },
   jungle: { foliage: "#30bb0b", grass: "#59c93c" },
   swamp: { foliage: "#6a7039", grass: "#6a7039", water: "#617b64" },
+  // The wolf variants' wild biomes on the Mobs tab.
+  snowy_taiga: { foliage: "#60a17b", grass: "#80b497" },
+  grove: { foliage: "#60a17b", grass: "#80b497" },
+  pine_taiga: { foliage: "#68a55f", grass: "#86b87f" },
+  spruce_taiga: { foliage: "#68a464", grass: "#86b783" },
+  sparse_jungle: { foliage: "#2bbb0f", grass: "#64c73f" },
+  savanna_plateau: { foliage: "#aea42a", grass: "#bfb755" },
+  badlands: { foliage: "#9e814d", grass: "#90814d" },
 };
 
 // Grass, leaves and water are gray in the pack; the game colors them by multiplying with the biome's tint.

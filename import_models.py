@@ -1,11 +1,13 @@
 """Copy the mob models the Mobs tab draws from the Actions & Stuff pack into src/mob-models.js and art/mobs/.
 
-The pack keeps its entities, render controllers and models in packed __brarchive files, under scrambled names.
+The pack keeps its entities, render controllers and models in packed __brarchive files, under scrambled names (or,
+unpacked, in plain JSON files in its folders: either works).
 For every mob, this runs the pack's own entity scripts and render controllers (molang.py) with no name and with
 each name it checks, to find how the mob looks: its models, their textures and which parts show. Textures come
 from the texture folder. Run after changing the pack, then run build.py:
 
     python3 import_models.py path/to/actions_and_stuff.mcpack [path/to/textures]
+    python3 import_models.py path/to/unpacked/pack [path/to/textures]
 """
 import fnmatch
 import json
@@ -72,7 +74,8 @@ STAGE_MOTIONS = {
     "minecraft:guardian": _GUARDIAN,
     "minecraft:elder_guardian": [("zxbvhct", 1), ("swim", 0.5, 1.2)],
     "minecraft:tadpole": [("swim", 1, 0.5)],
-    "minecraft:armadillo": [("uqfdaza_xcsnfwi", 1), ("vcnwlon", 0.6, 0.8)],
+    # The armadillo stands breathing; it walks only now and then (STAGE_ACTS).
+    "minecraft:armadillo": [("uqfdaza_xcsnfwi", 1)],
     "minecraft:bee": [("yvwtrbk", 1, 0.5), ("zgpiqoz", 1)],
     "minecraft:bat": [("yvwtrbk", 1, 0.6)],
     "minecraft:wolf": [("hhjrlam", 1)],
@@ -102,6 +105,61 @@ STAGE_MOTIONS = {
     # The wither's idle also circles two markers with nothing to draw, at a speed of their own that would stretch the loop.
     "minecraft:wither": [("zxbvhct_dhyaxuw", 1, 1, ("szehexq_olzaiyc", "szehexq_zxaydmm"))],
 }
+# A pet wolf now and then sits or lies down for a while, as the pack's sitting controller has it: down, still a moment,
+# one of its idles while it stays there (the pack picks one every few seconds), still again, and up, keeping its
+# breathing and wagging going (keep). Lying down, it falls asleep, its eyes closing (the blink bone, its eyelids, slid
+# out to the face), sleeps with Zs floating up (a while: the pack's 30 to 60 seconds would be too long here), wakes,
+# looks about once more and gets up. Lying down and getting up from it play at 1.5 times speed. All the while the game
+# keeps the head level, looking ahead (its head-look animation turns the head relative to the entity; level_head here),
+# and blends from one animation to the next.
+def _wolf_seq(*steps):
+    """Steps one after another, each (key, its length, speed, [bone pattern, shown] rules, animations played along,
+    particles while it plays, a STAGE_PARTICLES kind): an act's parts and effects."""
+    parts, effects, t = [], [], 0
+    for key, length, speed, show, along, effect in steps:
+        span = length / speed
+        parts.append((key, round(t, 4), round(t + span, 4), show, speed))
+        parts += [(other, round(t, 4), round(t + span, 4), []) for other in along]
+        if effect:
+            effects.append([effect, round(t, 4), round(t + span, 4)])
+        t += span
+    return parts, effects
+
+
+def _step(key, length, speed=1, show=(), along=(), effect=None):
+    return (key, length, speed, list(show), list(along), effect)
+
+
+_STILL = 1.5
+_SIT_IDLES = [("rolmmlp_zxbvhct_0", 2.9583), ("rolmmlp_zxbvhct_1", 3.4583), ("rolmmlp_zxbvhct_2", 2.9167), ("rolmmlp_zxbvhct_3", 2.9167)]
+_LIE_IDLES = [("nesxtwu_zxbvhct_0", 2.9583), ("nesxtwu_zxbvhct_1", 3.4583), ("nesxtwu_zxbvhct_2", 2.9167), ("nesxtwu_zxbvhct_3", 2.9167)]
+_EYES_SHUT = [["blink", True]]
+_WOLF_SLEEP_FOR = 10
+
+
+def _wolf_sit(idles):
+    parts, effects = _wolf_seq(_step("ckabqsl_cwscbtb", 0.625), *[s for idle in idles for s in (_step("ckabqsl", _STILL), _step(*idle))],
+                               _step("ckabqsl", _STILL), _step("ckabqsl_fofftzt", 0.75))
+    return {"every": [6, 12], "keep": True, "level_head": True, "parts": parts, "effects": effects}
+
+
+def _wolf_lie(first, last):
+    parts, effects = _wolf_seq(
+        _step("nesxtwu_cwscbtb", 1.2917, 1.5, along=["nesxtwu_lrbzenm"]), _step("nesxtwu", _STILL), _step(*first), _step("nesxtwu", _STILL),
+        _step("nesxtwu_qsoshkp_cwscbtb", 5.3333, show=_EYES_SHUT, along=["nesxtwu_lrbzenm"]),
+        _step("nesxtwu_qsoshkp", _WOLF_SLEEP_FOR, show=_EYES_SHUT, along=["nesxtwu_lrbzenm"], effect="z"),
+        _step("nesxtwu_qsoshkp_fofftzt", 3.25, show=_EYES_SHUT), _step("nesxtwu", _STILL), _step(*last), _step("nesxtwu", _STILL),
+        _step("nesxtwu_fofftzt", 1.625, 1.5))
+    return {"every": [6, 12], "level_head": True, "parts": parts, "effects": effects}
+
+
+_WOLF_SIT = [_wolf_sit(_SIT_IDLES[0::2]), _wolf_sit(_SIT_IDLES[1::2])]
+_WOLF_LIE = [_wolf_lie(_LIE_IDLES[0], _LIE_IDLES[2]), _wolf_lie(_LIE_IDLES[1], _LIE_IDLES[3])]
+# Every wolf now and then walks a few steps (in place, on the stage): the pack's walk, as strong as the game plays it at
+# a walk (its blend weight, 0.7), over its usual breathing (keep), easing in and out. An angry one runs instead, as it
+# does after a target.
+_WOLF_WALK = {"every": [6, 12], "keep": True, "ease": 0.3, "parts": [("fdcmikw", 0, 4, [], 1, 0.7)]}
+_WOLF_RUN = {"every": [3, 6], "keep": True, "ease": 0.2, "parts": [("sxgcveo", 0, 3, [], 1, 1)]}
 # Moods a mob can be put in on the stage, other than its calm self: what the game answers in that mood, the animations
 # that loop, the ones held at their last frame (a stance it settles into) and what it does now and then, as STAGE_ACTS.
 # An angry wolf tenses up and growls with a shake of its head; the pack gives it its own skins and red eyes. A pet wears a
@@ -110,9 +168,9 @@ STAGE_MOTIONS = {
 STAGE_MOODS = {
     "minecraft:wolf": {
         "angry": {"queries": {"is_angry": 1.0}, "loops": [("hhjrlam", 1)], "held": ["gfggyzv_gkbnvqq"],
-                  "act": {"every": [3, 6], "parts": [("cogyszp", 0, None, [])]}},
+                  "act": [{"every": [3, 6], "parts": [("cogyszp", 0, None, [])]}, _WOLF_RUN]},
         "pet": {"queries": {"is_tamed": 1.0, "tail_angle": 0.55 * math.pi}, "loops": [("hhjrlam", 1), ("hjwhrxn", 1)], "held": [], "collar": True, "armor": True,
-                "act": {"every": [6, 12], "parts": [("zxbvhct_1", 0, None, []), ("furiuhw", 3.4583, None, [])]}},
+                "act": [{"every": [6, 12], "parts": [("zxbvhct_1", 0, None, []), ("furiuhw", 3.4583, None, [])]}, *_WOLF_SIT, *_WOLF_LIE, _WOLF_WALK]},
     },
 }
 # Sizes a mob comes in, which the game sets by q.variant: how big each is beside the biggest, and what the game answers
@@ -125,18 +183,70 @@ SHELLED = ("minecraft:slime",)
 # it; here they go on a copy of the wearer's own skeleton. cracks: its wear, the attachable's own textures in order.
 STAGE_ARMOR = {"minecraft:wolf": {"item": "minecraft:wolf_armor", "plain": "default", "dyed": "koqhiqb",
                                   "cracks": {"low": "jheewhi", "medium": "mvhlffz", "high": "cogmzmc"}}}
+# The wolf's biome variants. The pack only draws the one it's given, so their skins are copied beside the pale wolf's
+# (the pack's own "wolf", "wolf_angry", "wolf_baby", "wolf_angry_baby") as wolf_<variant>, wolf_<variant>_angry,
+# wolf_<variant>_baby and wolf_<variant>_angry_baby, for the stage to swap in (WOLF_VARIANTS in src/mob-data.js).
+# variant -> the pack's name for it.
+WOLF_SKIN_DIR = "textures/oreville/ans/cxwybzn/jijpgcf"
+WOLF_VARIANTS = {"ashen": "kbixkxy", "black": "fryyvuo", "chestnut": "vxzgdbj", "rusty": "ffjkhvf", "snowy": "vdeesct",
+                 "spotted": "pcjqzuq", "striped": "zfzcnfg", "woods": "ohkkyjs"}
+
+
+def copy_wolf_variants(out):
+    """The wolf variants' skins into out (art/mobs/); returns the pack paths it couldn't find."""
+    missing = []
+    for variant, code in WOLF_VARIANTS.items():
+        for baby in ("", "_baby"):
+            for mood, angry in (("olzaiyc", ""), ("zxaydmm", "_angry")):
+                path = f"{WOLF_SKIN_DIR}{'_rkwlfgo' if baby else ''}_{code}_{mood}"
+                src = texture_file(path)
+                if not src:
+                    missing.append(path)
+                elif src.suffix == ".tga":
+                    tga_to_png(src, out / f"wolf_{variant}{angry}{baby}.png")
+                else:
+                    shutil.copyfile(src, out / f"wolf_{variant}{angry}{baby}.png")
+    return missing
+
+
+# Particles the stage draws for what a mob does (an act's effects): kind -> the pack's texture, copied into art/mobs/ as
+# particle_<kind>. A sleeping wolf's Zs (the pack's oreville_ans:pupoyec_wrciiur).
+STAGE_PARTICLES = {"z": "textures/particle/z"}
+
+
+def copy_particles(out):
+    """The stage's particle textures into out (art/mobs/); returns the ones it couldn't find."""
+    missing = []
+    for kind, path in STAGE_PARTICLES.items():
+        src = texture_file(path)
+        if not src:
+            missing.append(path)
+        elif src.suffix == ".tga":
+            tga_to_png(src, out / f"particle_{kind}.png")
+        else:
+            shutil.copyfile(src, out / f"particle_{kind}.png")
+    return missing
+
+
 # Things a mob does now and then on the stage instead of its usual animation: how many seconds apart, and the parts of
 # the sequence as (key, starts at, ends at or None for the animation's own length, which parts it shows or hides).
 # Rolled up, the armadillo's game state swaps its body for the shell, which the animations alone don't do.
 _SHELL = [["body_kptqgue", True]]
 _ROLLED = _SHELL + [[bone, False] for bone in ("xscxjyu", "hjwhrxn", "btvzfqb_leg", "zrmwhbt_leg")]
+# The armadillo stands breathing, and now and then does one of the idles the pack's idle controller picks from (the
+# first at its blend weight, 1.2), easing in and out over that controller's 0.3-second blend, over its breathing (keep);
+# or walks a few steps (in place), as strong as the game plays it at a walk; or rolls up. Half the time an idle, a
+# quarter a walk, a quarter rolling up.
+_ARMADILLO_IDLES = [{"every": [4, 9], "keep": True, "ease": 0.3, "parts": [("zxbvhct_0", 0, None, [], 1, 1.2)]},
+                    {"every": [4, 9], "keep": True, "ease": 0.3, "parts": [("zxbvhct_1", 0, None, [])]}]
+_ARMADILLO_WALK = {"every": [4, 9], "keep": True, "ease": 0.3, "parts": [("vcnwlon", 0, 4, [])]}
 STAGE_ACTS = {
-    "minecraft:armadillo": {"every": [8, 18], "parts": [
+    "minecraft:armadillo": [*_ARMADILLO_IDLES, _ARMADILLO_WALK, {"every": [8, 18], "parts": [
         ("vvwpqiu_bghnmsg", 0, None, _SHELL),
         ("kptqgue_bghnmsg", 0.9048, 5.2, _ROLLED),
         ("kpevzkf", 2, None, []),
         ("uqfdaza", 5.2, None, _SHELL),
-    ]},
+    ]}],
     "minecraft:enderman": {"every": [7, 14], "parts": [("blink", 0, None, []), ("zxbvhct_1", 0.15, None, [])]},
     "minecraft:endermite": {"every": [3, 7], "parts": [("blink", 0, None, [])]},
     # The Nether's mobs blink, where the pack has them do it, and fidget as its idle fidgets go.
@@ -158,7 +268,7 @@ STAGE_ACTS = {
     "minecraft:spider": {"every": [5, 10], "keep": True, "parts": [("cogyszp", 0, None, []), ("dpxwbfw", 0.75, None, [])]},
     "minecraft:cave_spider": {"every": [5, 10], "keep": True, "parts": [("cogyszp", 0, None, [])]},
     "minecraft:slime": {"every": [4, 8], "parts": [("zijlcyt", 0, None, [])]},
-    "minecraft:wolf": {"every": [6, 12], "parts": [("zxbvhct_0", 0, None, [])]},
+    "minecraft:wolf": [{"every": [6, 12], "parts": [("zxbvhct_0", 0, None, [])]}, _WOLF_WALK],
     "minecraft:shulker": {"every": [2, 4], "parts": [("shut", 0, None, []), ("jlrfsid", 3, None, [])]},
 }
 # The shulker on the stage stands open, so the lid's own moves can't shut it: it pulls in with a twist, starting and
@@ -195,8 +305,18 @@ def brarchive(data):
 
 
 def read_pack():
-    """Entities, render controllers and models: the pack's own, then its Full Experience subpack's on top."""
-    with zipfile.ZipFile(pack) as z:
+    """Entities, render controllers and models: the pack's own, then its Full Experience subpack's on top. The pack is
+    the .mcpack, or a folder it was unpacked into, with each archive's files as plain JSON in a folder of its name."""
+    if pack.is_dir():
+        def load(tail):
+            files = {}
+            for top in (pack, pack / "subpacks" / SUBPACK):
+                folder = top / tail.removesuffix(".brarchive")
+                for f in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+                    files[str(f.relative_to(pack))] = json.loads(f.read_text(encoding="utf-8"))
+            return files
+    else:
+        z = zipfile.ZipFile(pack)
         def load(tail):
             files = {}
             for top in ("/__brarchive/", f"/subpacks/{SUBPACK}/__brarchive/"):
@@ -204,8 +324,8 @@ def read_pack():
                 if name:
                     files.update(brarchive(z.read(name)))
             return files
-        entities, controllers, models = load("entity.brarchive"), load("render_controllers.brarchive"), load("models/entity.brarchive")
-        materials, animations, attachables = load("materials.brarchive"), load("animations.brarchive"), load("attachables.brarchive")
+    entities, controllers, models = load("entity.brarchive"), load("render_controllers.brarchive"), load("models/entity.brarchive")
+    materials, animations, attachables = load("materials.brarchive"), load("animations.brarchive"), load("attachables.brarchive")
     # An entity can have a definition for each game version; the game takes the newest.
     ents, newest = {}, {}
     for f in entities.values():
@@ -216,6 +336,7 @@ def read_pack():
                 ents[d["identifier"]], newest[d["identifier"]] = d, version
     rcs = {k: v for f in controllers.values() for k, v in f.get("render_controllers", {}).items()}
     geos = {g["description"]["identifier"]: g for f in models.values() for g in f.get("minecraft:geometry", [])}
+    GEOS.update(geos)
     # Materials are "name:parent" with their changes; the pack's all come down to one of the game's own.
     mats = {}
     for f in materials.values():
@@ -471,9 +592,13 @@ def baked_loop(d, anims, key, weight, rate=1, pinned=(), answers=None):
     return {"length": round(length, 4), "bones": baked_bones(d, anim, [i / count * span for i in range(count)], weight, pinned, answers)}
 
 
-def baked_bones(d, anim, times, weight=1, pinned=(), answers=None):
+def baked_bones(d, anim, times, weight=1, pinned=(), answers=None, level=(), loop=None):
     """An animation at those times: bone -> {r, p, s}, each a list of [x, y, z] frames (one where it never changes).
-    answers: what the game says in the mood it's playing in."""
+    answers: what the game says in the mood it's playing in. A bone turned relative to the entity (relative_to
+    rotation: entity, as a wolf's head is while it sits or lies) keeps that turn whatever the bones it hangs from do: the
+    turns the same animation gives those are taken off its own. level: bones kept turned relative to the entity whatever
+    the animation says (the game's head-look animation does that for a wolf's head while it sits or lies). loop: how
+    long a looping animation lasts, for its keyframes to go round again past that."""
     plain = scripted(d, "", mood=answers)
     bones = {}
     for bone, channels in anim["bones"].items():
@@ -483,10 +608,40 @@ def baked_bones(d, anim, times, weight=1, pinned=(), answers=None):
             frames = []
             for t in times:
                 env = Env({**plain.q, "life_time": t, "anim_time": t}, v=dict(plain.v))
-                vals = channel_at(channels[ch], t, env)
-                frames.append([round(1 + (v - 1) * weight if k == "s" else v * weight, 2) for v in vals])
-            bones.setdefault(bone, {})[k] = frames[:1] if all(f == frames[0] for f in frames) else frames
+                vals = channel_at(channels[ch], t % loop if loop and t > loop else t, env)
+                frames.append([1 + (v - 1) * weight if k == "s" else v * weight for v in vals])
+            bones.setdefault(bone, {})[k] = frames
+    parents = bone_parents(d)
+    for bone in level:
+        if not any(b.lower() == bone for b in bones):
+            bones[bone] = {}
+        named = next(b for b in bones if b.lower() == bone)
+        bones[named].setdefault("r", [[0, 0, 0] for _ in times])
+    for bone, channels in [*anim["bones"].items(), *((b, {}) for b in bones if b not in anim["bones"])]:
+        entity = (channels.get("relative_to") or {}).get("rotation") == "entity" or bone.lower() in level
+        if not entity or "r" not in bones.get(bone, {}):
+            continue
+        up = parents.get(bone.lower())
+        while up:
+            turned = next((b for b in bones if b.lower() == up), None)
+            if turned and "r" in bones[turned]:
+                bones[bone]["r"] = [[v - u for v, u in zip(f, bones[turned]["r"][i])] for i, f in enumerate(bones[bone]["r"])]
+            up = parents.get(up)
+    for channels in bones.values():
+        for k, frames in channels.items():
+            frames = [[round(v, 2) for v in f] for f in frames]
+            channels[k] = frames[:1] if all(f == frames[0] for f in frames) else frames
     return compact(bones)
+
+
+# The pack's models by name, once read_pack has read them, for the bones' hierarchy.
+GEOS = {}
+
+
+def bone_parents(d):
+    """An entity's usual model's bones: bone -> the bone it hangs from (lower case), for relative_to."""
+    geo = GEOS.get((d.get("geometry") or {}).get("default"), {})
+    return {b["name"].lower(): b["parent"].lower() for b in geo.get("bones", []) if b.get("parent")}
 
 
 def baked_held(d, anims, key, answers=None):
@@ -497,14 +652,21 @@ def baked_held(d, anims, key, answers=None):
 
 def baked_act(d, anims, act, answers=None):
     """Something a mob does now and then: {every: [least, most seconds apart], length, parts}, each part {from, to,
-    bones (frames from its start to its end), show ([bone pattern, shown] rules while it plays)}."""
+    bones (frames from its start to its end), show ([bone pattern, shown] rules while it plays)}. A part can play
+    faster (a fifth item, its speed), as the pack's anim_time_update has it. A list of acts is baked one by one."""
+    if isinstance(act, list):
+        return [baked_act(d, anims, a, answers) for a in act]
     parts = []
-    for key, start, end, show in act["parts"]:
-        anim = anims[d["animations"][key]]
-        span = (end - start) if end is not None else anim["animation_length"]
+    level = ("head",) if act.get("level_head") else ()
+    for key, start, end, show, *more in act["parts"]:
+        anim, rate, weight = anims[d["animations"][key]], (more + [1])[0], (more + [1, 1])[1]
+        span = (end - start) if end is not None else anim["animation_length"] / rate
         count = max(2, math.ceil(span * MOTION_FPS) + 1)
-        parts.append({"from": start, "to": round(start + span, 4), "bones": baked_bones(d, anim, [i / (count - 1) * span for i in range(count)], answers=answers), "show": show})
-    return {"every": act["every"], "length": max(p["to"] for p in parts), **({"keep": 1} if act.get("keep") else {}), "parts": parts}
+        # A looping animation played longer than it lasts goes round again.
+        loop = anim.get("animation_length") if anim.get("loop") is True else None
+        parts.append({"from": start, "to": round(start + span, 4), "bones": baked_bones(d, anim, [i / (count - 1) * span * rate for i in range(count)], weight=weight, answers=answers, level=level, loop=loop), "show": show})
+    return {"every": act["every"], "length": max(p["to"] for p in parts), **({"keep": 1} if act.get("keep") else {}), **({"ease": act["ease"]} if act.get("ease") else {}),
+            "parts": parts, **({"effects": act["effects"]} if act.get("effects") else {})}
 
 
 # ---------- Models ----------
@@ -607,11 +769,15 @@ def glow_panels(g, rules, flags):
 
 
 def texture_file(path):
+    """A texture's file: from the texture folder, else (for an unpacked pack) the pack's Full Experience subpack's,
+    else the pack's own. An empty file (a placeholder) doesn't count."""
     rel = path[len("textures/"):] if path.startswith("textures/") else path
-    for base in (textures, textures / "_base"):
+    bases = [textures, textures / "_base"] + ([pack / "subpacks" / SUBPACK / "textures", pack / "textures"] if pack.is_dir() else [])
+    for base in bases:
         for ext in (".png", ".tga"):
-            if (base / (rel + ext)).exists():
-                return base / (rel + ext)
+            f = base / (rel + ext)
+            if f.exists() and f.stat().st_size:
+                return f
     return None
 
 
@@ -734,6 +900,7 @@ def main():
             tga_to_png(src, out / f"{key}.png")
         else:
             shutil.copyfile(src, out / f"{key}.png")
+    missing += copy_wolf_variants(out) + copy_particles(out)
     # A missing texture is left out of its layer (the glint on the leather boots); a layer left with none goes.
     have = {p.stem for p in out.glob("*.png")}
     for e in [e for entries in looks.values() for e in entries] + list(props.values()) + [e for moods in mood_looks.values() for entries in moods.values() for e in entries] + [e for sizes in size_data.values() for s in sizes.values() for e in s.get("looks", [])]:

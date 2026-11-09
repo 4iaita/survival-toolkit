@@ -26,6 +26,29 @@ const COLLAR_COLORS = ["red", "orange", "yellow", "lime", "green", "cyan", "ligh
 const DEFAULT_COLLAR = "red";
 // What armor's wear is called, least first: the keys of MOB_ARMOR's cracks, after none at all.
 const ARMOR_WEAR = [["", "New"], ["low", "Slightly cracked"], ["medium", "Cracked"], ["high", "Badly cracked"]];
+// Variants a mob comes in, each from a biome of its own, the stage showing that biome: k, what it's called; where, the
+// biome the game spawns it in; skins, the pack's skins it swaps for its own (skin -> skin). The first is the one
+// without any, which the mob starts as.
+// The wolf's are in art/mobs/ as wolf_<variant> (see import_models.py), with angry and baby skins of their own.
+const wolfSkins = v => Object.fromEntries(["", "_angry", "_baby", "_angry_baby"].map(s => [`wolf${s}`, `wolf_${v}${s}`]));
+const MOB_VARIANTS = {
+  wolf: [
+    { k: "pale", n: "Pale", where: "Taiga", biome: "taiga" },
+    { k: "ashen", n: "Ashen", where: "Snowy Taiga", biome: "snowy_taiga" },
+    { k: "black", n: "Black", where: "Old Growth Pine Taiga", biome: "pine_taiga" },
+    { k: "chestnut", n: "Chestnut", where: "Old Growth Spruce Taiga", biome: "spruce_taiga" },
+    { k: "rusty", n: "Rusty", where: "Sparse Jungle", biome: "sparse_jungle" },
+    { k: "snowy", n: "Snowy", where: "Grove", biome: "grove" },
+    { k: "spotted", n: "Spotted", where: "Savanna Plateau", biome: "savanna_plateau" },
+    { k: "striped", n: "Striped", where: "Wooded Badlands", biome: "badlands" },
+    { k: "woods", n: "Woods", where: "Forest", biome: "forest" },
+  ].map((v, i) => (i ? { ...v, skins: wolfSkins(v.k) } : v)),
+};
+// Mobs that have babies in the game itself, bred or born: the stage can show one as a baby, in the look the pack
+// gives its babies (the one its Baby name shows). Other mobs only look like babies with that name.
+const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chicken", "cow", "dolphin", "donkey", "drowned", "fox", "goat",
+  "hoglin", "horse", "husk", "llama", "mooshroom", "mule", "nautilus", "ocelot", "panda", "pig", "piglin", "polar_bear", "rabbit", "sheep",
+  "sniffer", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
 const MOB_GROUPS = ["Animals", "Water", "Village", "Monsters", "Nether", "End"];
 const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
@@ -35,7 +58,7 @@ const MOBS = [
   { k: "mooshroom", n: "Mooshroom", g: "Animals" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
   { k: "panda", n: "Panda", g: "Animals", biome: "jungle" }, { k: "parrot", n: "Parrot", g: "Animals" }, { k: "pig", n: "Pig", g: "Animals" },
   { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy" }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
-  { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "forest" },
+  { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "taiga" },
   { k: "axolotl", n: "Axolotl", g: "Water", biome: "lush", swim: true }, { k: "cod", n: "Cod", g: "Water", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", g: "Water", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", g: "Water", biome: "flooded_cave", glowing: true, swim: true },
   { k: "nautilus", n: "Nautilus", g: "Water", biome: "ocean", stand: TURNED_ROUND, swim: true }, { k: "pufferfish", n: "Pufferfish", g: "Water", biome: "ocean", swim: true }, { k: "salmon", n: "Salmon", g: "Water", biome: "ocean", swim: true }, { k: "squid", n: "Squid", g: "Water", biome: "ocean", swim: true },
   { k: "tadpole", n: "Tadpole", g: "Water", biome: "ocean", swim: true }, { k: "tropicalfish", n: "Tropical Fish", g: "Water", biome: "ocean", swim: true }, { k: "turtle", n: "Turtle", g: "Water", biome: "ocean", swim: true },

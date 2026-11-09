@@ -39,6 +39,17 @@ const currentTag = () => shownTags(mobTab.mob).find(t => t.names[0] === mobTab.n
 // The picked mob's mood, for the mobs that have any, and its collar if the mood has one: they aren't remembered, so every
 // mob starts calm, and with the collar the game gives it.
 let mobMood = "calm", mobCollar = DEFAULT_COLLAR, mobSize = DEFAULT_SIZE;
+// Whether it's a baby, for a mob the game has babies of: its look is the pack's baby look (babyLook), unless a name
+// gives it a look of its own. Grown to start with, like the mood.
+let mobBaby = false;
+const babyLook = k => (GAME_BABIES.has(k) ? (MOB_LOOKS[k] || []).findIndex((l, i) => i && l.names.some(n => n.toLowerCase() === "baby")) : -1);
+const isBaby = () => {
+  const t = currentTag();
+  return (mobBaby && babyLook(mobTab.mob) > 0 && !(t && t.look)) || Boolean(t && t.names[0].toLowerCase() === "baby");
+};
+// Its variant, for a mob that comes in several (MOB_VARIANTS): the first to start with, like the mood.
+let mobVariant = "";
+const variantInfo = () => (MOB_VARIANTS[mobTab.mob] || []).find(v => v.k === mobVariant) || (MOB_VARIANTS[mobTab.mob] || [])[0] || null;
 // Its armor, in a mood that can wear any: none to start with, undyed, new and not enchanted when put on.
 const NO_ARMOR = { on: false, dye: "", crack: "", glint: false };
 let mobArmor = NO_ARMOR;
@@ -46,14 +57,13 @@ const moodsOf = k => (MOB_MOODS[k] ? ["calm", ...Object.keys(MOB_MOODS[k])] : []
 const moodInfo = () => (mobMood !== "calm" && MOB_MOODS[mobTab.mob] && MOB_MOODS[mobTab.mob][mobMood]) || null;
 const collarTint = { color: hex(DYES[DEFAULT_COLLAR]) };
 // The game doesn't put armor on a baby.
-const armorFits = () => {
-  const t = currentTag();
-  return Boolean(moodInfo() && moodInfo().armor) && !(t && t.names[0].toLowerCase() === "baby");
-};
+const armorFits = () => Boolean(moodInfo() && moodInfo().armor) && !isBaby();
 const titled = name => name.replace(/(^| )\w/g, c => c.toUpperCase());
 
 const mobStage = $("mob-stage");
-const mobView = mobScene($("mob-art"), $("mob-tag"), { onTurn: () => mobStage.classList.add("turned") });
+// Each mob, and each variant of one, starts seen from the side, turned a little toward the reader.
+const MOB_YAW = 0.6;
+const mobView = mobScene($("mob-art"), $("mob-tag"), { onTurn: () => mobStage.classList.add("turned"), yaw: MOB_YAW });
 const mobBackdrop = backdropView($("mob-backdrop"));
 
 // jeb_'s wool fades from one dye color to the next, in the game's order; scrolling textures (the rainbow slime's)
@@ -62,12 +72,14 @@ const JEB_COLORS = ["white", "orange", "magenta", "light blue", "yellow", "lime"
 const wool = { color: [255, 255, 255] }, mobClock = { t: 0 };
 let jebStep = 0;
 
-// The stage: the mob's own biome, a snowy village for snowy names, and night for a name that only makes it glow.
+// The stage: the mob's own biome (its variant's, for one that has them), a snowy village for snowy names, and night for
+// a name that only makes it glow.
 function showOnStage() {
-  const m = mobOf(mobTab.mob), t = currentTag(), look = t ? t.look : 0;
+  const m = mobOf(mobTab.mob), t = currentTag(), variant = variantInfo();
+  const look = t && t.look ? t.look : mobBaby && babyLook(m.k) > 0 ? babyLook(m.k) : 0;
   const tagEl = $("mob-tag");
   tagEl.textContent = t ? (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]) : "";
-  const biome = t && t.kind === SNOWY ? "snowy" : m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
+  const biome = t && t.kind === SNOWY ? "snowy" : (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
   mobStage.dataset.biome = biome;
   mobStage.dataset.time = night ? "night" : "day";
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);
@@ -76,10 +88,10 @@ function showOnStage() {
   const collared = Boolean(moodInfo() && moodInfo().collar), armored = armorFits() && mobArmor.on;
   const armor = armored ? { kind: m.k, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor }).then(ok => {
+  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, skins: (variant && variant.skins) || null }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
-  $("mob-art").setAttribute("aria-label", `${article(mobName(m))} ${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
+  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : variant ? variant.n : mobName(m))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${variant ? `${variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
 }
 
 // A name as a button that tries it on the mob: spelling say of the name t.
@@ -94,6 +106,21 @@ function renderMobPicker() {
         `<button type="button" class="slot slot-btn" id="mob-pick-${m.k}" data-mob="${m.k}" data-name="${esc(mobName(m))}" aria-label="${esc(mobName(m))}" aria-pressed="${m.k === mobTab.mob}">${iconImg(mobIcon(m))}</button>`).join("")}</div>
     </div>`).join("");
   $("mob-name").textContent = mobName(mobOf(mobTab.mob));
+}
+
+// The age buttons, for a mob the game has babies of. A name with a look of its own shows that look instead.
+function renderAge() {
+  const can = babyLook(mobTab.mob) > 0;
+  $("age-bar").hidden = !can;
+  $("age-try").innerHTML = can ? [[false, "Adult"], [true, "Baby"]].map(([b, label]) => `<button type="button" class="name-chip" data-baby="${b ? "on" : ""}" aria-pressed="${b === mobBaby}">${label}</button>`).join("") : "";
+}
+
+// The variant buttons, for a mob that comes in variants, and where the picked one lives.
+function renderVariants() {
+  const variants = MOB_VARIANTS[mobTab.mob], v = variantInfo();
+  $("variant-bar").hidden = !variants;
+  $("variant-label").textContent = v ? `Variant: ${v.n} · ${v.where}` : "Variant";
+  $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
 }
 
 // The size buttons, for a mob that comes in sizes.
@@ -224,6 +251,8 @@ function renderMobs() {
   if (!currentTag() && mobTab.name) mobTab.name = "";
   renderEditionText();
   renderMobPicker();
+  renderAge();
+  renderVariants();
   renderSizes();
   renderMoods();
   renderTry();
@@ -239,6 +268,9 @@ function pickMob(k, name) {
     mobCollar = DEFAULT_COLLAR;
     mobArmor = NO_ARMOR;
     mobSize = DEFAULT_SIZE;
+    mobVariant = "";
+    mobBaby = false;
+    mobView.turnBack();
   }
   mobTab.mob = k;
   mobTab.name = mobTab.say = name || "";
@@ -267,6 +299,24 @@ $("mood-try").addEventListener("click", e => {
   renderMoods();
   showOnStage();
   refocus(`#mood-try button[data-mood="${mobMood}"]`);
+});
+$("age-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-baby]");
+  if (!b || Boolean(b.dataset.baby) === mobBaby) return;
+  mobBaby = Boolean(b.dataset.baby);
+  renderAge();
+  renderMoods();
+  showOnStage();
+  refocus(`#age-try button[data-baby="${b.dataset.baby}"]`);
+});
+$("variant-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-variant]");
+  if (!b || b.dataset.variant === (variantInfo() || {}).k) return;
+  mobVariant = b.dataset.variant;
+  mobView.turnBack();
+  renderVariants();
+  showOnStage();
+  refocus(`#variant-try button[data-variant="${mobVariant}"]`);
 });
 $("size-try").addEventListener("click", e => {
   const b = e.target.closest("button[data-size]");
