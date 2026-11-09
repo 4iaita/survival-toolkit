@@ -65,3 +65,11 @@ python3 import_panda.py ../textures/full-pack ../textures --write
 python3 import_mooshroom.py ../textures/full-pack ../textures --write
 python3 build.py
 ```
+
+To refresh the looks `import_additions.py` already wrote (the `new_*` ones) after the pack or the importer changes, run it with `--refresh`. It builds each of them again from the pack's render controllers and materials: the layers, how each is lit (glowing eyes, emissive texels, glow panels) and which layers only draw round others and so are left out. It keeps their model and texture keys where the pack's geometry and textures are the same, and drops the ones no look uses any more. It leaves the panda and mooshroom to their own scripts. Without `--write` it only lists what would change:
+
+```bash
+python3 import_additions.py ../textures/full-pack ../textures --refresh
+python3 import_additions.py ../textures/full-pack ../textures --refresh --write
+python3 build.py
+```
