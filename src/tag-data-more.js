@@ -164,8 +164,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Sea Monster"], more: ["sea Monster", "Sea monster"], what: "A Halloween costume." },
   ],
   ocelot: [
-    { names: ["Witch Kitten", "Baby Witch"], more: ["witch Kitten", "Witch kitten", "baby Witch", "Baby witch"], what: "The Witch Kitten look." },
-    { names: ["Halloween", "Witch"], what: "A Halloween costume." },
+    { names: ["Witch Kitten", "Baby Witch"], more: ["witch Kitten", "Witch kitten", "baby Witch", "Baby witch"], what: "A baby ocelot in a witch’s hat." },
+    { names: ["Halloween", "Witch"], what: "A witch’s hat." },
   ],
   panda: [
     { names: ["Freddy"], what: "A brown bear in a little top hat and bow tie." },

@@ -85,6 +85,8 @@ WHAT = {
     ("cow", "dappled"): "Orange leaves on its head.",
     ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
+    ("ocelot", "witch kitten"): "A baby ocelot in a witch’s hat.",
+    ("ocelot", "halloween"): "A witch’s hat.",
     ("panda", "freddy"): "A brown bear in a little top hat and bow tie.",
     ("panda", "grizzly"): "A brown grizzly bear.",
 }
