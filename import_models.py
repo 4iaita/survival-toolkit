@@ -1023,7 +1023,7 @@ def main():
           " * day), mask (the texture's alpha is a dye mask), lit (its alpha is how much it glows), dyeBones (bone patterns dyed on their own), shellBones (bone patterns that are see-through shells), litBones (bone patterns",
           " * lit on their own), sheer (its faint texels are see-through), scroll (u and v per",
           " * second), openEyes (its blink bone is the open eye), dyes (a color name per texture), soft (a glow drawn as soft light facing the camera) eyes (a soft glow at its bone's pivot, on the face, gone from behind), halo (the same, seen from any side) and bright (how strong a soft glow is); pose, bone -> {r: rotation, p: position,",
-          " * s: scale} from animations the name turns on; motions, loops it plays in place of the mob's (MOB_MOTIONS), without its acts. Textures are in MOB_SKINS (art/mobs/).",
+          " * s: scale} from animations the name turns on; motions, loops it plays in place of the mob's (MOB_MOTIONS), without its acts; plays, the set of the mob's animations it plays instead (MOB_MOTIONS and MOB_ACTS' \"<mob>:<set>\"). Textures are in MOB_SKINS (art/mobs/).",
           " * PROP_LOOKS: item -> the look it takes in the hand of an armor stand named §§, like a mob's look.",
           " * MOB_MOTIONS: mob -> the animations the stage plays, layered: { length in seconds, bones: bone -> {r, p, s}, each",
           " * a list of [x, y, z] frames over the loop }.",
@@ -1031,7 +1031,7 @@ def main():
           " * bones as above, show: [[bone pattern, shown], ...] } }.",
           " * MOB_MOODS: mob -> its moods other than calm: mood -> { looks (MOB_LOOKS' in the same order), motions, act, collar (its color can be picked), armor (it can wear MOB_ARMOR's) }.",
           " * MOB_SIZES: mob -> its sizes, biggest first: size -> { zoom, beside the biggest; looks, where they differ }.",
-          " * MOB_CLIMATES: mob -> its climates (warm, cold): climate -> { looks }, the looks that differ there, by their place in MOB_LOOKS.",
+          " * MOB_CLIMATES: mob -> its climates (warm, cold): climate -> { looks, act }: the looks that differ there, by their place in MOB_LOOKS (what they have, over the usual look), and acts it has there instead.",
           " * MOB_ARMOR: mob -> { model, plain and dyed (its textures), cracks: wear -> a texture to lay over it }.",
           " */",
           "const MOB_MODELS = {"]

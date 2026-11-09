@@ -563,18 +563,21 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
   return {
     // Show a mob (or prop, see looksOf) in one of its looks; resolves once it's drawn, or false if it can't be.
     async show(mob, lookIndex = 0, { flip = false, tint = null, clock = null, night = false, glowing = false, stand = null, swim = false, zoom = 1, mood = null, armor = null, sized = null, climate = null, skins = null, shown = [] } = {}) {
-      // A mood (MOB_MOODS) has looks and animations of its own, in place of the mob's usual ones; so can a size (MOB_SIZES); a climate (MOB_CLIMATES) has the few looks that differ there, in place of the usual ones.
+      // A mood (MOB_MOODS) has looks and animations of its own, in place of the mob's usual ones; so can a size (MOB_SIZES); a climate (MOB_CLIMATES) has the few looks that differ there (their layers, over the usual look), and maybe acts of its own.
       const mooded = (mood && MOB_MOODS[mob] && MOB_MOODS[mob][mood]) || null, ofSize = (sized && MOB_SIZES[mob] && MOB_SIZES[mob][sized] && MOB_SIZES[mob][sized].looks) || null;
-      const ofClimate = (climate && MOB_CLIMATES[mob] && MOB_CLIMATES[mob][climate] && MOB_CLIMATES[mob][climate].looks) || null;
-      const key = wanted = `${mob}/${lookIndex}/${flip}/${night}/${mood}/${sized}/${climate}/${JSON.stringify(skins)}/${JSON.stringify(shown)}`, looks = ofSize || (mooded ? mooded.looks : ofClimate ? looksOf(mob).map((l, i) => ofClimate[i] || l) : looksOf(mob)), look = looks[lookIndex] || looks[0];
+      const climated = (climate && MOB_CLIMATES[mob] && MOB_CLIMATES[mob][climate]) || null, ofClimate = (climated && climated.looks) || null;
+      const key = wanted = `${mob}/${lookIndex}/${flip}/${night}/${mood}/${sized}/${climate}/${JSON.stringify(skins)}/${JSON.stringify(shown)}`, looks = ofSize || (mooded ? mooded.looks : ofClimate ? looksOf(mob).map((l, i) => (ofClimate[i] ? { ...l, ...ofClimate[i] } : l)) : looksOf(mob)), look = looks[lookIndex] || looks[0];
       const ground = mob.startsWith("prop:") ? landed : b => b;
       if (!look) return false;
       const fitOf = ([lo, hi]) => {
         const cx = (lo[0] + hi[0]) / 2, cz = (lo[2] + hi[2]) / 2;
         return Object.assign([lo, hi], { radius: Math.max(4, Math.hypot(hi[0] - cx, hi[2] - cz)) });
       };
-      // A look can have animations of its own (motions: the OIIA cat spins), in place of the mob's loops and acts.
-      const loops = look.motions || (mooded ? mooded.motions : MOB_MOTIONS[mob] || null), nextAct_ = look.motions ? null : mooded ? mooded.act : MOB_ACTS[mob] || null;
+      // A look can have animations of its own (motions: the OIIA cat spins), in place of the mob's loops and acts; or play
+      // another of the mob's sets (plays: a chick's, in MOB_MOTIONS and MOB_ACTS as "<mob>:<set>").
+      const setKey = look.plays ? `${mob}:${look.plays}` : null;
+      const loops = look.motions || (setKey && MOB_MOTIONS[setKey]) || (mooded ? mooded.motions : MOB_MOTIONS[mob] || null);
+      const nextAct_ = look.motions ? null : setKey ? MOB_ACTS[setKey] || null : mooded ? mooded.act : (climated && climated.act) || MOB_ACTS[mob] || null;
       // A look's boxes as it starts, and the space it moves through as it animates: its bounds and, for a swimmer, the
       // corners of what shows of its boxes at each moment (spots).
       const reachOf = async (shape, options) => {

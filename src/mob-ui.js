@@ -262,6 +262,12 @@ function renderMobs() {
   saveMobTab();
 }
 
+// A name whose look only shows in one climate (climate: a cold chicken's Snowy) turns the mob into that climate's variant.
+function fitClimate() {
+  const t = currentTag(), v = t && t.climate && (MOB_VARIANTS[mobTab.mob] || []).find(x => (x.climate || "temperate") === t.climate);
+  if (v) mobVariant = v.k;
+}
+
 function pickMob(k, name) {
   if (k !== mobTab.mob) {
     mobMood = "calm";
@@ -274,11 +280,14 @@ function pickMob(k, name) {
   }
   mobTab.mob = k;
   mobTab.name = mobTab.say = name || "";
+  fitClimate();
   renderMobs();
 }
 function pickTag(name, say = name) {
   mobTab.name = name;
   mobTab.say = say;
+  fitClimate();
+  renderVariants();
   renderMoods();
   renderTry();
   renderMobResult();

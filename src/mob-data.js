@@ -32,7 +32,7 @@ const ARMOR_WEAR = [["", "New"], ["low", "Slightly cracked"], ["medium", "Cracke
 // skins, the pack's skins it swaps for its own (skin -> skin); show, [bone pattern, shown] rules for parts it shows (a
 // saddle); say, how the stage's description puts it ("" for nothing). The first is the one without any, which the mob
 // starts as.
-// climate, the chicken's MOB_CLIMATES look to swap in.
+// climate, the MOB_CLIMATES looks to swap in (a name tag that only shows in one climate picks that variant).
 // The wolf's are in art/mobs/ as wolf_<variant> (see import_models.py), with angry and baby skins of their own.
 const wolfSkins = v => Object.fromEntries(["", "_angry", "_baby", "_angry_baby"].map(s => [`wolf${s}`, `wolf_${v}${s}`]));
 const pandaSkins = v => ({ new_panda: `new_panda_${v}`, new_panda_baby: `new_panda_${v}_baby` });

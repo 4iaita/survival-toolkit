@@ -19,7 +19,8 @@ def renamed(bones):
     return {ia.ren(b): v for b, v in bones.items()}
 
 
-def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=()):
+def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
+         sets=None, plays=None, climates=None, climate_acts=None):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -27,7 +28,12 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     pack's current models too (the bat's vampire), as the plain looks do, with their size and pose; own_motions: first
     name -> the loops a named look plays in place of the mob's (and no acts), as motions; new_looks: the names of looks
     the page doesn't have yet (the bee's moths), each a list whose first is the one the pack is asked about, added after
-    the others and built as remodel's are. A motion can say how fast it plays (a third item, its speed)."""
+    the others and built as remodel's are. A motion can say how fast it plays (a third item, its speed).
+    sets: other animations the pack plays for some looks (the chicken's babies), set name -> {motions, acts}, written to
+    MOB_MOTIONS and MOB_ACTS as "<mob>:<set>"; plays: first name -> the set that look plays in place of the mob's.
+    climates: climate -> what the game says in it (the chicken's and cow's warm and cold kinds): the looks that come out
+    different there go into MOB_CLIMATES, by their place in the mob's looks, with only their layers (the stage keeps the
+    rest of the look); climate_acts: climate -> acts it plays in place of the mob's (the cold cow sneezes too)."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
@@ -46,6 +52,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
             if not g:
                 continue
             rules = [[ia.ren(p), on] for p, on in rules]
+            if flags.get("litBones"):
+                flags = {**flags, "litBones": [ia.ren(p) for p in flags["litBones"]]}
             part = ia.PREFIX + "_".join(filter(None, [mob, label, str(i) if i else ""]))
             if not any(im.shown(b["name"], rules) for b in g.get("bones", []) if b.get("cubes")):
                 continue
@@ -114,7 +122,7 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
             for layer, (_, texs, _, flags) in zip(look["layers"], lay0):
                 del layer[3:]
                 if flags:
-                    layer.append(flags)
+                    layer.append({**flags, "litBones": [ia.ren(p) for p in flags["litBones"]]} if flags.get("litBones") else flags)
                 for t, key in zip(texs, layer[1]):
                     tex_keys.setdefault(t, key)
         for v, kind in enumerate(variants):
@@ -127,6 +135,19 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
                         key = tex_keys[t]
                         tex_keys.setdefault(o, key.replace(f"{ia.PREFIX}{mob}", f"{ia.PREFIX}{mob}_{kind}", 1))
                         skins.setdefault(key, {})[kind] = tex_keys[o]
+
+    # Climates: each look again in that climate, where it comes out different (the plain and baby looks by no name and Baby).
+    climate_out = {}
+    for climate, extra in (climates or {}).items():
+        changed = {}
+        for i, look in enumerate(looks):
+            name = "" if i == 0 else "Baby" if i == bi else (look["names"] or [""])[0]
+            lay, _, _ = im.look(d, rcs, mats, anims, name, mood={**answers(0), **extra})
+            if lay == im.look(d, rcs, mats, anims, name, mood=answers(0))[0]:
+                continue
+            label = "_".join(filter(None, [climate, "baby" if i == bi else name.lower().replace(" ", "_")]))
+            changed[str(i)] = {"layers": layers_out(label, lay)}
+        climate_out[climate] = {"looks": changed}
 
     def baked_loops(motions):
         out = []
@@ -146,7 +167,28 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         for part in a["parts"]:
             part["bones"] = renamed(part["bones"])
 
-    print(f"{mob}: {len(adult)}+{len(baby)} layers, {len(motion)} loop, {len(act)} acts, {len(tex_keys)} textures")
+    for climate, climate_act in (climate_acts or {}).items():
+        baked = im.baked_act(d, anims, climate_act)
+        for a in baked:
+            for part in a["parts"]:
+                part["bones"] = renamed(part["bones"])
+        climate_out[climate]["act"] = baked
+    set_out = {}
+    for key, spec in (sets or {}).items():
+        baked = im.baked_act(d, anims, spec.get("acts", []))
+        for a in baked:
+            for part in a["parts"]:
+                part["bones"] = renamed(part["bones"])
+        set_out[key] = (baked_loops(spec["motions"]), baked)
+    for look in looks:
+        name = (look["names"] or [""])[0]
+        if plays and name in plays:
+            look["plays"] = plays[name]
+        else:
+            look.pop("plays", None)
+
+    print(f"{mob}: {len(adult)}+{len(baby)} layers, {len(motion)} loop, {len(act)} acts, {len(tex_keys)} textures"
+          + (f", sets {sorted(set_out)}" if set_out else "") + (f", climates {({c: sorted(v['looks']) for c, v in climate_out.items()})}" if climate_out else ""))
     print("skins:", json.dumps(skins))
     if not ia.WRITE:
         return
@@ -174,6 +216,16 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     text = put(text, "MOB_LOOKS", mob, looks)
     text = put(text, "MOB_MOTIONS", mob, motion)
     text = put(text, "MOB_ACTS", mob, act)
+    # Sets other mobs' importers wrote before are left be; this mob's are written afresh.
+    for const in ("MOB_MOTIONS", "MOB_ACTS"):
+        a = text.index(f"const {const} = {{")
+        b = text.index("\n};", a)
+        text = text[:a] + "\n".join(l for l in text[a:b].split("\n") if not l.startswith(f'  "{mob}:')) + text[b:]
+    for key, (loops, acts_) in set_out.items():
+        text = put(text, "MOB_MOTIONS", f"{mob}:{key}", loops)
+        text = put(text, "MOB_ACTS", f"{mob}:{key}", acts_)
+    if climates:
+        text = put(text, "MOB_CLIMATES", mob, climate_out)
     for geo, key in geo_keys.items():
         text = put(text, "MOB_MODELS", key, im.model(geos[geo]))
     ia.MODELS_JS.write_text(text)
