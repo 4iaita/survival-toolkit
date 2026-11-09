@@ -227,8 +227,8 @@ def main():
         print("missing:", ", ".join(missing[:10]), "..." if len(missing) > 10 else "")
 
 
-# Mobs whose looks their own scripts own (import_panda.py, import_mooshroom.py): --refresh leaves them be.
-PORTED = {"panda", "mooshroom"}
+# Mobs whose looks their own scripts own (import_panda.py, import_mooshroom.py, import_bat.py): --refresh leaves them be.
+PORTED = {"panda", "mooshroom", "bat"}
 
 
 def kept_layers(layers, geos):

@@ -57,16 +57,17 @@ python3 import_models.py path/to/actions_and_stuff.mcpack ../textures
 python3 build.py
 ```
 
-The pack's update renamed all its keys. `import_additions.py` adds what the update brought, and `import_panda.py` and `import_mooshroom.py` move those two mobs fully onto the updated pack: its models, animations and the skins of their kinds (with `import_port.py`, which they share). Run them after `import_models.py`, with the unpacked pack, then rebuild:
+The pack's update renamed all its keys. `import_additions.py` adds what the update brought, and `import_panda.py`, `import_mooshroom.py` and `import_bat.py` move those mobs fully onto the updated pack: its models, animations and the skins of their kinds (with `import_port.py`, which they share). Run them after `import_models.py`, with the unpacked pack, then rebuild:
 
 ```bash
 python3 import_additions.py ../textures/full-pack ../textures --write
 python3 import_panda.py ../textures/full-pack ../textures --write
 python3 import_mooshroom.py ../textures/full-pack ../textures --write
+python3 import_bat.py ../textures/full-pack ../textures --write
 python3 build.py
 ```
 
-To refresh the looks `import_additions.py` already wrote (the `new_*` ones) after the pack or the importer changes, run it with `--refresh`. It builds each of them again from the pack's render controllers and materials: the layers, how each is lit (glowing eyes, emissive texels, glow panels) and which layers only draw round others and so are left out. It keeps their model and texture keys where the pack's geometry and textures are the same, and drops the ones no look uses any more. It leaves the panda and mooshroom to their own scripts. Without `--write` it only lists what would change:
+To refresh the looks `import_additions.py` already wrote (the `new_*` ones) after the pack or the importer changes, run it with `--refresh`. It builds each of them again from the pack's render controllers and materials: the layers, how each is lit (glowing eyes, emissive texels, glow panels) and which layers only draw round others and so are left out. It keeps their model and texture keys where the pack's geometry and textures are the same, and drops the ones no look uses any more. It leaves the panda, mooshroom and bat to their own scripts. Without `--write` it only lists what would change:
 
 ```bash
 python3 import_additions.py ../textures/full-pack ../textures --refresh
