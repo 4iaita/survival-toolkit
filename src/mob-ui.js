@@ -88,10 +88,10 @@ function showOnStage() {
   const collared = Boolean(moodInfo() && moodInfo().collar), armored = armorFits() && mobArmor.on;
   const armor = armored ? { kind: m.k, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, skins: (variant && variant.skins) || null }).then(ok => {
+  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, skins: (variant && variant.skins) || null, shown: variant && variant.show && !(look && look === babyLook(m.k)) ? variant.show : [] }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
-  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : variant ? variant.n : mobName(m))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${variant ? `${variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
+  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : variant && variant.say !== "" ? variant.say || variant.n : mobName(m))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
 }
 
 // A name as a button that tries it on the mob: spelling say of the name t.
@@ -119,7 +119,7 @@ function renderAge() {
 function renderVariants() {
   const variants = MOB_VARIANTS[mobTab.mob], v = variantInfo();
   $("variant-bar").hidden = !variants;
-  $("variant-label").textContent = v ? `Variant: ${v.n} · ${v.where}` : "Variant";
+  $("variant-label").textContent = v ? `Variant: ${v.n}${v.where ? ` · ${v.where}` : ""}` : "Variant";
   $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
 }
 

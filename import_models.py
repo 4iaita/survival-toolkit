@@ -74,7 +74,9 @@ STAGE_MOTIONS = {
     "minecraft:guardian": _GUARDIAN,
     "minecraft:elder_guardian": [("zxbvhct", 1), ("swim", 0.5, 1.2)],
     "minecraft:tadpole": [("swim", 1, 0.5)],
-    # The armadillo stands breathing; it walks only now and then (STAGE_ACTS).
+    # The camel stands breathing, as the pack's standing state has it (its idles and sitting are STAGE_ACTS).
+    "minecraft:camel": [("zxbvhct_dhyaxuw_bhlxath", 1)],
+    # The armadillo stands breathing (its idles and rolling up are STAGE_ACTS).
     "minecraft:armadillo": [("uqfdaza_xcsnfwi", 1)],
     "minecraft:bee": [("yvwtrbk", 1, 0.5), ("zgpiqoz", 1)],
     "minecraft:bat": [("yvwtrbk", 1, 0.6)],
@@ -155,11 +157,6 @@ def _wolf_lie(first, last):
 
 _WOLF_SIT = [_wolf_sit(_SIT_IDLES[0::2]), _wolf_sit(_SIT_IDLES[1::2])]
 _WOLF_LIE = [_wolf_lie(_LIE_IDLES[0], _LIE_IDLES[2]), _wolf_lie(_LIE_IDLES[1], _LIE_IDLES[3])]
-# Every wolf now and then walks a few steps (in place, on the stage): the pack's walk, as strong as the game plays it at
-# a walk (its blend weight, 0.7), over its usual breathing (keep), easing in and out. An angry one runs instead, as it
-# does after a target.
-_WOLF_WALK = {"every": [6, 12], "keep": True, "ease": 0.3, "parts": [("fdcmikw", 0, 4, [], 1, 0.7)]}
-_WOLF_RUN = {"every": [3, 6], "keep": True, "ease": 0.2, "parts": [("sxgcveo", 0, 3, [], 1, 1)]}
 # Moods a mob can be put in on the stage, other than its calm self: what the game answers in that mood, the animations
 # that loop, the ones held at their last frame (a stance it settles into) and what it does now and then, as STAGE_ACTS.
 # An angry wolf tenses up and growls with a shake of its head; the pack gives it its own skins and red eyes. A pet wears a
@@ -168,9 +165,9 @@ _WOLF_RUN = {"every": [3, 6], "keep": True, "ease": 0.2, "parts": [("sxgcveo", 0
 STAGE_MOODS = {
     "minecraft:wolf": {
         "angry": {"queries": {"is_angry": 1.0}, "loops": [("hhjrlam", 1)], "held": ["gfggyzv_gkbnvqq"],
-                  "act": [{"every": [3, 6], "parts": [("cogyszp", 0, None, [])]}, _WOLF_RUN]},
+                  "act": {"every": [3, 6], "parts": [("cogyszp", 0, None, [])]}},
         "pet": {"queries": {"is_tamed": 1.0, "tail_angle": 0.55 * math.pi}, "loops": [("hhjrlam", 1), ("hjwhrxn", 1)], "held": [], "collar": True, "armor": True,
-                "act": [{"every": [6, 12], "parts": [("zxbvhct_1", 0, None, []), ("furiuhw", 3.4583, None, [])]}, *_WOLF_SIT, *_WOLF_LIE, _WOLF_WALK]},
+                "act": [{"every": [6, 12], "parts": [("zxbvhct_1", 0, None, []), ("furiuhw", 3.4583, None, [])]}, *_WOLF_SIT, *_WOLF_LIE]},
     },
 }
 # Sizes a mob comes in, which the game sets by q.variant: how big each is beside the biggest, and what the game answers
@@ -229,19 +226,45 @@ def copy_particles(out):
 
 
 # Things a mob does now and then on the stage instead of its usual animation: how many seconds apart, and the parts of
-# the sequence as (key, starts at, ends at or None for the animation's own length, which parts it shows or hides).
+# the sequence as (key, starts at, ends at or None for the animation's own length, which parts it shows or hides, and
+# optionally its speed and weight). A mob with a list of them does one at random each time, by their weight (1 if not
+# given), as often as the first one says.
 # Rolled up, the armadillo's game state swaps its body for the shell, which the animations alone don't do.
 _SHELL = [["body_kptqgue", True]]
 _ROLLED = _SHELL + [[bone, False] for bone in ("xscxjyu", "hjwhrxn", "btvzfqb_leg", "zrmwhbt_leg")]
 # The armadillo stands breathing, and now and then does one of the idles the pack's idle controller picks from (the
 # first at its blend weight, 1.2), easing in and out over that controller's 0.3-second blend, over its breathing (keep);
-# or walks a few steps (in place), as strong as the game plays it at a walk; or rolls up. Half the time an idle, a
-# quarter a walk, a quarter rolling up.
+# or rolls up (one time in three).
 _ARMADILLO_IDLES = [{"every": [4, 9], "keep": True, "ease": 0.3, "parts": [("zxbvhct_0", 0, None, [], 1, 1.2)]},
                     {"every": [4, 9], "keep": True, "ease": 0.3, "parts": [("zxbvhct_1", 0, None, [])]}]
-_ARMADILLO_WALK = {"every": [4, 9], "keep": True, "ease": 0.3, "parts": [("vcnwlon", 0, 4, [])]}
+# The bat blinks now and then, its eyelids (the blink bone) showing for a moment; or, less often, flies up and hangs
+# upside down to rest, its eyes shut, as the pack's resting state has it: it settles (held there all the while), does
+# its two resting idles in turn with a slow sway, and takes off again, its wings still while it hangs.
+_BAT_EYES = [["blink", True]]
+_BAT_SETTLE, _BAT_HANG = 2.2083, [("zxbvhct_0", 2.7917), ("zxbvhct_1", 1.625), ("zxbvhct_0", 2.7917)]
+_BAT_DOWN = _BAT_SETTLE + sum(length for _, length in _BAT_HANG)
+_BAT_REST = {"every": [3, 6], "weight": 1, "parts": [("iedyhtk", 0, _BAT_DOWN, _BAT_EYES), ("dhyaxuw", _BAT_SETTLE, _BAT_DOWN, []),
+    *[(key, _BAT_SETTLE + sum(l for _, l in _BAT_HANG[:i]), _BAT_SETTLE + sum(l for _, l in _BAT_HANG[:i + 1]), []) for i, (key, _) in enumerate(_BAT_HANG)],
+    ("uyoazhn_bghnmsg", _BAT_DOWN, None, _BAT_EYES)]}
+_BAT_BLINK = {"every": [3, 6], "keep": True, "weight": 3, "parts": [("ybdngee.vrsrjmv_head", 0, None, _BAT_EYES)]}
+# The bee now and then has its nectar (the pack's has-nectar animation: a tilt and a squint), blinks, or, less often,
+# dives to sting, its wings beating all the while.
+_BEE_NECTAR = {"every": [4, 8], "keep": True, "weight": 2, "parts": [("jtapgrq_rsaxbcr", 0, None, []), ("jtapgrq_rsaxbcr_xycyjhg", 0, None, []),
+                                                                     ("jtapgrq_rsaxbcr_xlvwauz", 0, None, [])]}
+_BEE_BLINK = {"every": [4, 8], "keep": True, "weight": 2, "parts": [("blink", 0, None, [])]}
+_BEE_STING = {"every": [4, 8], "keep": True, "weight": 1, "parts": [("xxloynm", 0, None, [])]}
+# The camel now and then does one of the three idles the pack's idle controller picks from, over its breathing (keep),
+# blending in and out over that controller's 0.24 seconds; or sits down for a while, breathing as it sits (the pack's
+# sitting breath, at half strength), and gets up again.
+_CAMEL_IDLES = [{"every": [4, 9], "keep": True, "ease": 0.24, "parts": [(key, 0, None, [])]} for key in ("zxbvhct_0", "zxbvhct_1", "zxbvhct_2")]
+_CAMEL_SITS_FOR = 6
+_CAMEL_SIT = {"every": [4, 9], "parts": [("rolmmlp_tsailnj", 0, 1.6667 + _CAMEL_SITS_FOR, []), ("zxbvhct_dhyaxuw", 1.6667, 1.6667 + _CAMEL_SITS_FOR, [], 1, 0.5),
+                                        ("hhjrlam_bghnmsg", 1.6667 + _CAMEL_SITS_FOR, None, [])]}
 STAGE_ACTS = {
-    "minecraft:armadillo": [*_ARMADILLO_IDLES, _ARMADILLO_WALK, {"every": [8, 18], "parts": [
+    "minecraft:camel": [*_CAMEL_IDLES, _CAMEL_SIT],
+    "minecraft:bat": [_BAT_BLINK, _BAT_REST],
+    "minecraft:bee": [_BEE_NECTAR, _BEE_BLINK, _BEE_STING],
+    "minecraft:armadillo": [*_ARMADILLO_IDLES, {"every": [8, 18], "parts": [
         ("vvwpqiu_bghnmsg", 0, None, _SHELL),
         ("kptqgue_bghnmsg", 0.9048, 5.2, _ROLLED),
         ("kpevzkf", 2, None, []),
@@ -268,7 +291,7 @@ STAGE_ACTS = {
     "minecraft:spider": {"every": [5, 10], "keep": True, "parts": [("cogyszp", 0, None, []), ("dpxwbfw", 0.75, None, [])]},
     "minecraft:cave_spider": {"every": [5, 10], "keep": True, "parts": [("cogyszp", 0, None, [])]},
     "minecraft:slime": {"every": [4, 8], "parts": [("zijlcyt", 0, None, [])]},
-    "minecraft:wolf": [{"every": [6, 12], "parts": [("zxbvhct_0", 0, None, [])]}, _WOLF_WALK],
+    "minecraft:wolf": {"every": [6, 12], "parts": [("zxbvhct_0", 0, None, [])]},
     "minecraft:shulker": {"every": [2, 4], "parts": [("shut", 0, None, []), ("jlrfsid", 3, None, [])]},
 }
 # The shulker on the stage stands open, so the lid's own moves can't shut it: it pulls in with a twist, starting and
@@ -666,6 +689,7 @@ def baked_act(d, anims, act, answers=None):
         loop = anim.get("animation_length") if anim.get("loop") is True else None
         parts.append({"from": start, "to": round(start + span, 4), "bones": baked_bones(d, anim, [i / (count - 1) * span * rate for i in range(count)], weight=weight, answers=answers, level=level, loop=loop), "show": show})
     return {"every": act["every"], "length": max(p["to"] for p in parts), **({"keep": 1} if act.get("keep") else {}), **({"ease": act["ease"]} if act.get("ease") else {}),
+            **({"weight": act["weight"]} if act.get("weight", 1) != 1 else {}),
             "parts": parts, **({"effects": act["effects"]} if act.get("effects") else {})}
 
 

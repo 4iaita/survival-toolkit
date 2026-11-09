@@ -255,11 +255,11 @@ function boxesBounds(boxes) {
 // baby flies as high as its parent, while a part's move inside the model grows and shrinks with it)
 // and moving is an animation's pose this moment (motionPose), which adds to those and scales with the look; showing
 // is more [bone pattern, shown] rules from something the mob is doing (actPose); skins, textures to draw in place of the
-// look's own (a variant's, MOB_VARIANTS).
+// look's own (a variant's, MOB_VARIANTS); showParts, more [bone pattern, shown] rules from the variant (a camel's saddle).
 // By day the layers that only glow in the dark are left out, unless the mob is glowing anyway (soft light always shows); at night they show and
 // the rest is darker. Soft glows come apart from the boxes, as their soft list.
 const NIGHT_DIM = 0.42;
-async function lookBoxes(look, { flip = false, tint = null, clock = null, night = false, glowing = false, size = 1, height = 0, stand = null, moving = null, showing = [], armor = null, skins = null } = {}) {
+async function lookBoxes(look, { flip = false, tint = null, clock = null, night = false, glowing = false, size = 1, height = 0, stand = null, moving = null, showing = [], armor = null, skins = null, showParts = [] } = {}) {
   // Armor is one more layer: { kind, a MOB_ARMOR key; dye, its color if any; crack, its wear if any; glint, if enchanted }.
   const piece = armor && MOB_ARMOR[armor.kind];
   const worn = piece ? [[piece.model, [armor.dye ? piece.dyed : piece.plain, ...(armor.crack ? [piece.cracks[armor.crack]] : [])], [], { blend: true, ...(armor.dye ? { dyes: [armor.dye] } : {}), ...(armor.glint ? { glint: 1 } : {}) }]] : [];
@@ -278,7 +278,7 @@ async function lookBoxes(look, { flip = false, tint = null, clock = null, night 
     };
   }
   const parts = shown.flatMap(([model, , rules, flags], i) =>
-    modelBoxes(MOB_MODELS[model], layers[i], [...rules, ...showing], { size, pose, flip: flip ? height / 2 : null, flags, tint, clock, dim: night ? NIGHT_DIM : 1, glintAt: performance.now() / 1000 }));
+    modelBoxes(MOB_MODELS[model], layers[i], [...rules, ...showParts, ...showing], { size, pose, flip: flip ? height / 2 : null, flags, tint, clock, dim: night ? NIGHT_DIM : 1, glintAt: performance.now() / 1000 }));
   return Object.assign(parts.filter(p => !p.soft), { soft: parts.filter(p => p.soft) });
 }
 // Boxes moved down or up to stand on the ground: props hang from an armor stand's hand in their models.
@@ -423,8 +423,8 @@ function overShell(px, shell) {
 // Like the villager's scene, it draws at the screen's pixel density, but at 1× while dragging.
 // A mob with an animation (MOB_MOTIONS) plays it at MOTION_FPS while it's on screen, or holds its first moment if the
 // reader asks for less motion. One with an act (MOB_ACTS) stops for it every so often, its usual animation fading out
-// over ACT_FADE seconds and back afterwards; one with a list of acts does one of them at random each time, as often
-// as the first one says. If frames keep taking too long to draw (SLOW_FRAMES in a row), the rest draw at 1×.
+// over ACT_FADE seconds and back afterwards; one with a list of acts does one of them at random each time (by their
+// weight: 1 unless an act says), as often as the first one says. If frames keep taking too long to draw (SLOW_FRAMES in a row), the rest draw at 1×.
 // show's swim floats the mob in the middle of the water above the ground strip, whatever its size: the middle of where
 // it lands on the canvas as it moves, from this side, however it's turned. zoom draws a mob that many times the size
 // that would fit, to scale with a bigger one.
@@ -519,7 +519,8 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (acts && !nextAct) nextAct = now + (between() * 1000) / 2;
     if (acts && !actStart && now >= nextAct) {
       actStart = now;
-      act = acts[Math.floor(Math.random() * acts.length)];
+      let roll = Math.random() * acts.reduce((sum, a) => sum + (a.weight || 1), 0);
+      act = acts.find(a => (roll -= a.weight || 1) < 0) || acts[acts.length - 1];
     }
     const into = actStart ? (now - actStart) / 1000 : 0;
     if (actStart && into >= act.length) {
@@ -561,10 +562,10 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
   const fits = {};
   return {
     // Show a mob (or prop, see looksOf) in one of its looks; resolves once it's drawn, or false if it can't be.
-    async show(mob, lookIndex = 0, { flip = false, tint = null, clock = null, night = false, glowing = false, stand = null, swim = false, zoom = 1, mood = null, armor = null, sized = null, skins = null } = {}) {
+    async show(mob, lookIndex = 0, { flip = false, tint = null, clock = null, night = false, glowing = false, stand = null, swim = false, zoom = 1, mood = null, armor = null, sized = null, skins = null, shown = [] } = {}) {
       // A mood (MOB_MOODS) has looks and animations of its own, in place of the mob's usual ones; so can a size (MOB_SIZES).
       const mooded = (mood && MOB_MOODS[mob] && MOB_MOODS[mob][mood]) || null, ofSize = (sized && MOB_SIZES[mob] && MOB_SIZES[mob][sized] && MOB_SIZES[mob][sized].looks) || null;
-      const key = wanted = `${mob}/${lookIndex}/${flip}/${night}/${mood}/${sized}/${JSON.stringify(skins)}`, looks = ofSize || (mooded ? mooded.looks : looksOf(mob)), look = looks[lookIndex] || looks[0];
+      const key = wanted = `${mob}/${lookIndex}/${flip}/${night}/${mood}/${sized}/${JSON.stringify(skins)}/${JSON.stringify(shown)}`, looks = ofSize || (mooded ? mooded.looks : looksOf(mob)), look = looks[lookIndex] || looks[0];
       const ground = mob.startsWith("prop:") ? landed : b => b;
       if (!look) return false;
       const fitOf = ([lo, hi]) => {
@@ -593,7 +594,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         if (base.bounds) fits[mob] = fitOf(base.bounds);
       }
       const f = fits[mob];
-      const options = { flip, tint, clock, night, glowing, stand, armor, skins, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
+      const options = { flip, tint, clock, night, glowing, stand, armor, skins, showParts: shown, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
       const reach = f ? await reachOf(look, options) : { boxes: null, bounds: null }, next = reach.boxes;
       if (wanted !== key) return false;
       boxes = next;

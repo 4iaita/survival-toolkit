@@ -26,9 +26,10 @@ const COLLAR_COLORS = ["red", "orange", "yellow", "lime", "green", "cyan", "ligh
 const DEFAULT_COLLAR = "red";
 // What armor's wear is called, least first: the keys of MOB_ARMOR's cracks, after none at all.
 const ARMOR_WEAR = [["", "New"], ["low", "Slightly cracked"], ["medium", "Cracked"], ["high", "Badly cracked"]];
-// Variants a mob comes in, each from a biome of its own, the stage showing that biome: k, what it's called; where, the
-// biome the game spawns it in; skins, the pack's skins it swaps for its own (skin -> skin). The first is the one
-// without any, which the mob starts as.
+// Variants a mob comes in: k, what it's called (n); where, the biome the game spawns it in, which the stage shows (biome);
+// skins, the pack's skins it swaps for its own (skin -> skin); show, [bone pattern, shown] rules for parts it shows (a
+// saddle); say, how the stage's description puts it ("" for nothing). The first is the one without any, which the mob
+// starts as.
 // The wolf's are in art/mobs/ as wolf_<variant> (see import_models.py), with angry and baby skins of their own.
 const wolfSkins = v => Object.fromEntries(["", "_angry", "_baby", "_angry_baby"].map(s => [`wolf${s}`, `wolf_${v}${s}`]));
 const MOB_VARIANTS = {
@@ -43,6 +44,11 @@ const MOB_VARIANTS = {
     { k: "striped", n: "Striped", where: "Wooded Badlands", biome: "badlands" },
     { k: "woods", n: "Woods", where: "Forest", biome: "forest" },
   ].map((v, i) => (i ? { ...v, skins: wolfSkins(v.k) } : v)),
+  // A camel with a saddle shows it as the pack's render controller does for q.is_saddled (its reins only with a rider).
+  camel: [
+    { k: "plain", n: "No saddle", say: "" },
+    { k: "saddled", n: "Saddled", show: [["jymqovo", true], ["plosgsw", true]] },
+  ],
 };
 // Mobs that have babies in the game itself, bred or born: the stage can show one as a baby, in the look the pack
 // gives its babies (the one its Baby name shows). Other mobs only look like babies with that name.
