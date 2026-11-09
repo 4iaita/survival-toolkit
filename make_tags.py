@@ -62,6 +62,12 @@ WHAT = {
     ("bee", "pink moth"): "A pink moth.",
     ("camel", "baby mummy"): "A baby camel wrapped in bandages like a mummy.",
     ("camel", "halloween"): "Wrapped in bandages like a mummy.",
+    ("cat", "witch kitten"): "A kitten in a witch’s hat.",
+    ("cat", "halloween"): "A witch’s hat.",
+    ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
+    ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
+    ("panda", "freddy"): "A brown bear in a little top hat and bow tie.",
+    ("panda", "grizzly"): "A brown grizzly bear.",
 }
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
