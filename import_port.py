@@ -276,7 +276,12 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
 
     text = put(text, "MOB_LOOKS", mob, looks)
     text = put(text, "MOB_MOTIONS", mob, motion)
-    text = put(text, "MOB_ACTS", mob, act)
+    if act:
+        text = put(text, "MOB_ACTS", mob, act)
+    else:  # a mob with only its loops has no acts at all, not an empty list
+        a = text.index("const MOB_ACTS = {")
+        b = text.index("\n};", a)
+        text = text[:a] + "\n".join(l for l in text[a:b].split("\n") if not l.startswith(f'  "{mob}": ')) + text[b:]
     # Sets other mobs' importers wrote before are left be; this mob's are written afresh.
     for const in ("MOB_MOTIONS", "MOB_ACTS"):
         a = text.index(f"const {const} = {{")

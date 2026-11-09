@@ -514,6 +514,14 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (busy || now - lastStep < 1000 / MOTION_FPS - 2 || !canvas.clientWidth || calmMotion()) return;
     lastStep = now;
     busy = true;
+    // However a step ends, the next one can run: one that fails mustn't stop the stage for every mob after it.
+    try {
+      await step(now);
+    } finally {
+      busy = false;
+    }
+  };
+  const step = async now => {
     // Time for its act? The first comes sooner, so it isn't missed.
     const between = () => acts[0].every[0] + Math.random() * (acts[0].every[1] - acts[0].every[0]);
     if (acts && !nextAct) nextAct = now + (between() * 1000) / 2;
@@ -531,7 +539,6 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const moving = motionPose(motion, now / 1000, usual), showing = acting ? actPose(moving, act, into) : [];
     effects = acting ? actEffects(act, into) : [];
     const key = wanted, next = await rebuild(moving, showing);
-    busy = false;
     if (key !== wanted || !next) return;
     boxes = next;
     const started = performance.now();
@@ -606,7 +613,8 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       rest = reach.bounds && Object.assign(reach.bounds, { spots: reach.spots });
       swims = swim;
       rebuild = (moving, showing) => lookBoxes(look, { ...options, moving, showing });
-      const nextActs = nextAct_ ? [].concat(nextAct_) : null;
+      // No acts, or an empty list of them (a mob that only has its loops), is none.
+      const nextActs = nextAct_ && [].concat(nextAct_).length ? [].concat(nextAct_) : null;
       const sameActs = acts === nextActs || (acts && nextActs && acts.length === nextActs.length && acts.every((a, i) => a === nextActs[i]));
       if (!sameActs) {
         acts = nextActs;
