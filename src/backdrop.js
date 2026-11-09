@@ -14,7 +14,8 @@
  * So is the deep cave the glow squid swims in: dark rock streaked with glow lichen, lit only by that and sea pickles.
  * The wolves' wild biomes, for the Mobs tab, have no villages either: the snowy taiga and the grove under snowy peaks,
  * the old growth taigas' giant spruces and pines over mossy boulders, a sparse jungle, a savanna plateau's high steps
- * and the wooded badlands' banded terracotta mesas with oaks on top.
+ * and the wooded badlands' banded terracotta mesas with oaks on top. The panda's bamboo jungle has none either: thick
+ * bamboo under jungle trees.
  */
 // Spruce leaves keep one color everywhere; other tints come from BIOME_TINTS.
 const SPRUCE_TINT = "#619961";
@@ -115,6 +116,15 @@ const bamboo = height => prop(["B", "B", ...Array(height - 2).fill("S")], {
   S: { layers: [["bamboo_stem", null, [6, 9]]], cap: false },
   B: { layers: [["bamboo_stem", null, [6, 9]], ["bamboo_leaf"]], cap: false },
 });
+// A bamboo jungle's stalk: big leaves at the top, small ones on the two segments below; and a shoot coming up.
+const BAMBOO_STEM = ["bamboo_stem", null, [6, 9]];
+const bambooStalk = height => prop(["B", "B", "s", "s", ...Array(height - 4).fill("S")], {
+  S: { layers: [BAMBOO_STEM], cap: false },
+  s: { layers: [BAMBOO_STEM, ["bamboo_small_leaf"]], cap: false },
+  B: { layers: [BAMBOO_STEM, ["bamboo_leaf"]], cap: false },
+});
+// A clump of stalks side by side from left, one per height.
+const bambooClump = (left, heights) => heights.map((h, i) => [bambooStalk(h), left + i]);
 const largeFern = t => prop(["F", "f"], { F: plantTex("large_fern_top", t.grass), f: plantTex("large_fern_bottom", t.grass) });
 const swampOak = t => prop([
   ".LLLLL.",
@@ -453,6 +463,21 @@ const BACKDROPS = {
     },
     near: [[giantJungleTree(t), -20], [giantJungleTree(t), 3], [jungleTemple(t), -14], [jungleBush(t), -5], [largeFern(t), -1],
       [jungleBush(t), 2], [block("melon_side"), 6], [bamboo(7), 11], [bamboo(9), 12], [largeFern(t), 13], [bamboo(6), 14]],
+  }),
+  // The panda's bamboo jungle: bamboo stands thick on the hills behind, a few jungle trees rising out of it. Nearer,
+  // tall stalks crowd in from both sides under a giant jungle tree, with shoots, ferns and a melon at their feet, round
+  // a clearing for the mob.
+  bamboo_jungle: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 2, trees: [
+      ...Array.from({ length: 24 }, (_, i) => [jungleBush(t), i / 23 - 0.01]),
+      ...Array.from({ length: 72 }, (_, i) => [bambooStalk([10, 13, 8, 12, 9, 14, 11, 7, 12][i % 9]), i / 71]),
+      [jungleTree(t, 7), 0.16], [jungleTree(t, 9), 0.47], [jungleTree(t, 8), 0.8]] },
+    near: [[giantJungleTree(t), -27], ...bambooClump(-22, [12, 16, 11, 15, 13]), [jungleBush(t), -18], ...bambooClump(-16, [14, 12, 15]),
+      [largeFern(t), -13], [plant("bamboo_sapling"), -12], ...bambooClump(-11, [10, 13]), [plant("fern", t.grass), -9], ...bambooClump(-8, [8]),
+      [plant("bamboo_sapling"), -7], [plant("short_grass", t.grass), -5], [plant("bamboo_sapling"), 4], [plant("fern", t.grass), 5],
+      ...bambooClump(6, [9]), [plant("bamboo_sapling"), 7], ...bambooClump(8, [11, 13]), [block("melon_side"), 10], ...bambooClump(11, [14, 12, 15]),
+      [largeFern(t), 14], ...bambooClump(15, [13, 16, 12]), [jungleBush(t), 18], ...bambooClump(20, [15, 12, 16, 14, 13])],
+    seed: 35,
   }),
   swamp: t => ({
     hills: { top: grassyTop(t), fill: blockTex("mud"), base: 2, rise: 1, trees: [[swampOak(t), 0.2], [swampOak(t), 0.5], [swampOak(t), 0.82]] },

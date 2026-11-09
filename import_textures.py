@@ -159,6 +159,8 @@ FILES = {
     # The wolf's wild biomes on the Mobs tab: badlands, groves and old growth taigas.
     "red_sand": "blocks/red_sand", "powder_snow": "blocks/powder_snow", "tall_grass_top": "blocks/double_plant_grass_top",
     "tall_grass_bottom": "blocks/double_plant_grass_bottom",
+    # The panda's bamboo jungle: the small leaves partway up a stalk and the shoots coming up beside it.
+    "bamboo_small_leaf": "blocks/bamboo_small_leaf", "bamboo_sapling": "blocks/bamboo_sapling",
 }
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color

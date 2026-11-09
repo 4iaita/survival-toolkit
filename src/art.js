@@ -38,6 +38,8 @@ const BIOME_TINTS = {
   sparse_jungle: { foliage: "#2bbb0f", grass: "#64c73f" },
   savanna_plateau: { foliage: "#aea42a", grass: "#bfb755" },
   badlands: { foliage: "#9e814d", grass: "#90814d" },
+  // The panda's.
+  bamboo_jungle: { foliage: "#30bb0b", grass: "#59c93c" },
 };
 
 // Grass, leaves and water are gray in the pack; the game colors them by multiplying with the biome's tint.

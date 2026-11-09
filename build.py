@@ -31,7 +31,7 @@ def build_page():
     for part in ("brew.html", "trade.html", "mob.html", "prop.html"):
         body = body.replace(f"<!-- {part} -->\n", read(part))
     scripts = ["brew-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js",
-               "villager.js", "backdrop.js", "trade-data.js", "mob-models.js", "mobs.js", "mob-data.js", "tag-data.js", "prop-data.js",
+               "villager.js", "backdrop.js", "trade-data.js", "mob-models.js", "mobs.js", "mob-data.js", "tag-data.js", "tag-data-more.js", "prop-data.js", "prop-data-more.js",
                "ui.js", "brew-ui.js", "trade-ui.js", "mob-ui.js", "prop-ui.js"]
     out = (head + read("style.css") + read("brew.css") + read("trade.css") + read("mob.css") + read("prop.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +

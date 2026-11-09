@@ -27,7 +27,7 @@ pack = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else root.parent / "action
 textures = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else root.parent / "textures"
 
 # The subpack the texture folder comes from ("Full Experience").
-SUBPACK = "2_e"
+SUBPACK = "SP2"
 # Layers the tab leaves out: the leash knot holder has no cubes of its own.
 SKIP_LAYERS = ("controller.render.oreville_ans.bsytbia.vnjpdvb",)
 # The pack names mobs by their game ids; the tab uses these keys.
@@ -78,6 +78,13 @@ STAGE_MOTIONS = {
     "minecraft:camel": [("zxbvhct_dhyaxuw_bhlxath", 1)],
     # The armadillo stands breathing (its idles and rolling up are STAGE_ACTS).
     "minecraft:armadillo": [("uqfdaza_xcsnfwi", 1)],
+    # The polar bear stands breathing, as the pack's standing state has it (its blinking is a STAGE_ACT).
+    "minecraft:polar_bear": [("zxbvhct", 1)],
+    # The ocelot stands with its tail swaying and breathing, as the pack's standing state has it (its blinking and
+    # fidgets are STAGE_ACTS).
+    "minecraft:ocelot": [("jdgzfzq", 1), ("ttpzihs.dhyaxuw", 1)],
+    # The chicken stands breathing, as the pack's standing state has it (its blinking and fidgets are STAGE_ACTS).
+    "minecraft:chicken": [("zxbvhct", 1)],
     "minecraft:bee": [("yvwtrbk", 1, 0.5), ("zgpiqoz", 1)],
     "minecraft:bat": [("yvwtrbk", 1, 0.6)],
     "minecraft:wolf": [("hhjrlam", 1)],
@@ -174,12 +181,16 @@ STAGE_MOODS = {
 # for it where that changes its look (the smallest has one health, and skins of its own).
 _SIZES = {"big": {"zoom": 1}, "medium": {"zoom": 0.5}, "small": {"zoom": 0.25, "queries": {"max_health": 1.0}}}
 STAGE_SIZES = {"minecraft:slime": _SIZES, "minecraft:magma_cube": _SIZES}
+# Climates a mob comes in, which the game sets by its climate_variant property: the game's answers for each where that
+# changes its look (the pack's chickens: a warm one's skin, and a cold one's own model and skin, babies too).
+_CLIMATE = lambda c: {"property": lambda p: {"minecraft:climate_variant": c}.get(p, 0.0), "has_property": lambda *a: 1.0}
+STAGE_CLIMATES = {"minecraft:chicken": {"warm": _CLIMATE("warm"), "cold": _CLIMATE("cold")}}
 # Mobs with see-through shells round them (bones with the game's alpha blended material), drawn over what's inside.
 SHELLED = ("minecraft:slime",)
 # Armor a mob can wear in a mood. The pack keeps it as an item, whose bones are named for the wearer's so they move with
 # it; here they go on a copy of the wearer's own skeleton. cracks: its wear, the attachable's own textures in order.
-STAGE_ARMOR = {"minecraft:wolf": {"item": "minecraft:wolf_armor", "plain": "default", "dyed": "koqhiqb",
-                                  "cracks": {"low": "jheewhi", "medium": "mvhlffz", "high": "cogmzmc"}}}
+STAGE_ARMOR = {"minecraft:wolf": {"item": "minecraft:wolf_armor", "plain": "default", "dyed": "mauatk",
+                                  "cracks": {"low": "jfregp", "medium": "tcviuk", "high": "npozmm"}}}
 # The wolf's biome variants. The pack only draws the one it's given, so their skins are copied beside the pale wolf's
 # (the pack's own "wolf", "wolf_angry", "wolf_baby", "wolf_angry_baby") as wolf_<variant>, wolf_<variant>_angry,
 # wolf_<variant>_baby and wolf_<variant>_angry_baby, for the stage to swap in (WOLF_VARIANTS in src/mob-data.js).
@@ -260,7 +271,23 @@ _CAMEL_IDLES = [{"every": [4, 9], "keep": True, "ease": 0.24, "parts": [(key, 0,
 _CAMEL_SITS_FOR = 6
 _CAMEL_SIT = {"every": [4, 9], "parts": [("rolmmlp_tsailnj", 0, 1.6667 + _CAMEL_SITS_FOR, []), ("zxbvhct_dhyaxuw", 1.6667, 1.6667 + _CAMEL_SITS_FOR, [], 1, 0.5),
                                         ("hhjrlam_bghnmsg", 1.6667 + _CAMEL_SITS_FOR, None, [])]}
+# The polar bear blinks now and then (its open eyes shrink to nothing for a moment, over its breathing: keep, at half
+# speed so it's seen).
+_BEAR_BLINK = {"every": [3, 6], "keep": True, "parts": [("ybdngee.vrsrjmv_utidvpw", 0, None, [], 0.5)]}
+# The ocelot blinks now and then (its eyelids, the blink bone, showing for a moment, over its standing motion: keep), or
+# does one of the two idles the pack's standing state picks from (a look about, a longer fidget), blending in and out
+# over that state's 0.3 seconds.
+_OCELOT_BLINK = {"every": [3, 6], "keep": True, "weight": 3, "parts": [("ybdngee.2", 0, None, [["blink", True]], 0.5)]}
+_OCELOT_IDLES = [{"every": [3, 6], "keep": True, "ease": 0.3, "parts": [(key, 0, None, [])]} for key in ("zxbvhct_0", "zxbvhct_1")]
+# The chicken's open eyes shrink to nothing for a moment now and then (over its breathing: keep, at half speed so it's
+# seen), or it does one of the three idles the pack's standing state picks from (a peck, a look about), blending in and
+# out over that state's 0.3 seconds.
+_CHICKEN_BLINK = {"every": [3, 6], "keep": True, "weight": 3, "parts": [("ybdngee.vrsrjmv_utidvpw", 0, None, [], 0.5)]}
+_CHICKEN_IDLES = [{"every": [3, 6], "keep": True, "ease": 0.3, "parts": [(key, 0, None, [])]} for key in ("zxbvhct_0", "zxbvhct_1", "zxbvhct_2")]
 STAGE_ACTS = {
+    "minecraft:chicken": [_CHICKEN_BLINK, *_CHICKEN_IDLES],
+    "minecraft:ocelot": [_OCELOT_BLINK, *_OCELOT_IDLES],
+    "minecraft:polar_bear": _BEAR_BLINK,
     "minecraft:camel": [*_CAMEL_IDLES, _CAMEL_SIT],
     "minecraft:bat": [_BAT_BLINK, _BAT_REST],
     "minecraft:bee": [_BEE_NECTAR, _BEE_BLINK, _BEE_STING],
@@ -593,10 +620,20 @@ def channel_at(channel, t, env):
     keys = sorted(channel, key=float)
     if t <= float(keys[0]):
         return values(side(keys[0], "pre"))
-    for a, b in zip(keys, keys[1:]):
+    smooth = lambda key: isinstance(channel[key], dict) and channel[key].get("lerp_mode") == "catmullrom"
+    for i, (a, b) in enumerate(zip(keys, keys[1:])):
         if t <= float(b):
             mix = (t - float(a)) / (float(b) - float(a))
-            return [p + (q - p) * mix for p, q in zip(values(side(a, "post")), values(side(b, "pre")))]
+            p1, p2 = values(side(a, "post")), values(side(b, "pre"))
+            if not (smooth(a) or smooth(b)):
+                return [p + (q - p) * mix for p, q in zip(p1, p2)]
+            # Catmull-Rom through the keyframes either side, as the game smooths a catmullrom keyframe's segments (an end
+            # keyframe stands in for the missing neighbour).
+            p0 = values(side(keys[i - 1], "post")) if i else p1
+            p3 = values(side(keys[i + 2], "pre")) if i + 2 < len(keys) else p2
+            m2, m3 = mix * mix, mix * mix * mix
+            return [0.5 * (2 * q1 + (q2 - q0) * mix + (2 * q0 - 5 * q1 + 4 * q2 - q3) * m2 + (3 * q1 - q0 - 3 * q2 + q3) * m3)
+                    for q0, q1, q2, q3 in zip(p0, p1, p2, p3)]
     return values(side(keys[-1], "post"))
 
 
@@ -680,7 +717,9 @@ def baked_act(d, anims, act, answers=None):
     if isinstance(act, list):
         return [baked_act(d, anims, a, answers) for a in act]
     parts = []
-    level = ("head",) if act.get("level_head") else ()
+    # level_head: True for a bone named head, or the head bone's own name (the panda's is scrambled).
+    lh = act.get("level_head")
+    level = ((lh if isinstance(lh, str) else "head").lower(),) if lh else ()
     for key, start, end, show, *more in act["parts"]:
         anim, rate, weight = anims[d["animations"][key]], (more + [1])[0], (more + [1, 1])[1]
         span = (end - start) if end is not None else anim["animation_length"] / rate
@@ -885,6 +924,23 @@ def main():
                     entry["looks"].append({"names": names_, "scale": base["scale"], "layers": layers_out(mob, label, layers), **({"pose": compact(pose)} if pose else {})})
             size_data[mob][size] = entry
 
+    # Climates: the looks that come out different in that climate, by their place in the mob's looks.
+    climate_data = {}
+    for ident, climates in STAGE_CLIMATES.items():
+        d, mob = ents[ident], MOB_KEYS.get(ident.split(":")[1], ident.split(":")[1])
+        climate_data[mob] = {}
+        for climate, answers in climates.items():
+            changed = {}
+            for i, base in enumerate(looks[mob]):
+                names_ = base["names"]
+                name = names_[0] if names_ else ""
+                layers, _, pose = look(d, rcs, mats, anims, name, mood=answers)
+                if layers == look(d, rcs, mats, anims, name)[0]:
+                    continue
+                label = "_".join(filter(None, [climate, re.sub(r"\W+", "_", name.lower()).strip("_")]))
+                changed[i] = {"names": names_, "scale": base["scale"], "layers": layers_out(mob, label, layers), **({"pose": compact(pose)} if pose else {})}
+            climate_data[mob][climate] = {"looks": changed}
+
     # Armor: its cubes on a copy of the wearer's skeleton, and its textures under names of their own.
     armor_data = {}
     for ident, spec in STAGE_ARMOR.items():
@@ -970,6 +1026,7 @@ def main():
           " * bones as above, show: [[bone pattern, shown], ...] } }.",
           " * MOB_MOODS: mob -> its moods other than calm: mood -> { looks (MOB_LOOKS' in the same order), motions, act, collar (its color can be picked), armor (it can wear MOB_ARMOR's) }.",
           " * MOB_SIZES: mob -> its sizes, biggest first: size -> { zoom, beside the biggest; looks, where they differ }.",
+          " * MOB_CLIMATES: mob -> its climates (warm, cold): climate -> { looks }, the looks that differ there, by their place in MOB_LOOKS.",
           " * MOB_ARMOR: mob -> { model, plain and dyed (its textures), cracks: wear -> a texture to lay over it }.",
           " */",
           "const MOB_MODELS = {"]
@@ -986,6 +1043,8 @@ def main():
     js += [f"  {dump(k)}: {dump(v)}," for k, v in sorted(mood_data.items())]
     js += ["};", "const MOB_SIZES = {"]
     js += [f"  {dump(k)}: {dump(v)}," for k, v in sorted(size_data.items())]
+    js += ["};", "const MOB_CLIMATES = {"]
+    js += [f"  {dump(k)}: {dump(v)}," for k, v in sorted(climate_data.items())]
     js += ["};", "const MOB_ARMOR = {"]
     js += [f"  {dump(k)}: {dump(v)}," for k, v in sorted(armor_data.items())]
     js += ["};", ""]
