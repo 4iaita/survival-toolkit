@@ -74,7 +74,8 @@ const MOB_VARIANTS = {
       new_mooshroom_halloween: "new_mooshroom_brown_halloween", new_mooshroom_zombified_calf: "new_mooshroom_brown_zombified_calf" } },
   ],
   // The cat's eleven kinds (the pack's q.variant 0 to 10) share its model and differ in skin, the kitten's and the
-  // Halloween hat's too. All but the black one turn up in villages; the black one lives with the witch in a swamp hut.
+  // Halloween hat's too. All but the black one turn up in villages; the black one lives with the witch in a swamp hut,
+  // so it comes last.
   cat: [
     { k: "white", n: "White", where: "Villages" },
     { k: "tuxedo", n: "Tuxedo", where: "Villages" },
@@ -85,8 +86,8 @@ const MOB_VARIANTS = {
     { k: "persian", n: "Persian", where: "Villages" },
     { k: "ragdoll", n: "Ragdoll", where: "Villages" },
     { k: "tabby", n: "Tabby", where: "Villages" },
-    { k: "black", n: "Black", where: "Swamp huts", biome: "swamp" },
     { k: "jellie", n: "Jellie", where: "Villages" },
+    { k: "black", n: "Black", where: "Swamp huts", biome: "swamp" },
   ].map((v, i) => (i ? { ...v, skins: catSkins(v.k) } : v)),
   // A camel with a saddle shows it as the pack's render controller does for q.is_saddled (its reins only with a rider).
   camel: [

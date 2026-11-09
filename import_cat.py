@@ -21,9 +21,11 @@ step, seq = im._step, im._wolf_seq
 BLINK = {"every": [3, 7], "keep": True, "weight": 4, "parts": [("blinking.2", 0, None, EYES)]}
 # Standing, it does one of four idles (the pack picks one every few seconds), blending in and out over 0.24 seconds.
 IDLES = [{"every": [3, 7], "keep": True, "ease": 0.24, "parts": [(key, 0, None, EYES)]} for key in ("ciducd", "tculwn", "qofebb", "hyopyb")]
-# Half the time it sits plainly, doing one of its sitting idles, and stands up again.
+# Half the time it sits plainly, doing one of its sitting idles, and stands up again. Sitting up tips its body back, and
+# the plain sit's head goes with it, so it would gaze at the sky: its head is kept level instead (level_head), as the
+# neat sit's is.
 SIT_FOR = 7
-PLAIN_SIT = [{"every": [3, 7], "keep": True, "parts": [("sit", 0, SIT_FOR, EYES), (idle, 2, None, EYES), ("stand_up", SIT_FOR, None, EYES)]}
+PLAIN_SIT = [{"every": [3, 7], "keep": True, "level_head": True, "parts": [("sit", 0, SIT_FOR, EYES), (idle, 2, None, EYES), ("stand_up", SIT_FOR, None, EYES)]}
              for idle in ("lsswib", "vmmadd")]
 # Otherwise it sits down neatly, its breathing steadied (kgnhkn takes back some of bob's sway), sits a while, does one of
 # its settled idles (a stretch, a lick, a look round), sits again and gets up; or, sitting, curls up and falls asleep with
