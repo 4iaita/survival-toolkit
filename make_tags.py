@@ -51,11 +51,25 @@ SEASONAL = {
     "festive": "A Christmas outfit.",
     "easter": "An Easter look.",
 }
+# Looks better said in words of their own: (mob, the lower-case name) -> what it does.
+WHAT = {
+    ("armadillo", "pumpkin pup"): "A baby armadillo with a carved pumpkin for a shell.",
+    ("armadillo", "halloween"): "A carved pumpkin for a shell.",
+    ("bee", "firefly"): "A firefly.",
+    ("bee", "black moth"): "A black moth.",
+    ("bee", "brown moth"): "A brown moth.",
+    ("bee", "green moth"): "A green moth.",
+    ("bee", "pink moth"): "A pink moth.",
+    ("camel", "baby mummy"): "A baby camel wrapped in bandages like a mummy.",
+    ("camel", "halloween"): "Wrapped in bandages like a mummy.",
+}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
 def describe(mob, names):
     main = names[0].lower()
+    if (mob, main) in WHAT:
+        return WHAT[mob, main]
     if mob == "sulfur_cube" and main != "baby":
         return f"Holds {article(main)} {title(main)} inside its body."
     if main.startswith("baby "):

@@ -36,6 +36,9 @@ const ARMOR_WEAR = [["", "New"], ["low", "Slightly cracked"], ["medium", "Cracke
 // The wolf's are in art/mobs/ as wolf_<variant> (see import_models.py), with angry and baby skins of their own.
 const wolfSkins = v => Object.fromEntries(["", "_angry", "_baby", "_angry_baby"].map(s => [`wolf${s}`, `wolf_${v}${s}`]));
 const pandaSkins = v => ({ new_panda: `new_panda_${v}`, new_panda_baby: `new_panda_${v}_baby` });
+// An angry bee's skins (import_bee.py prints them): the firefly and the moths have one angry skin, nectar or not.
+const beeSkins = v => ({ new_bee: `new_bee_${v}`, new_bee_qween: `new_bee_${v}_qween`,
+  ...Object.fromEntries(["firefly", "black_moth", "brown_moth", "green_moth", "pink_moth"].map(s => [`new_bee_${s}`, `new_bee_angry_${s}`])) });
 const catSkins = v => Object.fromEntries(["", "_baby", "_halloween_2", "_witch_kitten_2"].map(s => [`new_cat${s}`, `new_cat_${v}${s}`]));
 const MOB_VARIANTS = {
   // The chickens' climates: the warm one has its own skin, the cold one its own model and skin too (MOB_CLIMATES).
@@ -89,10 +92,17 @@ const MOB_VARIANTS = {
     { k: "jellie", n: "Jellie", where: "Villages" },
     { k: "black", n: "Black", where: "Swamp huts", biome: "swamp" },
   ].map((v, i) => (i ? { ...v, skins: catSkins(v.k) } : v)),
+  // The bee's moods (the pack's skins for q.is_angry, with and without nectar): an angry bee's eyes turn red. A calm bee
+  // with nectar looks like any other (its pollen specks are a layer the stage leaves out).
+  bee: [
+    { k: "calm", n: "Calm", say: "" },
+    { k: "angry", n: "Angry", where: "After it’s hit, or its nest is", skins: beeSkins("angry") },
+    { k: "angry_nectar", n: "Angry, with nectar", where: "Carrying pollen back to its nest", skins: beeSkins("angry_nectar") },
+  ],
   // A camel with a saddle shows it as the pack's render controller does for q.is_saddled (its reins only with a rider).
   camel: [
     { k: "plain", n: "No saddle", say: "" },
-    { k: "saddled", n: "Saddled", show: [["jymqovo", true], ["plosgsw", true]] },
+    { k: "saddled", n: "Saddled", show: [["k255d6", true], ["3ja5d6", true]] },
   ],
 };
 // Mobs that have babies in the game itself, bred or born: the stage can show one as a baby, in the look the pack

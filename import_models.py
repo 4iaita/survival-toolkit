@@ -551,13 +551,17 @@ def look(d, rcs, mats, anims, name, held=False, mood=None):
         rc = rcs.get(rc_name)
         if rc_name in SKIP_LAYERS or rc is None or (cond is not None and not truthy(evaluate(cond, env))):
             continue
-        arrays = {}
-        for group in rc.get("arrays", {}).values():
+        # A controller's arrays come in groups (geometries, textures, materials), and two groups can use the same name
+        # (the bee's moths): each lookup takes its own group's first.
+        groups = {}
+        for kind_of, group in rc.get("arrays", {}).items():
             for k, vals in group.items():
-                arrays[k.split(".", 1)[1].lower()] = [(v.split(".", 1)[0].lower(), v.split(".", 1)[1].lower()) for v in vals]
+                groups.setdefault(kind_of, {})[k.split(".", 1)[1].lower()] = [(v.split(".", 1)[0].lower(), v.split(".", 1)[1].lower()) for v in vals]
+        arrays = {k: v for g in groups.values() for k, v in g.items()}
         renv = Env(env.q, arrays, v=env.v)
-        geo = pick("geometry", evaluate(rc.get("geometry", "Geometry.default"), renv))
-        texs = [pick("textures", evaluate(t, renv)) for t in rc.get("textures", ["Texture.default"])]
+        of = lambda kind_of: Env(env.q, {**arrays, **groups.get(kind_of, {})}, v=env.v)
+        geo = pick("geometry", evaluate(rc.get("geometry", "Geometry.default"), of("geometries")))
+        texs = [pick("textures", evaluate(t, of("textures"))) for t in rc.get("textures", ["Texture.default"])]
         shown = [[pat, truthy(evaluate(expr, renv))] for pv in rc.get("part_visibility", []) for pat, expr in pv.items()]
         flags = {}
         mat = evaluate(next((expr for m in rc.get("materials", []) for pat, expr in m.items() if pat == "*"), "Material.default"), renv)

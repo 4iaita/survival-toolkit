@@ -19,14 +19,15 @@ def renamed(bones):
     return {ia.ren(b): v for b, v in bones.items()}
 
 
-def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None):
+def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=()):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
     pack forgot); named: the first names of named looks to refresh too (see below); remodel: those of them that take the
     pack's current models too (the bat's vampire), as the plain looks do, with their size and pose; own_motions: first
-    name -> the loops a named look plays in place of the mob's (and no acts), as motions. A motion can say how fast it
-    plays (a third item, its speed)."""
+    name -> the loops a named look plays in place of the mob's (and no acts), as motions; new_looks: the names of looks
+    the page doesn't have yet (the bee's moths), each a list whose first is the one the pack is asked about, added after
+    the others and built as remodel's are. A motion can say how fast it plays (a third item, its speed)."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
@@ -63,6 +64,9 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     adult = layers_out("", base_layers)
     baby = layers_out("baby", baby_layers)
     looks = json.loads(json.dumps(current))
+    have = {(l["names"] or [""])[0] for l in looks}
+    looks += [{"names": list(names), "scale": 1.0, "layers": []} for names in new_looks if names[0] not in have]
+    remodel = [*remodel, *(names[0] for names in new_looks)]
     # The baby look: the one named Baby (usually the second).
     bi = next((i for i, l in enumerate(looks) if "Baby" in l["names"]), 1)
     looks[0]["layers"] = adult

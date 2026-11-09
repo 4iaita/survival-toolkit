@@ -6,8 +6,8 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Sprite", "Twinkle"], kind: BABY },
   ],
   armadillo: [
-    { names: ["Pumpkin Pup", "Baby Pumpkin"], more: ["pumpkin Pup", "Pumpkin pup", "baby Pumpkin", "Baby pumpkin"], what: "The Pumpkin Pup look." },
-    { names: ["Halloween", "Pumpkin"], what: "A Halloween costume." },
+    { names: ["Pumpkin Pup", "Baby Pumpkin"], more: ["pumpkin Pup", "Pumpkin pup", "baby Pumpkin", "Baby pumpkin"], what: "A baby armadillo with a carved pumpkin for a shell." },
+    { names: ["Halloween", "Pumpkin"], what: "A carved pumpkin for a shell." },
   ],
   axolotl: [
     { names: ["Baby Gremlin"], more: ["baby Gremlin", "Baby gremlin"], what: "A baby Gremlin." },
@@ -18,7 +18,12 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Pup", "Screechy"], kind: BABY },
   ],
   bee: [
-    { names: ["Firefly"], what: "The Firefly look." },
+    { names: ["Firefly"], what: "A firefly." },
+    { names: ["Black Moth"], more: ["Black moth", "black Moth"], what: "A black moth." },
+    { names: ["Brown Moth"], more: ["Brown moth", "brown Moth"], what: "A brown moth." },
+    { names: ["Green Moth"], more: ["Green moth", "green Moth"], what: "A green moth." },
+    { names: ["Pink Moth"], more: ["Pink moth", "pink Moth"], what: "A pink moth." },
+    { names: ["Moth"], what: "A moth, black, brown, green or pink at random. The stage shows a black one." },
   ],
   blaze: [
     { names: ["Baby", "Spark", "Sizzle"], kind: BABY },
@@ -31,8 +36,8 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Breezeling", "Gusty"], kind: BABY },
   ],
   camel: [
-    { names: ["Baby Mummy", "Mummy Calf"], more: ["baby Mummy", "Baby mummy", "mummy Calf", "Mummy calf"], what: "A baby Mummy." },
-    { names: ["Halloween", "Mummy"], what: "A Halloween costume." },
+    { names: ["Baby Mummy", "Mummy Calf"], more: ["baby Mummy", "Baby mummy", "mummy Calf", "Mummy calf"], what: "A baby camel wrapped in bandages like a mummy." },
+    { names: ["Halloween", "Mummy"], what: "Wrapped in bandages like a mummy." },
   ],
   camel_husk: [
     { names: ["Executioner Calf", "Baby Executioner"], more: ["executioner Calf", "Executioner calf", "baby Executioner", "Baby executioner"], what: "The Executioner Calf look." },
