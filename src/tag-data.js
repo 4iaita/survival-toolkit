@@ -71,7 +71,7 @@ const PACK_TAGS = {
   ],
   dolphin: [
     { names: ["Baby", "Calf", "Flippy"], kind: BABY },
-    { names: ["Bubblegum"], what: "A pink dolphin.", rare: "1 in 100 dolphins" },
+    { names: ["Bubblegum"], what: "A pink dolphin: rosy pink all over, its flippers paler.", rare: "1 in 100 dolphins" },
   ],
   donkey: [{ names: ["Baby", "Foal"], kind: BABY }],
   drowned: [{ names: ["Baby", "Splashy"], kind: BABY }, { names: ["Snowy", "Frosty"], kind: SNOWY }],
