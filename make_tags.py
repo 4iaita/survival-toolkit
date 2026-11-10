@@ -106,6 +106,9 @@ WHAT = {
     ("pig", "dappled"): "Orange leaves on its head.",
     ("pig", "halloween"): "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs, and one eye glowing white in the dark.",
     ("pig", "skeleton"): "A pig’s skeleton: a bony skull and ribcage on bare bone legs.",
+    ("rabbit", "easter"): "A chocolate bunny with a red ribbon tied round its neck, its back half still wrapped in gold foil.",
+    ("rabbit", "punk"): "A punk: a white rabbit in a black jacket bristling with silver studs, with red-tipped ears, a gold safety pin through one of them, black round its eyes and a red tail.",
+    ("rabbit", "cherry"): "A pink cherry blossom on its head, by one ear, over its own coat.",
     ("sheep", "ghost lamb"): "A lamb dressed as a ghost: a pale gray sheet over its head and body, with black eye holes and white eyes that glow in the dark.",
     ("sheep", "cherry"): "Pink cherry blossoms dotted over its wool.",
     ("sheep", "dappled"): "Orange leaves on its head and back.",
@@ -131,6 +134,7 @@ NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only co
 # (mob, the lower-case name) -> which of them, for the row's rare.
 RARE = {
     ("pig", "cherry"): "pigs in cherry groves", ("pig", "dappled"): "pigs in dappled forests",
+    ("rabbit", "cherry"): "rabbits in cherry groves",
     ("sheep", "cherry"): "sheep in cherry groves", ("sheep", "dappled"): "sheep in dappled forests",
     ("sniffer", "snowy"): "sniffers in snowy biomes", ("sniffer", "cherry"): "sniffers in cherry groves",
     ("sniffer", "dappled"): "sniffers in dappled forests",
@@ -140,7 +144,7 @@ RARE = {
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
 BIOME = {
-    **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
+    **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "rabbit", "sheep", "sniffer", "spider")},
     **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
     ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves", ("sniffer", "snowy"): "snowy",
 }

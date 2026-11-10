@@ -133,6 +133,17 @@ const MOB_VARIANTS = {
     { k: "red", n: "Red", where: "Taiga", biome: "taiga" },
     { k: "snow", n: "Snow", where: "Snowy Taiga and Grove", biome: "snowy_taiga", skins: { new_fox: "new_fox_snow", new_fox_baby: "new_fox_snow_baby" } },
   ],
+  // The rabbit's six coats (the pack's q.variant 0 to 5) share its model and differ in skin, the baby's and the Cherry
+  // look's too: the game gives rabbits in deserts the gold coat, in snowy biomes the white or black-and-white one, and
+  // elsewhere the brown, black or salt-and-pepper one.
+  rabbit: [
+    { k: "brown", n: "Brown", where: "Most biomes" },
+    { k: "white", n: "White", where: "Snowy biomes", biome: "snowy" },
+    { k: "black", n: "Black", where: "Most biomes" },
+    { k: "black_and_white", n: "Black and White", where: "Snowy biomes", biome: "snowy" },
+    { k: "gold", n: "Gold", where: "Deserts", biome: "desert" },
+    { k: "salt_and_pepper", n: "Salt and Pepper", where: "Most biomes" },
+  ].map((v, i) => (i ? { ...v, skins: { new_rabbit: `new_rabbit_${v.k}`, new_rabbit_baby: `new_rabbit_${v.k}_baby` } } : v)),
   // The goat's horns: the pack gives each goat one of eight shapes at random (the first four 1 in 5 goats each, the
   // others 1 in 20), long ones to start with. A goat that rams a log, stone or ore drops a horn, one each time, and grows
   // none back (the Halloween goat's horns go the same way).

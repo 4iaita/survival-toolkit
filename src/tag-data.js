@@ -136,7 +136,7 @@ const PACK_TAGS = {
   polar_bear: [{ names: ["Baby", "Cub", "Knut"], kind: BABY }],
   rabbit: [
     { names: ["Baby", "Bunny", "Thumper"], kind: BABY },
-    { names: ["Killer Bunny"], what: "The Killer Bunny’s white fur, with red eyes that glow in the dark. Only the look: it stays as harmless as any rabbit." },
+    { names: ["Killer Bunny"], what: "The Killer Bunny’s white fur, with red eyes that glow in the dark. Only the look: it stays as harmless as any rabbit.", night: true },
     { names: ["Toast"], what: "Draws the game’s Toast coat in the pack’s style, and takes “toast” in lower case too." },
   ],
   ravager: [{ names: ["Krampus"], what: "A horned, chained beast for Krampus to ride." }],

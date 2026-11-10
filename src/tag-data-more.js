@@ -204,9 +204,9 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Helsing"], what: "A Halloween costume." },
   ],
   rabbit: [
-    { names: ["Easter", "Chocolate"], what: "An Easter look." },
-    { names: ["Punk"], what: "The Punk look." },
-    { names: ["Cherry"], what: "The cherry grove look." },
+    { names: ["Easter", "Chocolate"], what: "A chocolate bunny with a red ribbon tied round its neck, its back half still wrapped in gold foil." },
+    { names: ["Punk"], what: "A punk: a white rabbit in a black jacket bristling with silver studs, with red-tipped ears, a gold safety pin through one of them, black round its eyes and a red tail." },
+    { names: ["Cherry"], what: "A pink cherry blossom on its head, by one ear, over its own coat.", biome: "cherry_grove", rare: "rabbits in cherry groves" },
   ],
   ravager: [
     { names: ["Baby", "Ravaglet", "Rumble"], kind: BABY },
