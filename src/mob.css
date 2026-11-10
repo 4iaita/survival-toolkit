@@ -39,6 +39,7 @@
 /* The wolves' wild biomes: snowy forests in a white haze, the old growth taigas' cool green-gray, the badlands' warm dust. */
 .stage[data-biome="snowy_taiga"] { --sky: #9db6e4; --haze: #eef3fb; }
 .stage[data-biome="grove"] { --sky: #a8bfe8; --haze: #f2f6fc; }
+.stage[data-biome="peaks"] { --sky: #8db3ec; --haze: #eef3fb; }
 .stage[data-biome="pine_taiga"] { --sky: #6a8ec2; --haze: #bfd0d8; }
 .stage[data-biome="spruce_taiga"] { --sky: #6c90c6; --haze: #c6d6df; }
 .stage[data-biome="sparse_jungle"] { --sky: #5c9ce2; --haze: #c9e8c4; }

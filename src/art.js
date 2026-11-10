@@ -38,6 +38,8 @@ const BIOME_TINTS = {
   sparse_jungle: { foliage: "#2bbb0f", grass: "#64c73f" },
   savanna_plateau: { foliage: "#aea42a", grass: "#bfb755" },
   badlands: { foliage: "#9e814d", grass: "#90814d" },
+  // The goat's jagged peaks.
+  peaks: { foliage: "#60a17b", grass: "#80b497" },
   // The panda's and the mooshroom's.
   bamboo_jungle: { foliage: "#30bb0b", grass: "#59c93c" },
   mushroom_fields: { foliage: "#2bbb0f", grass: "#55c93f" },

@@ -17,6 +17,7 @@
  * the old growth taigas' giant spruces and pines over mossy boulders, a sparse jungle, a savanna plateau's high steps
  * and the wooded badlands' banded terracotta mesas with oaks on top. The panda's bamboo jungle has none either: thick
  * bamboo under jungle trees. Nor do the mooshroom's mushroom fields: huge mushrooms on mycelium.
+ * So do the goat's jagged peaks: bare stone mountains, snow above the snow line, crags, ice and powder snow.
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
  * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
@@ -352,6 +353,8 @@ const TERRACOTTA_BANDS = ["terracotta", "orange_terracotta", "terracotta", "yell
   "white_terracotta", "orange_terracotta", "light_gray_terracotta", "red_terracotta", "terracotta", "orange_terracotta"].map(n => blockTex(n));
 const mesa = rows => prop(rows, { T: blockTex("terracotta"), O: blockTex("orange_terracotta"), Y: blockTex("yellow_terracotta"), R: blockTex("red_sand") });
 const snowDrift = rows => prop(rows, { S: blockTex("snow"), P: blockTex("powder_snow"), R: blockTex("stone") });
+// A crag on a mountainside: stone, andesite, calcite and gravel, an emerald showing in one, packed ice in another.
+const crag = rows => prop(rows, { S: blockTex("stone"), A: blockTex("andesite"), C: blockTex("calcite"), G: blockTex("gravel"), E: blockTex("emerald_ore"), I: blockTex("packed_ice") });
 const BACKDROPS = {
   flooded_cave: () => ({
     mist: { far: 0.7, near: 0.06 },
@@ -443,6 +446,17 @@ const BACKDROPS = {
     near: [[spruceTree(), -24], [snowDrift(["..S", "SPP"]), -19], [spruceTree(), -16], [spruceTree(), -10], [snowDrift(["S.", "PS"]), -6],
       [snowDrift([".S", "SP"]), 5], [spruceTree(), 8], [snowDrift(["..SR", "SPPS"]), 13], [spruceTree(), 18]],
     snowy: true, seed: 23,
+  }),
+  // The goat's jagged peaks: bare stone mountains (streaked with andesite and calcite) rising to sharp points behind,
+  // snow above the snow line, and nearer
+  // by crags of stone, andesite and calcite (an emerald in one), packed ice and drifts of powder snow, with no trees.
+  peaks: () => ({
+    mist: { far: 0.22, near: 0.1 },
+    hills: { top: blockTex("stone"), fill: blockTex("stone"), bands: ["stone", "stone", "andesite", "stone", "stone", "stone", "calcite", "stone", "andesite"].map(b => blockTex(b)), snow: blockTex("snow"), snowline: 17, base: 2, rise: 2,
+      peaks: [[0.02, 16, 1.6], [0.2, 24, 1.3], [0.42, 14, 1.8], [0.62, 21, 1.4], [0.83, 26, 1.2], [1.02, 15, 1.7]] },
+    near: [[crag(["...S..", "..SAS.", ".SSCSA", "SASSES"]), -15], [snowDrift(["..S", "SPP"]), -10], [crag(["I", "I"]), -7],
+      [snowDrift(["S.", "PS"]), -5], [crag(["C.", "SA"]), 4], [snowDrift([".S", "SP"]), 6], [crag(["..I", ".II"]), 8], [crag(["..SA.", ".ASSS", "SSCAS"]), 11]],
+    snowy: true, seed: 41,
   }),
   pine_taiga: t => ({
     hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 3, trees: [0.02, 0.1, 0.18, 0.27, 0.36, 0.45, 0.55, 0.64, 0.73, 0.82, 0.91].map(at => [smallSpruce(), at]) },
@@ -648,28 +662,36 @@ function drawProp(ctx, { rows, legend }, left, bottom, size, snowy) {
 // Hills along the horizon: a column of blocks every size pixels, rising and falling smoothly (in steps
 // for plateaus), with trees and landmarks standing on top.
 // How tall the hills are at each column, and where their landmarks stand: [prop, left edge, ground under it].
-function hillHeights(hills, seed) {
-  const random = rng(seed), phase = [random() * 6, random() * 6];
+// Mountains (peaks: [where across, 0 to 1; how many blocks tall; how many blocks they fall a column]) rise to points
+// over the rolling hills, their slopes a block more or less here and there so they look jagged. cols: how many columns
+// wide the hills are.
+function hillHeights(hills, seed, cols) {
+  const random = rng(seed), phase = [random() * 6, random() * 6], rough = Array.from({ length: 256 }, () => Math.floor(random() * 3) - 1);
   const wave = c => (0.6 * Math.sin(c * 0.29 + phase[0]) + 0.4 * Math.sin(c * 0.71 + phase[1]) + 1) / 2;
   return c => {
-    const h = hills.base + hills.rise * wave(c);
+    let h = hills.base + hills.rise * wave(c);
+    for (const [at, tall, fall] of hills.peaks || []) {
+      const from = Math.abs(c - at * cols);
+      h = Math.max(h, tall - from * fall + (from > 0.5 ? rough[c & 255] : 0));
+    }
     return hills.steps ? Math.round(h / hills.steps) * hills.steps : Math.round(h);
   };
 }
 function hillSpots(hills, width, horizon, size, seed) {
-  const heightAt = hillHeights(hills, seed);
+  const heightAt = hillHeights(hills, seed, width / size);
   return [...(hills.trees || []), ...(hills.landmarks || [])].map(([p, at]) => {
     const c = Math.round((at * width) / size), w = p.rows[0].length;
     return [p, c * size, horizon - Math.min(...Array.from({ length: w }, (_, i) => heightAt(c + i))) * size];
   });
 }
 function drawHills(ctx, hills, width, horizon, size, snowy, seed) {
-  const heightAt = hillHeights(hills, seed), cols = Math.ceil(width / size) + 1;
+  const heightAt = hillHeights(hills, seed, width / size), cols = Math.ceil(width / size) + 1;
   for (let c = 0; c < cols; c++) {
     const h = heightAt(c);
-    // Bands (a mesa's) run level across the hills, counted down from the highest top.
+    // Bands (a mesa's) run level across the hills, counted down from the highest top. Above the snow line (a mountain's)
+    // they're all snow.
     const top = hills.base + hills.rise;
-    for (let k = 0; k < h; k++) drawBlock(ctx, k === h - 1 ? hills.top : hills.bands ? hills.bands[(top - k) % hills.bands.length] : hills.fill, c * size, horizon - (k + 1) * size, size);
+    for (let k = 0; k < h; k++) drawBlock(ctx, hills.snowline && k >= hills.snowline + (c % 3 === 0 ? 1 : 0) ? hills.snow : k === h - 1 ? hills.top : hills.bands ? hills.bands[(((top - k) % hills.bands.length) + hills.bands.length) % hills.bands.length] : hills.fill, c * size, horizon - (k + 1) * size, size);
     if (snowy && hills.top.cap !== false) drawSnowCap(ctx, c * size, horizon - h * size, size);
   }
   for (const [p, left, ground] of hillSpots(hills, width, horizon, size, seed)) drawProp(ctx, p, left, ground, size, snowy);

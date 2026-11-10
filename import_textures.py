@@ -173,7 +173,7 @@ FILES = {
     "eyeblossom_open": "blocks/eyeblossom_blooming", "creaking_heart": "blocks/creaking_heart_side_dormant",
     "wildflowers": "blocks/wildflowers", "firefly_bush": "blocks/firefly_bush", "bush": "blocks/bush", "leaf_litter": "blocks/leaf_litter",
     "short_dry_grass": "blocks/short_dry_grass",
-    "sulfur": "blocks/sulfur", "potent_sulfur": "blocks/potent_sulfur", "calcite": "blocks/calcite",
+    "sulfur": "blocks/sulfur", "potent_sulfur": "blocks/potent_sulfur", "calcite": "blocks/calcite", "emerald_ore": "blocks/emerald_ore",
     "sulfur_spike_up_tip": "blocks/sulfur_spike_up_tip", "sulfur_spike_up_frustum": "blocks/sulfur_spike_up_frustum",
     "sulfur_spike_down_frustum": "blocks/sulfur_spike_down_frustum", "sulfur_spike_down_middle": "blocks/sulfur_spike_down_middle",
     "sulfur_spike_down_tip": "blocks/sulfur_spike_down_tip",

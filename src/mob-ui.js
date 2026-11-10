@@ -49,6 +49,9 @@ const isBaby = () => {
 };
 // Its variant, for a mob that comes in several (MOB_VARIANTS): the first to start with, like the mood.
 let mobVariant = "";
+// Its saddle, for a mob that can wear one (MOB_SADDLES), and its wool, for one that has some (MOB_WOOL): no saddle, and
+// white wool, not sheared, to start with.
+let mobSaddle = false, mobWool = "white", mobShorn = false;
 const variantInfo = () => (MOB_VARIANTS[mobTab.mob] || []).find(v => v.k === mobVariant) || (MOB_VARIANTS[mobTab.mob] || [])[0] || null;
 // Its armor, in a mood that can wear any: none to start with, undyed, new and not enchanted when put on.
 const NO_ARMOR = { on: false, dye: "", crack: "", glint: false };
@@ -85,15 +88,28 @@ function showOnStage() {
   mobStage.dataset.time = night ? "night" : "day";
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);
   mobBackdrop.show(biome);
-  if (!t || !t.rainbow) wool.color = [255, 255, 255];
+  if (!t || !t.rainbow) wool.color = hex(DYES[MOB_WOOL[m.k] ? mobWool : "white"]);
   const collared = Boolean(moodInfo() && moodInfo().collar), armored = armorFits() && mobArmor.on;
   const armor = armored ? { kind: m.k, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, shown: variant && variant.show && !(look && look === babyLook(m.k)) ? variant.show : [] }).then(ok => {
+  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, shown: shownParts(m.k, look) }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
-  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : variant && variant.say !== "" ? variant.say || variant.n : mobName(m))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
+  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
 }
+
+// Whether the stage shows the mob's baby look: a baby can't be saddled or sheared, and wears no variant's parts.
+const babyShown = (k, look) => Boolean(look) && look === babyLook(k);
+// The parts the stage shows or hides besides the look's own: its variant's (a goat's horns), a saddle and shorn wool.
+function shownParts(k, look) {
+  if (babyShown(k, look)) return [];
+  const variant = variantInfo(), wool = MOB_WOOL[k], name = ((MOB_LOOKS[k] || [])[look] || { names: [] }).names[0];
+  return [...((variant && variant.show) || []), ...(MOB_SADDLES[k] && mobSaddle ? MOB_SADDLES[k] : []),
+    ...(wool && mobShorn ? [...wool.shorn, ...((wool.shornLooks || {})[name] || [])] : [])];
+}
+// How the stage's description puts what it wears: saddled, its wool's color (a white sheep is just a sheep), sheared.
+const wearWords = (k, look) => (babyShown(k, look) ? [] : [MOB_SADDLES[k] && mobSaddle ? "saddled" : "", MOB_WOOL[k] && mobShorn ? "sheared" : ""])
+  .concat(MOB_WOOL[k] && !(mobShorn && !babyShown(k, look)) && mobWool !== "white" ? [mobWool] : []).filter(Boolean);
 
 // A name that only shows on some of the mob's variants (climate: the climates it shows in, a MOB_VARIANTS climate or
 // temperate) can only be tried on those: on the others its buttons are off, saying which variants it needs.
@@ -131,6 +147,22 @@ function renderVariants() {
   $("variant-bar").hidden = !variants;
   $("variant-label").textContent = v ? `Variant: ${v.n}${v.where ? ` · ${v.where}` : ""}` : "Variant";
   $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
+}
+
+// The saddle buttons, for a mob that can wear one, and the wool's colors and shearing, for a sheep. A baby can have
+// neither a saddle nor its wool sheared: those buttons are off for it.
+function renderWear() {
+  const k = mobTab.mob, t = currentTag(), look = t && t.look ? t.look : mobBaby && babyLook(k) > 0 ? babyLook(k) : 0, baby = babyShown(k, look);
+  const chip = (attr, value, label, pressed, off) => `<button type="button" class="name-chip" data-${attr}="${value}" aria-pressed="${pressed}"${off ? ` disabled title="${esc(off)}"` : ""}>${label}</button>`;
+  $("saddle-bar").hidden = !MOB_SADDLES[k];
+  if (MOB_SADDLES[k]) $("saddle-try").innerHTML = chip("saddle", "", "No saddle", !mobSaddle || baby) + chip("saddle", "on", "Saddled", mobSaddle && !baby, baby && "The game doesn’t saddle a baby");
+  const wool = MOB_WOOL[k];
+  $("wool-bar").hidden = !wool;
+  if (!wool) return;
+  const shorn = mobShorn && !baby;
+  $("wool-label").textContent = shorn ? "Wool: Sheared" : `Wool: ${titled(mobWool)}${wool.natural[mobWool] ? ` · ${wool.natural[mobWool]}` : " · Dyed"}`;
+  $("wool-try").innerHTML = [...Object.keys(wool.natural), ...COLLAR_COLORS.filter(c => !wool.natural[c])].map(c => dyeSwatch("wool", c, !shorn && c === mobWool)).join("") +
+    chip("shorn", "on", "Sheared", shorn, baby && "The game doesn’t shear a lamb");
 }
 
 // The size buttons, for a mob that comes in sizes.
@@ -263,6 +295,7 @@ function renderMobs() {
   renderMobPicker();
   renderAge();
   renderVariants();
+  renderWear();
   renderSizes();
   renderMoods();
   renderTry();
@@ -286,6 +319,8 @@ function pickMob(k, name) {
     mobArmor = NO_ARMOR;
     mobSize = DEFAULT_SIZE;
     mobVariant = "";
+    mobSaddle = mobShorn = false;
+    mobWool = "white";
     mobBaby = false;
     mobView.turnBack();
   }
@@ -298,6 +333,7 @@ function pickTag(name, say = name) {
   mobTab.name = name;
   mobTab.say = say;
   renderMoods();
+  renderWear();
   renderTry();
   renderMobResult();
   showOnStage();
@@ -323,6 +359,7 @@ $("age-try").addEventListener("click", e => {
   if (!b || Boolean(b.dataset.baby) === mobBaby) return;
   mobBaby = Boolean(b.dataset.baby);
   renderAge();
+  renderWear();
   renderMoods();
   showOnStage();
   refocus(`#age-try button[data-baby="${b.dataset.baby}"]`);
@@ -340,6 +377,26 @@ $("variant-try").addEventListener("click", e => {
   showOnStage();
   saveMobTab();
   refocus(`#variant-try button[data-variant="${mobVariant}"]`);
+});
+$("saddle-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-saddle]");
+  if (!b || b.disabled || Boolean(b.dataset.saddle) === mobSaddle) return;
+  mobSaddle = Boolean(b.dataset.saddle);
+  renderWear();
+  showOnStage();
+  refocus(`#saddle-try button[data-saddle="${b.dataset.saddle}"]`);
+});
+$("wool-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-wool], button[data-shorn]");
+  if (!b || b.disabled) return;
+  if (b.dataset.shorn !== undefined) mobShorn = true;
+  else {
+    mobWool = b.dataset.wool;
+    mobShorn = false;
+  }
+  renderWear();
+  showOnStage();
+  refocus(b.dataset.shorn !== undefined ? "#wool-try button[data-shorn]" : `#wool-try button[data-wool="${CSS.escape(mobWool)}"]`);
 });
 $("size-try").addEventListener("click", e => {
   const b = e.target.closest("button[data-size]");

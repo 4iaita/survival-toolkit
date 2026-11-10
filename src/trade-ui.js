@@ -12,7 +12,8 @@ const currentVillager = () => VILLAGERS.find(v => v.k === trade.villager);
 const currentBiome = () => BIOMES.find(b => b.k === trade.biome);
 const villagerName = v => (state.edition === "bedrock" && v.bedrockName) || v.n;
 const villagerIcon = v => tradeIcon(VILLAGER_ICON[v.k]).key;
-const article = word => (/^[AEIOU]/i.test(word) ? "an" : "a");
+// "One" sounds like "won": a one-horned goat.
+const article = word => (/^[AEIOU]/i.test(word) && !/^one/i.test(word) ? "an" : "a");
 const isEarn = t => t.gives.name === "Emerald";
 const ENCH_NAMES = Object.values(ENCH).map(e => e.n.toLowerCase());
 const SUGGESTIONS = ["Mending", "Bell", "Golden Carrot", "Ender Pearl", "Saddle", "Glass"];

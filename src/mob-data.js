@@ -111,11 +111,34 @@ const MOB_VARIANTS = {
     { k: "angry", n: "Angry", where: "After it’s hit, or its nest is", skins: beeSkins("angry") },
     { k: "angry_nectar", n: "Angry, with nectar", where: "Carrying pollen back to its nest", skins: beeSkins("angry_nectar") },
   ],
-  // A camel with a saddle shows it as the pack's render controller does for q.is_saddled (its reins only with a rider).
-  camel: [
-    { k: "plain", n: "No saddle", say: "" },
-    { k: "saddled", n: "Saddled", show: [["k255d6", true], ["3ja5d6", true]] },
+  // The goat's horns: the pack gives each goat one of eight shapes at random (the first four 1 in 5 goats each, the
+  // others 1 in 20), long ones to start with. A goat that rams a log, stone or ore drops a horn, one each time, and grows
+  // none back (the Halloween goat's horns go the same way).
+  goat: [
+    ...[[2, "Long", "1 in 5 goats"], [1, "Straight", "1 in 5 goats"], [3, "Curled", "1 in 5 goats"], [4, "Stubby", "1 in 5 goats"],
+      [5, "Hooked", "1 in 20 goats"], [6, "Long hook", "1 in 20 goats"], [7, "Bent hook", "1 in 20 goats"], [8, "Ram", "1 in 20 goats"]].map(([n, name, where], i) => ({
+      k: `horns${n}`, n: name, where, ...(i ? { say: `${name.toLowerCase()}-horned` } : { say: "" }),
+      show: [1, 2, 3, 4, 5, 6, 7, 8].map(s => [`*9gjf${s}`, s === n]) })),
+    { k: "one_horn", n: "One horn", where: "After ramming a block once", say: "one-horned", show: [["ja89l_9gjf*", false]] },
+    { k: "no_horns", n: "No horns", where: "After ramming a block twice", say: "hornless", show: [["ja89l_9gjf*", false], ["d67l_9gjf*", false]] },
   ],
+};
+// Mobs that can wear a saddle: the [bone pattern, shown] rules a saddle on it shows, as the pack's render controllers do
+// for q.is_saddled (the camel's reins only show with a rider; a pig's snowy, cherry or dappled cover makes way for it).
+// The game doesn't saddle a baby.
+const MOB_SADDLES = {
+  camel: [["k255d6", true], ["3ja5d6", true]],
+  pig: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true], ["2dh92l6klfg72f4qk255d6*", false]],
+};
+// The sheep's wool: any dye color (it starts white), or sheared. natural: the colors sheep spawn with, and how often;
+// shorn: the parts shearing takes off (its wool), and more for a look whose wool is a costume (the Halloween sheet hides
+// the ears when it's off, as the pack has it). The game doesn't shear a lamb.
+const MOB_WOOL = {
+  sheep: {
+    natural: { white: "81.8% of sheep", black: "5% of sheep", gray: "5% of sheep", "light gray": "5% of sheep", brown: "3% of sheep", pink: "0.16% of sheep" },
+    shorn: [["oggd*", false]],
+    shornLooks: { halloween: [["62j*", false]] },
+  },
 };
 // Mobs that have babies in the game itself, bred or born: the stage can show one as a baby, in the look the pack
 // gives its babies (the one its Baby name shows). Other mobs only look like babies with that name.
@@ -127,7 +150,7 @@ const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
   { k: "camel", n: "Camel", g: "Animals", biome: "desert" }, { k: "cat", n: "Cat", g: "Animals" }, { k: "chicken", n: "Chicken", g: "Animals" },
   { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
-  { k: "goat", n: "Goat", g: "Animals" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals" },
+  { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals" },
   { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
   { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals" }, { k: "pig", n: "Pig", g: "Animals" },
   { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy" }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
