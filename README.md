@@ -75,6 +75,12 @@ python3 import_axolotl.py ../textures/full-pack ../textures --write
 python3 build.py
 ```
 
+To check a mob's name tags against the pack (every name it checks is on the page, and no row still has a placeholder description such as "The Cherry look."), run `check_tags.py` with the mobs (it needs node):
+
+```bash
+python3 check_tags.py ../textures/full-pack ../textures chicken,cow
+```
+
 To refresh the looks `import_additions.py` already wrote (the `new_*` ones) after the pack or the importer changes, run it with `--refresh`. It builds each of them again from the pack's render controllers and materials: the layers, how each is lit (glowing eyes, emissive texels, glow panels) and which layers only draw round others and so are left out. It keeps their model and texture keys where the pack's geometry and textures are the same, and drops the ones no look uses any more. It leaves the mobs with importers of their own (above) to them. Without `--write` it only lists what would change:
 
 ```bash
