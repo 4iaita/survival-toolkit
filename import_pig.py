@@ -20,6 +20,8 @@ def answers(v):
 # It breathes, its head, ears and legs swaying a little, all the while (the pack's standing loop), and blinks: the pack
 # plays its blink as a loop of its own, the eyes shut for the last sixth of a second of every 1.83.
 MOTIONS = [("idle", 1), ("blinking.step", 1)]
+# A cold pig's curly tail sits half a pixel further along its body as it sways (its standing loop asks its climate).
+CLIMATE_MOTIONS = {"cold": MOTIONS}
 
 
 # Now and then, standing still a while, it does one of the three idles the pack picks from, blending in and out over
@@ -32,4 +34,4 @@ ACTS = idles("ciducd", "tculwn", "qofebb")
 NAMED = ["muddy", "snowy", "zombified piglet", "baby skeleton", "cherry", "dappled", "halloween", "skeleton"]
 
 if __name__ == "__main__":
-    port("pig", variants=[""], acts=ACTS, motions=MOTIONS, answers=answers, remodel=NAMED, climates=CLIMATES, nested_poses=True)
+    port("pig", variants=[""], acts=ACTS, motions=MOTIONS, answers=answers, remodel=NAMED, climates=CLIMATES, climate_motions=CLIMATE_MOTIONS, nested_poses=True)

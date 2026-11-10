@@ -149,7 +149,7 @@ const PACK_TAGS = {
   ],
   sniffer: [{ names: ["Baby", "Hatchling", "Snifflet"], kind: BABY }],
   snow_golem: [{ names: ["Snowman", "Frosty"], what: "A classic snowman with a scarf and stick arms, and no pumpkin." }],
-  spider: [{ names: ["Snowy", "Frosty"], kind: SNOWY }],
+  spider: [{ names: ["Snowy", "Frosty"], kind: SNOWY, rare: "spiders in snowy biomes" }],
   squid: [{ names: ["Baby", "Squidling", "Inky"], kind: BABY }],
   strider: [{ names: ["Baby", "Stridling", "Sizzle"], kind: BABY }],
   trader_llama: [{ names: ["Baby", "Cria", "Spitty"], kind: BABY }, { names: ["Snowy", "Frosty"], kind: SNOWY }],

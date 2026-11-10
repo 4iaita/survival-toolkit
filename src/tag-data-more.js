@@ -186,8 +186,8 @@ const PACK_TAGS_MORE = {
   pig: [
     { names: ["Zombified Piglet", "Baby Zombified"], more: ["zombified Piglet", "Zombified piglet", "baby Zombified", "Baby zombified"], what: "A zombie piglet, its pink flesh rotting green at the edges, with bare bone showing on its side and legs." },
     { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A piglet’s skeleton: a bony skull and ribcage on bare bone legs." },
-    { names: ["Cherry"], what: "A wreath of pink cherry blossoms and leaves round its head, and a leafy twig poking out beside its snout." },
-    { names: ["Dappled"], what: "Orange leaves on its head." },
+    { names: ["Cherry"], what: "A wreath of pink cherry blossoms and leaves round its head, and a leafy twig poking out beside its snout.", rare: "pigs in cherry groves" },
+    { names: ["Dappled"], what: "Orange leaves on its head.", rare: "pigs in dappled forests" },
     { names: ["Halloween", "Zombified"], what: "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs." },
     { names: ["Skeleton"], what: "A pig’s skeleton: a bony skull and ribcage on bare bone legs." },
   ],
@@ -248,10 +248,10 @@ const PACK_TAGS_MORE = {
   ],
   spider: [
     { names: ["Baby", "Spiderling", "Webby"], kind: BABY },
-    { names: ["Cherry"], what: "Pink cherry blossoms and green leaves grow over its back and legs." },
-    { names: ["Sulfur"], what: "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange." },
-    { names: ["Dappled"], what: "Orange and red leaves on its back and head." },
-    { names: ["Pale"], what: "Pale gray legs under a dark brown body, and orange eyes that glow." },
+    { names: ["Cherry"], what: "Pink cherry blossoms and green leaves grow over its back and legs.", rare: "spiders in cherry groves" },
+    { names: ["Sulfur"], what: "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange.", rare: "spiders in sulfur caves" },
+    { names: ["Dappled"], what: "Orange and red leaves on its back and head.", rare: "spiders in dappled forests" },
+    { names: ["Pale"], what: "Pale gray legs under a dark brown body, and orange eyes that glow.", rare: "spiders in pale gardens" },
     { names: ["Halloween", "Skull"], what: "A dark purple spider with magenta bands on its legs and a big bone-white skull, with pink eyes, for a back." },
   ],
   stray: [

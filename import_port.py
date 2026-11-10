@@ -65,7 +65,7 @@ def still(pose):
 
 
 def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
-         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=()):
+         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -79,7 +79,9 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     MOB_MOTIONS and MOB_ACTS as "<mob>:<set>"; plays: first name -> the set that look plays in place of the mob's.
     climates: climate -> what the game says in it (the chicken's and cow's warm and cold kinds): the looks that come out
     different there go into MOB_CLIMATES, by their place in the mob's looks, with only their layers (the stage keeps the
-    rest of the look); climate_acts: climate -> acts it plays in place of the mob's (the cold cow sneezes too).
+    rest of the look); climate_acts: climate -> acts it plays in place of the mob's (the cold cow sneezes too);
+    climate_motions: climate -> loops it plays in place of the mob's, baked with what the game says there (the cold
+    pig's tail sits a little differently).
     nested_poses: the poses a name turns on are looked for in the entity's animation controllers too (see
     controller_animations).
     share: other mobs whose models it uses too (the cave spider the spider's): a model the same as one their looks use
@@ -214,11 +216,11 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
             changed[str(i)] = {"layers": layers_out(label, lay)}
         climate_out[climate] = {"looks": changed}
 
-    def baked_loops(motions):
+    def baked_loops(motions, mood=None):
         out = []
         for key, weight, *rate in motions:
             # "held": an animation that plays once and holds its last frame (the axolotl tucking its legs in).
-            loop = im.baked_held(d, anims, key) if rate == ["held"] else im.baked_loop(d, anims, key, weight, *rate)
+            loop = im.baked_held(d, anims, key, answers=mood) if rate == ["held"] else im.baked_loop(d, anims, key, weight, *rate, answers=mood)
             loop["bones"] = renamed(loop["bones"])
             out.append(loop)
         return out
@@ -239,6 +241,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
             for part in a["parts"]:
                 part["bones"] = renamed(part["bones"])
         climate_out[climate]["act"] = baked
+    for climate, loops in (climate_motions or {}).items():
+        climate_out[climate]["motions"] = baked_loops(loops, {**answers(0), **climates[climate]})
     set_out = {}
     for key, spec in (sets or {}).items():
         baked = im.baked_act(d, anims, spec.get("acts", []))

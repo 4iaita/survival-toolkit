@@ -113,6 +113,13 @@ CLIMATE = {
 }
 NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only cold {mob}s, the kind from snowy biomes.",
          ("temperate", "warm"): "Not on cold {mob}s: their woolly heads hide the crown."}
+# Looks the pack gives a mob by itself, without the name, in the biomes they belong to (with its biome looks setting on):
+# (mob, the lower-case name) -> which of them, for the row's rare.
+RARE = {
+    ("pig", "cherry"): "pigs in cherry groves", ("pig", "dappled"): "pigs in dappled forests",
+    ("spider", "cherry"): "spiders in cherry groves", ("spider", "sulfur"): "spiders in sulfur caves",
+    ("spider", "dappled"): "spiders in dappled forests", ("spider", "pale"): "spiders in pale gardens",
+}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
@@ -163,6 +170,8 @@ def main():
                 row["kind"] = "BABY"
             else:
                 row["what"] = describe(mob, look["names"])
+                if (mob, look["names"][0].lower()) in RARE:
+                    row["rare"] = RARE[mob, look["names"][0].lower()]
                 climate = CLIMATE.get((mob, look["names"][0].lower()))
                 if climate:
                     row["needs"] = NEEDS[tuple(climate) if isinstance(climate, list) else climate].format(mob=mob)

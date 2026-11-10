@@ -1043,7 +1043,7 @@ def main():
           " * bones as above, show: [[bone pattern, shown], ...] } }.",
           " * MOB_MOODS: mob -> its moods other than calm: mood -> { looks (MOB_LOOKS' in the same order), motions, act, collar (its color can be picked), armor (it can wear MOB_ARMOR's) }.",
           " * MOB_SIZES: mob -> its sizes, biggest first: size -> { zoom, beside the biggest; looks, where they differ }.",
-          " * MOB_CLIMATES: mob -> its climates (warm, cold): climate -> { looks, act }: the looks that differ there, by their place in MOB_LOOKS (what they have, over the usual look), and acts it has there instead.",
+          " * MOB_CLIMATES: mob -> its climates (warm, cold): climate -> { looks, motions, act }: the looks that differ there, by their place in MOB_LOOKS (what they have, over the usual look), and loops and acts it has there instead.",
           " * MOB_ARMOR: mob -> { model, plain and dyed (its textures), cracks: wear -> a texture to lay over it }.",
           " */",
           "const MOB_MODELS = {"]
