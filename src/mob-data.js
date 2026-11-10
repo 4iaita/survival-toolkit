@@ -127,6 +127,12 @@ const MOB_VARIANTS = {
     { k: "angry", n: "Angry", where: "After it’s hit, or its nest is", skins: beeSkins("angry") },
     { k: "angry_nectar", n: "Angry, with nectar", where: "Carrying pollen back to its nest", skins: beeSkins("angry_nectar") },
   ],
+  // The fox's two kinds (the pack's q.variant 0 and 1) share its model and differ in skin, the kit's too: the game makes
+  // foxes in snowy biomes snow foxes. The Raccoon and Jimothy looks keep their own skins.
+  fox: [
+    { k: "red", n: "Red", where: "Taiga", biome: "taiga" },
+    { k: "snow", n: "Snow", where: "Snowy Taiga and Grove", biome: "snowy_taiga", skins: { new_fox: "new_fox_snow", new_fox_baby: "new_fox_snow_baby" } },
+  ],
   // The goat's horns: the pack gives each goat one of eight shapes at random (the first four 1 in 5 goats each, the
   // others 1 in 20), long ones to start with. A goat that rams a log, stone or ore drops a horn, one each time, and grows
   // none back (the Halloween goat's horns go the same way).
@@ -214,7 +220,7 @@ const MOB_GROUPS = ["Animals", "Water", "Village", "Monsters", "Nether", "End"];
 const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
   { k: "camel", n: "Camel", g: "Animals", biome: "desert" }, { k: "cat", n: "Cat", g: "Animals" }, { k: "chicken", n: "Chicken", g: "Animals" },
-  { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
+  { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals", biome: "taiga" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
   { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals", biome: "savanna_plateau" },
   { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
   { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals" }, { k: "pig", n: "Pig", g: "Animals" },

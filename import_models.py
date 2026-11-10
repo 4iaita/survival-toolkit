@@ -739,7 +739,9 @@ def baked_act(d, anims, act, answers=None):
     lh = act.get("level_head")
     level = ((lh if isinstance(lh, str) else "head").lower(),) if lh else ()
     for key, start, end, show, *more in act["parts"]:
-        anim, rate, weight = anims[d["animations"][key]], (more + [1])[0], (more + [1, 1])[1]
+        # No key: a part that only shows or hides bones for a while (the fox's blink swaps its head for one with its
+        # eyes shut, by the pack's part_visibility).
+        anim, rate, weight = anims[d["animations"][key]] if key else {"bones": {}}, (more + [1])[0], (more + [1, 1])[1]
         span = (end - start) if end is not None else anim["animation_length"] / rate
         count = max(2, math.ceil(span * MOTION_FPS) + 1)
         # A looping animation played longer than it lasts goes round again.

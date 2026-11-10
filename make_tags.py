@@ -87,6 +87,8 @@ WHAT = {
     ("cow", "strawberry"): "A pink strawberry cow with pale spots.",
     ("cow", "halloween"): "A zombie cow, rotting, its ribs showing and its eyes glowing white in the dark.",
     ("cow", "dappled"): "Orange leaves on its head.",
+    ("fox", "raccoon"): "A raccoon: gray fur with a black mask round its eyes, black ears, a white snout with a black nose and a long tail ringed in black and pale gray.",
+    ("fox", "jimothy"): "A chubby little raccoon: one round gray body with its black-masked face on the front, stubby legs, small ears and a short striped tail.",
     ("goat", "evil kiddo"): "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.",
     ("goat", "halloween"): "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.",
     ("horse", "wendigo foal"): "A baby wendigo: a bare deer skull with little antlers for a head, the bones of its back and legs showing through a ragged hide the color of its coat, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",

@@ -117,8 +117,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Dracula"], what: "A Halloween costume." },
   ],
   fox: [
-    { names: ["Raccoon"], what: "The Raccoon look." },
-    { names: ["Jimothy"], what: "The Jimothy look." },
+    { names: ["Raccoon"], what: "A raccoon: gray fur with a black mask round its eyes, black ears, a white snout with a black nose and a long tail ringed in black and pale gray." },
+    { names: ["Jimothy"], what: "A chubby little raccoon: one round gray body with its black-masked face on the front, stubby legs, small ears and a short striped tail." },
   ],
   frog: [
     { names: ["Baby", "Froglet", "Hoppy"], kind: BABY },
