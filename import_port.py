@@ -65,7 +65,7 @@ def still(pose):
 
 
 def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
-         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False):
+         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=()):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -81,7 +81,9 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     different there go into MOB_CLIMATES, by their place in the mob's looks, with only their layers (the stage keeps the
     rest of the look); climate_acts: climate -> acts it plays in place of the mob's (the cold cow sneezes too).
     nested_poses: the poses a name turns on are looked for in the entity's animation controllers too (see
-    controller_animations)."""
+    controller_animations).
+    share: other mobs whose models it uses too (the cave spider the spider's): a model the same as one their looks use
+    takes that one's key, not one of its own."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
@@ -100,6 +102,9 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     current = ia.parse_section(text, "MOB_LOOKS")[mob]
 
     geo_keys, tex_keys = {}, {}
+    models = ia.parse_section(text, "MOB_MODELS")
+    looks_of = ia.parse_section(text, "MOB_LOOKS")
+    shared = {json.dumps(models[layer[0]]): layer[0] for other in share for look in looks_of[other] for layer in look["layers"]}
 
     def layers_out(label, layers):
         out = []
@@ -113,7 +118,7 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
             part = ia.PREFIX + "_".join(filter(None, [mob, label, str(i) if i else ""]))
             if not any(im.shown(b["name"], rules) for b in g.get("bones", []) if b.get("cubes")):
                 continue
-            geo_keys.setdefault(geo, part)
+            geo_keys.setdefault(geo, shared.get(json.dumps(im.model(g)), part))
             names = []
             for j, t in enumerate(texs):
                 tex_keys.setdefault(t, "_".join(filter(None, [part, str(j) if j else ""])))

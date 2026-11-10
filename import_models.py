@@ -566,6 +566,18 @@ def look(d, rcs, mats, anims, name, held=False, mood=None):
         flags = {}
         mat = evaluate(next((expr for m in rc.get("materials", []) for pat, expr in m.items() if pat == "*"), "Material.default"), renv)
         kind = isinstance(mat, tuple) and material_kind(next((v for k, v in d.get("materials", {}).items() if k.lower() == mat[1]), ""), mats)
+        # A layer whose every bone with cubes has a glowing material of its own glows as a whole: the sulfur spider's
+        # eye panel is drawn with the plain material but its one bone with the glowing one.
+        if not kind:
+            def bone_kind_of(pat):
+                expr = next((e for m in rc.get("materials", []) for p, e in m.items() if p == pat), None)
+                bm = expr and evaluate(expr, renv)
+                return isinstance(bm, tuple) and material_kind(next((v for k, v in d.get("materials", {}).items() if k.lower() == bm[1]), ""), mats)
+            pats = [p for m in rc.get("materials", []) for p in m if p != "*"]
+            solid = [b["name"] for b in GEOS.get(geo, {}).get("bones", []) if b.get("cubes")]
+            glowing = [p for p in pats if bone_kind_of(p) == "glow"]
+            if solid and glowing and all(any(fnmatch.fnmatchcase(b.lower(), p.lower()) for p in glowing) for b in solid):
+                kind = "glow"
         if kind == "stencil":
             continue
         overlay = rc.get("overlay_color", {}).get("a") if kind == "glow" else None

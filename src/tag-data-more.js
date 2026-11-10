@@ -49,7 +49,7 @@ const PACK_TAGS_MORE = {
   ],
   cave_spider: [
     { names: ["Baby", "Spiderling", "Webby"], kind: BABY },
-    { names: ["Halloween", "Skull"], what: "A Halloween costume." },
+    { names: ["Halloween", "Skull"], what: "A dark teal spider with green bands on its legs and a big bone-white skull, with lime green eyes, for a back." },
   ],
   chicken: [
     { names: ["Halloween", "Zombified"], what: "A zombie chicken, rotting." },
@@ -248,11 +248,11 @@ const PACK_TAGS_MORE = {
   ],
   spider: [
     { names: ["Baby", "Spiderling", "Webby"], kind: BABY },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Sulfur"], what: "The sulfur look." },
-    { names: ["Dappled"], what: "The dappled look." },
-    { names: ["Pale"], what: "The pale look." },
-    { names: ["Halloween", "Skull"], what: "A Halloween costume." },
+    { names: ["Cherry"], what: "Pink cherry blossoms and green leaves grow over its back and legs." },
+    { names: ["Sulfur"], what: "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange." },
+    { names: ["Dappled"], what: "Orange and red leaves on its back and head." },
+    { names: ["Pale"], what: "Pale gray legs under a dark brown body, and orange eyes that glow." },
+    { names: ["Halloween", "Skull"], what: "A dark purple spider with magenta bands on its legs and a big bone-white skull, with pink eyes, for a back." },
   ],
   stray: [
     { names: ["Baby", "Strayling", "Frostling"], kind: BABY },
