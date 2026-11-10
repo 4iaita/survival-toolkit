@@ -336,7 +336,7 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Fry", "Coral"], kind: BABY },
   ],
   turtle: [
-    { names: ["Halloween", "Nessie"], what: "A Halloween costume." },
+    { names: ["Halloween", "Nessie"], what: "Nessie, the Loch Ness monster: a dark teal sea serpent with a humped back of three ridged bumps, a long neck and a long tail curling up from either end lined with spines, four flippers and lime green eyes that glow in the dark.", night: true },
   ],
   vex: [
     { names: ["Baby", "Vexling", "Wisplet"], kind: BABY },

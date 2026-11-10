@@ -19,7 +19,7 @@
  * bamboo under jungle trees. Nor do the mooshroom's mushroom fields: huge mushrooms on mycelium.
  * So do the goat's jagged peaks: bare stone mountains, snow above the snow line, crags, ice and powder snow.
  * And the warm frog's mangrove swamp: mud and still water under mangroves standing on arching roots, propagules hanging
- * from their leaves.
+ * from their leaves. And the turtle's beach: sand dunes and sugar cane by the open sea, a clutch of turtle eggs in the sand.
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
  * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
@@ -162,6 +162,13 @@ const smallMangrove = t => prop([
   ".RTR.",
   "R.R.R",
 ], { L: leavesTex("mangrove_leaves", t.foliage), T: blockTex("mangrove_log"), R: blockTex("mangrove_roots"), p: plantTex("mangrove_propagule_hanging") });
+
+// A clutch of turtle eggs in the sand: pale eggs speckled green, drawn as the game's little eggs seen from the side.
+const EGG = "#eee7c8", SPECK = "#3b9e86";
+const turtleEggs = prop(["E"], { E: { rects: [[2, 11, 6, 16, EGG], [1, 12, 7, 15, EGG], [3, 12, 4, 13, SPECK], [5, 14, 6, 15, SPECK],
+  [9, 12, 13, 16, EGG], [8, 13, 14, 15, EGG], [11, 13, 12, 14, SPECK], [9, 15, 10, 16, SPECK]], cap: false } });
+const sugarCane = height => plant("reeds", null, height);
+const dune = rows => prop(rows, { S: blockTex("sand"), T: blockTex("smooth_sandstone") });
 
 // The mushroom fields' huge mushrooms, as the game grows them: a red one's domed cap hangs down round its stem, a brown
 // one's is a flat, wide plate.
@@ -617,6 +624,14 @@ const BACKDROPS = {
     near: [[sulfurMound(["..S.", ".SPS", "TSSC"]), -24], [sulfurSpike(2), -18], [sulfurMound(["P.", "SS"]), -15], [sulfurSpike(), -11], [sulfurSpike(), -7],
       [sulfurSpike(), 6], [sulfurMound([".S", "PS"]), 9], [sulfurSpike(2), 13], [sulfurMound(["..SC", ".PSS", "STSP"]), 17], [sulfurSpike(), 22]],
     lights: [-23, -15, 9, 18], lightColor: "255, 214, 80",
+  }),
+  // The turtle's beach: the open sea out to the horizon, dunes of sand behind the turtle with sugar cane growing out of
+  // them, and its eggs laid in the sand.
+  beach: t => ({
+    hills: { top: blockTex("water", t.water), fill: blockTex("water", t.water), base: 2, rise: 0 },
+    near: [[sugarCane(3), -22], [dune(["..S.", ".SSS", "SSTS"]), -19], [sugarCane(2), -15], [dune(["..S", ".SS", "SSS"]), -13], [sugarCane(3), -9],
+      [sugarCane(2), -8], [turtleEggs, -6], [turtleEggs, 5], [sugarCane(3), 7], [dune(["..SS", ".SSS", "STSS"]), 9], [sugarCane(2), 14],
+      [dune([".S", "SS"]), 16], [sugarCane(3), 20], [dune(["S..", "SS.", "SSS"]), 21]],
   }),
   mangrove_swamp: t => ({
     hills: { top: blockTex("mud"), fill: blockTex("mud"), base: 2, rise: 1, trees: [0.06, 0.24, 0.43, 0.62, 0.8, 0.95].map(at => [smallMangrove(t), at]) },

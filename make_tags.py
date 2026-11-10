@@ -94,6 +94,7 @@ WHAT = {
     ("frog", "rhadora"): "A child crouching like a frog in a white frog hood striped with orange, with the frog’s big eyes on top, dark purple hair and purple sleeves.",
     ("frog", "sapo"): "A child crouching like a frog in an orange frog hood with a yellow band, with the frog’s big eyes on top, green hair, and green and yellow legs.",
     ("frog", "halloween"): "An imp: a devil frog with big pointed bat ears, two pale tusks and eyes that glow in the dark. It’s red, olive or gray as the frog is temperate, cold or warm, and its eyes glow yellow, or lime green on a warm one.",
+    ("turtle", "halloween"): "Nessie, the Loch Ness monster: a dark teal sea serpent with a humped back of three ridged bumps, a long neck and a long tail curling up from either end lined with spines, four flippers and lime green eyes that glow in the dark.",
     ("goat", "evil kiddo"): "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.",
     ("goat", "halloween"): "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.",
     ("horse", "wendigo foal"): "A baby wendigo: a bare deer skull with little antlers for a head, the bones of its back and legs showing through a ragged hide the color of its coat, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",
@@ -158,7 +159,7 @@ BIOME = {
 NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
          ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween"),
          ("sheep", "ghost lamb"), ("sheep", "halloween"), ("goat", "evil kiddo"), ("goat", "halloween"),
-         ("frog", "baby imp"), ("frog", "halloween"),
+         ("frog", "baby imp"), ("frog", "halloween"), ("turtle", "halloween"),
          ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
