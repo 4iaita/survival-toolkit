@@ -153,7 +153,11 @@ const PACK_TAGS = {
   spider: [{ names: ["Snowy", "Frosty"], kind: SNOWY, rare: "spiders in snowy biomes" }],
   squid: [{ names: ["Baby", "Squidling", "Inky"], kind: BABY }],
   strider: [{ names: ["Baby", "Stridling", "Sizzle"], kind: BABY }],
-  trader_llama: [{ names: ["Baby", "Cria", "Spitty"], kind: BABY }, { names: ["Snowy", "Frosty"], kind: SNOWY }],
+  trader_llama: [
+    { names: ["Baby", "Cria", "Spitty"], kind: BABY },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, what: "A winter trader’s blanket: trimmed in cream wool, with a pale blue snowflake on top, and a cream cap between its ears.",
+      rare: "trader llamas in snowy biomes" },
+  ],
   turtle: [{ names: ["Baby", "Hatchling", "Bubbles"], kind: BABY }],
   villager: [
     { names: ["Baby", "Child", "Nosey"], kind: BABY },

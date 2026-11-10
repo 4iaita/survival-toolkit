@@ -329,6 +329,9 @@ const PACK_TAGS_MORE = {
     { names: ["Cheese"], what: "Holds a Cheese inside its body." },
     { names: ["Rugby Ball", "Rugby", "American Football"], more: ["Rugby ball", "rugby Ball", "American football", "american Football"], what: "Holds a Rugby Ball inside its body." },
   ],
+  trader_llama: [
+    { names: ["Halloween", "Fortune Teller"], more: ["fortune Teller", "Fortune teller"], what: "A fortune teller’s costume: a purple robe with orange trim and tassels, rolled red and green rugs on its back, a purple headscarf, a green eye charm at its throat, a green orb that glows in the dark hanging at one side and a little purple creature, its magenta eyes glowing too, clinging to the other.", night: true },
+  ],
   tropicalfish: [
     { names: ["Baby", "Fry", "Coral"], kind: BABY },
   ],

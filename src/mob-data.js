@@ -43,6 +43,7 @@ const beeSkins = v => ({ new_bee: `new_bee_${v}`, new_bee_qween: `new_bee_${v}_q
 const horseSkins = v => Object.fromEntries(["", "_baby", "_wendigo_foal", "_halloween"].map(s => [`new_horse${s}`, `new_horse_${v}${s}`]));
 // A llama's coat (import_llama.py prints them): the baby's changes with it.
 const llamaSkins = v => ({ new_llama: `new_llama_${v}`, new_llama_baby: `new_llama_${v}_baby` });
+const traderLlamaSkins = v => ({ new_trader_llama: `new_trader_llama_${v}`, new_trader_llama_baby: `new_trader_llama_${v}_baby` });
 const catSkins = v => Object.fromEntries(["", "_baby", "_halloween_2", "_witch_kitten_2"].map(s => [`new_cat${s}`, `new_cat_${v}${s}`]));
 const MOB_VARIANTS = {
   // The chickens' climates: the warm one has its own skin, the cold one its own model and skin too (MOB_CLIMATES).
@@ -71,6 +72,9 @@ const MOB_VARIANTS = {
   // The llama's four coats (the pack's q.variant 0 to 3), equally likely. Its carpet is a row of its own (MOB_CARPETS).
   llama: [{ k: "creamy", n: "Creamy" }, { k: "white", n: "White" }, { k: "brown", n: "Brown" }, { k: "gray", n: "Gray" }]
     .map((v, i) => ({ ...v, where: "1 in 4 llamas", ...(i ? { skins: llamaSkins(v.k) } : {}) })),
+  // The trader llama's are the llama's, under its trader's blanket.
+  trader_llama: [{ k: "creamy", n: "Creamy" }, { k: "white", n: "White" }, { k: "brown", n: "Brown" }, { k: "gray", n: "Gray" }]
+    .map((v, i) => ({ ...v, where: "1 in 4 trader llamas", ...(i ? { skins: traderLlamaSkins(v.k) } : {}) })),
   wolf: [
     { k: "pale", n: "Pale", where: "Taiga", biome: "taiga" },
     { k: "ashen", n: "Ashen", where: "Snowy Taiga", biome: "snowy_taiga" },
@@ -172,6 +176,7 @@ const MOB_CHESTS = {
   mule: [["496kld", true], ["496klj", true]],
   // A chest on each side.
   llama: [["496kl", true], ["klj2h", true]],
+  trader_llama: [["496kl", true], ["klj2h", true]],
 };
 // Mobs that can wear a carpet, which the game says by v.DecorTextureIndex (the pack draws it as a model of its own):
 // none: what the stage calls it without one; layers: the look's layer a carpet takes the place of, by its first
@@ -179,6 +184,9 @@ const MOB_CHESTS = {
 // new_llama_carpet_<dye>. The game doesn't put one on a baby.
 const MOB_CARPETS = {
   llama: { none: "No carpet", layers: { new_llama_1: "new_llama_1" } },
+  // A trader llama's carpet takes the place of its trader's blanket (on the Snowy look, of its snowy one), or of the
+  // Halloween costume.
+  trader_llama: { none: "Trader’s blanket", layers: { new_trader_llama_1: "new_llama_1", new_trader_llama_snowy_1: "new_trader_llama_snowy_1", new_trader_llama_halloween_1: "new_llama_1" } },
 };
 const carpetTexture = dye => `new_llama_carpet_${dye.replace(/ /g, "_")}`;
 // What wearing armor (MOB_ARMOR) shows or hides besides the armor: a snowy horse's snow makes way for it.
