@@ -53,6 +53,12 @@ const MOB_VARIANTS = {
     { k: "warm", n: "Warm", where: "Savanna", biome: "savanna", climate: "warm" },
     { k: "cold", n: "Cold", where: "Taiga", biome: "taiga", climate: "cold" },
   ],
+  // The pigs' climates: each has a skin of its own on the same model (MOB_CLIMATES).
+  pig: [
+    { k: "temperate", n: "Temperate", where: "Plains", biome: "plains" },
+    { k: "warm", n: "Warm", where: "Savanna", biome: "savanna", climate: "warm" },
+    { k: "cold", n: "Cold", where: "Taiga", biome: "taiga", climate: "cold" },
+  ],
   wolf: [
     { k: "pale", n: "Pale", where: "Taiga", biome: "taiga" },
     { k: "ashen", n: "Ashen", where: "Snowy Taiga", biome: "snowy_taiga" },

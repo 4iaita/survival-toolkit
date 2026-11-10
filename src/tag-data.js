@@ -127,8 +127,8 @@ const PACK_TAGS = {
   ],
   pig: [
     { names: ["Baby", "Piglet", "Lil Chop"], more: ["lil Chop", "Lil chop"], kind: BABY },
-    { names: ["Muddy", "Mudster", "Mucky"], what: "Splattered with mud.", rare: "1 in 10 temperate pigs" },
-    { ...snowyIn("cold pigs"), needs: "Only cold pigs, the kind from snowy biomes." },
+    { names: ["Muddy", "Mudster", "Mucky"], what: "Splattered with mud.", rare: "1 in 10 temperate pigs", needs: "Only temperate pigs, the usual kind.", climate: "temperate" },
+    snowyIn("cold pigs"),
   ],
   piglin: [{ names: ["Baby", "Piglet"], kind: BABY }],
   pillager: [{ names: ["Krampus"], what: "Krampus, the horned Christmas demon." }, { names: ["Snowy", "Frosty"], kind: SNOWY }],

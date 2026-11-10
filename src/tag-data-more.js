@@ -184,12 +184,12 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Bat"], what: "A Halloween costume." },
   ],
   pig: [
-    { names: ["Zombified Piglet", "Baby Zombified"], more: ["zombified Piglet", "Zombified piglet", "baby Zombified", "Baby zombified"], what: "The Zombified Piglet look." },
-    { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A baby Skeleton." },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Dappled"], what: "The dappled look." },
-    { names: ["Halloween", "Zombified"], what: "A Halloween costume." },
-    { names: ["Skeleton"], what: "The Skeleton look." },
+    { names: ["Zombified Piglet", "Baby Zombified"], more: ["zombified Piglet", "Zombified piglet", "baby Zombified", "Baby zombified"], what: "A zombie piglet, its pink flesh rotting green at the edges, with bare bone showing on its side and legs." },
+    { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A piglet’s skeleton: a bony skull and ribcage on bare bone legs." },
+    { names: ["Cherry"], what: "A wreath of pink cherry blossoms and leaves round its head, and a leafy twig poking out beside its snout." },
+    { names: ["Dappled"], what: "Orange leaves on its head." },
+    { names: ["Halloween", "Zombified"], what: "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs." },
+    { names: ["Skeleton"], what: "A pig’s skeleton: a bony skull and ribcage on bare bone legs." },
   ],
   piglin: [
     { names: ["Baby Butcher"], more: ["baby Butcher", "Baby butcher"], what: "A baby Butcher." },

@@ -90,6 +90,12 @@ WHAT = {
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
     ("ocelot", "witch kitten"): "A baby ocelot in a witch’s hat.",
     ("ocelot", "halloween"): "A witch’s hat.",
+    ("pig", "zombified piglet"): "A zombie piglet, its pink flesh rotting green at the edges, with bare bone showing on its side and legs.",
+    ("pig", "baby skeleton"): "A piglet’s skeleton: a bony skull and ribcage on bare bone legs.",
+    ("pig", "cherry"): "A wreath of pink cherry blossoms and leaves round its head, and a leafy twig poking out beside its snout.",
+    ("pig", "dappled"): "Orange leaves on its head.",
+    ("pig", "halloween"): "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs.",
+    ("pig", "skeleton"): "A pig’s skeleton: a bony skull and ribcage on bare bone legs.",
     ("panda", "freddy"): "A brown bear in a little top hat and bow tie.",
     ("panda", "grizzly"): "A brown grizzly bear.",
 }
@@ -97,7 +103,7 @@ WHAT = {
 # climate, which the stage switches to, and what the row says it needs.
 CLIMATE = {
     ("chicken", "cherry"): "temperate", ("chicken", "dappled"): "cold", ("cow", "strawberry"): "temperate", ("cow", "dappled"): "cold",
-    ("cow", "cherry"): ["temperate", "warm"],
+    ("cow", "cherry"): ["temperate", "warm"], ("pig", "muddy"): "temperate",
 }
 NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only cold {mob}s, the kind from snowy biomes.",
          ("temperate", "warm"): "Not on cold {mob}s: their woolly heads hide the crown."}
