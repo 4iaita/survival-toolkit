@@ -72,14 +72,15 @@ const JEB_COLORS = ["white", "orange", "magenta", "light blue", "yellow", "lime"
 const wool = { color: [255, 255, 255] }, mobClock = { t: 0 };
 let jebStep = 0;
 
-// The stage: the mob's own biome (its variant's, for one that has them), a snowy village for snowy names, and night for
+// The stage: the mob's own biome (its variant's, for one that has them), a name's own biome (biome: the cherry grove for
+// a Cherry look), a snowy village for snowy names, and night for
 // a name that only makes it glow.
 function showOnStage() {
   const m = mobOf(mobTab.mob), t = currentTag(), variant = variantInfo();
   const look = t && t.look ? t.look : mobBaby && babyLook(m.k) > 0 ? babyLook(m.k) : 0;
   const tagEl = $("mob-tag");
   tagEl.textContent = t ? (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]) : "";
-  const biome = t && t.kind === SNOWY ? "snowy" : (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
+  const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? "snowy" : (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
   mobStage.dataset.biome = biome;
   mobStage.dataset.time = night ? "night" : "day";
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);

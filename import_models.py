@@ -568,8 +568,8 @@ def look(d, rcs, mats, anims, name, held=False, mood=None):
         mat = evaluate(next((expr for m in rc.get("materials", []) for pat, expr in m.items() if pat == "*"), "Material.default"), renv)
         kind = isinstance(mat, tuple) and material_kind(next((v for k, v in d.get("materials", {}).items() if k.lower() == mat[1]), ""), mats)
         # A layer whose every bone with cubes has a glowing material of its own glows as a whole: the sulfur spider's
-        # eye panel is drawn with the plain material but its one bone with the glowing one.
-        if not kind:
+        # eye panel is drawn with the spider's material but its one bone with the glowing one.
+        if kind in (None, False, "lit"):
             def bone_kind_of(pat):
                 expr = next((e for m in rc.get("materials", []) for p, e in m.items() if p == pat), None)
                 bm = expr and evaluate(expr, renv)

@@ -63,9 +63,9 @@ const PACK_TAGS_MORE = {
     { names: ["Turkey"], what: "A turkey with its tail fanned out." },
     { names: ["Rooster"], what: "A rooster with a tall green tail." },
     { names: ["Duck"], what: "A white duck." },
-    { names: ["Cherry"], what: "A cherry blossom on its comb.", needs: "Only temperate chickens, the usual kind.", climate: "temperate" },
+    { names: ["Cherry"], what: "A cherry blossom on its comb.", biome: "cherry_grove", needs: "Only temperate chickens, the usual kind.", climate: "temperate" },
     { names: ["Villager"], what: "Dressed as a villager, with a villager’s big nose and eyes that move about and blink." },
-    { names: ["Dappled"], what: "Orange leaves on its head and tail.", needs: "Only cold chickens, the kind from snowy biomes.", climate: "cold" },
+    { names: ["Dappled"], what: "Orange leaves on its head and tail.", biome: "dappled_forest", needs: "Only cold chickens, the kind from snowy biomes.", climate: "cold" },
   ],
   cod: [
     { names: ["Baby", "Fry", "Bubbles"], kind: BABY },
@@ -77,10 +77,10 @@ const PACK_TAGS_MORE = {
   ],
   cow: [
     { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "A zombie calf, rotting." },
-    { names: ["Cherry"], what: "A crown of cherry blossoms.", needs: "Not on cold cows: their woolly heads hide the crown.", climate: ["temperate", "warm"] },
+    { names: ["Cherry"], what: "A crown of cherry blossoms.", biome: "cherry_grove", needs: "Not on cold cows: their woolly heads hide the crown.", climate: ["temperate", "warm"] },
     { names: ["Strawberry"], what: "A pink strawberry cow with pale spots.", needs: "Only temperate cows, the usual kind.", climate: "temperate" },
     { names: ["Halloween", "Zombified"], what: "A zombie cow, rotting, its ribs showing." },
-    { names: ["Dappled"], what: "Orange leaves on its head.", needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
+    { names: ["Dappled"], what: "Orange leaves on its head.", biome: "dappled_forest", needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
   ],
   creaking: [
     { names: ["Dappled"], what: "The dappled look." },
@@ -186,8 +186,8 @@ const PACK_TAGS_MORE = {
   pig: [
     { names: ["Zombified Piglet", "Baby Zombified"], more: ["zombified Piglet", "Zombified piglet", "baby Zombified", "Baby zombified"], what: "A zombie piglet, its pink flesh rotting green at the edges, with bare bone showing on its side and legs." },
     { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A piglet’s skeleton: a bony skull and ribcage on bare bone legs." },
-    { names: ["Cherry"], what: "A wreath of pink cherry blossoms and leaves round its head, and a leafy twig poking out beside its snout.", rare: "pigs in cherry groves" },
-    { names: ["Dappled"], what: "Orange leaves on its head.", rare: "pigs in dappled forests" },
+    { names: ["Cherry"], what: "A wreath of pink cherry blossoms and leaves round its head, and a leafy twig poking out beside its snout.", biome: "cherry_grove", rare: "pigs in cherry groves" },
+    { names: ["Dappled"], what: "Orange leaves on its head.", biome: "dappled_forest", rare: "pigs in dappled forests" },
     { names: ["Halloween", "Zombified"], what: "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs." },
     { names: ["Skeleton"], what: "A pig’s skeleton: a bony skull and ribcage on bare bone legs." },
   ],
@@ -248,10 +248,10 @@ const PACK_TAGS_MORE = {
   ],
   spider: [
     { names: ["Baby", "Spiderling", "Webby"], kind: BABY },
-    { names: ["Cherry"], what: "Pink cherry blossoms and green leaves grow over its back and legs.", rare: "spiders in cherry groves" },
-    { names: ["Sulfur"], what: "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange.", rare: "spiders in sulfur caves" },
-    { names: ["Dappled"], what: "Orange and red leaves on its back and head.", rare: "spiders in dappled forests" },
-    { names: ["Pale"], what: "Pale gray legs under a dark brown body, and orange eyes that glow.", rare: "spiders in pale gardens" },
+    { names: ["Cherry"], what: "Pink cherry blossoms and green leaves grow over its back and legs.", biome: "cherry_grove", rare: "spiders in cherry groves" },
+    { names: ["Sulfur"], what: "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange.", biome: "sulfur_caves", rare: "spiders in sulfur caves" },
+    { names: ["Dappled"], what: "Orange and red leaves on its back and head.", biome: "dappled_forest", rare: "spiders in dappled forests" },
+    { names: ["Pale"], what: "Pale gray legs under a dark brown body, and orange eyes that glow.", biome: "pale_garden", rare: "spiders in pale gardens" },
     { names: ["Halloween", "Skull"], what: "A dark purple spider with magenta bands on its legs and a big bone-white skull, with pink eyes, for a back." },
   ],
   stray: [

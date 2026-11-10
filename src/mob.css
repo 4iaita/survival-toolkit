@@ -11,9 +11,18 @@
 .stage[data-biome="cave"] { --sky: #0b0b10; --haze: #0d0d13; }
 /* The mineshaft: dark rock, with a dim gravel floor. */
 .stage[data-biome="mineshaft"] { --sky: #0b0b10; --haze: #100d0a; }
-.stage[data-biome="mineshaft"]::after { filter: brightness(.6); }
+.stage[data-biome="mineshaft"]::after { filter: brightness(.5); }
 .stage[data-biome="mineshaft"]::before { display: none; }
 .stage[data-biome="nether"] { --sky: #1c0605; --haze: #3a0f08; }
+/* The biomes some name tags' looks come from: the cherry grove's clear mountain sky, the pale garden's gray mist, the
+   dappled forest's soft autumn haze, the sulfur caves' dark yellow murk. */
+.stage[data-biome="cherry_grove"] { --sky: #78a8e8; --haze: #f3d7e4; }
+.stage[data-biome="pale_garden"] { --sky: #a9aeab; --haze: #d9dcd7; }
+.stage[data-biome="pale_garden"]::before { opacity: .35; }
+.stage[data-biome="dappled_forest"] { --sky: #7fa6d6; --haze: #ecd2ad; }
+.stage[data-biome="sulfur_caves"] { --sky: #120f06; --haze: #231b08; }
+.stage[data-biome="sulfur_caves"]::before { display: none; }
+.stage[data-biome="sulfur_caves"]::after { filter: brightness(.7); }
 /* The End: a dark violet void, and end stone in the dim light it gets there. */
 .stage[data-biome="end"], .stage[data-biome="end_island"] { --sky: #120c20; --haze: #2a2140; }
 .stage[data-biome="end"]::after, .stage[data-biome="end_island"]::after { filter: brightness(.72) saturate(.8); }

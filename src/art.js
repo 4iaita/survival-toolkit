@@ -41,6 +41,10 @@ const BIOME_TINTS = {
   // The panda's and the mooshroom's.
   bamboo_jungle: { foliage: "#30bb0b", grass: "#59c93c" },
   mushroom_fields: { foliage: "#2bbb0f", grass: "#55c93f" },
+  // The biomes some name tags' looks come from.
+  cherry_grove: { foliage: "#b6db61", grass: "#b6db61" },
+  pale_garden: { foliage: "#878d76", grass: "#778272" },
+  dappled_forest: { foliage: "#d2701d", grass: "#9cb34e" },
 };
 
 // Grass, leaves and water are gray in the pack; the game colors them by multiplying with the biome's tint.

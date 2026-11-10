@@ -165,6 +165,20 @@ FILES = {
     "mycelium_side": "blocks/mycelium_side", "mycelium_top": "blocks/mycelium_top",
     "red_mushroom_block": "blocks/mushroom_block_skin_red", "brown_mushroom_block": "blocks/mushroom_block_skin_brown",
     "mushroom_stem": "blocks/mushroom_block_skin_stem",
+    # The biomes some name tags' looks come from: the cherry grove, pale garden, dappled forest and sulfur caves.
+    "cherry_leaves": "blocks/cherry_leaves", "cherry_log": "blocks/cherry_log_side", "cherry_sapling": "blocks/cherry_sapling",
+    "pale_oak_leaves": "blocks/pale_oak_leaves", "pale_oak_log": "blocks/pale_oak_log_side", "pale_moss_block": "blocks/pale_moss_block",
+    "pale_hanging_moss": "blocks/pale_hanging_moss_middle", "pale_hanging_moss_tip": "blocks/pale_hanging_moss_tip",
+    "pale_moss_carpet_side": "blocks/pale_moss_carpet_side_base", "eyeblossom": "blocks/eyeblossom_dormant",
+    "eyeblossom_open": "blocks/eyeblossom_blooming", "creaking_heart": "blocks/creaking_heart_side_dormant",
+    "wildflowers": "blocks/wildflowers", "firefly_bush": "blocks/firefly_bush", "bush": "blocks/bush", "leaf_litter": "blocks/leaf_litter",
+    "short_dry_grass": "blocks/short_dry_grass",
+    "sulfur": "blocks/sulfur", "potent_sulfur": "blocks/potent_sulfur", "calcite": "blocks/calcite",
+    "sulfur_spike_up_tip": "blocks/sulfur_spike_up_tip", "sulfur_spike_up_frustum": "blocks/sulfur_spike_up_frustum",
+    "sulfur_spike_down_frustum": "blocks/sulfur_spike_down_frustum", "sulfur_spike_down_middle": "blocks/sulfur_spike_down_middle",
+    "sulfur_spike_down_tip": "blocks/sulfur_spike_down_tip",
+    # The mineshaft: its rails, chests and the deepslate deep down.
+    "rail": "blocks/rail_normal", "chest_front": "blocks/chest_front",
 }
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color

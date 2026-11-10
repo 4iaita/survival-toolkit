@@ -4,7 +4,8 @@
  * toward the horizon's haze, the far one more, so they read as distance. Foliage, grass and water take the
  * biome's tint the way the game colors them, and in snowy biomes everything wears a layer of snow.
  * The forest, for the Mobs tab, is no village either: oaks and birches, with flowers and mushrooms underneath.
- * So is the mineshaft: timber supports along a rock wall, cobwebs thick in their corners, a spawner and torches.
+ * So is the mineshaft: a dark corridor of fence-post supports under plank beams, rails, a chest minecart, cobwebs and a
+ * webbed-in spawner.
  * The cave and the nether, for the Mobs tab, aren't village biomes: a dark rock wall full of ore instead
  * of hills, a ceiling with stalactites or weeping vines, and lanterns or lava for light. Nor is the End: end stone
  * hills under the pack's End sky, with crystal-topped obsidian pillars, end city towers and chorus plants; and the
@@ -16,6 +17,8 @@
  * the old growth taigas' giant spruces and pines over mossy boulders, a sparse jungle, a savanna plateau's high steps
  * and the wooded badlands' banded terracotta mesas with oaks on top. The panda's bamboo jungle has none either: thick
  * bamboo under jungle trees. Nor do the mooshroom's mushroom fields: huge mushrooms on mycelium.
+ * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
+ * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
 // Spruce leaves keep one color everywhere; other tints come from BIOME_TINTS.
 const SPRUCE_TINT = "#619961";
@@ -265,6 +268,46 @@ const mineSupport = (width, height, torch = 0) => {
   })], { P: blockTex("oak_planks"), L: blockTex("log_oak"), W: plantTex("cobweb"), T: plantTex("torch") });
 };
 const spawnerCage = block("mob_spawner");
+// A mineshaft as the game builds it: every few blocks a support of two oak fence posts under an oak plank beam, a torch
+// on some, cobwebs strung in their corners; rails along the floor, a chest minecart standing on them, and a spawner
+// netted round with webs, where cave spiders come from.
+const FENCE = { layers: [["oak_planks", null, [6, 10]]] };
+// webs: how many rows down the top corners are strung with cobwebs (the top row that many blocks in from each post).
+const mineFrame = (width, height, { torch = 0, webs = 0 } = {}) => {
+  const inside = width - 2, row = (left, right) => `F${left}${".".repeat(inside - left.length - right.length)}${right}F`;
+  return prop(["P".repeat(width), ...Array.from({ length: height }, (_, i) => {
+    const web = "W".repeat(Math.max(0, Math.min(webs - i, Math.floor(inside / 2))));
+    if (i === 2 && torch) return torch < 0 ? row("T", web) : row(web, "T");
+    return row(web, web);
+  })], { P: blockTex("oak_planks"), F: FENCE, W: plantTex("cobweb"), T: plantTex("torch") });
+};
+// Rails seen from the side: the iron rail on its sleepers.
+const RAIL = { rects: [[0, 13, 4, 16, "#4f3a24"], [8, 13, 12, 16, "#4f3a24"], [0, 11, 16, 13, "#7d7d7d"], [0, 11, 16, 12, "#b0b0b0"]], cap: false };
+const rails = length => prop(["R".repeat(length)], { R: RAIL });
+// A chest minecart: the chest's lid and latch showing over the cart's iron sides, wheels on the rail.
+const chestMinecart = prop(["CC", "MM"], {
+  C: { layers: [["chest_front"]], rows: [1, 16], cap: false },
+  M: { rects: [[0, 0, 16, 9, "#5e5e5e"], [0, 0, 16, 2, "#8a8a8a"], [0, 7, 16, 9, "#3c3c3c"], [2, 9, 6, 13, "#262626"], [10, 9, 14, 13, "#262626"], ...RAIL.rects], cap: false },
+});
+const webbedSpawner = prop(["WWW", "WSW"], { S: blockTex("mob_spawner"), W: plantTex("cobweb") });
+// The cherry grove: cherry trees, their pink crowns hanging down at the edges, over a meadow high in the mountains.
+const CHERRY = { L: blockTex("cherry_leaves", null, { backing: "#a3607f" }), T: blockTex("cherry_log") };
+const cherryTree = (trunk = 3) => prop(["..LLLLL..", ".LLLLLLL.", "LLLLLLLLL", "LLLLTLLLL", "L.L.T.L.L", ...Array(trunk).fill("....T....")], CHERRY);
+const smallCherry = () => prop([".LLL.", "LLLLL", "L.T.L", "..T.."], CHERRY);
+// The pale garden: pale oaks (dark oaks' shape: a two-wide trunk under a broad crown) hung with pale moss, one with a
+// creaking heart in its trunk; pale moss underfoot and eyeblossoms, shut by day.
+const PALE = { L: blockTex("pale_oak_leaves", null, { backing: "#4a504b" }), T: blockTex("pale_oak_log"), H: blockTex("creaking_heart"),
+  M: plantTex("pale_hanging_moss"), m: plantTex("pale_hanging_moss_tip") };
+const paleOak = (trunk = 3, heart = false) => prop([".LLLLLL.", "LLLLLLLL", "LLLLLLLL", "LMLTTLML", "M.TT..m.", "m.TT....",
+  ...Array.from({ length: trunk }, (_, i) => (heart && i === 0 ? "..TH...." : "..TT...."))], PALE);
+const smallPaleOak = () => prop([".LLL.", "LLLLL", "LMTML", "m.T.m", "..T.."], PALE);
+const paleMound = rows => prop(rows, { M: blockTex("pale_moss_block"), D: blockTex("dirt") });
+// The dappled forest: oaks and birches turned orange, red and gold, as the pack's dappled looks are.
+const DAPPLED = { orange: "#d2701d", red: "#b8381c", gold: "#d8ae2c" };
+const autumnBirch = () => prop([".LLL.", "LLLLL", "LLLLL", ".LLL.", "..T..", "..T..", "..T.."], { L: leavesTex("leaves_birch", DAPPLED.gold), T: blockTex("log_birch") });
+// The sulfur caves: tuff and sulfur, seamed with potent sulfur and calcite, sulfur spikes hanging and rising.
+const sulfurMound = rows => prop(rows, { S: blockTex("sulfur"), P: blockTex("potent_sulfur"), T: blockTex("tuff"), C: blockTex("calcite") });
+const sulfurSpike = (tall = 1) => prop(["t", ...Array(tall).fill("f"), "S"], { t: plantTex("sulfur_spike_up_tip"), f: plantTex("sulfur_spike_up_frustum"), S: blockTex("sulfur") });
 // A giant spruce of the old growth spruce taiga: a two-wide trunk under a broad cone, rising out of the top of the stage.
 const giantSpruce = () => prop([
   "...LL...",
@@ -366,14 +409,18 @@ const BACKDROPS = {
       [plant("crimson_fungus"), 6], [netherMound(["G.", "CC"]), 8], [lavafall, 14], [netherMound(["..CC", ".CNN", "CQMN"]), 16], [plant("crimson_roots"), 11]],
     lights: [-18, 14],
   }),
+  // A mineshaft corridor, as dark as the game's: a support every few blocks, rails down the middle with a chest minecart
+  // on them, and webs thickest round the spawner, where the cave spiders come from.
   mineshaft: () => ({
-    mist: { far: 0.66, near: 0.12 },
-    wall: { rock: ["stone", "stone", "andesite", "stone", "tuff"], ores: ["coal_ore", "coal_ore", "coal_ore", "iron_ore"] },
-    ceiling: { rock: ["stone", "andesite", "stone", "cobblestone"], drip: ["stone"] },
-    // Webs hang thick in the supports' top corners, as they do in a real mineshaft; a spawner sits at the side.
-    near: [[mineSupport(7, 8, 1), -24], [mineSupport(9, 10, -1), -4.5], [spawnerCage, -10], [mineSupport(7, 8, -1), 17]],
-    // The torches on the posts, and the spawner's faint light.
-    lights: [[-18.5, 4.5], [-3.5, 6.5], [18, 4.5], [-10, 0.6]],
+    mist: { far: 0.8, near: 0.22 },
+    wall: { rock: ["stone", "stone", "andesite", "stone", "gravel", "stone", "tuff"], ores: ["coal_ore", "coal_ore", "coal_ore", "iron_ore", "andesite", "gravel"] },
+    ceiling: { rock: ["stone", "andesite", "stone", "gravel", "stone"], drip: ["cobweb"], low: 12, shade: 0.45 },
+    near: [[mineFrame(5, 10, { webs: 3 }), -28], [mineFrame(5, 10, { torch: 1, webs: 1 }), -20], [webbedSpawner, -15], [block("cobweb", ["B.", "BB"]), -17],
+      [mineFrame(5, 10, { webs: 3 }), -11], [rails(64), -32], [plant("cobweb"), -5], [plant("cobweb"), 4],
+      [mineFrame(5, 10, { torch: -1, webs: 2 }), 7], [chestMinecart, 13], [mineFrame(5, 10, { webs: 3 }), 16], [block("cobweb", [".B", "BB"]), 21],
+      [mineFrame(5, 10, { torch: 1, webs: 1 }), 24]],
+    // Only the torches light it, and the spawner's flames faintly.
+    lights: [[-16.5, 7.5], [7.5, 7.5], [27.5, 7.5], [-14, 0.6]],
   }),
   cave: () => ({
     mist: { far: 0.62, near: 0.3 },
@@ -496,6 +543,43 @@ const BACKDROPS = {
       [plant("mushroom_red"), 16], [hugeBrownMushroom(5), 18]],
     seed: 37,
   }),
+  // The cherry grove: a meadow high in the mountains, cherry trees on the slopes behind and nearer by, saplings and grass.
+  cherry_grove: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 4, rise: 6, trees: [0.03, 0.15, 0.28, 0.41, 0.55, 0.69, 0.82, 0.94].map(at => [smallCherry(), at]) },
+    near: [[cherryTree(4), -26], [plant("short_grass", t.grass), -17], [cherryTree(3), -16], [plant("cherry_sapling"), -9], [plant("short_grass", t.grass), -7],
+      [plant("short_grass", t.grass), 4], [plant("cherry_sapling"), 6], [cherryTree(5), 9], [plant("short_grass", t.grass), 19], [cherryTree(3), 20]],
+    seed: 39,
+  }),
+  // The pale garden: pale oaks thick on the hills, hung with pale moss; pale moss underfoot, eyeblossoms shut by day,
+  // and a creaking heart in one trunk.
+  pale_garden: () => ({
+    mist: { far: 0.5, near: 0.16 },
+    hills: { top: blockTex("pale_moss_block"), fill: blockTex("pale_moss_block"), base: 3, rise: 3, trees: Array.from({ length: 22 }, (_, i) => [smallPaleOak(), i / 21 - 0.02]) },
+    near: [[paleOak(4), -28], [paleOak(5), -22], [plant("eyeblossom"), -19], [paleOak(3, true), -16], [smallPaleOak(), -10], [paleMound(["M.", "MM"]), -11],
+      [plant("pale_moss_carpet_side"), -7], [plant("eyeblossom"), -5], [plant("eyeblossom"), 5], [plant("pale_moss_carpet_side"), 7], [smallPaleOak(), 7],
+      [paleOak(5), 11], [plant("eyeblossom"), 18], [paleMound([".M", "MD"]), 19], [paleOak(3), 21], [paleOak(4), 26]],
+    seed: 41,
+  }),
+  // The dappled forest: oaks gone orange and red and birches gone gold, bushes and firefly bushes beneath.
+  dappled_forest: t => ({
+    mist: { far: 0.3, near: 0.08 },
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: Array.from({ length: 14 }, (_, i) => [
+      i % 3 === 2 ? autumnBirch() : oakTree({ foliage: i % 3 ? DAPPLED.red : DAPPLED.orange }), i / 13 - 0.02]) },
+    near: [[tallOak({ foliage: DAPPLED.orange }), -26], [autumnBirch(), -19], [plant("bush", DAPPLED.orange), -14], [oakTree({ foliage: DAPPLED.red }), -12],
+      [plant("firefly_bush"), -7], [plant("short_grass", t.grass), -5], [plant("short_grass", t.grass), 4], [plant("bush", DAPPLED.red), 6],
+      [autumnBirch(), 8], [plant("firefly_bush"), 13], [tallOak({ foliage: DAPPLED.red }), 15], [oakTree({ foliage: DAPPLED.orange }), 21]],
+    seed: 43,
+  }),
+  // The sulfur caves: tuff and yellow sulfur seamed with potent sulfur and calcite, sulfur spikes hanging from the ceiling
+  // and rising from the floor.
+  sulfur_caves: () => ({
+    mist: { far: 0.7, near: 0.22 },
+    wall: { rock: ["tuff", "tuff", "tuff", "sulfur", "tuff", "tuff"], ores: ["potent_sulfur", "sulfur", "sulfur", "calcite"] },
+    ceiling: { rock: ["tuff", "sulfur", "tuff", "calcite"], drip: ["sulfur_spike_down_frustum", "sulfur_spike_down_middle", "sulfur_spike_down_tip"] },
+    near: [[sulfurMound(["..S.", ".SPS", "TSSC"]), -24], [sulfurSpike(2), -18], [sulfurMound(["P.", "SS"]), -15], [sulfurSpike(), -11], [sulfurSpike(), -7],
+      [sulfurSpike(), 6], [sulfurMound([".S", "PS"]), 9], [sulfurSpike(2), 13], [sulfurMound(["..SC", ".PSS", "STSP"]), 17], [sulfurSpike(), 22]],
+    lights: [-23, -15, 9, 18], lightColor: "255, 214, 80",
+  }),
   swamp: t => ({
     hills: { top: grassyTop(t), fill: blockTex("mud"), base: 2, rise: 1, trees: [[swampOak(t), 0.2], [swampOak(t), 0.5], [swampOak(t), 0.82]] },
     near: [[witchHut, -14], [swampOak(t), -7], [swampOak(t), 2], [pond(t), 8], [plant("short_grass", t.grass), -2]],
@@ -528,9 +612,14 @@ function drawBlock(ctx, spec, left, top, size) {
     return;
   }
   const [from, to] = spec.rows || [0, 16];
-  for (const [name, tint, [x0, x1] = [0, 16]] of spec.layers) {
+  for (const [name, tint, [x0, x1] = [0, 16]] of spec.layers || []) {
     const tex = textureCanvas(name, tint);
     if (tex) ctx.drawImage(tex, x0, from, x1 - x0, to - from, left + (x0 / 16) * size, top + (from / 16) * size, ((x1 - x0) / 16) * size, ((to - from) / 16) * size);
+  }
+  // Flat-colored boxes over the layers, in texels: [x0, y0, x1, y1, color] (a rail seen from the side, a minecart).
+  for (const [x0, y0, x1, y1, color] of spec.rects || []) {
+    ctx.fillStyle = color;
+    ctx.fillRect(left + (x0 / 16) * size, top + (y0 / 16) * size, ((x1 - x0) / 16) * size, ((y1 - y0) / 16) * size);
   }
 }
 
@@ -677,12 +766,19 @@ function drawWall(ctx, { rock, ores }, width, height, size, seed) {
   }
 }
 
-// The ceiling: rock hanging from the top edge to an uneven depth, with stalactites under it.
-function drawCeiling(ctx, { rock, drip }, width, size, seed) {
-  const random = rng(seed);
+// The ceiling: rock hanging from the top edge to an uneven depth, with stalactites under it. low: how many blocks above
+// the floor it comes down to (a mineshaft's tunnel, its roof resting on the supports' beams), not just its top rows;
+// shade: how much darker it is.
+function drawCeiling(ctx, { rock, drip, low, shade = 0 }, width, size, seed, horizon) {
+  const random = rng(seed), roof = low ? Math.max(0, Math.floor(horizon / size - low)) : 0;
   for (let c = 0; c < Math.ceil(width / size); c++) {
-    const depth = 1 + Math.round(2 * ((Math.sin(c * 0.43 + seed) + Math.sin(c * 0.97) + 2) / 4));
+    const depth = roof + 1 + Math.round(2 * ((Math.sin(c * 0.43 + seed) + Math.sin(c * 0.97) + 2) / 4)) - (low ? 1 : 0);
     for (let k = 0; k < depth; k++) drawBlock(ctx, blockTex(rock[Math.floor(random() * rock.length)]), c * size, k * size, size);
+    // shade: how much darker the rock is (a mineshaft's roof, out of the torchlight).
+    if (shade) {
+      ctx.fillStyle = `rgba(0, 0, 0, ${shade})`;
+      ctx.fillRect(c * size, 0, size, depth * size);
+    }
     if (random() < 0.24) {
       const hang = random() < 0.4 ? drip : drip.slice(-2);
       hang.forEach((name, k) => drawBlock(ctx, blockTex(name), c * size, (depth + k) * size, size));
@@ -726,7 +822,7 @@ function backdropView(canvas) {
     if (scene.crystals) drawCrystals(ctx, crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, seed), FAR * dpr), FAR * dpr);
     if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11);
     layer(lc => {
-      if (scene.ceiling) drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5);
+      if (scene.ceiling) drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5, horizon);
       for (const [p, at] of scene.near) drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
     }, mist.near);
     if (scene.crystals) drawCrystals(ctx, crystalsOf(scene.near.map(([p, at]) => [p, canvas.width / 2 + at * NEAR * dpr, horizon]), NEAR * dpr), NEAR * dpr);

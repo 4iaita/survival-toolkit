@@ -467,7 +467,7 @@ const groundArt = biome => {
   // Only villages are BIOMES; the Mobs tab's cave, nether, End, ocean, lush and flooded caves, the wolves' wild
   // biomes, the panda's bamboo jungle and the mooshroom's mushroom fields have floors of their own.
   const name = (BIOMES.find(b => b.k === biome) || { ground: { forest: "grass_top", snowy_taiga: "snow", grove: "snow", pine_taiga: "podzol_top",
-    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel" }[biome] || "stone" }).ground, tex = art(name);
+    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "tuff", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel" }[biome] || "stone" }).ground, tex = art(name);
   if (!tex) return icon(`biome:${biome}`);
   return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };

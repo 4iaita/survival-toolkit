@@ -20,7 +20,8 @@ const GAME_TAGS = [
 // it checks, in capitals (it also takes all lower case; a few take more, listed in more). kind marks the looks
 // most mobs share (BABY, SNOWY); rare: which mobs get the look without the name, picked again each time one loads;
 // needs: what has to be true first; climate: the climate (a MOB_VARIANTS climate, or temperate) or climates the look
-// shows in, the only variants the name can be tried on. On the stage: night for a name whose difference only shows in the dark,
+// shows in, the only variants the name can be tried on; biome: the backdrop the stage shows behind it, the biome the look
+// comes from (the cherry grove for a Cherry look). On the stage: night for a name whose difference only shows in the dark,
 // moving for a texture that runs, still for a dance it can't show.
 const BABY = "baby", SNOWY = "snowy";
 const snowyIn = mobs => ({ names: ["Snowy", "Frosty"], kind: SNOWY, rare: `15% of ${mobs} in snowy biomes` });
