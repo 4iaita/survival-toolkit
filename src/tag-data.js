@@ -120,11 +120,11 @@ const PACK_TAGS = {
   ocelot: [{ names: ["Baby", "Oceling", "Spotty"], kind: BABY }],
   panda: [{ names: ["Baby", "Cub", "Bao"], kind: BABY }],
   parrot: [
-    { names: ["Crow"], what: "Turns it into a black crow." },
-    { names: ["Blue Jay"], more: ["BlueJay", "Bluejay"], what: "Turns it into a blue jay." },
-    { names: ["Cardinal"], what: "Turns it into a red cardinal." },
-    { names: ["Robin"], what: "Turns it into a robin." },
-    { names: ["Turtle Dove"], more: ["TurtleDove", "Turtledove"], what: "Turns it into a turtle dove." },
+    { names: ["Crow"], what: "A black crow, crouched low: dark slate feathers all over, a gray beak and pale yellow eyes with a soft orange glow round them in the dark.", night: true },
+    { names: ["Blue Jay"], more: ["blue Jay", "Blue jay", "BlueJay", "blueJay"], what: "A blue jay: a bright blue crest, back and wings with white patches, a pale gray breast, a black band across its face and a long blue tail." },
+    { names: ["Cardinal"], what: "A red cardinal: red all over, its wings darker, with a pointed crest, a black mask round a stubby orange beak and a long thin tail." },
+    { names: ["Robin"], what: "A robin: a brown head, back and wings, an orange face and breast over a pale gray belly, a thin dark beak and a long thin tail." },
+    { names: ["Turtle Dove"], more: ["turtle Dove", "Turtle dove", "TurtleDove", "turtleDove"], what: "A turtle dove: pale brown, with a gray patch on the side of its neck, wings checked in dark brown and orange, a pinkish beak and a long thin tail." },
   ],
   pig: [
     { names: ["Baby", "Piglet", "Lil Chop"], more: ["lil Chop", "Lil chop"], kind: BABY },

@@ -154,6 +154,12 @@ const MOB_VARIANTS = {
     { k: "cold", n: "Cold", where: "Grown from tadpoles in cold biomes", biome: "snowy" },
     { k: "warm", n: "Warm", where: "Mangrove swamps", biome: "mangrove_swamp" },
   ].map((v, i) => (i ? { ...v, skins: Object.fromEntries(["", "_baby", "_baby_imp", "_halloween"].map(s => [`new_frog${s}_1`, `new_frog_${v.k}${s}_1`])) } : v)),
+  // The parrot's five colors (the pack's q.variant 0 to 4) share its model and differ in skin, the baby look's too. The
+  // game gives a parrot one at random, all five equally likely, in jungles. The Crow, Blue Jay, Cardinal, Robin and
+  // Turtle Dove looks keep their own feathers.
+  parrot: [
+    { k: "red", n: "Red" }, { k: "blue", n: "Blue" }, { k: "green", n: "Green" }, { k: "cyan", n: "Cyan" }, { k: "gray", n: "Gray" },
+  ].map((v, i) => ({ ...v, where: "1 in 5 parrots", ...(i ? { skins: { new_parrot: `new_parrot_${v.k}` } } : {}) })),
   // The goat's horns: the pack gives each goat one of eight shapes at random (the first four 1 in 5 goats each, the
   // others 1 in 20), long ones to start with. A goat that rams a log, stone or ore drops a horn, one each time, and grows
   // none back (the Halloween goat's horns go the same way).
@@ -244,7 +250,7 @@ const MOBS = [
   { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals", biome: "taiga" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
   { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals", biome: "savanna_plateau" },
   { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
-  { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals" }, { k: "pig", n: "Pig", g: "Animals" },
+  { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals", biome: "jungle" }, { k: "pig", n: "Pig", g: "Animals" },
   { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy", zoom: BEAR_ROOM }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
   { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "taiga" },
   { k: "axolotl", n: "Axolotl", g: "Water", biome: "lush", swim: true }, { k: "cod", n: "Cod", g: "Water", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", g: "Water", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", g: "Water", biome: "flooded_cave", glowing: true, swim: true },
