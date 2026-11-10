@@ -152,14 +152,16 @@ const MOB_SADDLES = {
   pig: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true], ["2dh92l6klfg72f4qk255d6*", false]],
   // The horse's saddle, stirrups and bridle (its reins only show with a rider); a snowy horse's snow makes way for the saddle.
   horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true], ["f64ck255d6", true], ["alpha*NoFancyArmorSaddle*", false]],
-  // The donkey's saddle, stirrups and bridle, as the horse's.
+  // The donkey's and mule's saddle, stirrups and bridle, as the horse's.
   donkey: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
+  mule: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
 };
 // Mobs that can carry a chest: the [bone pattern, shown] rules a chest on it shows, as the pack's render controllers do for
 // q.is_chested. The game doesn't give a baby one.
 const MOB_CHESTS = {
   // A chest strapped to each side.
   donkey: [["496kld", true], ["496klj", true]],
+  mule: [["496kld", true], ["496klj", true]],
 };
 // What wearing armor (MOB_ARMOR) shows or hides besides the armor: a snowy horse's snow makes way for it.
 const ARMOR_SHOWS = { horse: [["alpha*NoFancyArmor*", false]] };
