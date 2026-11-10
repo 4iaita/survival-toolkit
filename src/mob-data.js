@@ -1,7 +1,7 @@
 /* ---------- Mobs ---------- */
 // Mobs on the Mobs tab, in groups like the creative inventory's. k is the MOB_LOOKS key and the spawn egg
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; biome, the village biome its stage shows
-// (a BIOMES key, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, beach, cave, mineshaft, nether, end, end_island, ocean, lush or flooded_cave; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, cave, mineshaft, nether, end, end_island, ocean, lush or flooded_cave; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -244,6 +244,9 @@ const MOB_WOOL = {
 const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chicken", "cow", "dolphin", "donkey", "drowned", "fox", "goat",
   "hoglin", "horse", "husk", "llama", "mooshroom", "mule", "nautilus", "ocelot", "panda", "pig", "piglin", "polar_bear", "rabbit", "sheep",
   "sniffer", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
+// Mobs the game has no babies of that the pack makes babies of all the same, 1 in 5 of them (with its setting for
+// that): the stage can show them as babies too, in the pack's baby look.
+const PACK_BABIES = new Set(["frog", "parrot"]);
 const MOB_GROUPS = ["Animals", "Water", "Village", "Monsters", "Nether", "End"];
 const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
@@ -256,7 +259,7 @@ const MOBS = [
   { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "taiga" },
   { k: "axolotl", n: "Axolotl", g: "Water", biome: "lush", swim: true }, { k: "cod", n: "Cod", g: "Water", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", g: "Water", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", g: "Water", biome: "flooded_cave", glowing: true, swim: true },
   { k: "nautilus", n: "Nautilus", g: "Water", biome: "ocean", stand: TURNED_ROUND, swim: true }, { k: "pufferfish", n: "Pufferfish", g: "Water", biome: "ocean", swim: true }, { k: "salmon", n: "Salmon", g: "Water", biome: "ocean", swim: true }, { k: "squid", n: "Squid", g: "Water", biome: "ocean", swim: true },
-  { k: "tadpole", n: "Tadpole", g: "Water", biome: "ocean", swim: true }, { k: "tropicalfish", n: "Tropical Fish", g: "Water", biome: "ocean", swim: true }, { k: "turtle", n: "Turtle", g: "Water", biome: "beach" },
+  { k: "tadpole", n: "Tadpole", g: "Water", biome: "ocean", swim: true }, { k: "tropicalfish", n: "Tropical Fish", g: "Water", biome: "ocean", swim: true }, { k: "turtle", n: "Turtle", g: "Water", biome: "ocean", swim: true },
   { k: "allay", n: "Allay", g: "Village" }, { k: "copper_golem", n: "Copper Golem", g: "Village" }, { k: "iron_golem", n: "Iron Golem", g: "Village" },
   { k: "snow_golem", n: "Snow Golem", g: "Village" }, { k: "villager", n: "Villager", g: "Village" },
   { k: "wandering_trader", n: "Wandering Trader", g: "Village" },

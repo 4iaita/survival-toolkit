@@ -40,8 +40,6 @@ const BIOME_TINTS = {
   badlands: { foliage: "#9e814d", grass: "#90814d" },
   // The goat's jagged peaks.
   peaks: { foliage: "#60a17b", grass: "#80b497" },
-  // The turtle's beach.
-  beach: { foliage: "#77ab2f", grass: "#91bd59", water: "#44aff5" },
   // The warm frog's mangrove swamp.
   mangrove_swamp: { foliage: "#8db127", grass: "#6a7039", water: "#3a7a6a" },
   // The panda's and the mooshroom's.

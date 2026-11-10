@@ -159,8 +159,6 @@ FILES = {
     # The wolf's wild biomes on the Mobs tab: badlands, groves and old growth taigas.
     "red_sand": "blocks/red_sand", "powder_snow": "blocks/powder_snow", "tall_grass_top": "blocks/double_plant_grass_top",
     "tall_grass_bottom": "blocks/double_plant_grass_bottom",
-    # The turtle's beach: sugar cane by the water.
-    "reeds": "blocks/reeds",
     # The warm frog's mangrove swamp: mangroves on arching roots, their leaves and hanging propagules.
     "mangrove_log": "blocks/mangrove_log_side", "mangrove_leaves": "blocks/mangrove_leaves", "mangrove_roots": "blocks/mangrove_roots_side",
     "muddy_mangrove_roots": "blocks/muddy_mangrove_roots_side", "mangrove_propagule_hanging": "blocks/mangrove_propagule_hanging",

@@ -30,7 +30,11 @@ NAMED = ["crow", "blue jay", "cardinal", "robin", "turtle dove"]
 # their own that adds its light (a soft round glow, brightest in the middle). The rest of the crow is drawn with the
 # pack's emissive-alpha material, by which the panels' faint texels would come out solid orange discs, so the panels are
 # a glow layer of their own here (a copy of the model with only their cubes), and the crow's own layer leaves them out.
+# The pack hangs both panels from one bone in the middle of the head, where the stage would put their light (inside the
+# head); each goes on a bone of its own here, pivoted on its eye (the eye texel at the front of the top row of each side
+# of the head), as the Enderman's glowing eyes are, so the light sits on the eye and faces out from that side.
 CROW_MODEL, EYES_MODEL, PANELS = "new_parrot_crow", "new_parrot_crow_eyes", "fsdyhky*"
+EYE_AT = [1, 9.5, 0]
 
 
 def crow_eyes(text):
@@ -39,6 +43,13 @@ def crow_eyes(text):
     for bone in eyes[2]:
         if not bone[0].startswith(PANELS[:-1]):
             bone[4] = []
+    i = next(i for i, b in enumerate(eyes[2]) if b[0].startswith(PANELS[:-1]))
+    panel = eyes[2][i]
+    side = lambda cube: 1 if cube[0] > 0 else -1
+    (right,) = [c for c in panel[4] if side(c) > 0]
+    (left,) = [c for c in panel[4] if side(c) < 0]
+    eyes[2][i] = [f"{PANELS[:-1]}1", panel[1], EYE_AT, 0, [right]]
+    eyes[2].append([f"{PANELS[:-1]}2", panel[1], [-EYE_AT[0], *EYE_AT[1:]], 0, [left]])
     looks = ia.parse_section(text, "MOB_LOOKS")["parrot"]
     crow = next(l for l in looks if "crow" in l["names"])
     layer = crow["layers"][0]

@@ -39,10 +39,10 @@ const currentTag = () => shownTags(mobTab.mob).find(t => t.names[0] === mobTab.n
 // The picked mob's mood, for the mobs that have any, and its collar if the mood has one: they aren't remembered, so every
 // mob starts calm, and with the collar the game gives it.
 let mobMood = "calm", mobCollar = DEFAULT_COLLAR, mobSize = DEFAULT_SIZE;
-// Whether it's a baby, for a mob the game has babies of: its look is the pack's baby look (babyLook), unless a name
+// Whether it's a baby, for a mob the game (or the pack) has babies of: its look is the pack's baby look (babyLook), unless a name
 // gives it a look of its own. Grown to start with, like the mood.
 let mobBaby = false;
-const babyLook = k => (GAME_BABIES.has(k) ? (MOB_LOOKS[k] || []).findIndex((l, i) => i && l.names.some(n => n.toLowerCase() === "baby")) : -1);
+const babyLook = k => (GAME_BABIES.has(k) || PACK_BABIES.has(k) ? (MOB_LOOKS[k] || []).findIndex((l, i) => i && l.names.some(n => n.toLowerCase() === "baby")) : -1);
 const isBaby = () => {
   const t = currentTag();
   return (mobBaby && babyLook(mobTab.mob) > 0 && !(t && t.look)) || Boolean(t && t.names[0].toLowerCase() === "baby");
