@@ -100,6 +100,16 @@ function faceRect(uv, size, face) {
     default: return [u + d + w, v, w, d];
   }
 }
+// A face's own entry can turn its texture clockwise (a fifth item, 90, 180 or 270 degrees): where a 0-1 spot across
+// and down the face finds its texel then.
+function turnedSpot([s, t], turn) {
+  switch (turn) {
+    case 90: return [t, 1 - s];
+    case 180: return [1 - s, 1 - t];
+    case 270: return [1 - t, s];
+    default: return [s, t];
+  }
+}
 // How far across and down its face a 0-1 spot in the box is, as seen from outside (skinTexel's layout).
 function faceSpot(face, fx, fy, fz) {
   switch (face) {
@@ -216,7 +226,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
           }
           const rect = faceRect(uv, dims, face);
           if (!rect) return -1;
-          const [s, t] = faceSpot(face, fx, fy, fz);
+          const [s, t] = turnedSpot(faceSpot(face, fx, fy, fz), rect[4]);
           // A face drawn backwards (negative width or height) starts from the far edge of its texels.
           let u = rect[0] + s * rect[2] - (rect[2] < 0 ? 1e-4 : 0), v = rect[1] + t * rect[3] - (rect[3] < 0 ? 1e-4 : 0);
           if (scroll && clock) {

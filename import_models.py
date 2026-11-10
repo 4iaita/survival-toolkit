@@ -777,7 +777,8 @@ FACE_KEYS = {"north": "n", "south": "s", "east": "e", "west": "w", "up": "u", "d
 def model(g):
     """A geometry as [texture width, texture height, bones]: each bone [name, parent index or -1, pivot,
     rotation or 0, cubes], each cube [x, y, z, w, h, d, uv, extras] with uv [u, v] for the usual box layout or
-    {face: [u, v, w, h]}, and extras {inflate, mirror, pivot, rotation} only where the cube has them."""
+    {face: [u, v, w, h]} (and a fifth, the degrees the face's texture is turned clockwise, where the pack turns it: a
+    pig saddle's side flaps), and extras {inflate, mirror, pivot, rotation} only where the cube has them."""
     bones = g.get("bones", [])
     by_name = {b["name"]: b for b in bones}
     has_cubes = {b["name"] for b in bones if b.get("cubes")}
@@ -794,7 +795,8 @@ def model(g):
         for c in b.get("cubes", []):
             uv = c["uv"]
             if isinstance(uv, dict):
-                uv = {FACE_KEYS[f]: [*u["uv"], *u.get("uv_size", [0, 0])] for f, u in uv.items() if f in FACE_KEYS and "uv" in u}
+                uv = {FACE_KEYS[f]: [*u["uv"], *u.get("uv_size", [0, 0]), *([u["uv_rotation"] % 360] if u.get("uv_rotation", 0) % 360 else [])]
+                      for f, u in uv.items() if f in FACE_KEYS and "uv" in u}
             extras = {}
             inflate = c.get("inflate", b.get("inflate", 0))
             if inflate:
