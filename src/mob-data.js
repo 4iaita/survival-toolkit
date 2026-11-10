@@ -11,6 +11,8 @@ const lift = y => ({ root: { p: [0, y, 0] } });
 const ELDER_RATIO = 1 / 2.35;
 // A panda sits all the way up now and then (MOB_ACTS), half as tall again as it stands: room for its head.
 const PANDA_ROOM = 0.72;
+// A polar bear rears up on its hind legs now and then (MOB_ACTS), twice as tall as it stands: room for its head.
+const BEAR_ROOM = 0.65;
 // The nautiluses' models are made facing the other way from the rest.
 const TURNED_ROUND = { root: { r: [0, 180, 0] } };
 // The dragon flies, and its proportions are the pack's own: everything at 0.9, the wings put back to full size, the thighs a little slimmer.
@@ -235,7 +237,7 @@ const MOBS = [
   { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals", biome: "savanna_plateau" },
   { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
   { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals" }, { k: "pig", n: "Pig", g: "Animals" },
-  { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy" }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
+  { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy", zoom: BEAR_ROOM }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
   { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "taiga" },
   { k: "axolotl", n: "Axolotl", g: "Water", biome: "lush", swim: true }, { k: "cod", n: "Cod", g: "Water", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", g: "Water", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", g: "Water", biome: "flooded_cave", glowing: true, swim: true },
   { k: "nautilus", n: "Nautilus", g: "Water", biome: "ocean", stand: TURNED_ROUND, swim: true }, { k: "pufferfish", n: "Pufferfish", g: "Water", biome: "ocean", swim: true }, { k: "salmon", n: "Salmon", g: "Water", biome: "ocean", swim: true }, { k: "squid", n: "Squid", g: "Water", biome: "ocean", swim: true },
