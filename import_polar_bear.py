@@ -15,10 +15,10 @@ MOTIONS = [("idle", 1)]
 # Every 1 to 3.75 seconds it blinks (the pack's blink: its eyes, the blink bone, shrink to nothing for 0.15 seconds), at
 # half the pack's speed so it's seen, over its breathing (keep).
 BLINK = {"every": [1, 4], "keep": True, "weight": 3, "parts": [("blinking.step_eye", 0, None, [], 0.5)]}
-# Now and then it rears up on its hind legs (the pack's stand, held, which the game plays while it's angry), swipes
-# with its paws (its attack) and drops back down (its own animation for that), still breathing (keep).
-UP_FOR, SWIPE_AT = 3, 1.5
-STAND = {"every": [4, 8], "keep": True, "parts": [("stand", 0, UP_FOR, []), ("attack", SWIPE_AT, None, []), ("itmnzk", UP_FOR, None, [])]}
+# Now and then it rears up on its hind legs (the pack's stand, held, which the game plays while it's angry) and drops
+# back down (its own animation for that), still breathing (keep). Its swipe is an attack, so it's left out.
+UP_FOR = 3
+STAND = {"every": [4, 8], "keep": True, "parts": [("stand", 0, UP_FOR, []), ("itmnzk", UP_FOR, None, [])]}
 ACTS = [BLINK, STAND]
 
 # A cub breathes faster (its own standing loop) and only blinks: the game doesn't make a cub angry, so it never rears up.
