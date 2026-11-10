@@ -8,7 +8,7 @@ kinds: red and snow (the pack's q.variant 0 and 1, a skin of their own on the sa
 and Jimothy looks have skins of their own whatever the kind. Run import_additions.py first. It prints the skins to put
 in MOB_VARIANTS (src/mob-data.js).
 """
-from import_port import im, port
+from import_port import ia, im, port, put
 
 VARIANTS = ["red", "snow"]
 
@@ -40,6 +40,29 @@ ACTS = [BLINK, *IDLES, CROUCH, SLEEP]
 # lying down), so it only breathes, idles and crouches; it has no shut-eyed head to blink with either.
 JIMOTHY = {"motions": MOTIONS, "acts": [*IDLES, CROUCH]}
 
+# The pack hangs the legs from the root, not the body, so its standing loop twists the body (2 degrees side to side) over
+# legs that stay put, and the body slides about on top of them. Here the legs turn with the body (its turns are about the
+# middle of the body, all but the same about the legs' roots under it). Its bob only ever lowers it a quarter of a pixel
+# into the tops of the legs, so the feet stay on the ground.
+LEG_ROOTS = ["root_d680", "root_d681", "root_d682", "root_d683"]
+
+
+def legs_follow_body(loops):
+    for loop in loops:
+        body = loop["bones"].get("body")
+        if body:
+            for leg in LEG_ROOTS:
+                if "r" in body:
+                    loop["bones"].setdefault(leg, {})["r"] = body["r"]
+    return loops
+
+
 if __name__ == "__main__":
     port("fox", variants=VARIANTS, acts=ACTS, motions=MOTIONS, remodel=["raccoon", "jimothy"], nested_poses=True,
          sets={"jimothy": JIMOTHY}, plays={"jimothy": "jimothy"})
+    if ia.WRITE:
+        text = ia.MODELS_JS.read_text()
+        motions = ia.parse_section(text, "MOB_MOTIONS")
+        for key in ("fox", "fox:jimothy"):
+            text = put(text, "MOB_MOTIONS", key, legs_follow_body(motions[key]))
+        ia.MODELS_JS.write_text(text)
