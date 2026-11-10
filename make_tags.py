@@ -87,6 +87,8 @@ WHAT = {
     ("cow", "strawberry"): "A pink strawberry cow with pale spots.",
     ("cow", "halloween"): "A zombie cow, rotting, its ribs showing and its eyes glowing white in the dark.",
     ("cow", "dappled"): "Orange leaves on its head.",
+    ("goat", "evil kiddo"): "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.",
+    ("goat", "halloween"): "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.",
     ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
     ("ocelot", "witch kitten"): "A baby ocelot in a witch’s hat.",
@@ -136,7 +138,7 @@ BIOME = {
 # name).
 NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
          ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween"),
-         ("sheep", "ghost lamb"), ("sheep", "halloween")}
+         ("sheep", "ghost lamb"), ("sheep", "halloween"), ("goat", "evil kiddo"), ("goat", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

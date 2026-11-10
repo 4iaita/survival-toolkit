@@ -129,8 +129,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Imp", "Gremlin", "Gargoyle"], what: "A Halloween costume." },
   ],
   goat: [
-    { names: ["Evil Kiddo", "Baby Evil Goat", "Baby Demon Goat", "Baby Evil"], more: ["Baby Demon", "evil Kiddo", "Evil kiddo", "baby evil Goat", "baby Evil goat", "baby Evil Goat", "Baby evil goat", "Baby evil Goat", "Baby Evil goat", "baby demon Goat", "baby Demon goat", "baby Demon Goat", "Baby demon goat", "Baby demon Goat", "Baby Demon goat", "baby Evil", "Baby evil", "baby Demon", "Baby demon"], what: "The Evil Kiddo look." },
-    { names: ["Halloween", "Evil Goat", "Demon Goat", "Evil"], more: ["Demon", "evil Goat", "Evil goat", "demon Goat", "Demon goat"], what: "A Halloween costume." },
+    { names: ["Evil Kiddo", "Baby Evil Goat", "Baby Demon Goat", "Baby Evil"], more: ["Baby Demon", "evil Kiddo", "Evil kiddo", "baby evil Goat", "baby Evil goat", "baby Evil Goat", "Baby evil goat", "Baby evil Goat", "Baby Evil goat", "baby demon Goat", "baby Demon goat", "baby Demon Goat", "Baby demon goat", "Baby demon Goat", "Baby Demon goat", "baby Evil", "Baby evil", "baby Demon", "Baby demon"], what: "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.", night: true },
+    { names: ["Halloween", "Evil Goat", "Demon Goat", "Evil"], more: ["Demon", "evil Goat", "Evil goat", "demon Goat", "Demon goat"], what: "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.", night: true },
   ],
   guardian: [
     { names: ["Baby", "Fry", "Prismy"], kind: BABY },
