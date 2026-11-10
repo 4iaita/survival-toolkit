@@ -31,7 +31,10 @@ def idles(*keys):
 
 
 ACTS = idles("ciducd", "tculwn", "qofebb")
+# On 3 in 10 temperate pigs the pack shows a flower on the head (hghhq), whatever their name. Only the muddy skin paints
+# it (a red rose growing from a patch of mud), so the stage shows it on the Muddy look.
+SHOWS = {"muddy": {"hghhq": True}}
 NAMED = ["muddy", "snowy", "zombified piglet", "baby skeleton", "cherry", "dappled", "halloween", "skeleton"]
 
 if __name__ == "__main__":
-    port("pig", variants=[""], acts=ACTS, motions=MOTIONS, answers=answers, remodel=NAMED, climates=CLIMATES, climate_motions=CLIMATE_MOTIONS, nested_poses=True)
+    port("pig", variants=[""], acts=ACTS, motions=MOTIONS, answers=answers, remodel=NAMED, climates=CLIMATES, climate_motions=CLIMATE_MOTIONS, nested_poses=True, shows=SHOWS)

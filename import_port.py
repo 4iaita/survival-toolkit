@@ -65,7 +65,7 @@ def still(pose):
 
 
 def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
-         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None):
+         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None, shows=None):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -85,7 +85,9 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     nested_poses: the poses a name turns on are looked for in the entity's animation controllers too (see
     controller_animations).
     share: other mobs whose models it uses too (the cave spider the spider's): a model the same as one their looks use
-    takes that one's key, not one of its own."""
+    takes that one's key, not one of its own.
+    shows: first name -> {bone pattern: shown}, parts the pack shows on only some of the mobs with that look, picked at
+    random, that the stage shows (or hides) on it all the same (the muddy pig's rose)."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
@@ -202,6 +204,11 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
                         key = tex_keys[t]
                         tex_keys.setdefault(o, key.replace(f"{ia.PREFIX}{mob}", f"{ia.PREFIX}{mob}_{kind}", 1))
                         skins.setdefault(key, {})[kind] = tex_keys[o]
+
+    for look in looks:
+        name = (look["names"] or [""])[0]
+        for layer in look["layers"] if shows and name in shows else ():
+            layer[2] = [[p, shows[name].get(p, on)] for p, on in layer[2]]
 
     # Climates: each look again in that climate, where it comes out different (the plain and baby looks by no name and Baby).
     climate_out = {}
