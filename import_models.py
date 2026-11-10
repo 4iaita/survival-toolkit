@@ -410,9 +410,10 @@ def read_pack():
     return ents, rcs, geos, mats, anims, props, armors
 
 
-# The game's own materials that glow by alpha, which the pack names but doesn't define: the eyes of the dragon, phantom
-# and drowned (and the dragon's nostrils and the drowned's teal patches) are faint texels that shine at full color.
-GAME_EMISSIVE = ("ender_dragon", "drowned", "phantom")
+# The game's own materials that glow by alpha, which the pack names but doesn't define: the eyes of the dragon, phantom,
+# drowned and spiders (and the dragon's nostrils and the drowned's teal patches) are faint texels that shine at full
+# color. (A baby spider's eyes are only that: cut out, they'd be holes.)
+GAME_EMISSIVE = ("ender_dragon", "drowned", "phantom", "spider")
 # And one that really is see-through: the breeze's wind.
 GAME_SHEER = ("breeze_wind",)
 
