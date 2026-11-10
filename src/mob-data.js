@@ -155,6 +155,8 @@ const MOB_SADDLES = {
   // The donkey's and mule's saddle, stirrups and bridle, as the horse's.
   donkey: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
   mule: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
+  // The skeleton and zombie horses' saddle, stirrups and bridle, as the horse's (the game lets a player ride one too).
+  skeleton_horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
 };
 // Mobs that can carry a chest: the [bone pattern, shown] rules a chest on it shows, as the pack's render controllers do for
 // q.is_chested. The game doesn't give a baby one.

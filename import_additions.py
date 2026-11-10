@@ -228,7 +228,7 @@ def main():
 
 
 # Mobs whose looks their own scripts own (import_panda.py, import_mooshroom.py, import_bat.py, import_cat.py, import_armadillo.py, import_bee.py, import_camel.py, import_chicken.py, import_cow.py, import_ocelot.py, import_axolotl.py): --refresh leaves them be.
-PORTED = {"panda", "mooshroom", "bat", "cat", "armadillo", "bee", "camel", "chicken", "cow", "ocelot", "axolotl", "pig", "spider", "cave_spider", "sheep", "goat", "sniffer", "horse", "donkey", "mule"}
+PORTED = {"panda", "mooshroom", "bat", "cat", "armadillo", "bee", "camel", "chicken", "cow", "ocelot", "axolotl", "pig", "spider", "cave_spider", "sheep", "goat", "sniffer", "horse", "donkey", "mule", "skeleton_horse"}
 
 
 def kept_layers(layers, geos):
