@@ -262,7 +262,7 @@ function boxesBounds(boxes) {
 // look's own (a variant's, MOB_VARIANTS); showParts, more [bone pattern, shown] rules from the variant (a camel's saddle).
 // By day the layers that only glow in the dark are left out, unless the mob is glowing anyway (soft light always shows); at night they show and
 // the rest is darker. Soft glows come apart from the boxes, as their soft list.
-const NIGHT_DIM = 0.42;
+const NIGHT_DIM = 0.6;
 async function lookBoxes(look, { flip = false, tint = null, clock = null, night = false, glowing = false, size = 1, height = 0, stand = null, moving = null, showing = [], armor = null, skins = null, showParts = [] } = {}) {
   // Armor is one more layer: { kind, a MOB_ARMOR key; dye, its color if any; crack, its wear if any; glint, if enchanted }.
   const piece = armor && MOB_ARMOR[armor.kind];
