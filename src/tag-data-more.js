@@ -372,8 +372,8 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Skelly", "Boney"], kind: BABY },
   ],
   wolf: [
-    { names: ["Hellhound Pup", "Baby Hellhound"], more: ["hellhound Pup", "Hellhound pup", "baby Hellhound", "Baby hellhound"], what: "The Hellhound Pup look." },
-    { names: ["Hellhound", "Hell Hound", "Halloween"], more: ["hell Hound", "Hell hound"], what: "The Hellhound look." },
+    { names: ["Hellhound Pup", "Baby Hellhound"], more: ["hellhound Pup", "Hellhound pup", "baby Hellhound", "Baby hellhound"], what: "A hellhound pup: a little demon hound with spiky ears, a spiky tail and eyes that glow in the dark. Its colors follow the wolf’s variant: crimson on a pale wolf, gray on an ashen one, black, purple on a chestnut one, red on a rusty one, icy cyan on a snowy one, mossy green on a spotted one, bone white on a striped one and brown on a woods one, its eyes glowing orange, red, purple, cyan or lime green to match.", night: true },
+    { names: ["Hellhound", "Hell Hound", "Halloween"], more: ["hell Hound", "Hell hound"], what: "A hellhound: a hulking demon hound with spiky ears and fangs, ragged spines down its back and tail and eyes that glow in the dark. Its colors follow the wolf’s variant: crimson on a pale wolf, gray on an ashen one, black, purple on a chestnut one, red on a rusty one, icy cyan on a snowy one, mossy green on a spotted one, bone white on a striped one and brown on a woods one, its eyes glowing orange, red, purple, cyan or lime green to match. Named Halloween, it’s this or a skeleton wolf (1 in 10), picked at random.", night: true },
   ],
   zombie: [
     { names: ["Baby Frankenstein"], more: ["baby Frankenstein", "Baby frankenstein"], what: "A baby Frankenstein." },

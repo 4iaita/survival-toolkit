@@ -182,9 +182,9 @@ const PACK_TAGS = {
   ],
   wolf: [
     { names: ["Baby", "Puppy"], kind: BABY },
-    { names: ["Skeleton", "Marrow"], what: "A skeleton wolf." },
-    { names: ["Party", "Pawty"], what: "A party hat." },
-    { names: ["Reindeer", "Reindog"], what: "Reindeer antlers and a red nose." },
+    { names: ["Skeleton", "Marrow"], what: "A wolf’s skeleton: a bony skull with dark eye sockets, a ribcage and a long bony tail, on bare bone legs." },
+    { names: ["Party", "Pawty"], what: "A pink and purple party hat with a gold tuft on top, and a gold party horn in its mouth." },
+    { names: ["Reindeer", "Reindog"], what: "Brown reindeer antlers between its ears and a big red nose." },
   ],
   zoglin: [{ names: ["Baby", "Zoglet", "Zoggin"], kind: BABY }],
   zombie: [

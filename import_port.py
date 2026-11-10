@@ -93,7 +93,8 @@ def still(pose):
 
 
 def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
-         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None, shows=None, fix_geos=None):
+         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None, shows=None, fix_geos=None,
+         moods=None):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -116,7 +117,11 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     takes that one's key, not one of its own.
     shows: first name -> {bone pattern: shown}, parts the pack shows on only some of the mobs with that look, picked at
     random, that the stage shows (or hides) on it all the same (the muddy pig's rose). fix_geos(geos): mends the pack's
-    models before they're read (a glow panel the pack's scripts stretch, the spider's)."""
+    models before they're read (a glow panel the pack's scripts stretch, the spider's).
+    moods: mood -> {answers (what the game says in it, over answers(v)), motions, act, and collar or armor (1: its collar's
+    color can be picked, it can wear MOB_ARMOR's)}: the mob's other moods (the wolf's angry and pet), each look again as it
+    is in that mood (MOB_MOODS, in MOB_LOOKS' order), with its kinds' skins as the plain looks', and loops and acts of its
+    own, baked with what the game says there."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
@@ -132,6 +137,7 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         played |= {k for loops in (own_motions or {}).values() for k, *_ in loops}
         played |= {k for s in (sets or {}).values() for k, *_ in s["motions"]} | {k for s in (sets or {}).values() for k in act_keys(s.get("acts", []))}
         played |= {k for a in (climate_acts or {}).values() for k in act_keys(a)}
+        played |= {k for m in (moods or {}).values() for k, *_ in m["motions"]} | {k for m in (moods or {}).values() for k in act_keys(m.get("act", []))}
         d["scripts"]["animate"] = [*d["scripts"].get("animate", []), *controller_animations(d, played)]
     text = ia.MODELS_JS.read_text()
     current = ia.parse_section(text, "MOB_LOOKS")[mob]
@@ -262,6 +268,28 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
             changed[str(i)] = {"layers": layers_out(label, lay)}
         climate_out[climate] = {"looks": changed}
 
+    # Moods: every look again as the game draws it in that mood (the plain and baby looks by no name and Baby), its kinds'
+    # skins found as the plain looks' are.
+    mood_looks = {}
+    for mood, spec in (moods or {}).items():
+        out = []
+        for i, look in enumerate(looks):
+            name = "" if i == 0 else "Baby" if i == bi else (look["names"] or [""])[0]
+            lay0, _, _ = im.look(d, rcs, mats, anims, name, mood={**answers(0), **spec["answers"]})
+            label = "_".join(filter(None, [mood, "baby" if i == bi else name.lower().replace(" ", "_")]))
+            out.append({k: v for k, v in look.items() if k != "layers"} | {"layers": layers_out(label, lay0)})
+            for v, kind in enumerate(variants):
+                if not v:
+                    continue
+                lay, _, _ = im.look(d, rcs, mats, anims, name, mood={**answers(v), **spec["answers"]})
+                for (_, texs, _, _), (_, own, _, _) in zip(lay0, lay):
+                    for t, o in zip(texs, own):
+                        if t != o:
+                            key = tex_keys[t]
+                            tex_keys.setdefault(o, key.replace(f"{ia.PREFIX}{mob}", f"{ia.PREFIX}{mob}_{kind}", 1))
+                            skins.setdefault(key, {})[kind] = tex_keys[o]
+        mood_looks[mood] = out
+
     def baked_loops(motions, mood=None):
         out = []
         for key, weight, *rate in motions:
@@ -303,6 +331,16 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         else:
             look.pop("plays", None)
 
+    mood_out = {}
+    for mood, spec in (moods or {}).items():
+        said = {**answers(0), **spec["answers"]}
+        baked = im.baked_act(d, anims, spec.get("act", []), said)
+        for a in baked:
+            for part in a["parts"]:
+                part["bones"] = renamed(part["bones"])
+        mood_out[mood] = {"looks": mood_looks[mood], "motions": baked_loops(spec["motions"], said), "act": baked,
+                          **{k: 1 for k in ("collar", "armor") if spec.get(k)}}
+
     print(f"{mob}: {len(adult)}+{len(baby)} layers, {len(motion)} loop, {len(act)} acts, {len(tex_keys)} textures"
           + (f", sets {sorted(set_out)}" if set_out else "") + (f", climates {({c: sorted(v['looks']) for c, v in climate_out.items()})}" if climate_out else ""))
     print("skins:", json.dumps(skins))
@@ -329,6 +367,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         text = put(text, "MOB_ACTS", f"{mob}:{key}", acts_)
     if climates:
         text = put(text, "MOB_CLIMATES", mob, climate_out)
+    if moods:
+        text = put(text, "MOB_MOODS", mob, mood_out)
     for geo, key in geo_keys.items():
         text = put(text, "MOB_MODELS", key, im.model(geos[geo]))
     ia.MODELS_JS.write_text(text)

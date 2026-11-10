@@ -35,8 +35,9 @@ const ARMOR_WEAR = [["", "New"], ["low", "Slightly cracked"], ["medium", "Cracke
 // saddle); say, how the stage's description puts it ("" for nothing). The first is the one without any, which the mob
 // starts as.
 // climate, the MOB_CLIMATES looks to swap in (a name tag that only shows in one climate picks that variant).
-// The wolf's are in art/mobs/ as wolf_<variant> (see import_models.py), with angry and baby skins of their own.
-const wolfSkins = v => Object.fromEntries(["", "_angry", "_baby", "_angry_baby"].map(s => [`wolf${s}`, `wolf_${v}${s}`]));
+// The wolf's (import_wolf.py prints them): the pup's, the angry ones' and the Hellhound looks' change with it too.
+const wolfSkins = v => Object.fromEntries(["", "_baby", "_hellhound_pup", "_hellhound", "_angry", "_angry_baby", "_angry_hellhound_pup", "_angry_hellhound"]
+  .map(s => [`new_wolf${s}`, `new_wolf_${v}${s}`]));
 const pandaSkins = v => ({ new_panda: `new_panda_${v}`, new_panda_baby: `new_panda_${v}_baby` });
 // An angry bee's skins (import_bee.py prints them): the firefly and the moths have one angry skin, nectar or not.
 const beeSkins = v => ({ new_bee: `new_bee_${v}`, new_bee_qween: `new_bee_${v}_qween`,

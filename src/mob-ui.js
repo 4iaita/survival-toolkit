@@ -73,8 +73,9 @@ const shownLook = () => {
   const t = currentTag();
   return t && t.look ? t.look : mobBaby && babyLook(mobTab.mob) > 0 ? babyLook(mobTab.mob) : 0;
 };
-// The game doesn't put armor on a baby.
-const armorFits = () => Boolean(MOB_ARMOR[mobTab.mob]) && (MOB_MOODS[mobTab.mob] ? Boolean(moodInfo() && moodInfo().armor) : true) && !babyShown(mobTab.mob, shownLook());
+// The game doesn't put armor on a baby, nor (bare: their first names) on some named looks (the wolf's Hellhound).
+const bareLook = (k, look) => Boolean(MOB_ARMOR[k] && MOB_ARMOR[k].bare && look > 0 && MOB_ARMOR[k].bare.includes(((MOB_LOOKS[k][look] || {}).names || [""])[0]));
+const armorFits = () => Boolean(MOB_ARMOR[mobTab.mob]) && (MOB_MOODS[mobTab.mob] ? Boolean(moodInfo() && moodInfo().armor) : true) && !babyShown(mobTab.mob, shownLook()) && !bareLook(mobTab.mob, shownLook());
 const armorPiece = (k, type) => MOB_ARMOR[k] && (MOB_ARMOR[k].kinds ? MOB_ARMOR[k].kinds[type] : MOB_ARMOR[k]);
 const titled = name => name.replace(/(^| )\w/g, c => c.toUpperCase());
 
