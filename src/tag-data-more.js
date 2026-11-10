@@ -122,11 +122,11 @@ const PACK_TAGS_MORE = {
   ],
   frog: [
     { names: ["Baby", "Froglet", "Hoppy"], kind: BABY },
-    { names: ["Baby Imp", "Baby Gremlin", "Baby Gargoyle"], more: ["baby Imp", "Baby imp", "baby Gremlin", "Baby gremlin", "baby Gargoyle", "Baby gargoyle"], what: "A baby Imp." },
-    { names: ["Rana"], what: "The Rana look." },
-    { names: ["Rhadora"], what: "The Rhadora look." },
-    { names: ["Sapo"], what: "The Sapo look." },
-    { names: ["Halloween", "Imp", "Gremlin", "Gargoyle"], what: "A Halloween costume." },
+    { names: ["Baby Imp", "Baby Gremlin", "Baby Gargoyle"], more: ["baby Imp", "Baby imp", "baby Gremlin", "Baby gremlin", "baby Gargoyle", "Baby gargoyle"], what: "A baby imp: a little devil frog with big pointed ears and eyes that glow in the dark. It’s red, olive or gray as the frog is temperate, cold or warm, and its eyes glow yellow, or lime green on a warm one.", night: true },
+    { names: ["Rana"], what: "A child crouching like a frog in a green frog hood, with the frog’s big eyes on top and a red and orange band round its rim, red hair and teal eyes." },
+    { names: ["Rhadora"], what: "A child crouching like a frog in a white frog hood striped with orange, with the frog’s big eyes on top, dark purple hair and purple sleeves." },
+    { names: ["Sapo"], what: "A child crouching like a frog in an orange frog hood with a yellow band, with the frog’s big eyes on top, green hair, and green and yellow legs." },
+    { names: ["Halloween", "Imp", "Gremlin", "Gargoyle"], what: "An imp: a devil frog with big pointed bat ears, two pale tusks and eyes that glow in the dark. It’s red, olive or gray as the frog is temperate, cold or warm, and its eyes glow yellow, or lime green on a warm one.", night: true },
   ],
   goat: [
     { names: ["Evil Kiddo", "Baby Evil Goat", "Baby Demon Goat", "Baby Evil"], more: ["Baby Demon", "evil Kiddo", "Evil kiddo", "baby evil Goat", "baby Evil goat", "baby Evil Goat", "Baby evil goat", "Baby evil Goat", "Baby Evil goat", "baby demon Goat", "baby Demon goat", "baby Demon Goat", "Baby demon goat", "Baby demon Goat", "Baby Demon goat", "baby Evil", "Baby evil", "baby Demon", "Baby demon"], what: "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.", night: true },

@@ -89,6 +89,11 @@ WHAT = {
     ("cow", "dappled"): "Orange leaves on its head.",
     ("fox", "raccoon"): "A raccoon: gray fur with a black mask round its eyes, black ears, a white snout with a black nose and a long tail ringed in black and pale gray.",
     ("fox", "jimothy"): "A chubby little raccoon: one round gray body with its black-masked face on the front, stubby legs, small ears and a short striped tail.",
+    ("frog", "baby imp"): "A baby imp: a little devil frog with big pointed ears and eyes that glow in the dark. It’s red, olive or gray as the frog is temperate, cold or warm, and its eyes glow yellow, or lime green on a warm one.",
+    ("frog", "rana"): "A child crouching like a frog in a green frog hood, with the frog’s big eyes on top and a red and orange band round its rim, red hair and teal eyes.",
+    ("frog", "rhadora"): "A child crouching like a frog in a white frog hood striped with orange, with the frog’s big eyes on top, dark purple hair and purple sleeves.",
+    ("frog", "sapo"): "A child crouching like a frog in an orange frog hood with a yellow band, with the frog’s big eyes on top, green hair, and green and yellow legs.",
+    ("frog", "halloween"): "An imp: a devil frog with big pointed bat ears, two pale tusks and eyes that glow in the dark. It’s red, olive or gray as the frog is temperate, cold or warm, and its eyes glow yellow, or lime green on a warm one.",
     ("goat", "evil kiddo"): "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.",
     ("goat", "halloween"): "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.",
     ("horse", "wendigo foal"): "A baby wendigo: a bare deer skull with little antlers for a head, the bones of its back and legs showing through a ragged hide the color of its coat, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",
@@ -153,6 +158,7 @@ BIOME = {
 NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
          ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween"),
          ("sheep", "ghost lamb"), ("sheep", "halloween"), ("goat", "evil kiddo"), ("goat", "halloween"),
+         ("frog", "baby imp"), ("frog", "halloween"),
          ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 

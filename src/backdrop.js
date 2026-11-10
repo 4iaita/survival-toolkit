@@ -18,6 +18,8 @@
  * and the wooded badlands' banded terracotta mesas with oaks on top. The panda's bamboo jungle has none either: thick
  * bamboo under jungle trees. Nor do the mooshroom's mushroom fields: huge mushrooms on mycelium.
  * So do the goat's jagged peaks: bare stone mountains, snow above the snow line, crags, ice and powder snow.
+ * And the warm frog's mangrove swamp: mud and still water under mangroves standing on arching roots, propagules hanging
+ * from their leaves.
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
  * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
@@ -138,6 +140,28 @@ const swampOak = t => prop([
   "V..T..V",
   "...T...",
 ], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak"), V: plantTex("vine", t.foliage) });
+
+// A mangrove, standing on arching roots (muddy where they meet the mud), propagules hanging under its leaves.
+const mangroveTree = t => prop([
+  "..LLLLL..",
+  ".LLLLLLL.",
+  "LLLLLLLLL",
+  ".LLLTLLL.",
+  ".p..T..p.",
+  "....T....",
+  "...RTR...",
+  "..R.R.R..",
+  ".M..M..M.",
+], { L: leavesTex("mangrove_leaves", t.foliage), T: blockTex("mangrove_log"), R: blockTex("mangrove_roots"), M: blockTex("muddy_mangrove_roots"),
+  p: plantTex("mangrove_propagule_hanging") });
+// A small one, for the far hills.
+const smallMangrove = t => prop([
+  ".LLL.",
+  "LLLLL",
+  ".pTp.",
+  ".RTR.",
+  "R.R.R",
+], { L: leavesTex("mangrove_leaves", t.foliage), T: blockTex("mangrove_log"), R: blockTex("mangrove_roots"), p: plantTex("mangrove_propagule_hanging") });
 
 // The mushroom fields' huge mushrooms, as the game grows them: a red one's domed cap hangs down round its stem, a brown
 // one's is a flat, wide plate.
@@ -593,6 +617,11 @@ const BACKDROPS = {
     near: [[sulfurMound(["..S.", ".SPS", "TSSC"]), -24], [sulfurSpike(2), -18], [sulfurMound(["P.", "SS"]), -15], [sulfurSpike(), -11], [sulfurSpike(), -7],
       [sulfurSpike(), 6], [sulfurMound([".S", "PS"]), 9], [sulfurSpike(2), 13], [sulfurMound(["..SC", ".PSS", "STSP"]), 17], [sulfurSpike(), 22]],
     lights: [-23, -15, 9, 18], lightColor: "255, 214, 80",
+  }),
+  mangrove_swamp: t => ({
+    hills: { top: blockTex("mud"), fill: blockTex("mud"), base: 2, rise: 1, trees: [0.06, 0.24, 0.43, 0.62, 0.8, 0.95].map(at => [smallMangrove(t), at]) },
+    near: [[mangroveTree(t), -21], [pond(t), -12], [mangroveTree(t), -6], [plant("lily_pad"), 2], [mangroveTree(t), 5], [pond(t), 13], [mangroveTree(t), 19]],
+    seed: 27,
   }),
   swamp: t => ({
     hills: { top: grassyTop(t), fill: blockTex("mud"), base: 2, rise: 1, trees: [[swampOak(t), 0.2], [swampOak(t), 0.5], [swampOak(t), 0.82]] },

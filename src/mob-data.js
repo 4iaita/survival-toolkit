@@ -1,7 +1,7 @@
 /* ---------- Mobs ---------- */
 // Mobs on the Mobs tab, in groups like the creative inventory's. k is the MOB_LOOKS key and the spawn egg
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; biome, the village biome its stage shows
-// (a BIOMES key, forest, bamboo_jungle, mushroom_fields, cave, mineshaft, nether, end, end_island, ocean, lush or flooded_cave; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, cave, mineshaft, nether, end, end_island, ocean, lush or flooded_cave; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -146,6 +146,14 @@ const MOB_VARIANTS = {
     { k: "gold", n: "Gold", where: "Deserts", biome: "desert" },
     { k: "salt_and_pepper", n: "Salt and Pepper", where: "Most biomes" },
   ].map((v, i) => (i ? { ...v, skins: { new_rabbit: `new_rabbit_${v.k}`, new_rabbit_baby: `new_rabbit_${v.k}_baby` } } : v)),
+  // The frog's three kinds (the pack's q.variant 0 to 2) share its model and differ in skin, the baby's, the Baby Imp's
+  // and the Halloween imp's too: the game makes a frog the kind for the biome its tadpole grew up in. Frogs spawn in
+  // swamps (temperate) and mangrove swamps (warm); cold ones only come from tadpoles grown in cold biomes.
+  frog: [
+    { k: "temperate", n: "Temperate", where: "Swamps", biome: "swamp" },
+    { k: "cold", n: "Cold", where: "Grown from tadpoles in cold biomes", biome: "snowy" },
+    { k: "warm", n: "Warm", where: "Mangrove swamps", biome: "mangrove_swamp" },
+  ].map((v, i) => (i ? { ...v, skins: Object.fromEntries(["", "_baby", "_baby_imp", "_halloween"].map(s => [`new_frog${s}_1`, `new_frog_${v.k}${s}_1`])) } : v)),
   // The goat's horns: the pack gives each goat one of eight shapes at random (the first four 1 in 5 goats each, the
   // others 1 in 20), long ones to start with. A goat that rams a log, stone or ore drops a horn, one each time, and grows
   // none back (the Halloween goat's horns go the same way).

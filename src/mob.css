@@ -44,6 +44,8 @@
 .stage[data-biome="sparse_jungle"] { --sky: #5c9ce2; --haze: #c9e8c4; }
 .stage[data-biome="savanna_plateau"] { --sky: #79a9e6; --haze: #f0d29c; }
 .stage[data-biome="badlands"] { --sky: #87b3ea; --haze: #f1c9a2; }
+/* The warm frog's mangrove swamp: a muggy gray-green sky, like the swamp's. */
+.stage[data-biome="mangrove_swamp"] { --sky: #648aa0; --haze: #b6c4a0; }
 .try-bar { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
 .try-bar .cat-label { margin: 0; }
 .try-bar[hidden] + .try-bar { margin-top: 12px; }
