@@ -215,10 +215,10 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Smolt", "Streamer"], kind: BABY },
   ],
   sheep: [
-    { names: ["Ghost Lamb", "Baby Ghost"], more: ["ghost Lamb", "Ghost lamb", "baby Ghost", "Baby ghost"], what: "The Ghost Lamb look." },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Dappled"], what: "The dappled look." },
-    { names: ["Halloween", "Ghost"], what: "A Halloween costume." },
+    { names: ["Ghost Lamb", "Baby Ghost"], more: ["ghost Lamb", "Ghost lamb", "baby Ghost", "Baby ghost"], what: "A lamb dressed as a ghost: a pale gray sheet over its head and body, with black eye holes and white eyes that glow in the dark.", night: true },
+    { names: ["Cherry"], what: "Pink cherry blossoms dotted over its wool.", biome: "cherry_grove", rare: "sheep in cherry groves" },
+    { names: ["Dappled"], what: "Orange leaves on its head and back.", biome: "dappled_forest", rare: "sheep in dappled forests" },
+    { names: ["Halloween", "Ghost"], what: "Dressed as a ghost: a tattered pale gray sheet over its head and body, with black eye holes and white eyes that glow in the dark.", night: true },
   ],
   shulker: [
     { names: ["Halloween", "Pumpkin"], what: "A Halloween costume." },

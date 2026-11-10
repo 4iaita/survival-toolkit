@@ -99,6 +99,10 @@ WHAT = {
     ("pig", "dappled"): "Orange leaves on its head.",
     ("pig", "halloween"): "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs, and one eye glowing white in the dark.",
     ("pig", "skeleton"): "A pig’s skeleton: a bony skull and ribcage on bare bone legs.",
+    ("sheep", "ghost lamb"): "A lamb dressed as a ghost: a pale gray sheet over its head and body, with black eye holes and white eyes that glow in the dark.",
+    ("sheep", "cherry"): "Pink cherry blossoms dotted over its wool.",
+    ("sheep", "dappled"): "Orange leaves on its head and back.",
+    ("sheep", "halloween"): "Dressed as a ghost: a tattered pale gray sheet over its head and body, with black eye holes and white eyes that glow in the dark.",
     ("spider", "cherry"): "Pink cherry blossoms and green leaves grow over its back and legs.",
     ("spider", "sulfur"): "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange.",
     ("spider", "dappled"): "Orange and red leaves on its back and head.",
@@ -117,20 +121,22 @@ NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only co
 # (mob, the lower-case name) -> which of them, for the row's rare.
 RARE = {
     ("pig", "cherry"): "pigs in cherry groves", ("pig", "dappled"): "pigs in dappled forests",
+    ("sheep", "cherry"): "sheep in cherry groves", ("sheep", "dappled"): "sheep in dappled forests",
     ("spider", "cherry"): "spiders in cherry groves", ("spider", "sulfur"): "spiders in sulfur caves",
     ("spider", "dappled"): "spiders in dappled forests", ("spider", "pale"): "spiders in pale gardens",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
 BIOME = {
-    **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "spider")},
-    **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "spider")},
+    **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "sheep", "spider")},
+    **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "spider")},
     ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
 # name).
 NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
-         ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween")}
+         ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween"),
+         ("sheep", "ghost lamb"), ("sheep", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
