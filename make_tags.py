@@ -127,6 +127,10 @@ BIOME = {
     **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "spider")},
     ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves",
 }
+# Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
+# name).
+NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
+         ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
@@ -177,6 +181,8 @@ def main():
                 row["kind"] = "BABY"
             else:
                 row["what"] = describe(mob, look["names"])
+                if (mob, look["names"][0].lower()) in NIGHT:
+                    row["night"] = True
                 if (mob, look["names"][0].lower()) in BIOME:
                     row["biome"] = BIOME[mob, look["names"][0].lower()]
                 if (mob, look["names"][0].lower()) in RARE:
