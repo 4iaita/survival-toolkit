@@ -41,6 +41,8 @@ const beeSkins = v => ({ new_bee: `new_bee_${v}`, new_bee_qween: `new_bee_${v}_q
   ...Object.fromEntries(["firefly", "black_moth", "brown_moth", "green_moth", "pink_moth"].map(s => [`new_bee_${s}`, `new_bee_angry_${s}`])) });
 // A horse's coat (import_horse.py prints them): the foal's and the Wendigo looks' coats change with it.
 const horseSkins = v => Object.fromEntries(["", "_baby", "_wendigo_foal", "_halloween"].map(s => [`new_horse${s}`, `new_horse_${v}${s}`]));
+// A llama's coat (import_llama.py prints them): the baby's changes with it.
+const llamaSkins = v => ({ new_llama: `new_llama_${v}`, new_llama_baby: `new_llama_${v}_baby` });
 const catSkins = v => Object.fromEntries(["", "_baby", "_halloween_2", "_witch_kitten_2"].map(s => [`new_cat${s}`, `new_cat_${v}${s}`]));
 const MOB_VARIANTS = {
   // The chickens' climates: the warm one has its own skin, the cold one its own model and skin too (MOB_CLIMATES).
@@ -66,6 +68,9 @@ const MOB_VARIANTS = {
     { k: "white", n: "White" }, { k: "creamy", n: "Creamy" }, { k: "chestnut", n: "Chestnut" }, { k: "brown", n: "Brown" },
     { k: "black", n: "Black" }, { k: "gray", n: "Gray" }, { k: "dark_brown", n: "Dark Brown" },
   ].map((v, i) => ({ ...v, where: "1 in 7 horses", ...(i ? { skins: horseSkins(v.k) } : {}) })),
+  // The llama's four coats (the pack's q.variant 0 to 3), equally likely. Its carpet is a row of its own (MOB_CARPETS).
+  llama: [{ k: "creamy", n: "Creamy" }, { k: "white", n: "White" }, { k: "brown", n: "Brown" }, { k: "gray", n: "Gray" }]
+    .map((v, i) => ({ ...v, where: "1 in 4 llamas", ...(i ? { skins: llamaSkins(v.k) } : {}) })),
   wolf: [
     { k: "pale", n: "Pale", where: "Taiga", biome: "taiga" },
     { k: "ashen", n: "Ashen", where: "Snowy Taiga", biome: "snowy_taiga" },
@@ -165,7 +170,17 @@ const MOB_CHESTS = {
   // A chest strapped to each side.
   donkey: [["496kld", true], ["496klj", true]],
   mule: [["496kld", true], ["496klj", true]],
+  // A chest on each side.
+  llama: [["496kl", true], ["klj2h", true]],
 };
+// Mobs that can wear a carpet, which the game says by v.DecorTextureIndex (the pack draws it as a model of its own):
+// none: what the stage calls it without one; layers: the look's layer a carpet takes the place of, by its first
+// texture, -> the model it's drawn on there (import_llama.py prints them). Each carpet's texture is
+// new_llama_carpet_<dye>. The game doesn't put one on a baby.
+const MOB_CARPETS = {
+  llama: { none: "No carpet", layers: { new_llama_1: "new_llama_1" } },
+};
+const carpetTexture = dye => `new_llama_carpet_${dye.replace(/ /g, "_")}`;
 // What wearing armor (MOB_ARMOR) shows or hides besides the armor: a snowy horse's snow makes way for it.
 const ARMOR_SHOWS = { horse: [["alpha*NoFancyArmor*", false]] };
 // What each kind of a mob's armor (MOB_ARMOR's kinds) is called on the stage, in the game's order.
@@ -192,7 +207,7 @@ const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
   { k: "camel", n: "Camel", g: "Animals", biome: "desert" }, { k: "cat", n: "Cat", g: "Animals" }, { k: "chicken", n: "Chicken", g: "Animals" },
   { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
-  { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals" },
+  { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals", biome: "savanna_plateau" },
   { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
   { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals" }, { k: "pig", n: "Pig", g: "Animals" },
   { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy" }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
