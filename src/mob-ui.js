@@ -98,8 +98,10 @@ function showOnStage() {
   $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
 }
 
-// Whether the stage shows the mob's baby look: a baby can't be saddled or sheared, and wears no variant's parts.
-const babyShown = (k, look) => Boolean(look) && look === babyLook(k);
+// Whether the stage shows a baby: the mob's baby look, or a name's baby look (a pig's Zombified Piglet, a camel's Baby
+// Mummy), drawn smaller. A baby can't be saddled or sheared (the camel's baby looks have no saddle at all), and wears no
+// variant's parts.
+const babyShown = (k, look) => Boolean(look) && (look === babyLook(k) || ((MOB_LOOKS[k] || [])[look] || {}).scale < 1);
 // The parts the stage shows or hides besides the look's own: its variant's (a goat's horns), a saddle and shorn wool.
 function shownParts(k, look) {
   if (babyShown(k, look)) return [];
@@ -107,9 +109,9 @@ function shownParts(k, look) {
   return [...((variant && variant.show) || []), ...(MOB_SADDLES[k] && mobSaddle ? MOB_SADDLES[k] : []),
     ...(wool && mobShorn ? [...wool.shorn, ...((wool.shornLooks || {})[name] || [])] : [])];
 }
-// How the stage's description puts what it wears: saddled, its wool's color (a white sheep is just a sheep), sheared.
+// How the stage's description puts what it wears: saddled, sheared, its wool's color (a white sheep is just a sheep).
 const wearWords = (k, look) => (babyShown(k, look) ? [] : [MOB_SADDLES[k] && mobSaddle ? "saddled" : "", MOB_WOOL[k] && mobShorn ? "sheared" : ""])
-  .concat(MOB_WOOL[k] && !(mobShorn && !babyShown(k, look)) && mobWool !== "white" ? [mobWool] : []).filter(Boolean);
+  .concat(MOB_WOOL[k] && mobWool !== "white" ? [mobWool] : []).filter(Boolean);
 
 // A name that only shows on some of the mob's variants (climate: the climates it shows in, a MOB_VARIANTS climate or
 // temperate) can only be tried on those: on the others its buttons are off, saying which variants it needs.
@@ -149,20 +151,21 @@ function renderVariants() {
   $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
 }
 
-// The saddle buttons, for a mob that can wear one, and the wool's colors and shearing, for a sheep. A baby can have
-// neither a saddle nor its wool sheared: those buttons are off for it.
+// The saddle buttons, for a mob that can wear one, and for a sheep its wool's colors and, on a row of their own, whether
+// it's sheared (a sheared sheep keeps its color on its head and a few tufts). A baby can have neither a saddle nor its
+// wool sheared: those buttons are off for it.
 function renderWear() {
   const k = mobTab.mob, t = currentTag(), look = t && t.look ? t.look : mobBaby && babyLook(k) > 0 ? babyLook(k) : 0, baby = babyShown(k, look);
   const chip = (attr, value, label, pressed, off) => `<button type="button" class="name-chip" data-${attr}="${value}" aria-pressed="${pressed}"${off ? ` disabled title="${esc(off)}"` : ""}>${label}</button>`;
   $("saddle-bar").hidden = !MOB_SADDLES[k];
   if (MOB_SADDLES[k]) $("saddle-try").innerHTML = chip("saddle", "", "No saddle", !mobSaddle || baby) + chip("saddle", "on", "Saddled", mobSaddle && !baby, baby && "The game doesn’t saddle a baby");
   const wool = MOB_WOOL[k];
-  $("wool-bar").hidden = !wool;
+  $("wool-bar").hidden = $("shear-bar").hidden = !wool;
   if (!wool) return;
   const shorn = mobShorn && !baby;
-  $("wool-label").textContent = shorn ? "Wool: Sheared" : `Wool: ${titled(mobWool)}${wool.natural[mobWool] ? ` · ${wool.natural[mobWool]}` : " · Dyed"}`;
-  $("wool-try").innerHTML = [...Object.keys(wool.natural), ...COLLAR_COLORS.filter(c => !wool.natural[c])].map(c => dyeSwatch("wool", c, !shorn && c === mobWool)).join("") +
-    chip("shorn", "on", "Sheared", shorn, baby && "The game doesn’t shear a lamb");
+  $("wool-label").textContent = `Wool: ${titled(mobWool)}${wool.natural[mobWool] ? ` · ${wool.natural[mobWool]}` : " · Dyed"}`;
+  $("wool-try").innerHTML = [...Object.keys(wool.natural), ...COLLAR_COLORS.filter(c => !wool.natural[c])].map(c => dyeSwatch("wool", c, c === mobWool)).join("");
+  $("shear-try").innerHTML = chip("shorn", "", "Not sheared", !shorn) + chip("shorn", "on", "Sheared", shorn, baby && "The game doesn’t shear a lamb");
 }
 
 // The size buttons, for a mob that comes in sizes.
@@ -387,16 +390,20 @@ $("saddle-try").addEventListener("click", e => {
   refocus(`#saddle-try button[data-saddle="${b.dataset.saddle}"]`);
 });
 $("wool-try").addEventListener("click", e => {
-  const b = e.target.closest("button[data-wool], button[data-shorn]");
-  if (!b || b.disabled) return;
-  if (b.dataset.shorn !== undefined) mobShorn = true;
-  else {
-    mobWool = b.dataset.wool;
-    mobShorn = false;
-  }
+  const b = e.target.closest("button[data-wool]");
+  if (!b || b.dataset.wool === mobWool) return;
+  mobWool = b.dataset.wool;
   renderWear();
   showOnStage();
-  refocus(b.dataset.shorn !== undefined ? "#wool-try button[data-shorn]" : `#wool-try button[data-wool="${CSS.escape(mobWool)}"]`);
+  refocus(`#wool-try button[data-wool="${CSS.escape(mobWool)}"]`);
+});
+$("shear-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-shorn]");
+  if (!b || b.disabled || Boolean(b.dataset.shorn) === mobShorn) return;
+  mobShorn = Boolean(b.dataset.shorn);
+  renderWear();
+  showOnStage();
+  refocus(`#shear-try button[data-shorn="${b.dataset.shorn}"]`);
 });
 $("size-try").addEventListener("click", e => {
   const b = e.target.closest("button[data-size]");
