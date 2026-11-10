@@ -120,7 +120,7 @@ function faceSpot(face, fx, fy, fz) {
 // faint texels are see-through, which the scene can't blend, so they show in a fine checker, SHEER_FINE squares a texel
 // (the breeze's wind); scroll, it slides by that much of its width and
 // height a second, clock.t seconds in; glow, it shines in the dark, so it keeps its brightness and its faint texels
-// show, while dim darkens the rest for night.
+// show, while dim darkens the rest for night (but not a lit texel's glow: the fainter it is, the less night dims it).
 const SHEER_FINE = 4;
 // The bones the pack's animations turn to face the camera, for the glow panels under them.
 const GLOW_TURNS = /^fsdyhky\d*$/i;
@@ -178,6 +178,9 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
     // A bone scaled to nothing is hidden.
     if (chainOf(i).some(b => b.scale && b.scale.some(v => !v))) return;
     const least = (flags.litBones || []).some(pattern => boneMatches(name, pattern)) ? 1 : solid;
+    // Where alpha says how much a texel glows (lit, litBones), the faintest shine at full strength even at night, as the
+    // game's emissive materials draw them (a zombie pig's eye, a baby spider's).
+    const emissive = least === 1 && !glow;
     const shell = (flags.shellBones || []).some(pattern => boneMatches(name, pattern));
     // The dye goes on a whole masked layer, or on the bones that take one of their own (a wolf's collar).
     const dye = flags.mask || (flags.dyeBones || []).some(pattern => boneMatches(name, pattern)) ? tint : null;
@@ -223,7 +226,8 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
           const px = Math.min(tex.w - 1, Math.max(0, Math.floor(u * kx))), py = Math.min(tex.h - 1, Math.max(0, Math.floor(v * ky)));
           const k = (py * tex.w + px) * 4, alpha = tex.px[k + 3];
           if (flags.sheer ? alpha === 0 || (alpha < 128 && (Math.floor(u * kx * SHEER_FINE) + Math.floor(v * ky * SHEER_FINE)) & 1) : dye ? alpha === 0 : alpha < least) return -1;
-          const mul = dye && alpha >= 128 ? dye.color.map(c => c / 255 * light) : [light, light, light];
+          const bright = emissive ? light + (1 - light) * (1 - alpha / 255) : light;
+          const mul = dye && alpha >= 128 ? dye.color.map(c => c / 255 * bright) : [bright, bright, bright];
           if (flags.glint) {
             const shine = glintOf(px, py, glintAt);
             const lit = c => Math.min(255, Math.round(tex.px[k + c] * mul[c] + GLINT_COLOR[c] * shine));

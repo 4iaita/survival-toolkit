@@ -52,8 +52,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Skull"], what: "A dark teal spider with green bands on its legs and a big bone-white skull, with lime green eyes, for a back." },
   ],
   chicken: [
-    { names: ["Halloween", "Zombified"], what: "A zombie chicken, rotting." },
-    { names: ["Baby Zombified"], more: ["baby Zombified", "Baby zombified"], what: "A zombie chick, rotting." },
+    { names: ["Halloween", "Zombified"], what: "A zombie chicken, rotting, one eye glowing white in the dark." },
+    { names: ["Baby Zombified"], more: ["baby Zombified", "Baby zombified"], what: "A zombie chick, rotting, one eye glowing white in the dark." },
     { names: ["Skeleton"], what: "A skeleton chicken, all bones." },
     { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A skeleton chick, all bones." },
     { names: ["Peep", "Hatchling"], what: "The old-style chick: a little yellow hen with a big head, half a hen’s size, that moves like one." },
@@ -76,10 +76,10 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Voodoo Doll", "Voodoo", "Doll"], more: ["voodoo Doll", "Voodoo doll"], what: "A Halloween costume." },
   ],
   cow: [
-    { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "A zombie calf, rotting." },
+    { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "A zombie calf, rotting, one eye glowing white in the dark." },
     { names: ["Cherry"], what: "A crown of cherry blossoms.", biome: "cherry_grove", needs: "Not on cold cows: their woolly heads hide the crown.", climate: ["temperate", "warm"] },
     { names: ["Strawberry"], what: "A pink strawberry cow with pale spots.", needs: "Only temperate cows, the usual kind.", climate: "temperate" },
-    { names: ["Halloween", "Zombified"], what: "A zombie cow, rotting, its ribs showing." },
+    { names: ["Halloween", "Zombified"], what: "A zombie cow, rotting, its ribs showing and its eyes glowing white in the dark." },
     { names: ["Dappled"], what: "Orange leaves on its head.", biome: "dappled_forest", needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
   ],
   creaking: [
@@ -184,11 +184,11 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Bat"], what: "A Halloween costume." },
   ],
   pig: [
-    { names: ["Zombified Piglet", "Baby Zombified"], more: ["zombified Piglet", "Zombified piglet", "baby Zombified", "Baby zombified"], what: "A zombie piglet, its pink flesh rotting green at the edges, with bare bone showing on its side and legs." },
+    { names: ["Zombified Piglet", "Baby Zombified"], more: ["zombified Piglet", "Zombified piglet", "baby Zombified", "Baby zombified"], what: "A zombie piglet, its pink flesh rotting green at the edges, with bare bone showing on its side and legs, and one eye glowing white in the dark." },
     { names: ["Baby Skeleton"], more: ["baby Skeleton", "Baby skeleton"], what: "A piglet’s skeleton: a bony skull and ribcage on bare bone legs." },
     { names: ["Cherry"], what: "A wreath of pink cherry blossoms and leaves round its head, and a leafy twig poking out beside its snout.", biome: "cherry_grove", rare: "pigs in cherry groves" },
     { names: ["Dappled"], what: "Orange leaves on its head.", biome: "dappled_forest", rare: "pigs in dappled forests" },
-    { names: ["Halloween", "Zombified"], what: "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs." },
+    { names: ["Halloween", "Zombified"], what: "A zombie pig, its pink flesh rotting green at the edges, with bare bone showing on its head, ribs and legs, and one eye glowing white in the dark." },
     { names: ["Skeleton"], what: "A pig’s skeleton: a bony skull and ribcage on bare bone legs." },
   ],
   piglin: [
