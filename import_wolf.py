@@ -31,11 +31,22 @@ MOTIONS = [("stand", 1), ("tail", 1)]
 EYES = [["blink", True]]
 BLINK = {"every": [1, 4], "keep": True, "weight": 3, "parts": [("blinking.1", 0, None, EYES, 0.5)]}
 # Standing still a while (the pack waits up to 6.33 seconds), it does one of its idles (a look round, a stretch, a sniff
-# and so on), blending in and out over its idle controller's 0.24 seconds, over its breathing (keep). The pack's other two
-# (sitting down to scratch itself, and howling, which it only does on a full moon's night) are left out.
+# and so on), blending in and out over its idle controller's 0.24 seconds, over its breathing (keep).
 IDLE_KEYS = ("ciducd", "tculwn", "qofebb", "lsswib", "vmmadd", "sztvzu")
 IDLES = [{"every": [3, 7], "keep": True, "ease": 0.24, "parts": [(key, 0, None, [])]} for key in IDLE_KEYS]
-ACTS = [BLINK, *IDLES]
+# Or it sits down for a moment to scratch itself behind the ear and gets up again (the pack's seventh idle: down and the
+# scratch together for 3.2 seconds, then up). Sitting, the pack lays its tail down flat (its sitting tail loop, in
+# place of its usual one, until it starts to get up), so this one plays its standing loop and its tails along instead
+# of over its loops. A pet's
+# sitting is left out, so only a wild wolf does it.
+SCRATCH_FOR = 3.2083
+SCRATCH = {"every": [3, 7], "ease": 0.24, "parts": [
+    ("vysaju", 0, SCRATCH_FOR, []), ("oitfdg", 0, SCRATCH_FOR, []), ("veivpa", SCRATCH_FOR, None, []),
+    ("stand", 0, SCRATCH_FOR + 1.5417, []), ("rphwob", 0, SCRATCH_FOR, []), ("tail", SCRATCH_FOR, SCRATCH_FOR + 1.5417, [])]}
+# On a full moon's night (1 time in 10) the pack has it howl at the sky instead, for 2.9 seconds; the stage, always by
+# day, lets it howl now and then all the same. An angry wolf doesn't.
+HOWL = {"every": [3, 7], "keep": True, "ease": 0.24, "parts": [("bppctr", 0, None, [])]}
+ACTS = [BLINK, *IDLES, SCRATCH, HOWL]
 
 # An angry wolf tenses up (the pack's has-target stance, held) and now and then growls with a shake of its head (the
 # pack's angry animation), still blinking; the pack gives it angry skins and red eyes.
@@ -43,7 +54,7 @@ GROWL = {"every": [3, 6], "parts": [("notonr", 0, None, [])]}
 ANGRY = {"answers": {"is_angry": 1.0}, "motions": [*MOTIONS, ("has_target", 1, "held")], "act": [BLINK, GROWL]}
 
 # A pet wears a collar (its color can be picked) and can wear armor, and holds its tail high, 0.55 of a half turn at
-# full health, as the game has it. Now and then it does one of its idles, shakes itself like a dog (the pack's shake),
+# full health, as the game has it. Now and then it does one of its idles, howls, shakes itself like a dog (the pack’s shake),
 # or lies down for a while, as the pack's sitting controller has it: down, still a moment, one of its idles lying there
 # (the pack picks one every few seconds), still again; then its eyes close (the blink bone, its eyelids, slid out to the
 # face) and it sleeps with Zs floating up (a while: the pack's 30 to 60 seconds would be too long here), wakes, looks
@@ -67,7 +78,7 @@ def lie(first, last):
 
 SHAKE = {"every": [6, 12], "parts": [("kwsytf", 0, None, [])]}
 PET = {"answers": {"is_tamed": 1.0, "tail_angle": 0.55 * 3.141592653589793}, "motions": MOTIONS, "collar": True, "armor": True,
-       "act": [BLINK, *IDLES, SHAKE, lie(LIE_IDLES[0], LIE_IDLES[2]), lie(LIE_IDLES[1], LIE_IDLES[3])]}
+       "act": [BLINK, *IDLES, HOWL, SHAKE,lie(LIE_IDLES[0], LIE_IDLES[2]), lie(LIE_IDLES[1], LIE_IDLES[3])]}
 MOODS = {"angry": ANGRY, "pet": PET}
 
 NAMED = ["skeleton", "party", "reindeer", "hellhound pup", "hellhound"]
