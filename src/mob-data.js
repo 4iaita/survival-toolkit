@@ -186,7 +186,7 @@ const MOB_CARPETS = {
   llama: { none: "No carpet", layers: { new_llama_1: "new_llama_1" } },
   // A trader llama's carpet takes the place of its trader's blanket (on the Snowy look, of its snowy one), or of the
   // Halloween costume.
-  trader_llama: { none: "Trader’s blanket", layers: { new_trader_llama_1: "new_llama_1", new_trader_llama_snowy_1: "new_trader_llama_snowy_1", new_trader_llama_halloween_1: "new_llama_1" } },
+  trader_llama: { none: "Trader’s blanket", layers: { new_trader_llama_1_2: "new_llama_1", new_trader_llama_snowy_1: "new_trader_llama_snowy_1", new_trader_llama_halloween_1: "new_llama_1" } },
 };
 const carpetTexture = dye => `new_llama_carpet_${dye.replace(/ /g, "_")}`;
 // What wearing armor (MOB_ARMOR) shows or hides besides the armor: a snowy horse's snow makes way for it.

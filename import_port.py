@@ -156,7 +156,15 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
             geo_keys.setdefault(geo, shared.get(json.dumps(im.model(g)), part))
             names = []
             for j, t in enumerate(texs):
-                tex_keys.setdefault(t, "_".join(filter(None, [part, str(j) if j else ""])))
+                if t not in tex_keys:
+                    # A layer's second texture (new_<mob>_1) and the next layer's first (new_<mob>_1) are named alike:
+                    # a different texture under a name already taken gets a number of its own, or one would overwrite the
+                    # other (the trader llama's empty overlay and its blanket).
+                    key = base = "_".join(filter(None, [part, str(j) if j else ""]))
+                    n = 2
+                    while key in tex_keys.values():
+                        key, n = f"{base}_{n}", n + 1
+                    tex_keys[t] = key
                 names.append(tex_keys[t])
             im.glow_panels(g, rules, flags)
             rules = [[p, False if p in hidden else on] for p, on in rules]
