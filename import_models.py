@@ -845,7 +845,8 @@ def glow_panels(g, rules, flags):
         return
     def behind(b, c):
         return c["size"][2] == 0 and c["origin"][2] >= b.get("pivot", [0, 0, 0])[2]
-    halo = any(max(c["size"]) >= HALO_PANEL or behind(b, c) for b, c in cubes)
+    # A panel an importer has stretched to the size the pack's scripts give it (the spider's eyes) says itself that it's eyes.
+    halo = any((max(c["size"]) >= HALO_PANEL and not c.get("eyes")) or behind(b, c) for b, c in cubes)
     flags["soft"] = flags["halo" if halo else "eyes"] = 1
 
 

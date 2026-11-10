@@ -65,7 +65,7 @@ def still(pose):
 
 
 def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
-         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None, shows=None):
+         sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None, shows=None, fix_geos=None):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -87,10 +87,13 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     share: other mobs whose models it uses too (the cave spider the spider's): a model the same as one their looks use
     takes that one's key, not one of its own.
     shows: first name -> {bone pattern: shown}, parts the pack shows on only some of the mobs with that look, picked at
-    random, that the stage shows (or hides) on it all the same (the muddy pig's rose)."""
+    random, that the stage shows (or hides) on it all the same (the muddy pig's rose). fix_geos(geos): mends the pack's
+    models before they're read (a glow panel the pack's scripts stretch, the spider's)."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
+    if fix_geos:
+        fix_geos(geos)
     d = ents[f"minecraft:{mob}"]
     if fix:
         fix(d)

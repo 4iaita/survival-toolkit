@@ -5,11 +5,12 @@
 It has the spider's rig and textures of its own (the plain look went by the old pack's bones; the baby and Halloween
 ones had the new models but nothing moved them), and uses the spider's models. Its own controllers only hold its legs
 in the walk's first pose when it stands still, so it would stand stock still on the stage: it moves as the spider does
-instead (the same rig, and the spider's own animations), breathing and now and then settling down for a rest. It has
+instead (the same rig, and the spider's own animations), breathing and now and then settling down for a rest. Its eyes'
+glow is the spider's, as wide as the spider's (see import_spider.py). It has
 no kinds. Run import_additions.py and import_spider.py first.
 """
 from import_port import im, port
-from import_spider import ACTS, MOTIONS
+from import_spider import ACTS, MOTIONS, widen_glow
 
 
 def fix(d):
@@ -20,4 +21,4 @@ def fix(d):
 
 
 if __name__ == "__main__":
-    port("cave_spider", variants=[""], acts=ACTS, motions=MOTIONS, remodel=["halloween"], nested_poses=True, share=["spider"], fix=fix)
+    port("cave_spider", variants=[""], acts=ACTS, motions=MOTIONS, remodel=["halloween"], nested_poses=True, share=["spider"], fix=fix, fix_geos=widen_glow)
