@@ -10,15 +10,15 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Pumpkin"], what: "A carved pumpkin for a shell." },
   ],
   axolotl: [
-    { names: ["Baby Gremlin"], more: ["baby Gremlin", "Baby gremlin"], what: "A baby Gremlin." },
-    { names: ["Pirate"], what: "The Pirate look." },
-    { names: ["Halloween", "Gremlin"], what: "A Halloween costume." },
+    { names: ["Baby Gremlin"], more: ["baby Gremlin", "Baby gremlin"], what: "A baby gremlin: a purple critter with big pointed ears, sharp teeth and orange eyes." },
+    { names: ["Pirate"], what: "A pirate: a gold-trimmed tricorn hat with a red feather, an eyepatch, and a wooden peg leg in place of a back leg." },
+    { names: ["Halloween", "Gremlin"], what: "A gremlin: a purple critter with big pointed ears, sharp teeth and orange eyes." },
   ],
   bat: [
     { names: ["Baby", "Pup", "Screechy"], kind: BABY },
   ],
   bee: [
-    { names: ["Firefly"], what: "A firefly." },
+    { names: ["Firefly"], what: "A firefly: a dark brown beetle with long antennae and a red and orange striped belly." },
     { names: ["Black Moth"], more: ["Black moth", "black Moth"], what: "A black moth." },
     { names: ["Brown Moth"], more: ["Brown moth", "brown Moth"], what: "A brown moth." },
     { names: ["Green Moth"], more: ["Green moth", "green Moth"], what: "A green moth." },

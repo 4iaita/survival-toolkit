@@ -55,7 +55,10 @@ SEASONAL = {
 WHAT = {
     ("armadillo", "pumpkin pup"): "A baby armadillo with a carved pumpkin for a shell.",
     ("armadillo", "halloween"): "A carved pumpkin for a shell.",
-    ("bee", "firefly"): "A firefly.",
+    ("bee", "firefly"): "A firefly: a dark brown beetle with long antennae and a red and orange striped belly.",
+    ("axolotl", "baby gremlin"): "A baby gremlin: a purple critter with big pointed ears, sharp teeth and orange eyes.",
+    ("axolotl", "pirate"): "A pirate: a gold-trimmed tricorn hat with a red feather, an eyepatch, and a wooden peg leg in place of a back leg.",
+    ("axolotl", "halloween"): "A gremlin: a purple critter with big pointed ears, sharp teeth and orange eyes.",
     ("bee", "black moth"): "A black moth.",
     ("bee", "brown moth"): "A brown moth.",
     ("bee", "green moth"): "A green moth.",

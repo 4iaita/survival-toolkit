@@ -35,7 +35,7 @@ const PACK_TAGS = {
   bat: [{ names: ["Vampire", "Batula"], what: "A vampire bat with red eyes." }],
   bee: [
     { names: ["Baby", "Smol", "Bumble"], kind: BABY },
-    { names: ["Queen"], what: "A queen bee.", rare: "1 in 200 bees" },
+    { names: ["Queen"], what: "A queen bee, with a big abdomen behind its body and a longer stinger.", rare: "1 in 200 bees" },
     { names: ["Qween", "Crown"], what: "A queen bee wearing a golden crown." },
   ],
   camel: [{ names: ["Baby", "Calf", "Camelo"], kind: BABY }],
