@@ -105,6 +105,9 @@ WHAT = {
     ("sheep", "cherry"): "Pink cherry blossoms dotted over its wool.",
     ("sheep", "dappled"): "Orange leaves on its head and back.",
     ("sheep", "halloween"): "Dressed as a ghost: a tattered pale gray sheet over its head and body, with black eye holes and white eyes that glow in the dark.",
+    ("sniffer", "snowy"): "Snow heaped on its back and head, its moss frosted a pale blue-green, and frost on its feet.",
+    ("sniffer", "cherry"): "Its moss a lighter green, covered in pink cherry blossoms, over magenta fur.",
+    ("sniffer", "dappled"): "Its moss turned orange, like autumn leaves.",
     ("spider", "cherry"): "Pink cherry blossoms and green leaves grow over its back and legs.",
     ("spider", "sulfur"): "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange.",
     ("spider", "dappled"): "Orange and red leaves on its back and head.",
@@ -124,15 +127,17 @@ NEEDS = {"temperate": "Only temperate {mob}s, the usual kind.", "cold": "Only co
 RARE = {
     ("pig", "cherry"): "pigs in cherry groves", ("pig", "dappled"): "pigs in dappled forests",
     ("sheep", "cherry"): "sheep in cherry groves", ("sheep", "dappled"): "sheep in dappled forests",
+    ("sniffer", "snowy"): "sniffers in snowy biomes", ("sniffer", "cherry"): "sniffers in cherry groves",
+    ("sniffer", "dappled"): "sniffers in dappled forests",
     ("spider", "cherry"): "spiders in cherry groves", ("spider", "sulfur"): "spiders in sulfur caves",
     ("spider", "dappled"): "spiders in dappled forests", ("spider", "pale"): "spiders in pale gardens",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
 BIOME = {
-    **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "sheep", "spider")},
-    **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "spider")},
-    ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves",
+    **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
+    **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
+    ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves", ("sniffer", "snowy"): "snowy",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
 # name).

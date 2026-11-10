@@ -239,9 +239,9 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Slimeling", "Bloblet"], kind: BABY },
   ],
   sniffer: [
-    { names: ["Snowy", "Frosty"], what: "The Snowy look." },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Dappled"], what: "The dappled look." },
+    { names: ["Snowy", "Frosty"], what: "Snow heaped on its back and head, its moss frosted a pale blue-green, and frost on its feet.", biome: "snowy", rare: "sniffers in snowy biomes" },
+    { names: ["Cherry"], what: "Its moss a lighter green, covered in pink cherry blossoms, over magenta fur.", biome: "cherry_grove", rare: "sniffers in cherry groves" },
+    { names: ["Dappled"], what: "Its moss turned orange, like autumn leaves.", biome: "dappled_forest", rare: "sniffers in dappled forests" },
   ],
   snow_golem: [
     { names: ["Baby", "Snowlet", "Jackling"], kind: BABY },
