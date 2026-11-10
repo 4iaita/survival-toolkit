@@ -89,6 +89,8 @@ WHAT = {
     ("cow", "dappled"): "Orange leaves on its head.",
     ("goat", "evil kiddo"): "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.",
     ("goat", "halloween"): "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.",
+    ("horse", "wendigo foal"): "A baby wendigo: a bare deer skull with little antlers for a head, the bones of its back and legs showing through a ragged hide the color of its coat, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",
+    ("horse", "halloween"): "A wendigo: a bare deer skull with wide branching antlers on a bony neck, ribs and spine showing through a ragged hide the color of its coat, bone legs, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",
     ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
     ("ocelot", "witch kitten"): "A baby ocelot in a witch’s hat.",
@@ -143,7 +145,8 @@ BIOME = {
 # name).
 NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
          ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween"),
-         ("sheep", "ghost lamb"), ("sheep", "halloween"), ("goat", "evil kiddo"), ("goat", "halloween")}
+         ("sheep", "ghost lamb"), ("sheep", "halloween"), ("goat", "evil kiddo"), ("goat", "halloween"),
+         ("horse", "wendigo foal"), ("horse", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

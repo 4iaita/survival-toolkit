@@ -45,13 +45,13 @@ function mobTexture(name) {
   return mobTextures[name];
 }
 
-// A layer's textures stacked bottom first, each stretched to the size of the first; dyes, a color name for each,
-// where the game colors them itself (the tropical fish); blend, faint texels on top shade what's under them, as worn
+// A layer's textures stacked bottom first, each stretched to the size of the first; dyes, a color name (or a color) for
+// each, where the game colors them itself (the tropical fish, leather armor); blend, faint texels on top shade what's under them, as worn
 // armor's cracks do, where otherwise only the solid ones count.
 async function layerTexture(names, dyes, blend = false) {
   const [base, ...rest] = await Promise.all(names.map(mobTexture));
   if (!base || (!rest.length && !dyes)) return base;
-  const dyeAt = i => (dyes && dyes[i] ? hex(DYES[dyes[i]]).map(c => c / 255) : [1, 1, 1]);
+  const dyeAt = i => (dyes && dyes[i] ? hex(DYES[dyes[i]] || dyes[i]).map(c => c / 255) : [1, 1, 1]);
   const px = new Uint8ClampedArray(base.px), under = dyeAt(0);
   for (let k = 0; k < px.length; k += 4) for (let c = 0; c < 3; c++) px[k + c] *= under[c];
   rest.forEach((t, i) => {
@@ -269,18 +269,24 @@ function boxesBounds(boxes) {
 // baby flies as high as its parent, while a part's move inside the model grows and shrinks with it)
 // and moving is an animation's pose this moment (motionPose), which adds to those and scales with the look; showing
 // is more [bone pattern, shown] rules from something the mob is doing (actPose); skins, textures to draw in place of the
-// look's own (a variant's, MOB_VARIANTS); showParts, more [bone pattern, shown] rules from the variant (a camel's saddle).
+// look's own (a variant's, MOB_VARIANTS); overlays, textures to lay over a layer's, by its own first texture, blended by
+// their alpha (a horse's markings, MOB_MARKINGS); showParts, more [bone pattern, shown] rules from the variant (a camel's saddle).
 // By day the layers that only glow in the dark are left out, unless the mob is glowing anyway (soft light always shows); at night they show and
 // the rest is darker. Soft glows come apart from the boxes, as their soft list.
 const NIGHT_DIM = 0.6;
-async function lookBoxes(look, { flip = false, tint = null, clock = null, night = false, glowing = false, size = 1, height = 0, stand = null, moving = null, showing = [], armor = null, skins = null, showParts = [] } = {}) {
-  // Armor is one more layer: { kind, a MOB_ARMOR key; dye, its color if any; crack, its wear if any; glint, if enchanted }.
-  const piece = armor && MOB_ARMOR[armor.kind];
-  const worn = piece ? [[piece.model, [armor.dye ? piece.dyed : piece.plain, ...(armor.crack ? [piece.cracks[armor.crack]] : [])], [], { blend: true, ...(armor.dye ? { dyes: [armor.dye] } : {}), ...(armor.glint ? { glint: 1 } : {}) }]] : [];
+async function lookBoxes(look, { flip = false, tint = null, clock = null, night = false, glowing = false, size = 1, height = 0, stand = null, moving = null, showing = [], armor = null, skins = null, overlays = null, showParts = [] } = {}) {
+  // Armor is one more layer: { kind, a MOB_ARMOR key; type, which of its kinds (a horse's: leather, iron...); dye, its
+  // color if any; crack, its wear if any; glint, if enchanted }. Undyed, some is tinted all the same (leather's brown).
+  const piece = armor && MOB_ARMOR[armor.kind] && (MOB_ARMOR[armor.kind].kinds ? MOB_ARMOR[armor.kind].kinds[armor.type] : MOB_ARMOR[armor.kind]);
+  const dye = piece && (armor.dye || piece.undyed);
+  const worn = piece ? [[piece.model, [armor.dye ? piece.dyed : piece.plain, ...(armor.crack ? [piece.cracks[armor.crack]] : [])], [], { blend: true, ...(dye ? { dyes: [dye] } : {}), ...(armor.glint ? { glint: 1 } : {}) }]] : [];
   const shown = [...look.layers.filter(([, , , flags = {}]) => night || glowing || !flags.glow || flags.soft), ...worn];
   const isRoot = bone => shown.some(([model]) => MOB_MODELS[model][2].some(([name, parent]) => parent < 0 && name.toLowerCase() === bone.toLowerCase()));
   const placed = stand && Object.fromEntries(Object.entries(stand).map(([bone, b]) => [bone, b.p && isRoot(bone) ? { ...b, p: b.p.map(v => v / size) } : b]));
-  const layers = await Promise.all(shown.map(([, textures, , flags = {}]) => layerTexture(skins ? textures.map(n => skins[n] || n) : textures, flags.dyes, flags.blend)));
+  const layers = await Promise.all(shown.map(([, textures, , flags = {}]) => {
+    const over = overlays && overlays[textures[0]];
+    return layerTexture([...(skins ? textures.map(n => skins[n] || n) : textures), ...(over ? [over] : [])], flags.dyes, flags.blend || Boolean(over));
+  }));
   if (!layers.length || layers.some(t => !t)) return null;
   const pose = { ...look.pose, ...placed };
   for (const [bone, m] of Object.entries(moving || {})) {
@@ -583,11 +589,11 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
   const fits = {};
   return {
     // Show a mob (or prop, see looksOf) in one of its looks; resolves once it's drawn, or false if it can't be.
-    async show(mob, lookIndex = 0, { flip = false, tint = null, clock = null, night = false, glowing = false, stand = null, swim = false, zoom = 1, mood = null, armor = null, sized = null, climate = null, skins = null, shown = [] } = {}) {
+    async show(mob, lookIndex = 0, { flip = false, tint = null, clock = null, night = false, glowing = false, stand = null, swim = false, zoom = 1, mood = null, armor = null, sized = null, climate = null, skins = null, overlays = null, shown = [] } = {}) {
       // A mood (MOB_MOODS) has looks and animations of its own, in place of the mob's usual ones; so can a size (MOB_SIZES); a climate (MOB_CLIMATES) has the few looks that differ there (their layers, over the usual look), and maybe loops and acts of its own.
       const mooded = (mood && MOB_MOODS[mob] && MOB_MOODS[mob][mood]) || null, ofSize = (sized && MOB_SIZES[mob] && MOB_SIZES[mob][sized] && MOB_SIZES[mob][sized].looks) || null;
       const climated = (climate && MOB_CLIMATES[mob] && MOB_CLIMATES[mob][climate]) || null, ofClimate = (climated && climated.looks) || null;
-      const key = wanted = `${mob}/${lookIndex}/${flip}/${night}/${mood}/${sized}/${climate}/${JSON.stringify(skins)}/${JSON.stringify(shown)}`, looks = ofSize || (mooded ? mooded.looks : ofClimate ? looksOf(mob).map((l, i) => (ofClimate[i] ? { ...l, ...ofClimate[i] } : l)) : looksOf(mob)), look = looks[lookIndex] || looks[0];
+      const key = wanted = `${mob}/${lookIndex}/${flip}/${night}/${mood}/${sized}/${climate}/${JSON.stringify(skins)}/${JSON.stringify(overlays)}/${JSON.stringify(shown)}`, looks = ofSize || (mooded ? mooded.looks : ofClimate ? looksOf(mob).map((l, i) => (ofClimate[i] ? { ...l, ...ofClimate[i] } : l)) : looksOf(mob)), look = looks[lookIndex] || looks[0];
       const ground = mob.startsWith("prop:") ? landed : b => b;
       if (!look) return false;
       const fitOf = ([lo, hi]) => {
@@ -620,7 +626,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         if (base.bounds) fits[mob] = fitOf(base.bounds);
       }
       const f = fits[mob];
-      const options = { flip, tint, clock, night, glowing, stand, armor, skins, showParts: shown, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
+      const options = { flip, tint, clock, night, glowing, stand, armor, skins, overlays, showParts: shown, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
       const reach = f ? await reachOf(look, options) : { boxes: null, bounds: null }, next = reach.boxes;
       if (wanted !== key) return false;
       boxes = next;

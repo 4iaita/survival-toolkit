@@ -139,8 +139,8 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Ghastlet", "Smiley"], kind: BABY },
   ],
   horse: [
-    { names: ["Wendigo Foal", "Baby Wendigo"], more: ["wendigo Foal", "Wendigo foal", "baby Wendigo", "Baby wendigo"], what: "The Wendigo Foal look." },
-    { names: ["Halloween", "Wendigo"], what: "A Halloween costume." },
+    { names: ["Wendigo Foal", "Baby Wendigo"], more: ["wendigo Foal", "Wendigo foal", "baby Wendigo", "Baby wendigo"], what: "A baby wendigo: a bare deer skull with little antlers for a head, the bones of its back and legs showing through a ragged hide the color of its coat, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).", night: true },
+    { names: ["Halloween", "Wendigo"], what: "A wendigo: a bare deer skull with wide branching antlers on a bony neck, ribs and spine showing through a ragged hide the color of its coat, bone legs, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).", night: true },
   ],
   husk: [
     { names: ["Baby Executioner"], more: ["baby Executioner", "Baby executioner"], what: "A baby Executioner." },

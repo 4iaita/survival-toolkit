@@ -53,14 +53,25 @@ let mobVariant = "";
 // white wool, not sheared, to start with.
 let mobSaddle = false, mobWool = "white", mobShorn = false;
 const variantInfo = () => (MOB_VARIANTS[mobTab.mob] || []).find(v => v.k === mobVariant) || (MOB_VARIANTS[mobTab.mob] || [])[0] || null;
-// Its armor, in a mood that can wear any: none to start with, undyed, new and not enchanted when put on.
-const NO_ARMOR = { on: false, dye: "", crack: "", glint: false };
+// Its markings, for a mob that has some (MOB_MARKINGS), and its chest, for one that can carry one (MOB_CHESTS): none to
+// start with.
+let mobMarks = "", mobChest = false;
+const marksInfo = () => (MOB_MARKINGS[mobTab.mob] || []).find(v => v.k === mobMarks) || (MOB_MARKINGS[mobTab.mob] || [])[0] || null;
+// Its armor, for a mob that can wear any (in a mood that can, for one with moods): none to start with; type, which of
+// MOB_ARMOR's kinds ("" for a mob with one kind); undyed, new and not enchanted when put on.
+const NO_ARMOR = { on: false, type: "", dye: "", crack: "", glint: false };
 let mobArmor = NO_ARMOR;
 const moodsOf = k => (MOB_MOODS[k] ? ["calm", ...Object.keys(MOB_MOODS[k])] : []);
 const moodInfo = () => (mobMood !== "calm" && MOB_MOODS[mobTab.mob] && MOB_MOODS[mobTab.mob][mobMood]) || null;
 const collarTint = { color: hex(DYES[DEFAULT_COLLAR]) };
+// The look the stage shows: a name's, else the baby look for a baby, else the plain one.
+const shownLook = () => {
+  const t = currentTag();
+  return t && t.look ? t.look : mobBaby && babyLook(mobTab.mob) > 0 ? babyLook(mobTab.mob) : 0;
+};
 // The game doesn't put armor on a baby.
-const armorFits = () => Boolean(moodInfo() && moodInfo().armor) && !isBaby();
+const armorFits = () => Boolean(MOB_ARMOR[mobTab.mob]) && (MOB_MOODS[mobTab.mob] ? Boolean(moodInfo() && moodInfo().armor) : true) && !babyShown(mobTab.mob, shownLook());
+const armorPiece = (k, type) => MOB_ARMOR[k] && (MOB_ARMOR[k].kinds ? MOB_ARMOR[k].kinds[type] : MOB_ARMOR[k]);
 const titled = name => name.replace(/(^| )\w/g, c => c.toUpperCase());
 
 const mobStage = $("mob-stage");
@@ -90,24 +101,26 @@ function showOnStage() {
   mobBackdrop.show(biome);
   if (!t || !t.rainbow) wool.color = hex(DYES[MOB_WOOL[m.k] ? mobWool : "white"]);
   const collared = Boolean(moodInfo() && moodInfo().collar), armored = armorFits() && mobArmor.on;
-  const armor = armored ? { kind: m.k, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
+  const armor = armored ? { kind: m.k, type: mobArmor.type, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
+  const marks = marksInfo(), armorName = armored && MOB_ARMOR[m.k].kinds ? `${ARMOR_NAMES[m.k][mobArmor.type].toLowerCase()} ` : "";
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, shown: shownParts(m.k, look) }).then(ok => {
+  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look) }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
-  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}armor` : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
+  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
 }
 
 // Whether the stage shows a baby: the mob's baby look, or a name's baby look (a pig's Zombified Piglet, a camel's Baby
 // Mummy), drawn smaller. A baby can't be saddled or sheared (the camel's baby looks have no saddle at all), and wears no
 // variant's parts.
 const babyShown = (k, look) => Boolean(look) && (look === babyLook(k) || ((MOB_LOOKS[k] || [])[look] || {}).scale < 1);
-// The parts the stage shows or hides besides the look's own: its variant's (a goat's horns), a saddle and shorn wool.
+// The parts the stage shows or hides besides the look's own: its variant's (a goat's horns), a saddle, a chest, shorn wool
+// and what armor makes way for (a snowy horse's snow).
 function shownParts(k, look) {
   if (babyShown(k, look)) return [];
   const variant = variantInfo(), wool = MOB_WOOL[k], name = ((MOB_LOOKS[k] || [])[look] || { names: [] }).names[0];
-  return [...((variant && variant.show) || []), ...(MOB_SADDLES[k] && mobSaddle ? MOB_SADDLES[k] : []),
-    ...(wool && mobShorn ? [...wool.shorn, ...((wool.shornLooks || {})[name] || [])] : [])];
+  return [...((variant && variant.show) || []), ...(MOB_SADDLES[k] && mobSaddle ? MOB_SADDLES[k] : []), ...(MOB_CHESTS[k] && mobChest ? MOB_CHESTS[k] : []),
+    ...(wool && mobShorn ? [...wool.shorn, ...((wool.shornLooks || {})[name] || [])] : []), ...(armorFits() && mobArmor.on ? ARMOR_SHOWS[k] || [] : [])];
 }
 // How the stage's description puts what it wears: saddled, sheared, its wool's color (a white sheep is just a sheep).
 const wearWords = (k, look) => (babyShown(k, look) ? [] : [MOB_SADDLES[k] && mobSaddle ? "saddled" : "", MOB_WOOL[k] && mobShorn ? "sheared" : ""])
@@ -151,14 +164,24 @@ function renderVariants() {
   $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
 }
 
+// The markings buttons, for a mob whose coat has them, and what each looks like and how often.
+function renderMarks() {
+  const marks = MOB_MARKINGS[mobTab.mob], v = marksInfo();
+  $("marks-bar").hidden = !marks;
+  $("marks-label").textContent = v ? `Markings: ${v.n}${v.where ? ` · ${v.where}` : ""}` : "Markings";
+  $("marks-try").innerHTML = marks ? marks.map(x => `<button type="button" class="name-chip" data-marks="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
+}
+
 // The saddle buttons, for a mob that can wear one, and for a sheep its wool's colors and, on a row of their own, whether
 // it's sheared (a sheared sheep keeps its color on its head and a few tufts). A baby can have neither a saddle nor its
 // wool sheared: those buttons are off for it.
 function renderWear() {
-  const k = mobTab.mob, t = currentTag(), look = t && t.look ? t.look : mobBaby && babyLook(k) > 0 ? babyLook(k) : 0, baby = babyShown(k, look);
+  const k = mobTab.mob, baby = babyShown(k, shownLook());
   const chip = (attr, value, label, pressed, off) => `<button type="button" class="name-chip" data-${attr}="${value}" aria-pressed="${pressed}"${off ? ` disabled title="${esc(off)}"` : ""}>${label}</button>`;
   $("saddle-bar").hidden = !MOB_SADDLES[k];
   if (MOB_SADDLES[k]) $("saddle-try").innerHTML = chip("saddle", "", "No saddle", !mobSaddle || baby) + chip("saddle", "on", "Saddled", mobSaddle && !baby, baby && "The game doesn’t saddle a baby");
+  $("chest-bar").hidden = !MOB_CHESTS[k];
+  if (MOB_CHESTS[k]) $("chest-try").innerHTML = chip("chest", "", "No chest", !mobChest || baby) + chip("chest", "on", "Chest", mobChest && !baby, baby && "The game doesn’t give a baby a chest");
   const wool = MOB_WOOL[k];
   $("wool-bar").hidden = $("shear-bar").hidden = !wool;
   if (!wool) return;
@@ -190,16 +213,25 @@ function renderMoods() {
     $("collar-label").textContent = `Collar: ${titled(mobCollar)}`;
     $("collar-try").innerHTML = COLLAR_COLORS.map(c => dyeSwatch("collar", c, c === mobCollar)).join("");
   }
-  const fits = armorFits(), on = fits && mobArmor.on;
-  $("armor-row").hidden = !fits;
-  $("armor-dye-row").hidden = $("armor-wear-row").hidden = $("armor-glint-row").hidden = !on;
+  renderArmor();
+}
+
+// The armor buttons, for a mob that can wear armor (a wolf only as a pet): its kinds (a horse's leather, iron and so on),
+// and for the one it wears, its dye (leather and wolf armor), wear and enchantment (wolf armor; horse armor can't be
+// enchanted).
+function renderArmor() {
+  const k = mobTab.mob, fits = armorFits(), on = fits && mobArmor.on, piece = on && armorPiece(k, mobArmor.type);
+  $("armor-bar").hidden = !fits;
+  $("armor-dye-row").hidden = !(piece && piece.dyed);
+  $("armor-wear-row").hidden = !(piece && piece.cracks);
+  $("armor-glint-row").hidden = !(on && !MOB_ARMOR[k].kinds);
   if (!fits) return;
   const chip = (attr, value, label, pressed) => `<button type="button" class="name-chip" data-${attr}="${value}" aria-pressed="${pressed}">${label}</button>`;
-  $("armor-try").innerHTML = chip("armor", "", "None", !mobArmor.on) + chip("armor", "on", "Wolf Armor", mobArmor.on);
+  $("armor-try").innerHTML = chip("armor", "none", "None", !mobArmor.on) + Object.entries(ARMOR_NAMES[k]).map(([type, label]) => chip("armor", type, label, mobArmor.on && mobArmor.type === type)).join("");
   if (!on) return;
   $("armor-dye-label").textContent = `Armor color: ${mobArmor.dye ? titled(mobArmor.dye) : "Undyed"}`;
   $("armor-dye-try").innerHTML = chip("armor-dye", "", "Undyed", !mobArmor.dye) + COLLAR_COLORS.map(c => dyeSwatch("armor-dye", c, c === mobArmor.dye)).join("");
-  $("armor-wear-try").innerHTML = ARMOR_WEAR.map(([k, label]) => chip("armor-wear", k, label, k === mobArmor.crack)).join("");
+  $("armor-wear-try").innerHTML = ARMOR_WEAR.map(([w, label]) => chip("armor-wear", w, label, w === mobArmor.crack)).join("");
   $("armor-glint-try").innerHTML = chip("armor-glint", "", "Not enchanted", !mobArmor.glint) + chip("armor-glint", "on", "Enchanted", mobArmor.glint);
 }
 
@@ -298,6 +330,7 @@ function renderMobs() {
   renderMobPicker();
   renderAge();
   renderVariants();
+  renderMarks();
   renderWear();
   renderSizes();
   renderMoods();
@@ -321,8 +354,8 @@ function pickMob(k, name) {
     mobCollar = DEFAULT_COLLAR;
     mobArmor = NO_ARMOR;
     mobSize = DEFAULT_SIZE;
-    mobVariant = "";
-    mobSaddle = mobShorn = false;
+    mobVariant = mobMarks = "";
+    mobSaddle = mobShorn = mobChest = false;
     mobWool = "white";
     mobBaby = false;
     mobView.turnBack();
@@ -381,6 +414,22 @@ $("variant-try").addEventListener("click", e => {
   saveMobTab();
   refocus(`#variant-try button[data-variant="${mobVariant}"]`);
 });
+$("marks-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-marks]");
+  if (!b || b.dataset.marks === (marksInfo() || {}).k) return;
+  mobMarks = b.dataset.marks;
+  renderMarks();
+  showOnStage();
+  refocus(`#marks-try button[data-marks="${mobMarks}"]`);
+});
+$("chest-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-chest]");
+  if (!b || b.disabled || Boolean(b.dataset.chest) === mobChest) return;
+  mobChest = Boolean(b.dataset.chest);
+  renderWear();
+  showOnStage();
+  refocus(`#chest-try button[data-chest="${b.dataset.chest}"]`);
+});
 $("saddle-try").addEventListener("click", e => {
   const b = e.target.closest("button[data-saddle]");
   if (!b || b.disabled || Boolean(b.dataset.saddle) === mobSaddle) return;
@@ -426,11 +475,11 @@ const armorButton = (id, attr, change) => $(id).addEventListener("click", e => {
   const b = e.target.closest(`button[data-${attr}]`);
   if (!b) return;
   mobArmor = { ...mobArmor, ...change(b.dataset[attr.replace(/-(\w)/, (_, c) => c.toUpperCase())]) };
-  renderMoods();
+  renderArmor();
   showOnStage();
   refocus(`#${id} button[data-${attr}="${CSS.escape(b.getAttribute(`data-${attr}`))}"]`);
 });
-armorButton("armor-try", "armor", v => ({ on: Boolean(v) }));
+armorButton("armor-try", "armor", v => (v === "none" ? { on: false } : { on: true, type: v }));
 armorButton("armor-dye-try", "armor-dye", v => ({ dye: v }));
 armorButton("armor-wear-try", "armor-wear", v => ({ crack: v }));
 armorButton("armor-glint-try", "armor-glint", v => ({ glint: Boolean(v) }));

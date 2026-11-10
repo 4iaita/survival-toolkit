@@ -54,6 +54,34 @@ def controller_animations(d, played=()):
     return out
 
 
+def dump(v):
+    return json.dumps(v, separators=(",", ":"), ensure_ascii=False)
+
+
+def put(text, const, key, value):
+    """text (src/mob-models.js) with key's entry in the table const set to value, in key order."""
+    a = text.index(f"const {const} = {{")
+    b = text.index("\n};", a)
+    lines = [l for l in text[a:b].split("\n") if not l.startswith(f'  "{key}": ')]
+    keys = [(i, re.match(r'  "([^"]+)":', l).group(1)) for i, l in enumerate(lines) if re.match(r'  "([^"]+)":', l)]
+    at = next((i for i, k in keys if k > key), len(lines))
+    lines.insert(at, f"  {dump(key)}: {dump(value)},")
+    return text[:a] + "\n".join(lines) + text[b:]
+
+
+def copy_texture(path, key):
+    """The pack's texture path into art/mobs/ as key.png; False if it's missing."""
+    src = im.texture_file(path)
+    if not src:
+        print("missing texture", path)
+        return False
+    if src.suffix == ".tga":
+        im.tga_to_png(src, ia.im.root / "art" / "mobs" / f"{key}.png")
+    else:
+        shutil.copyfile(src, ia.im.root / "art" / "mobs" / f"{key}.png")
+    return True
+
+
 def still(pose):
     """A pose without the bones it leaves as they are (no turn, no shift, full size)."""
     out = {}
@@ -273,26 +301,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     if not ia.WRITE:
         return
 
-    out = ia.im.root / "art" / "mobs"
     for path, key in sorted(tex_keys.items(), key=lambda kv: kv[1]):
-        src = im.texture_file(path)
-        if not src:
-            print("missing texture", path)
-        elif src.suffix == ".tga":
-            im.tga_to_png(src, out / f"{key}.png")
-        else:
-            shutil.copyfile(src, out / f"{key}.png")
-    dump = lambda v: json.dumps(v, separators=(",", ":"), ensure_ascii=False)
-
-    def put(text, const, key, value):
-        a = text.index(f"const {const} = {{")
-        b = text.index("\n};", a)
-        lines = [l for l in text[a:b].split("\n") if not l.startswith(f'  "{key}": ')]
-        keys = [(i, re.match(r'  "([^"]+)":', l).group(1)) for i, l in enumerate(lines) if re.match(r'  "([^"]+)":', l)]
-        at = next((i for i, k in keys if k > key), len(lines))
-        lines.insert(at, f"  {dump(key)}: {dump(value)},")
-        return text[:a] + "\n".join(lines) + text[b:]
-
+        copy_texture(path, key)
     text = put(text, "MOB_LOOKS", mob, looks)
     text = put(text, "MOB_MOTIONS", mob, motion)
     if act:

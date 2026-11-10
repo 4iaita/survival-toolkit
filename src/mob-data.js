@@ -39,6 +39,8 @@ const pandaSkins = v => ({ new_panda: `new_panda_${v}`, new_panda_baby: `new_pan
 // An angry bee's skins (import_bee.py prints them): the firefly and the moths have one angry skin, nectar or not.
 const beeSkins = v => ({ new_bee: `new_bee_${v}`, new_bee_qween: `new_bee_${v}_qween`,
   ...Object.fromEntries(["firefly", "black_moth", "brown_moth", "green_moth", "pink_moth"].map(s => [`new_bee_${s}`, `new_bee_angry_${s}`])) });
+// A horse's coat (import_horse.py prints them): the foal's and the Wendigo looks' coats change with it.
+const horseSkins = v => Object.fromEntries(["", "_baby", "_wendigo_foal", "_halloween"].map(s => [`new_horse${s}`, `new_horse_${v}${s}`]));
 const catSkins = v => Object.fromEntries(["", "_baby", "_halloween_2", "_witch_kitten_2"].map(s => [`new_cat${s}`, `new_cat_${v}${s}`]));
 const MOB_VARIANTS = {
   // The chickens' climates: the warm one has its own skin, the cold one its own model and skin too (MOB_CLIMATES).
@@ -59,6 +61,11 @@ const MOB_VARIANTS = {
     { k: "warm", n: "Warm", where: "Savanna", biome: "savanna", climate: "warm" },
     { k: "cold", n: "Cold", where: "Taiga", biome: "taiga", climate: "cold" },
   ],
+  // The horse's seven coats (the pack's q.variant 0 to 6), equally likely. Its markings are a row of their own (MOB_MARKINGS).
+  horse: [
+    { k: "white", n: "White" }, { k: "creamy", n: "Creamy" }, { k: "chestnut", n: "Chestnut" }, { k: "brown", n: "Brown" },
+    { k: "black", n: "Black" }, { k: "gray", n: "Gray" }, { k: "dark_brown", n: "Dark Brown" },
+  ].map((v, i) => ({ ...v, where: "1 in 7 horses", ...(i ? { skins: horseSkins(v.k) } : {}) })),
   wolf: [
     { k: "pale", n: "Pale", where: "Taiga", biome: "taiga" },
     { k: "ashen", n: "Ashen", where: "Snowy Taiga", biome: "snowy_taiga" },
@@ -123,13 +130,36 @@ const MOB_VARIANTS = {
     { k: "no_horns", n: "No horns", where: "After ramming a block twice", say: "hornless", show: [["ja89l_9gjf*", false], ["d67l_9gjf*", false]] },
   ],
 };
+// Markings a mob's coat can have besides its variant: k, n and where as MOB_VARIANTS'; over, textures laid over the
+// look's own (by its coat's texture: the foal's and the Wendigo looks' markings are their own), blended by their alpha
+// (import_horse.py prints them). The first is none, which it starts with.
+const horseMarks = m => Object.fromEntries(["", "_baby", "_wendigo_foal", "_halloween"].map(s => [`new_horse${s}`, `new_horse_marks_${m}${s}`]));
+const MOB_MARKINGS = {
+  // The horse's five (the pack's q.mark_variant 0 to 4), equally likely and with any coat. A reindeer has none.
+  horse: [
+    { k: "none", n: "None", where: "Plain: 1 in 5 horses" },
+    { k: "white", n: "White", where: "White socks and a blaze: 1 in 5 horses" },
+    { k: "white_field", n: "White Field", where: "Big white patches: 1 in 5 horses" },
+    { k: "white_dots", n: "White Dots", where: "White spots: 1 in 5 horses" },
+    { k: "black_dots", n: "Black Dots", where: "Dark smudges: 1 in 5 horses" },
+  ].map((v, i) => (i ? { ...v, over: horseMarks(v.k) } : v)),
+};
 // Mobs that can wear a saddle: the [bone pattern, shown] rules a saddle on it shows, as the pack's render controllers do
 // for q.is_saddled (the camel's reins only show with a rider; a pig's snowy, cherry or dappled cover makes way for it).
 // The game doesn't saddle a baby.
 const MOB_SADDLES = {
   camel: [["k255d6", true], ["3ja5d6", true]],
   pig: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true], ["2dh92l6klfg72f4qk255d6*", false]],
+  // The horse's saddle, stirrups and bridle (its reins only show with a rider); a snowy horse's snow makes way for the saddle.
+  horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true], ["f64ck255d6", true], ["alpha*NoFancyArmorSaddle*", false]],
 };
+// Mobs that can carry a chest: the [bone pattern, shown] rules a chest on it shows, as the pack's render controllers do for
+// q.is_chested. The game doesn't give a baby one.
+const MOB_CHESTS = {};
+// What wearing armor (MOB_ARMOR) shows or hides besides the armor: a snowy horse's snow makes way for it.
+const ARMOR_SHOWS = { horse: [["alpha*NoFancyArmor*", false]] };
+// What each kind of a mob's armor (MOB_ARMOR's kinds) is called on the stage, in the game's order.
+const ARMOR_NAMES = { wolf: { "": "Wolf Armor" }, horse: { leather: "Leather", iron: "Iron", golden: "Gold", diamond: "Diamond", copper: "Copper", netherite: "Netherite" } };
 // The sheep's wool: any dye color (it starts white), or sheared. natural: the colors sheep spawn with, and how often;
 // shorn: the parts shearing takes off (its wool), and more for a look whose wool is a costume (the Halloween sheet hides
 // the ears when it's off, as the pack has it). The game doesn't shear a lamb.

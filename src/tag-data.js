@@ -95,8 +95,8 @@ const PACK_TAGS = {
   hoglin: [{ names: ["Baby", "Hoglet", "Hoggin"], kind: BABY }],
   horse: [
     { names: ["Baby", "Foal"], kind: BABY },
-    { names: ["Reindeer"], what: "Turns it into a reindeer." },
-    { names: ["Rudolph"], what: "Turns it into Rudolph, the red-nosed reindeer." },
+    { names: ["Reindeer"], what: "A reindeer: tan with pale spots, dark legs and antlers. Santa’s other reindeer’s names do the same." },
+    { names: ["Rudolph"], what: "Rudolph, the red-nosed reindeer: a reindeer whose red nose glows in the dark. Named Festive, it’s this or a plain reindeer, picked at random.", night: true },
     snowyIn("horses"),
   ],
   husk: [
