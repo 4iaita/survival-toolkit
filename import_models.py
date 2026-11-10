@@ -114,9 +114,9 @@ STAGE_MOTIONS = {
     # The wither's idle also circles two markers with nothing to draw, at a speed of their own that would stretch the loop.
     "minecraft:wither": [("zxbvhct_dhyaxuw", 1, 1, ("szehexq_olzaiyc", "szehexq_zxaydmm"))],
 }
-# A pet wolf now and then sits or lies down for a while, as the pack's sitting controller has it: down, still a moment,
-# one of its idles while it stays there (the pack picks one every few seconds), still again, and up, keeping its
-# breathing and wagging going (keep). Lying down, it falls asleep, its eyes closing (the blink bone, its eyelids, slid
+# A pet wolf now and then lies down for a while, as the pack's sitting controller has it: down, still a moment, one of
+# its idles while it stays there (the pack picks one every few seconds), still again, and up. (The stage leaves out its
+# sitting down, as it does the fox's.) Lying down, it falls asleep, its eyes closing (the blink bone, its eyelids, slid
 # out to the face), sleeps with Zs floating up (a while: the pack's 30 to 60 seconds would be too long here), wakes,
 # looks about once more and gets up. Lying down and getting up from it play at 1.5 times speed. All the while the game
 # keeps the head level, looking ahead (its head-look animation turns the head relative to the entity; level_head here),
@@ -140,16 +140,10 @@ def _step(key, length, speed=1, show=(), along=(), effect=None):
 
 
 _STILL = 1.5
-_SIT_IDLES = [("rolmmlp_zxbvhct_0", 2.9583), ("rolmmlp_zxbvhct_1", 3.4583), ("rolmmlp_zxbvhct_2", 2.9167), ("rolmmlp_zxbvhct_3", 2.9167)]
 _LIE_IDLES = [("nesxtwu_zxbvhct_0", 2.9583), ("nesxtwu_zxbvhct_1", 3.4583), ("nesxtwu_zxbvhct_2", 2.9167), ("nesxtwu_zxbvhct_3", 2.9167)]
 _EYES_SHUT = [["blink", True]]
 _WOLF_SLEEP_FOR = 10
 
-
-def _wolf_sit(idles):
-    parts, effects = _wolf_seq(_step("ckabqsl_cwscbtb", 0.625), *[s for idle in idles for s in (_step("ckabqsl", _STILL), _step(*idle))],
-                               _step("ckabqsl", _STILL), _step("ckabqsl_fofftzt", 0.75))
-    return {"every": [6, 12], "keep": True, "level_head": True, "parts": parts, "effects": effects}
 
 
 def _wolf_lie(first, last):
@@ -162,7 +156,6 @@ def _wolf_lie(first, last):
     return {"every": [6, 12], "level_head": True, "parts": parts, "effects": effects}
 
 
-_WOLF_SIT = [_wolf_sit(_SIT_IDLES[0::2]), _wolf_sit(_SIT_IDLES[1::2])]
 _WOLF_LIE = [_wolf_lie(_LIE_IDLES[0], _LIE_IDLES[2]), _wolf_lie(_LIE_IDLES[1], _LIE_IDLES[3])]
 # Moods a mob can be put in on the stage, other than its calm self: what the game answers in that mood, the animations
 # that loop, the ones held at their last frame (a stance it settles into) and what it does now and then, as STAGE_ACTS.
@@ -174,7 +167,7 @@ STAGE_MOODS = {
         "angry": {"queries": {"is_angry": 1.0}, "loops": [("hhjrlam", 1)], "held": ["gfggyzv_gkbnvqq"],
                   "act": {"every": [3, 6], "parts": [("cogyszp", 0, None, [])]}},
         "pet": {"queries": {"is_tamed": 1.0, "tail_angle": 0.55 * math.pi}, "loops": [("hhjrlam", 1), ("hjwhrxn", 1)], "held": [], "collar": True, "armor": True,
-                "act": [{"every": [6, 12], "parts": [("zxbvhct_1", 0, None, []), ("furiuhw", 3.4583, None, [])]}, *_WOLF_SIT, *_WOLF_LIE]},
+                "act": [{"every": [6, 12], "parts": [("zxbvhct_1", 0, None, []), ("furiuhw", 3.4583, None, [])]}, *_WOLF_LIE]},
     },
 }
 # Sizes a mob comes in, which the game sets by q.variant: how big each is beside the biggest, and what the game answers

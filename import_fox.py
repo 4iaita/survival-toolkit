@@ -24,9 +24,6 @@ BLINK = {"every": [2, 4], "keep": True, "weight": 3, "parts": [(None, 0, 0.2, EY
 # Standing still a while (the pack waits up to 6.33 seconds), it does one of three idles, blending in and out over its
 # idle controller's 0.24 seconds, over its breathing (keep).
 IDLES = [{"every": [3, 7], "keep": True, "ease": 0.24, "parts": [(key, 0, None, [])]} for key in ("ciducd", "tculwn", "qofebb")]
-# It sits down (the pack's sit, held), sits a while and stands up again, still breathing (keep).
-SIT_FOR = 6
-SIT = {"every": [3, 7], "keep": True, "parts": [("sit", 0, SIT_FOR, []), ("stand_up", SIT_FOR, None, [])]}
 # It crouches low, its rump and tail wiggling, as it does stalking prey (the pack's stalking pose, held), and stands
 # again, blending in and out over the pack's 0.1 seconds, over its breathing (keep). It doesn't pounce: that's a jump.
 CROUCH_FOR = 4
@@ -37,7 +34,12 @@ step, seq = im._step, im._wolf_seq
 NAP = 10
 parts, effects = seq(step("sleep", NAP, show=EYES_SHUT, effect="z"), step("eetqjm", 1.3333))
 SLEEP = {"every": [3, 7], "parts": parts, "effects": effects}
-ACTS = [BLINK, *IDLES, SIT, CROUCH, SLEEP]
+ACTS = [BLINK, *IDLES, CROUCH, SLEEP]
+# Jimothy, a round little raccoon, has no head of its own: its face, ears and snout hang from its body, the bone the fox's
+# curling up turns. Asleep it would roll onto its side and sink into the ground (its legs are too short for the fox's
+# lying down), so it only breathes, idles and crouches; it has no shut-eyed head to blink with either.
+JIMOTHY = {"motions": MOTIONS, "acts": [*IDLES, CROUCH]}
 
 if __name__ == "__main__":
-    port("fox", variants=VARIANTS, acts=ACTS, motions=MOTIONS, remodel=["raccoon", "jimothy"], nested_poses=True)
+    port("fox", variants=VARIANTS, acts=ACTS, motions=MOTIONS, remodel=["raccoon", "jimothy"], nested_poses=True,
+         sets={"jimothy": JIMOTHY}, plays={"jimothy": "jimothy"})

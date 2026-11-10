@@ -9,7 +9,7 @@ too). The Cherry look is the rabbit's own coat with cherry blossoms over it, so 
 Killer Bunny, Easter and Punk looks keep their own skins. Run import_additions.py first. It prints the skins to put in
 MOB_VARIANTS (src/mob-data.js).
 """
-from import_port import port
+from import_port import ia, port, put
 
 VARIANTS = ["brown", "white", "black", "black_and_white", "gold", "salt_and_pepper"]
 
@@ -28,5 +28,25 @@ ACTS = [BLINK, *IDLES]
 
 NAMED = ["toast", "killer bunny", "easter", "punk", "cherry"]
 
+# The Cherry look's blossom is tucked into its left ear, at its base, but the pack hangs it on the head, and the rabbit's
+# standing loop keeps its ears turned and swaying: the ear moved away and left the blossom in the air beside the head. It
+# hangs from that ear here instead (the same place at rest), so it goes where the ear goes.
+CHERRY_LAYER, EAR, EAR_PIVOT = "new_rabbit_cherry_1", "62jd67l", [1.5, 13, -3.5]
+
+
+def blossom_on_ear(model):
+    bones = model[2]
+    if any(b[0] == EAR for b in bones):
+        return model
+    head = next(i for i, b in enumerate(bones) if b[0] == "head")
+    bones.append([EAR, head, EAR_PIVOT, 0, bones[head][4]])
+    bones[head][4] = []
+    return model
+
+
 if __name__ == "__main__":
     port("rabbit", variants=VARIANTS, acts=ACTS, motions=MOTIONS, remodel=NAMED, nested_poses=True)
+    if ia.WRITE:
+        text = ia.MODELS_JS.read_text()
+        model = blossom_on_ear(ia.parse_section(text, "MOB_MODELS")[CHERRY_LAYER])
+        ia.MODELS_JS.write_text(put(text, "MOB_MODELS", CHERRY_LAYER, model))

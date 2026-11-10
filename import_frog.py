@@ -25,12 +25,13 @@ CROAK = {"every": [3, 7], "keep": True, "parts": [("croak", 0, None, [])]}
 ACTS = [*DIPS, CROAK]
 
 # Rana, Rhadora and Sapo have eyes of their own, with lids the pack keeps out of sight (its loop shrinks them to nothing)
-# until they blink (their own blink, every 1.25 to 3.75 seconds: the lids come down over the eyes as they sink back),
-# besides the frog's. The stage can't undo a shrink, so the lids are hidden by the looks' rules instead and shown while
-# they blink.
+# until they blink (their own blink, every 1.25 to 3.75 seconds: the lids come down over the eyes as they sink back). The
+# stage can't undo a shrink, so the lids are hidden by the looks' rules instead and shown while they blink. Their model
+# has neither the frog's eyes nor its throat: the frog's eye dips would only jerk the whole body back and forth (a
+# stutter), and its croak would show nothing, so they only blink.
 LIDS = "j2f26q63dafc*"
 OWN_EYES = {"motions": [("idle", 1)],
-            "acts": [*DIPS, {"every": [1, 4], "keep": True, "weight": 3, "parts": [("blink", 0, None, [[LIDS, True]])]}, CROAK]}
+            "acts": [{"every": [1, 4], "keep": True, "weight": 3, "parts": [("blink", 0, None, [[LIDS, True]])]}]}
 PLAYS = {"rana": "own_eyes", "rhadora": "own_eyes", "sapo": "own_eyes"}
 
 NAMED = ["baby imp", "rana", "rhadora", "sapo", "halloween"]
