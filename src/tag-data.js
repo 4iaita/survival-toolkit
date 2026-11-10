@@ -21,7 +21,7 @@ const GAME_TAGS = [
 // most mobs share (BABY, SNOWY); rare: which mobs get the look without the name, picked again each time one loads;
 // needs: what has to be true first; climate: the climate (a MOB_VARIANTS climate, or temperate) or climates the look
 // shows in, the only variants the name can be tried on; biome: the backdrop the stage shows behind it, the biome the look
-// comes from (the cherry grove for a Cherry look). On the stage: night for a name whose difference only shows in the dark,
+// comes from (the cherry grove for a Cherry look). On the stage: night for a name whose difference only shows in the dark (its glow is shown by day),
 // moving for a texture that runs, still for a dance it can't show.
 const BABY = "baby", SNOWY = "snowy";
 const snowyIn = mobs => ({ names: ["Snowy", "Frosty"], kind: SNOWY, rare: `15% of ${mobs} in snowy biomes` });
@@ -185,7 +185,7 @@ const PACK_TAGS = {
   zoglin: [{ names: ["Baby", "Zoglet", "Zoggin"], kind: BABY }],
   zombie: [
     { names: ["Baby", "Rotty"], kind: BABY },
-    { names: ["Brian", "Glare"], what: "Eyes that glow in the dark, so the stage shows night.", rare: "1 in 200 zombies" },
+    { names: ["Brian", "Glare"], what: "Eyes that glow in the dark.", rare: "1 in 200 zombies" },
     { names: ["Zanta"], what: "A zombie Santa.", rare: "1 in 200 zombies in snowy biomes" },
     { names: ["Snowman"], what: "A snowman’s head with a top hat.", rare: "1 in 200 zombies in snowy biomes" },
     { names: ["Snowy", "Frosty"], kind: SNOWY },

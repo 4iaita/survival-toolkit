@@ -87,8 +87,8 @@ const wool = { color: [255, 255, 255] }, mobClock = { t: 0 };
 let jebStep = 0;
 
 // The stage: the mob's own biome (its variant's, for one that has them), a name's own biome (biome: the cherry grove for
-// a Cherry look), a snowy village for snowy names, and night for
-// a name that only makes it glow.
+// a Cherry look) and a snowy village for snowy names, always by day. A name whose difference is a glow (night: glowing
+// eyes) shows its glowing layers all the same, so they can be seen against the day.
 function showOnStage() {
   const m = mobOf(mobTab.mob), t = currentTag(), variant = variantInfo();
   const look = t && t.look ? t.look : mobBaby && babyLook(m.k) > 0 ? babyLook(m.k) : 0;
@@ -96,7 +96,6 @@ function showOnStage() {
   tagEl.textContent = t ? (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]) : "";
   const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? "snowy" : (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
   mobStage.dataset.biome = biome;
-  mobStage.dataset.time = night ? "night" : "day";
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);
   mobBackdrop.show(biome);
   if (!t || !t.rainbow) wool.color = hex(DYES[MOB_WOOL[m.k] ? mobWool : "white"]);
@@ -104,10 +103,10 @@ function showOnStage() {
   const armor = armored ? { kind: m.k, type: mobArmor.type, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   const marks = marksInfo(), armorName = armored && MOB_ARMOR[m.k].kinds ? `${ARMOR_NAMES[m.k][mobArmor.type].toLowerCase()} ` : "";
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night, glowing: m.glowing, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look) }).then(ok => {
+  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night: false, glowing: m.glowing || night, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look) }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
-  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${night ? ", at night" : ""}. Drag or use the arrow keys to turn it.`);
+  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}. Drag or use the arrow keys to turn it.`);
 }
 
 // Whether the stage shows a baby: the mob's baby look, or a name's baby look (a pig's Zombified Piglet, a camel's Baby
