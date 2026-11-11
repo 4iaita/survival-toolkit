@@ -20,11 +20,17 @@ const DRAGON_STAND = {
   root: { p: [0, 115, 0], s: [0.9, 0.9, 0.9] }, rightWing: { s: [1.11, 1.11, 1.11] }, leftWing: { s: [1.11, 1.11, 1.11] },
   loqnofr: { s: [0.95, 0.95, 0.95] }, qjgfyeo: { s: [0.95, 0.95, 0.95] },
 };
-// What the moods are called on the stage: every mob starts calm (a pufferfish deflated); MOB_MOODS says which others it
-// has (the pufferfish's: half puffed and puffed up, as the game puffs it when something comes near).
-// What sizes are called on the stage, for the mobs MOB_SIZES lists; every one starts at its biggest.
+// What the moods are called on the stage: every mob starts calm (a pufferfish deflated) but those START_MOODS lists;
+// MOB_MOODS says which others it has (the pufferfish's: half puffed and puffed up, as the game puffs it when something
+// comes near).
+// What sizes are called on the stage, for the mobs MOB_SIZES lists; every one starts at its biggest but those
+// START_SIZES lists.
 const SIZE_NAMES = { small: "Small", medium: "Medium", big: "Big" };
 const DEFAULT_SIZE = "big";
+// The salmon starts at medium, a salmon's usual size (small ones are half as big, large ones half as big again).
+const START_SIZES = { salmon: "medium" };
+// The pufferfish starts half puffed.
+const START_MOODS = { pufferfish: "half" };
 const MOOD_NAMES = { calm: "Calm", pet: "Pet", angry: "Angry", half: "Half Puffed", puffed: "Puffed Up" };
 // What a pet's collar comes in, as the dyes are called in DYES; red is what the game starts it with.
 const COLLAR_COLORS = ["red", "orange", "yellow", "lime", "green", "cyan", "light blue", "blue", "purple", "magenta", "pink", "white", "light gray", "gray", "black", "brown"];

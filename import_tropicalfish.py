@@ -15,10 +15,11 @@ import json
 
 from import_port import copy_texture, ia, im, port
 
-# In the water it floats, rocking and bobbing, its fins and tail swaying (the pack's idle), and swims slowly in place
-# (the pack's swim, which plays as it moves: at the strength and speed it has swimming slowly, as the stage had it
-# before). Out of the water it flops, which the stage doesn't show; its turn as it swims does nothing standing.
-MOTIONS = [("idle", 1), ("swim", 0.6, 0.66)]
+# In the water it floats, rocking and bobbing, its fins and tail swaying (the pack's idle), and swims gently in place
+# (the pack's swim, which plays as it moves: at half the strength the cod's and salmon's have, and at the speed the pack
+# plays it at rest, so it drifts calmly rather than darting). Out of the water it flops, which the stage doesn't show;
+# its turn as it swims does nothing standing.
+MOTIONS = [("idle", 1), ("swim", 0.3, 0.5)]
 
 # Every few seconds it flutters its fins and its body shivers (the pack's loop of a second, played again after 0 to 4
 # seconds), over its floating (keep).

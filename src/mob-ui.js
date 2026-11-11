@@ -37,8 +37,10 @@ const shownTags = k => tagsFor(k).filter(t => t.src === "game" || packOn());
 const currentTag = () => shownTags(mobTab.mob).find(t => t.names[0] === mobTab.name) || null;
 
 // The picked mob's mood, for the mobs that have any, and its collar if the mood has one: they aren't remembered, so every
-// mob starts calm, and with the collar the game gives it.
-let mobMood = "calm", mobCollar = DEFAULT_COLLAR, mobSize = DEFAULT_SIZE;
+// mob starts calm (or in its START_MOODS mood), and with the collar the game gives it; and at its biggest size (or its
+// START_SIZES one).
+const startMood = k => START_MOODS[k] || "calm", startSize = k => START_SIZES[k] || DEFAULT_SIZE;
+let mobMood = startMood(mobTab.mob), mobCollar = DEFAULT_COLLAR, mobSize = startSize(mobTab.mob);
 // Whether it's a baby, for a mob the game (or the pack) has babies of: its look is the pack's baby look (babyLook), unless a name
 // gives it a look of its own. Grown to start with, like the mood.
 let mobBaby = false;
@@ -379,10 +381,10 @@ function fitClimate() {
 
 function pickMob(k, name) {
   if (k !== mobTab.mob) {
-    mobMood = "calm";
+    mobMood = startMood(k);
     mobCollar = DEFAULT_COLLAR;
     mobArmor = NO_ARMOR;
-    mobSize = DEFAULT_SIZE;
+    mobSize = startSize(k);
     mobVariant = mobMarks = "";
     mobSaddle = mobShorn = mobChest = false;
     mobCarpet = "";
