@@ -48,7 +48,7 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Witch"], what: "A witch’s hat." },
   ],
   cave_spider: [
-    { names: ["Baby", "Spiderling", "Webby"], kind: BABY },
+    { names: ["Baby", "Spiderling", "Webby"], kind: BABY, rare: "1 in 200 cave spiders" },
     { names: ["Halloween", "Skull"], what: "A dark teal spider with green bands on its legs and a big bone-white skull, with lime green eyes, for a back." },
   ],
   chicken: [
@@ -250,7 +250,7 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Snowlet", "Jackling"], kind: BABY },
   ],
   spider: [
-    { names: ["Baby", "Spiderling", "Webby"], kind: BABY },
+    { names: ["Baby", "Spiderling", "Webby"], kind: BABY, rare: "1 in 200 spiders" },
     { names: ["Cherry"], what: "Pink cherry blossoms and green leaves grow over its back and legs.", biome: "cherry_grove", rare: "spiders in cherry groves" },
     { names: ["Sulfur"], what: "A dull olive spider with pale yellow markings on its back and leg tips, and pale yellow eyes that glow orange.", biome: "sulfur_caves", rare: "spiders in sulfur caves" },
     { names: ["Dappled"], what: "Orange and red leaves on its back and head.", biome: "dappled_forest", rare: "spiders in dappled forests" },

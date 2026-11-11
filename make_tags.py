@@ -154,8 +154,9 @@ RARE = {
     ("spider", "cherry"): "spiders in cherry groves", ("spider", "sulfur"): "spiders in sulfur caves",
     ("spider", "dappled"): "spiders in dappled forests", ("spider", "pale"): "spiders in pale gardens",
     # The pack also makes some mobs babies by itself (v.tocraa, with its seasonal mob variants off, as they start): 1 in
-    # 200 guardians (not elder guardians).
-    ("guardian", "baby"): "1 in 200 guardians",
+    # 200 guardians (not elder guardians), spiders and cave spiders.
+    ("guardian", "baby"): "1 in 200 guardians", ("spider", "baby"): "1 in 200 spiders",
+    ("cave_spider", "baby"): "1 in 200 cave spiders",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
