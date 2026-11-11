@@ -203,6 +203,9 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Pillaglet", "Grumpy"], kind: BABY },
     { names: ["Halloween", "Helsing"], what: "A Halloween costume." },
   ],
+  pufferfish: [
+    { names: ["Baby", "Fry", "Bubbles"], what: "Keeps it small and deflated: it never puffs up, even when something comes near.", kind: BABY },
+  ],
   rabbit: [
     { names: ["Easter", "Chocolate"], what: "A chocolate bunny with a red ribbon tied round its neck, its back half still wrapped in gold foil." },
     { names: ["Punk"], what: "A punk: a white rabbit in a black jacket bristling with silver studs, with red-tipped ears, a gold safety pin through one of them, black round its eyes and a red tail." },

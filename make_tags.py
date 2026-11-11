@@ -97,6 +97,7 @@ WHAT = {
     ("turtle", "halloween"): "Nessie, the Loch Ness monster: a dark teal sea serpent with a humped back of three ridged bumps, a long neck and a long tail curling up from either end lined with spines, four flippers and lime green eyes that glow in the dark.",
     ("wolf", "hellhound pup"): "A hellhound pup: a little demon hound with spiky ears, a spiky tail and eyes that glow in the dark. Its colors follow the wolf’s variant: crimson on a pale wolf, gray on an ashen one, black, purple on a chestnut one, red on a rusty one, icy cyan on a snowy one, mossy green on a spotted one, bone white on a striped one and brown on a woods one, its eyes glowing orange, red, purple, cyan or lime green to match.",
     ("wolf", "hellhound"): "A hellhound: a hulking demon hound with spiky ears and fangs, ragged spines down its back and tail and eyes that glow in the dark. Its colors follow the wolf’s variant: crimson on a pale wolf, gray on an ashen one, black, purple on a chestnut one, red on a rusty one, icy cyan on a snowy one, mossy green on a spotted one, bone white on a striped one and brown on a woods one, its eyes glowing orange, red, purple, cyan or lime green to match. Named Halloween, it’s this or a skeleton wolf (1 in 10), picked at random.",
+    ("pufferfish", "baby"): "Keeps it small and deflated: it never puffs up, even when something comes near.",
     ("goat", "evil kiddo"): "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.",
     ("goat", "halloween"): "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.",
     ("horse", "wendigo foal"): "A baby wendigo: a bare deer skull with little antlers for a head, the bones of its back and legs showing through a ragged hide the color of its coat, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",
@@ -212,6 +213,9 @@ def main():
                 row["more"] = hidden
             if baby and shown[0] == "Baby":
                 row["kind"] = "BABY"
+                # A baby name that does something else on this mob (the pufferfish's keep it deflated) says so.
+                if (mob, "baby") in WHAT:
+                    row["what"] = WHAT[mob, "baby"]
             else:
                 row["what"] = describe(mob, look["names"])
                 if (mob, look["names"][0].lower()) in NIGHT:
