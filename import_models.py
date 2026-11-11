@@ -73,7 +73,7 @@ STAGE_MOTIONS = {
     "minecraft:zombie_nautilus": _NAUTILUS,
     "minecraft:guardian": _GUARDIAN,
     "minecraft:elder_guardian": [("zxbvhct", 1), ("swim", 0.5, 1.2)],
-    "minecraft:tadpole": [("swim", 1, 0.5)],
+    "minecraft:tadpole": [("swim", 1)],
     # The camel stands breathing, as the pack's standing state has it (its idles and sitting are STAGE_ACTS).
     "minecraft:camel": [("zxbvhct_dhyaxuw_bhlxath", 1)],
     # The armadillo stands breathing (its idles and rolling up are STAGE_ACTS).
@@ -322,15 +322,26 @@ SHULKER_SHUT = {"animation_length": 3, "bones": {"ocbqbhz": {
 }}}
 # How far the squids' tentacles swing out from hanging straight, at their strength above.
 TENTACLE_SWING = math.radians(52.5)
-# The tadpole isn't in the pack, so neither is its swim: a wagging tail.
-TADPOLE_SWIM = {"bones": {"tail": {"rotation": [0, "math.sin(q.anim_time*720)*28", 0]}}}
+# The tadpole isn't in the pack, so neither is its swim: a wave down it once a second. Its body sways a little and bobs,
+# its tail swings a beat behind and the tail's tip further still, so it ripples rather than flapping on a hinge.
+TADPOLE_SWIM = {"bones": {
+    "body": {"rotation": [0, "math.sin(q.anim_time*360)*7", 0], "position": [0, "math.sin(q.anim_time*180)*0.25", 0]},
+    "tail": {"rotation": [0, "math.sin(q.anim_time*360-60)*20", 0]},
+    "tail_tip": {"rotation": [0, "math.sin(q.anim_time*360-120)*24", 0]},
+}}
 MOTION_FPS = 20
-# The pack leaves the tadpole to the game, so its model isn't in the pack, only its texture: a body and a flat tail.
+# The pack leaves the tadpole to the game, so it has no model of one (only a smaller one inside its tadpole bucket, with
+# its tail cut short), only its texture: a body and a flat tail, here in two pieces, the tip hanging from the base so the
+# swim can bend it. The tail's faces are mapped by hand: box UV would give its far side the empty texels beside it.
 TADPOLE_MODEL = {
     "description": {"identifier": "geometry.tadpole", "texture_width": 16, "texture_height": 16},
     "bones": [
-        {"name": "body", "pivot": [0, 2, -3], "cubes": [{"origin": [-1.5, 1, -3], "size": [3, 2, 3], "uv": [0, 0]}]},
-        {"name": "tail", "pivot": [0, 2, 0], "cubes": [{"origin": [0, 1, 0], "size": [0, 2, 7], "uv": [0, 0]}]},
+        {"name": "root", "pivot": [0, 0, 0]},
+        {"name": "body", "parent": "root", "pivot": [0, 2, -1.5], "cubes": [{"origin": [-1.5, 1, -3], "size": [3, 2, 3], "uv": [0, 0]}]},
+        {"name": "tail", "parent": "body", "pivot": [0, 2, 0], "cubes": [{"origin": [0, 1, 0], "size": [0, 2, 4], "uv": {
+            "east": {"uv": [3, 7], "uv_size": [4, 2]}, "west": {"uv": [7, 7], "uv_size": [-4, 2]}}}]},
+        {"name": "tail_tip", "parent": "tail", "pivot": [0, 2, 4], "cubes": [{"origin": [0, 1, 4], "size": [0, 2, 3], "uv": {
+            "east": {"uv": [0, 7], "uv_size": [3, 2]}, "west": {"uv": [3, 7], "uv_size": [-3, 2]}}}]},
     ],
 }
 
