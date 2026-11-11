@@ -103,7 +103,7 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     name -> the loops a named look plays in place of the mob's (and no acts), as motions; new_looks: the names of looks
     the page doesn't have yet (the bee's moths), each a list whose first is the one the pack is asked about, added after
     the others and built as remodel's are. A motion can say how fast it plays (a third item, its speed), or "held"
-    for an animation held at its last frame.
+    for an animation held at its last frame (at its strength, the second item).
     sets: other animations the pack plays for some looks (the chicken's babies), set name -> {motions, acts}, written to
     MOB_MOTIONS and MOB_ACTS as "<mob>:<set>"; plays: first name -> the set that look plays in place of the mob's.
     climates: climate -> what the game says in it (the chicken's and cow's warm and cold kinds): the looks that come out
@@ -294,7 +294,7 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         out = []
         for key, weight, *rate in motions:
             # "held": an animation that plays once and holds its last frame (the axolotl tucking its legs in).
-            loop = im.baked_held(d, anims, key, answers=mood) if rate == ["held"] else im.baked_loop(d, anims, key, weight, *rate, answers=mood)
+            loop = im.baked_held(d, anims, key, answers=mood, weight=weight) if rate == ["held"] else im.baked_loop(d, anims, key, weight, *rate, answers=mood)
             loop["bones"] = renamed(loop["bones"])
             out.append(loop)
         return out

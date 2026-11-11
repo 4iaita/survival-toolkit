@@ -133,7 +133,7 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Evil Goat", "Demon Goat", "Evil"], more: ["Demon", "evil Goat", "Evil goat", "demon Goat", "Demon goat"], what: "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.", night: true },
   ],
   guardian: [
-    { names: ["Baby", "Fry", "Prismy"], kind: BABY },
+    { names: ["Baby", "Fry", "Prismy"], kind: BABY, rare: "1 in 200 guardians" },
   ],
   happy_ghast: [
     { names: ["Baby", "Ghastlet", "Smiley"], kind: BABY },

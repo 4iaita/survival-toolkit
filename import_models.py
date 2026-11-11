@@ -726,10 +726,10 @@ def bone_parents(d):
     return {b["name"].lower(): b["parent"].lower() for b in geo.get("bones", []) if b.get("parent")}
 
 
-def baked_held(d, anims, key, answers=None):
-    """An animation held at its last frame, as a loop that never changes."""
+def baked_held(d, anims, key, answers=None, weight=1):
+    """An animation held at its last frame, as a loop that never changes, weight times as strong."""
     anim = anims[d["animations"][key]]
-    return {"length": 1, "bones": baked_bones(d, anim, [anim["animation_length"]], answers=answers)}
+    return {"length": 1, "bones": baked_bones(d, anim, [anim["animation_length"]], weight, answers=answers)}
 
 
 def baked_act(d, anims, act, answers=None):

@@ -153,6 +153,9 @@ RARE = {
     ("sniffer", "dappled"): "sniffers in dappled forests",
     ("spider", "cherry"): "spiders in cherry groves", ("spider", "sulfur"): "spiders in sulfur caves",
     ("spider", "dappled"): "spiders in dappled forests", ("spider", "pale"): "spiders in pale gardens",
+    # The pack also makes some mobs babies by itself (v.tocraa, with its seasonal mob variants off, as they start): 1 in
+    # 200 guardians (not elder guardians).
+    ("guardian", "baby"): "1 in 200 guardians",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
@@ -222,6 +225,8 @@ def main():
                 # A baby name that does something else on this mob (the pufferfish's keep it deflated) says so.
                 if (mob, "baby") in WHAT:
                     row["what"] = WHAT[mob, "baby"]
+                if (mob, "baby") in RARE:
+                    row["rare"] = RARE[mob, "baby"]
             else:
                 row["what"] = describe(mob, look["names"])
                 if (mob, look["names"][0].lower()) in NIGHT:
@@ -242,9 +247,9 @@ def main():
     for mob, rs in sorted(rows.items()):
         lines.append(f"  {mob}: [")
         for r in rs:
-            kind = r.pop("kind", None)
+            kind, rare = r.pop("kind", None), r.pop("rare", None)
             body = ", ".join(f"{k}: {js(v)}" for k, v in r.items())
-            lines.append(f"    {{ {body}{', kind: BABY' if kind else ''} }},")
+            lines.append(f"    {{ {body}{', kind: BABY' if kind else ''}{f', rare: {js(rare)}' if rare else ''} }},")
         lines.append("  ],")
     lines += ["};", "// New spellings for names a row has already: mob -> [{ after: the row's first name, names }].", "const PACK_SPELLINGS_MORE = {"]
     for mob, items in sorted(more_names.items()):
