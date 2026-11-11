@@ -50,7 +50,13 @@ def main():
     by_mob = {im.MOB_KEYS.get(k.split(":")[1], k.split(":")[1]): d for k, d in ents.items() if k.startswith("minecraft:")}
     clean = True
     for mob in mobs_arg.split(","):
-        d = by_mob[mob]
+        d = by_mob.get(mob)
+        if d is None:
+            # Not an entity of the pack's (the tadpole): it checks no names, so the page should have no pack rows for it.
+            rows = page["rows"].get(mob, [])
+            print(f"{mob}: not in the pack, {len(rows)} rows on the page")
+            clean = clean and not rows
+            continue
         texts = [json.dumps(d, ensure_ascii=False)]
         for r in d.get("render_controllers", []):
             texts.append(json.dumps(rcs.get(r if isinstance(r, str) else next(iter(r)), {}), ensure_ascii=False))
