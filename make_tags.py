@@ -105,6 +105,8 @@ WHAT = {
     ("horse", "halloween"): "A wendigo: a bare deer skull with wide branching antlers on a bony neck, ribs and spine showing through a ragged hide the color of its coat, bone legs, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",
     ("nautilus", "sea monster nautiling"): "A baby sea monster: a dark purple shell striped with crimson and hooked with spines, a black face with two glowing red eyes, and tentacles curled at the tips.",
     ("nautilus", "halloween"): "A sea monster: a dark purple shell striped with crimson and hooked with spines, a black face with two glowing red eyes, and long tentacles curled at the tips.",
+    ("zombie_nautilus", "sea monster nautiling"): "A baby zombie sea monster: a dark teal shell striped with green and hooked with spines, a black face with two glowing lime green eyes, and tentacles curled at the tips.",
+    ("zombie_nautilus", "halloween"): "A zombie sea monster: a dark teal shell striped with green and hooked with spines, a black face with two glowing lime green eyes, and long tentacles curled at the tips.",
     ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
     ("ocelot", "witch kitten"): "A baby ocelot in a witch’s hat.",
@@ -167,7 +169,8 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("frog", "baby imp"), ("frog", "halloween"), ("turtle", "halloween"),
          ("wolf", "hellhound pup"), ("wolf", "hellhound"),
          ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween"),
-         ("nautilus", "sea monster nautiling"), ("nautilus", "halloween")}
+         ("nautilus", "sea monster nautiling"), ("nautilus", "halloween"),
+         ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

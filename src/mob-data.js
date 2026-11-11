@@ -183,6 +183,12 @@ const MOB_VARIANTS = {
   // q.mark_variant). The small shape's patterns are skins over its first, Kob; the large shape has models of its own
   // (MOB_CLIMATES' "large", picked as a climate is) and its patterns are skins over its first, Flopper. Each comes in any
   // body color and any pattern color (MOB_TINTS). They live in warm oceans (and lush caves).
+  // The zombie nautilus's two kinds (the game's variant property): coral replaces the plain one in warm oceans. They
+  // share its model and differ in skin, its baby look's too (not the Halloween looks').
+  zombie_nautilus: [
+    { k: "normal", n: "Normal", where: "Oceans but warm ones", say: "" },
+    { k: "coral", n: "Coral", where: "Warm oceans", skins: { new_zombie_nautilus: "new_zombie_nautilus_coral", new_zombie_nautilus_baby: "new_zombie_nautilus_coral_baby" } },
+  ],
   tropicalfish: [
     ...["Kob", "Sunstreak", "Snooper", "Dasher", "Brinely", "Spotty"].map((n, i) => ({ k: n.toLowerCase(), n, where: "Small shape",
       ...(i ? { skins: { new_tropicalfish_1: `new_tropicalfish_${n.toLowerCase()}` } } : {}) })),
@@ -224,8 +230,9 @@ const MOB_SADDLES = {
   // The skeleton and zombie horses' saddle, stirrups and bridle, as the horse's (the game lets a player ride one too).
   skeleton_horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
   zombie_horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
-  // The nautilus's saddle and its straps and stirrups.
+  // The nautilus's saddle and its straps and stirrups (the zombie nautilus's too).
   nautilus: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true]],
+  zombie_nautilus: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true]],
 };
 // Mobs that can carry a chest: the [bone pattern, shown] rules a chest on it shows, as the pack's render controllers do for
 // q.is_chested. The game doesn't give a baby one.
@@ -254,6 +261,8 @@ const ARMOR_SHOWS = { horse: [["alpha*NoFancyArmor*", false]] };
 const ARMOR_NAMES = { wolf: { "": "Wolf Armor" }, horse: { leather: "Leather", iron: "Iron", golden: "Gold", diamond: "Diamond", copper: "Copper", netherite: "Netherite" } };
 // The nautilus armors, in the game's order.
 ARMOR_NAMES.nautilus = { copper: "Copper", iron: "Iron", golden: "Gold", diamond: "Diamond", netherite: "Netherite" };
+// The zombie nautilus wears the nautilus's armor, the same five kinds.
+ARMOR_NAMES.zombie_nautilus = ARMOR_NAMES.nautilus;
 // The zombie horse wears the horse's armor, the same six kinds.
 ARMOR_NAMES.zombie_horse = ARMOR_NAMES.horse;
 // The sheep's wool: any dye color (it starts white), or sheared. natural: the colors sheep spawn with, and how often;

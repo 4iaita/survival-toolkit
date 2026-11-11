@@ -198,8 +198,8 @@ const PACK_TAGS = {
   zombie_horse: [{ names: ["Baby", "Foal", "Rumble"], kind: BABY }],
   zombie_nautilus: [
     { names: ["Baby", "Nautiling", "Zombilus"], kind: BABY },
-    { names: ["Armourless"], what: "Hides its armor.", needs: "Put armor on it first." },
-    { names: ["Saddleless"], what: "Hides its saddle.", needs: "Put a saddle on it first." },
+    { names: ["Armourless"], what: "Hides its armor. It still wears it, and is still protected by it.", needs: "Put armor on it first.", hides: "armor" },
+    { names: ["Saddleless"], what: "Hides its saddle, so you seem to ride it bareback.", needs: "Put a saddle on it first. You still need the saddle to ride.", hides: "saddle" },
   ],
   zombie_villager: [{ names: ["Baby", "Zomblet", "Zillager"], kind: BABY }, { names: ["Snowy", "Frosty"], kind: SNOWY }],
   zombified_piglin: [{ names: ["Baby", "Piggly"], kind: BABY }],

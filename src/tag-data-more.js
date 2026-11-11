@@ -387,8 +387,8 @@ const PACK_TAGS_MORE = {
     { names: ["Pale"], what: "The pale look." },
   ],
   zombie_nautilus: [
-    { names: ["Sea Monster Nautiling", "Baby Sea Monster"], more: ["sea monster Nautiling", "sea Monster nautiling", "sea Monster Nautiling", "Sea monster nautiling", "Sea monster Nautiling", "Sea Monster nautiling", "baby sea Monster", "baby Sea monster", "baby Sea Monster", "Baby sea monster", "Baby sea Monster", "Baby Sea monster"], what: "The Sea Monster Nautiling look." },
-    { names: ["Halloween", "Sea Monster"], more: ["sea Monster", "Sea monster"], what: "A Halloween costume." },
+    { names: ["Sea Monster Nautiling", "Baby Sea Monster"], more: ["sea monster Nautiling", "sea Monster nautiling", "sea Monster Nautiling", "Sea monster nautiling", "Sea monster Nautiling", "Sea Monster nautiling", "baby sea Monster", "baby Sea monster", "baby Sea Monster", "Baby sea monster", "Baby sea Monster", "Baby Sea monster"], what: "A baby zombie sea monster: a dark teal shell striped with green and hooked with spines, a black face with two glowing lime green eyes, and tentacles curled at the tips.", night: true },
+    { names: ["Halloween", "Sea Monster"], more: ["sea Monster", "Sea monster"], what: "A zombie sea monster: a dark teal shell striped with green and hooked with spines, a black face with two glowing lime green eyes, and long tentacles curled at the tips.", night: true },
   ],
   zombie_villager: [
     { names: ["Cherry"], what: "The cherry grove look." },
