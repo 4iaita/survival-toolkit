@@ -11,8 +11,8 @@ from import_port import ia, port, put
 # In the water it floats, bobbing, its head and tail swaying (the pack's idle), with its spikes drawn in (the pack's
 # neutral, which plays once and holds while it has no target). Its swim plays at half strength standing still, but only
 # moves on as it swims, so the stage plays it at the pace it had before, its tail swishing and its body turning a little
-# from side to side. Its eye looks at the camera (the pack's look_at_target), which the stage does by itself as it's
-# turned (MOB_WATCH in src/mob-data.js).
+# from side to side. Its eye looks at the camera (the pack's look_at_target), which the stage leaves out: it keeps
+# looking ahead.
 MOTIONS = [("idle", 1), ("neutral", 1, "held"), ("swim", 0.5, 1.8)]
 
 # The pack gives it no idles: what it does now and then is all with a target. When it has one it pushes its spikes out
