@@ -224,6 +224,8 @@ const MOB_SADDLES = {
   // The skeleton and zombie horses' saddle, stirrups and bridle, as the horse's (the game lets a player ride one too).
   skeleton_horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
   zombie_horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true]],
+  // The nautilus's saddle and its straps and stirrups.
+  nautilus: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true]],
 };
 // Mobs that can carry a chest: the [bone pattern, shown] rules a chest on it shows, as the pack's render controllers do for
 // q.is_chested. The game doesn't give a baby one.
@@ -250,6 +252,8 @@ const carpetTexture = dye => `new_llama_carpet_${dye.replace(/ /g, "_")}`;
 const ARMOR_SHOWS = { horse: [["alpha*NoFancyArmor*", false]] };
 // What each kind of a mob's armor (MOB_ARMOR's kinds) is called on the stage, in the game's order.
 const ARMOR_NAMES = { wolf: { "": "Wolf Armor" }, horse: { leather: "Leather", iron: "Iron", golden: "Gold", diamond: "Diamond", copper: "Copper", netherite: "Netherite" } };
+// The nautilus armors, in the game's order.
+ARMOR_NAMES.nautilus = { copper: "Copper", iron: "Iron", golden: "Gold", diamond: "Diamond", netherite: "Netherite" };
 // The zombie horse wears the horse's armor, the same six kinds.
 ARMOR_NAMES.zombie_horse = ARMOR_NAMES.horse;
 // The sheep's wool: any dye color (it starts white), or sheared. natural: the colors sheep spawn with, and how often;

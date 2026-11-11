@@ -109,7 +109,7 @@ function showOnStage() {
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);
   mobBackdrop.show(biome);
   if (!t || !t.rainbow) wool.color = hex(DYES[MOB_WOOL[m.k] ? mobWool : "white"]);
-  const collared = Boolean(moodInfo() && moodInfo().collar), armored = armorFits() && mobArmor.on;
+  const collared = Boolean(moodInfo() && moodInfo().collar), armored = armorFits() && mobArmor.on && !nameHides("armor");
   const armor = armored ? { kind: m.k, type: mobArmor.type, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   const marks = marksInfo(), armorName = armored && MOB_ARMOR[m.k].kinds ? `${ARMOR_NAMES[m.k][mobArmor.type].toLowerCase()} ` : "";
   collarTint.color = hex(DYES[mobCollar]);
@@ -119,6 +119,9 @@ function showOnStage() {
   $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_TINTS[m.k] ? ` (${MOB_TINTS[m.k].map((r, i) => `${r.n.toLowerCase()} ${tintsOf(m.k)[i]}`).join(", ")})` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${carpetWorn(m.k, look) ? `, wearing ${article(mobCarpet)} ${mobCarpet} carpet` : ""}. Drag or use the arrow keys to turn it.`);
 }
 
+// A name that hides what the mob wears (hides: "saddle" or "armor", a nautilus named Saddleless or Armourless): the
+// stage leaves it off, though it's still worn.
+const nameHides = what => Boolean(currentTag() && currentTag().hides === what);
 // Whether the stage shows a baby: the mob's baby look, or a name's baby look (a pig's Zombified Piglet, a camel's Baby
 // Mummy), drawn smaller. A baby can't be saddled or sheared (the camel's baby looks have no saddle at all), and wears no
 // variant's parts.
@@ -128,7 +131,7 @@ const babyShown = (k, look) => Boolean(look) && (look === babyLook(k) || ((MOB_L
 function shownParts(k, look) {
   if (babyShown(k, look)) return [];
   const variant = variantInfo(), wool = MOB_WOOL[k], name = ((MOB_LOOKS[k] || [])[look] || { names: [] }).names[0];
-  return [...((variant && variant.show) || []), ...(MOB_SADDLES[k] && mobSaddle ? MOB_SADDLES[k] : []), ...(MOB_CHESTS[k] && mobChest ? MOB_CHESTS[k] : []),
+  return [...((variant && variant.show) || []), ...(MOB_SADDLES[k] && mobSaddle && !nameHides("saddle") ? MOB_SADDLES[k] : []), ...(MOB_CHESTS[k] && mobChest ? MOB_CHESTS[k] : []),
     ...(wool && mobShorn ? [...wool.shorn, ...((wool.shornLooks || {})[name] || [])] : []), ...(armorFits() && mobArmor.on ? ARMOR_SHOWS[k] || [] : [])];
 }
 // How the stage's description puts what it wears: saddled, sheared, its wool's color (a white sheep is just a sheep).

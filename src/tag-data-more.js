@@ -160,8 +160,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Zombified"], what: "A zombie mooshroom, rotting, its eyes glowing faintly.", night: true },
   ],
   nautilus: [
-    { names: ["Sea Monster Nautiling", "Baby Sea Monster"], more: ["sea monster Nautiling", "sea Monster nautiling", "sea Monster Nautiling", "Sea monster nautiling", "Sea monster Nautiling", "Sea Monster nautiling", "baby sea Monster", "baby Sea monster", "baby Sea Monster", "Baby sea monster", "Baby sea Monster", "Baby Sea monster"], what: "The Sea Monster Nautiling look." },
-    { names: ["Halloween", "Sea Monster"], more: ["sea Monster", "Sea monster"], what: "A Halloween costume." },
+    { names: ["Sea Monster Nautiling", "Baby Sea Monster"], more: ["sea monster Nautiling", "sea Monster nautiling", "sea Monster Nautiling", "Sea monster nautiling", "Sea monster Nautiling", "Sea Monster nautiling", "baby sea Monster", "baby Sea monster", "baby Sea Monster", "Baby sea monster", "Baby sea Monster", "Baby Sea monster"], what: "A baby sea monster: a dark purple shell striped with crimson and hooked with spines, a black face with two glowing red eyes, and tentacles curled at the tips.", night: true },
+    { names: ["Halloween", "Sea Monster"], more: ["sea Monster", "Sea monster"], what: "A sea monster: a dark purple shell striped with crimson and hooked with spines, a black face with two glowing red eyes, and long tentacles curled at the tips.", night: true },
   ],
   ocelot: [
     { names: ["Witch Kitten", "Baby Witch"], more: ["witch Kitten", "Witch kitten", "baby Witch", "Baby witch"], what: "A baby ocelot in a witch’s hat." },

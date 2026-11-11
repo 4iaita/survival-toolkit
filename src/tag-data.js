@@ -21,7 +21,8 @@ const GAME_TAGS = [
 // most mobs share (BABY, SNOWY); rare: which mobs get the look without the name, picked again each time one loads;
 // needs: what has to be true first; climate: the climate (a MOB_VARIANTS climate, or temperate) or climates the look
 // shows in, the only variants the name can be tried on; biome: the backdrop the stage shows behind it, the biome the look
-// comes from (the cherry grove for a Cherry look). On the stage: night for a name whose difference only shows in the dark (its glow is shown by day),
+// comes from (the cherry grove for a Cherry look); hides: what it hides that the mob wears ("saddle" or "armor"), which
+// the stage then leaves off. On the stage: night for a name whose difference only shows in the dark (its glow is shown by day),
 // moving for a texture that runs, still for a dance it can't show.
 const BABY = "baby", SNOWY = "snowy";
 const snowyIn = mobs => ({ names: ["Snowy", "Frosty"], kind: SNOWY, rare: `15% of ${mobs} in snowy biomes` });
@@ -114,8 +115,8 @@ const PACK_TAGS = {
   mule: [{ names: ["Baby", "Foal"], kind: BABY }],
   nautilus: [
     { names: ["Baby", "Nautiling", "Whorl"], kind: BABY },
-    { names: ["Armourless"], what: "Hides its armor.", needs: "Put armor on it first." },
-    { names: ["Saddleless"], what: "Hides its saddle.", needs: "Put a saddle on it first." },
+    { names: ["Armourless"], what: "Hides its armor. It still wears it, and is still protected by it.", needs: "Put armor on it first.", hides: "armor" },
+    { names: ["Saddleless"], what: "Hides its saddle, so you seem to ride it bareback.", needs: "Put a saddle on it first. You still need the saddle to ride.", hides: "saddle" },
   ],
   ocelot: [{ names: ["Baby", "Oceling", "Spotty"], kind: BABY }],
   panda: [{ names: ["Baby", "Cub", "Bao"], kind: BABY }],
