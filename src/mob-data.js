@@ -266,7 +266,7 @@ const MOB_WOOL = {
 // gives its babies (the one its Baby name shows). Other mobs only look like babies with that name.
 const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chicken", "cow", "dolphin", "donkey", "drowned", "fox", "goat",
   "hoglin", "horse", "husk", "llama", "mooshroom", "mule", "nautilus", "ocelot", "panda", "pig", "piglin", "polar_bear", "rabbit", "sheep",
-  "sniffer", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
+  "sniffer", "squid", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
 // Mobs the game has no babies of that the pack makes babies of all the same, 1 in 5 of them (with its setting for
 // that): the stage can show them as babies too, in the pack's baby look.
 const PACK_BABIES = new Set(["cod", "frog", "parrot", "salmon", "tropicalfish"]);
