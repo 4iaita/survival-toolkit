@@ -4,7 +4,7 @@
 
 Its looks get the pack's current models, the guardian's (it's the guardian's shape 2.35 times as big, in a skin of its
 own; its baby the guardian's baby's), so it uses the guardian's model keys. It has no kinds and no names but its baby's.
-The stage shows it in the ocean, the guardian beside it at ELDER_RATIO of its size (src/mob-data.js).
+The stage shows it in the ocean, a little smaller than it fits (ELDER_ZOOM in src/mob-data.js).
 Run import_guardian.py first.
 """
 from import_guardian import ACTS, BABY_SPIKES, spikes_out

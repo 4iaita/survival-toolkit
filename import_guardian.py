@@ -3,7 +3,7 @@
     python3 import_guardian.py path/to/unpacked/pack path/to/textures [--write]
 
 Its looks get the pack's current models (the plain and baby ones went by the old pack's bones). It has no kinds and no
-names but its baby's. The stage shows it in the ocean, at ELDER_RATIO of the elder guardian's size (src/mob-data.js).
+names but its baby's. The stage shows it in the ocean, smaller than the elder guardian (GUARDIAN_ZOOM in src/mob-data.js).
 Run import_additions.py first.
 """
 from import_port import ia, port, put
@@ -11,7 +11,8 @@ from import_port import ia, port, put
 # In the water it floats, bobbing, its head and tail swaying (the pack's idle), with its spikes drawn in (the pack's
 # neutral, which plays once and holds while it has no target). Its swim plays at half strength standing still, but only
 # moves on as it swims, so the stage plays it at the pace it had before, its tail swishing and its body turning a little
-# from side to side. Its eye looks at the camera, which the stage leaves looking ahead.
+# from side to side. Its eye looks at the camera (the pack's look_at_target), which the stage does by itself as it's
+# turned (MOB_WATCH in src/mob-data.js).
 MOTIONS = [("idle", 1), ("neutral", 1, "held"), ("swim", 0.5, 1.8)]
 
 # The pack gives it no idles: what it does now and then is all with a target. When it has one it pushes its spikes out

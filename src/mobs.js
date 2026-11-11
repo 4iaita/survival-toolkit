@@ -377,6 +377,14 @@ function actPose(pose, act, t) {
   return showing;
 }
 
+// A mob's eye looking at the viewer (MOB_WATCH), layered onto a pose: the stage turned yaw and looking down pitch (both
+// in radians), as the pack's look_at_target has it with the camera.
+function watchPose(pose, { bone, across, up }, yaw, pitch) {
+  const out = pose[bone] || (pose[bone] = {}), p = out.p || [0, 0, 0];
+  out.p = [p[0] + Math.sin(yaw) * across, p[1] + Math.min(15, Math.max(-45, pitch / RAD)) * up, p[2]];
+  return pose;
+}
+
 // Effects an act shows while it plays (its effects: [kind, from, to]): each that's on t seconds in, as [kind, seconds
 // since it started].
 const actEffects = (act, t) => (act.effects || []).filter(([, from, to]) => t >= from && t < to).map(([kind, from]) => [kind, t - from]);
@@ -455,11 +463,13 @@ function overShell(px, shell) {
 const MOB_MAX_SCALE = 8, MOB_FEET_UP = 26, MOB_TAG_ROOM = 44, MOB_MARGIN = 28, SWIM_MARGIN = 12, MOTION_FPS = 20, SLOW_FRAME_MS = 30, SLOW_FRAMES = 5, ACT_FADE = 0.25;
 // How many moments of an animation to look at for how far it reaches.
 const MOTION_SAMPLES = 12;
+// How far the stage looks down on a mob, in radians.
+const STAGE_PITCH = 0.2;
 // yaw: how it's turned to start with, and after a reset (turnBack).
 function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) {
   const ctx = canvas.getContext("2d");
   let boxes = null, rest = null, fit = null, zoomed = 1, swims = false, yaw = startYaw, frame = 0, dragX = null, wanted = "";
-  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
+  let effects = [], lookScale = 1, watch = null, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
   const draw = () => {
     frame = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -470,7 +480,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (!boxes) return;
     // Fit the mob's usual size (a baby keeps its parent's scale, so it looks small): its height, seen a little
     // from above, under the name tag or in the water; and its widest turn across the canvas.
-    const pitch = 0.2, [lo, hi] = fit, radius = fit.radius;
+    const pitch = STAGE_PITCH, [lo, hi] = fit, radius = fit.radius;
     const tall = (swims ? hi[1] - lo[1] : GROUND - lo[1]) * Math.cos(pitch) + 2 * radius * Math.sin(pitch);
     const room = swims ? h - GROUND_STRIP - 2 * SWIM_MARGIN : h - MOB_FEET_UP - MOB_TAG_ROOM;
     const scale = zoomed * Math.min(MOB_MAX_SCALE, (w - 2 * MOB_MARGIN) / (2 * radius), room / tall);
@@ -566,6 +576,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const acting = Boolean(actStart), usual = acting && !act.keep ? Math.min(1, Math.max(0, 1 - into / ACT_FADE, (into - act.length + ACT_FADE) / ACT_FADE)) : 1;
     const moving = motionPose(motion, now / 1000, usual), showing = acting ? actPose(moving, act, into) : [];
     effects = acting ? actEffects(act, into) : [];
+    if (watch) watchPose(moving, watch, yaw, STAGE_PITCH);
     const key = wanted, next = await rebuild(moving, showing);
     if (key !== wanted || !next) return;
     boxes = next;
@@ -650,6 +661,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         actStart = nextAct = 0;
       }
       motion = next && loops;
+      watch = (typeof MOB_WATCH !== "undefined" && MOB_WATCH[mob]) || null;
       coarse = false;
       slowFrames = 0;
       if (motion && !playing) {

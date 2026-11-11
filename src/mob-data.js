@@ -7,8 +7,15 @@
 // (bone -> { p: position, r: rotation }, as a look's pose).
 // How far a mob's model is lifted to stand on the ground at all, or for one that flies.
 const lift = y => ({ root: { p: [0, y, 0] } });
-// A guardian beside an elder guardian, which is 2.35 times its size.
-const ELDER_RATIO = 1 / 2.35;
+// An elder guardian is 2.35 times a guardian's size in the game. Drawn that much bigger it filled the water and the
+// guardian looked tiny beside it, so the stage draws the elder a little smaller and the guardian a little bigger, still
+// smaller than the elder.
+const ELDER_ZOOM = 0.85, GUARDIAN_ZOOM = 0.5;
+// Mobs whose eye looks at whoever's watching (the pack's look_at_target for the guardians): the bone slides across its
+// face by across times the sine of how far the mob is turned from the viewer, and up by up for each degree the viewer
+// looks down on it (at most 15).
+const GUARDIAN_EYE = { bone: "6q6", across: -3, up: 0.03 };
+const MOB_WATCH = { guardian: GUARDIAN_EYE, elder_guardian: GUARDIAN_EYE };
 // A panda sits all the way up now and then (MOB_ACTS), half as tall again as it stands: room for its head.
 const PANDA_ROOM = 0.72;
 // A polar bear rears up on its hind legs now and then (MOB_ACTS), twice as tall as it stands: room for its head.
@@ -303,8 +310,8 @@ const MOBS = [
   { k: "wandering_trader", n: "Wandering Trader", g: "Village" },
   { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "cave" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters" },
   { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave" },
-  { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true },
-  { k: "evoker", n: "Evoker", g: "Monsters" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_RATIO },
+  { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
+  { k: "evoker", n: "Evoker", g: "Monsters" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
   { k: "husk", n: "Husk", g: "Monsters" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", stand: { body: { p: [0, 22, 0] } } },
   { k: "pillager", n: "Pillager", g: "Monsters" }, { k: "ravager", n: "Ravager", g: "Monsters" },
   { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "cave" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
