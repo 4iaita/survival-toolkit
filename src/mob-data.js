@@ -173,6 +173,22 @@ const MOB_VARIANTS = {
     { k: "one_horn", n: "One horn", where: "After ramming a block once", say: "one-horned", show: [["ja89l_9gjf*", false]] },
     { k: "no_horns", n: "No horns", where: "After ramming a block twice", say: "hornless", show: [["ja89l_9gjf*", false], ["d67l_9gjf*", false]] },
   ],
+  // The tropical fish's twelve patterns: six on each of its two shapes (the game's q.variant, small or large, and
+  // q.mark_variant). The small shape's patterns are skins over its first, Kob; the large shape has models of its own
+  // (MOB_CLIMATES' "large", picked as a climate is) and its patterns are skins over its first, Flopper. Each comes in any
+  // body color and any pattern color (MOB_TINTS). They live in warm oceans (and lush caves).
+  tropicalfish: [
+    ...["Kob", "Sunstreak", "Snooper", "Dasher", "Brinely", "Spotty"].map((n, i) => ({ k: n.toLowerCase(), n, where: "Small shape",
+      ...(i ? { skins: { new_tropicalfish_1: `new_tropicalfish_${n.toLowerCase()}` } } : {}) })),
+    ...["Flopper", "Stripey", "Glitter", "Blockfish", "Betty", "Clayfish"].map((n, i) => ({ k: n.toLowerCase(), n, where: "Large shape", climate: "large",
+      ...(i ? { skins: { new_tropicalfish_large_1: `new_tropicalfish_${n.toLowerCase()}` } } : {}) })),
+  ],
+};
+// Mobs the game colors with dyes of its own picking, its textures white (the tropical fish's body and its pattern): a
+// row of dye colors for each of the layer's textures, in order (a look's layers with dyes take them), with the one it
+// starts with.
+const MOB_TINTS = {
+  tropicalfish: [{ k: "body", n: "Body", start: "orange" }, { k: "pattern", n: "Pattern", start: "white" }],
 };
 // Markings a mob's coat can have besides its variant: k, n and where as MOB_VARIANTS'; over, textures laid over the
 // look's own (by its coat's texture: the foal's and the Wendigo looks' markings are their own), blended by their alpha
@@ -247,7 +263,7 @@ const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chi
   "sniffer", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
 // Mobs the game has no babies of that the pack makes babies of all the same, 1 in 5 of them (with its setting for
 // that): the stage can show them as babies too, in the pack's baby look.
-const PACK_BABIES = new Set(["cod", "frog", "parrot", "salmon"]);
+const PACK_BABIES = new Set(["cod", "frog", "parrot", "salmon", "tropicalfish"]);
 const MOB_GROUPS = ["Animals", "Water", "Village", "Monsters", "Nether", "End"];
 const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
