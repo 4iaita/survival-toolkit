@@ -484,7 +484,11 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (swims) {
       const spots = rest.spots.map(camera(view).project), across = spots.map(p => p[0]), down = spots.map(p => p[1]);
       view.origin[0] += (canvas.width - Math.min(...across) - Math.max(...across)) / 2;
-      rise = ((Math.min(...down) + Math.max(...down)) / 2 - ((h - GROUND_STRIP) / 2) * dpr) / (scale * dpr * Math.cos(pitch));
+      // Named, it sinks by up to half the name tag's room, as far as there's water under it, to leave the tag room.
+      const middle = (Math.min(...down) + Math.max(...down)) / 2, target = ((h - GROUND_STRIP) / 2) * dpr;
+      const below = (h - GROUND_STRIP - SWIM_MARGIN) * dpr - (Math.max(...down) - middle + target);
+      const sink = tag.textContent ? Math.max(0, Math.min(below, (MOB_TAG_ROOM / 2) * dpr)) : 0;
+      rise = (middle - target - sink) / (scale * dpr * Math.cos(pitch));
     }
     const float = { pivot: NO_MOVE, angles: NO_MOVE, move: [0, -rise, 0] };
     const placed = rise ? boxes.map(m => ({ ...m, bones: [...m.bones, float] })) : boxes;
@@ -655,9 +659,10 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       zoomed = zoom;
       lookScale = look.scale || 1;
       effects = [];
-      // A look bigger than the mob's usual one (a balloon, a rider) gets room of its own.
+      // A look bigger than the mob's usual one (a balloon, a rider) gets room of its own; a swimmer's, below it too (a sea
+      // monster's tentacles).
       const own = reach.bounds ? fitOf(reach.bounds) : f;
-      fit = f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), f[1]], { radius: Math.max(f.radius, own.radius) });
+      fit = f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), swim ? f[1].map((v, i) => Math.max(v, own[1][i])) : f[1]], { radius: Math.max(f.radius, own.radius) });
       tag.hidden = !next || !tag.textContent;
       redraw();
       return Boolean(next);
