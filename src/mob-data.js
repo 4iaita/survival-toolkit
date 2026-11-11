@@ -246,7 +246,7 @@ const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chi
   "sniffer", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
 // Mobs the game has no babies of that the pack makes babies of all the same, 1 in 5 of them (with its setting for
 // that): the stage can show them as babies too, in the pack's baby look.
-const PACK_BABIES = new Set(["cod", "frog", "parrot"]);
+const PACK_BABIES = new Set(["cod", "frog", "parrot", "salmon"]);
 const MOB_GROUPS = ["Animals", "Water", "Village", "Monsters", "Nether", "End"];
 const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
