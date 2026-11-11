@@ -42,6 +42,8 @@ const BIOME_TINTS = {
   peaks: { foliage: "#60a17b", grass: "#80b497" },
   // The warm frog's mangrove swamp.
   mangrove_swamp: { foliage: "#8db127", grass: "#6a7039", water: "#3a7a6a" },
+  // The tadpole's swamp water.
+  swamp_water: { foliage: "#6a7039", grass: "#6a7039", water: "#617b64" },
   // The panda's and the mooshroom's.
   bamboo_jungle: { foliage: "#30bb0b", grass: "#59c93c" },
   mushroom_fields: { foliage: "#2bbb0f", grass: "#55c93f" },

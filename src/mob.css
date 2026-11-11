@@ -34,7 +34,10 @@
 /* The glow squid's flooded cave: nearly black water over dark rock and gravel. */
 .stage[data-biome="flooded_cave"] { --sky: #02060f; --haze: #04121f; }
 .stage[data-biome="flooded_cave"]::after { filter: brightness(.45) saturate(.7); }
-.stage[data-biome="cave"]::before, .stage[data-biome="nether"]::before, .stage[data-biome="end"]::before, .stage[data-biome="end_island"]::before, .stage[data-biome="ocean"]::before, .stage[data-biome="lush"]::before, .stage[data-biome="flooded_cave"]::before { display: none; }
+/* The tadpole's swamp water: murky green, lighter toward the lily pads overhead, over a dim mud bottom. */
+.stage[data-biome="swamp_water"] { --sky: #5d7a4c; --haze: #2a3c22; }
+.stage[data-biome="swamp_water"]::after { filter: brightness(.6) saturate(.8); }
+.stage[data-biome="swamp_water"]::before, .stage[data-biome="cave"]::before, .stage[data-biome="nether"]::before, .stage[data-biome="end"]::before, .stage[data-biome="end_island"]::before, .stage[data-biome="ocean"]::before, .stage[data-biome="lush"]::before, .stage[data-biome="flooded_cave"]::before { display: none; }
 /* The wolves' wild biomes: snowy forests in a white haze, the old growth taigas' cool green-gray, the badlands' warm dust. */
 .stage[data-biome="snowy_taiga"] { --sky: #9db6e4; --haze: #eef3fb; }
 .stage[data-biome="grove"] { --sky: #a8bfe8; --haze: #f2f6fc; }

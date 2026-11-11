@@ -13,6 +13,8 @@
  * underwater: sand hills and a far monument, kelp and coral nearby, sunlight slanting down from the surface, bubbles.
  * The lush cave is flooded too: a mossy wall and a ceiling hung with glow berries, dripleaves and azaleas below.
  * So is the deep cave the glow squid swims in: dark rock streaked with glow lichen, lit only by that and sea pickles.
+ * And the tadpole's swamp water: murky green under lily pads floating on the surface, dim sunlight slanting down onto a
+ * mud and clay bottom with seagrass and a sunken oak stump.
  * The wolves' wild biomes, for the Mobs tab, have no villages either: the snowy taiga and the grove under snowy peaks,
  * the old growth taigas' giant spruces and pines over mossy boulders, a sparse jungle, a savanna plateau's high steps
  * and the wooded badlands' banded terracotta mesas with oaks on top. The panda's bamboo jungle has none either: thick
@@ -255,6 +257,8 @@ const monument = prop([
 const kelp = height => prop(["B", ...Array(height - 2).fill("K"), "K"], { B: plantTex("kelp_top"), K: plantTex("kelp") });
 const bulbKelp = height => prop(["T", "B", ...Array(height - 2).fill("K")], { T: plantTex("kelp_bulb"), B: plantTex("kelp_top"), K: plantTex("kelp") });
 const tallSeagrass = prop(["T", "B"], { T: plantTex("tall_seagrass_top"), B: plantTex("tall_seagrass_bottom") });
+// A drowned swamp oak's stump on the bottom of the tadpole's pond.
+const stump = prop(["L", "L"], { L: blockTex("log_oak") });
 // A coral reef's clump: blocks of one color with plants and fans of it, or of another, growing on top.
 const reef = (a, b, rows) => prop(rows, {
   A: blockTex(`coral_${a}`), B: blockTex(`coral_${b}`), p: plantTex(`coral_plant_${a}`), q: plantTex(`coral_plant_${b}`),
@@ -399,6 +403,17 @@ const BACKDROPS = {
     ceiling: { rock: ["moss_block", "moss_block", "stone", "mossy_cobblestone"], drip: ["cave_vines_body", "cave_vines_berries", "cave_vines_tip"] },
     near: [[mossMound(["..M.", ".MMM", "MMCM"]), -23], [dripleaf(6), -18], [azaleaBush, -14], [dripleaf(5), -10], [dripleaf(3), -8], [plant("small_dripleaf_side"), -6],
       [mossMound(["M.", "MC"]), -5], [plant("small_dripleaf_side"), 5], [mossMound([".M", "CM"]), 6], [dripleaf(4), 8], [azaleaBush, 10], [plant("flowering_azalea_side"), 14], [dripleaf(6), 16], [mossMound(["..MM", ".MMM", "MCMM"]), 20]],
+  }),
+  // The tadpole's swamp water, seen from under a pond's lily pads: the swamp's murky green water (its tint) over mud.
+  swamp_water: t => ({
+    mist: { far: 0.72, near: 0.2 },
+    water: { sun: true, shafts: 0.4, surface: t.water, pads: [0.04, 0.09, 0.22, 0.31, 0.36, 0.58, 0.67, 0.81, 0.86, 0.97], wash: "rgba(72, 90, 34, .22)" },
+    hills: { top: blockTex("mud"), fill: blockTex("mud"), base: 2, rise: 3 },
+    near: [[block("mud", ["..B", ".BB", "BBB"]), -24], [tallSeagrass, -21], [plant("seagrass"), -19], [block("clay", [".B.", "BBB"]), -17], [tallSeagrass, -15],
+      [stump, -12], [plant("seagrass"), -10], [plant("seagrass"), -7], [plant("seagrass"), -3], [plant("seagrass"), 4],
+      [tallSeagrass, 6], [block("mud", [".B", "BB"]), 8], [plant("seagrass"), 11], [stump, 13], [tallSeagrass, 16], [block("clay", ["..B", "BBB"]), 18],
+      [plant("seagrass"), 21], [tallSeagrass, 23]],
+    seed: 31,
   }),
   ocean: () => ({
     mist: { far: 0.62, near: 0.16 },
@@ -765,22 +780,26 @@ function drawCrystals(ctx, crystals, size) {
   ctx.fillStyle = "#f7c9f4";
   for (const [x, bottom] of crystals) ctx.fillRect(x - size * 0.28, bottom - size * 0.9, size * 0.56, size * 0.56);
 }
-// Sunlight slanting down from the surface in soft bands that fade with depth, drawn in steps like the blocks.
-function drawSunShafts(ctx, width, height, step, seed) {
+// Sunlight slanting down from the surface in soft bands that fade with depth, drawn in steps like the blocks; strength
+// dims them (a swamp's murky water lets less through).
+function drawSunShafts(ctx, width, height, step, seed, strength = 1) {
   const random = rng(seed), bottom = height * 0.82;
   for (let i = 0; i < 6; i++) {
     const start = (i / 6 + random() * 0.1) * width * 1.15 - width * 0.2, wide = (2 + Math.round(random() * 3)) * step * 2;
     for (let y = 0; y < bottom; y += step) {
-      ctx.fillStyle = `rgba(190, 235, 255, ${(0.2 * (1 - y / bottom)).toFixed(3)})`;
+      ctx.fillStyle = `rgba(190, 235, 255, ${(0.2 * strength * (1 - y / bottom)).toFixed(3)})`;
       ctx.fillRect(Math.round((start + y * 0.34) / step) * step, y, wide, step);
     }
   }
 }
 
-// The surface seen from below: rippling water across the top edge.
-function drawSurface(ctx, width, size) {
+// The surface seen from below: rippling water across the top edge (tinted as the biome's water, a swamp's murky green),
+// and lily pads floating on it (at fractions of the width), dark against the light from above.
+function drawSurface(ctx, width, size, tint = "#a8e4ff", pads = []) {
   ctx.globalAlpha = 0.5;
-  for (let c = 0; c < Math.ceil(width / size); c++) drawBlock(ctx, blockTex("water", "#a8e4ff"), c * size, 0, size);
+  for (let c = 0; c < Math.ceil(width / size); c++) drawBlock(ctx, blockTex("water", tint), c * size, 0, size);
+  ctx.globalAlpha = 0.9;
+  for (const at of pads) drawBlock(ctx, blockTex("lily_pad", "#1f4a1c", { rows: [11, 16] }), Math.round((at * width) / size) * size, 0, size);
   ctx.globalAlpha = 1;
 }
 
@@ -871,14 +890,14 @@ function backdropView(canvas) {
     layer(lc => (scene.wall ? drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7)
       : drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, seed)), mist.far);
     if (scene.crystals) drawCrystals(ctx, crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, seed), FAR * dpr), FAR * dpr);
-    if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11);
+    if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11, scene.water.shafts);
     layer(lc => {
       if (scene.ceiling) drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5, horizon);
       for (const [p, at] of scene.near) drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
     }, mist.near);
     if (scene.crystals) drawCrystals(ctx, crystalsOf(scene.near.map(([p, at]) => [p, canvas.width / 2 + at * NEAR * dpr, horizon]), NEAR * dpr), NEAR * dpr);
     if (scene.water) {
-      if (scene.water.sun) drawSurface(ctx, canvas.width, NEAR * dpr);
+      if (scene.water.sun) drawSurface(ctx, canvas.width, NEAR * dpr, scene.water.surface, scene.water.pads);
       if (scene.water.wash) {
         ctx.fillStyle = scene.water.wash;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
