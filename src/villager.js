@@ -142,7 +142,7 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { lo, hi, color: m.color, glow: m.glow, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, glow: m.glow, over: m.over, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
   });
   // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
   const shadowSpans = shadows.map(([sx, sz, radius]) => {
@@ -178,7 +178,8 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
           if (Math.min(t1, t2) > near) { near = Math.min(t1, t2); axis = i; }
           if (Math.max(t1, t2) < far) { far = Math.max(t1, t2); backAxis = i; }
         }
-        if (near > far || near >= bestT) continue;
+        // Where two faces meet, the first box's shows, but an overlay's (over) shows over what's under it.
+        if (near > far || near > bestT || (near === bestT && !m.over)) continue;
         const frac = (i, t) => (m.hi[i] > m.lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * t - m.lo[i]) / (m.hi[i] - m.lo[i]))) : 0);
         const side = r[axis] > 0 ? 0 : 1;
         const color = m.color(axis, side, frac(0, near), frac(1, near), frac(2, near));

@@ -147,10 +147,10 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Executioner"], what: "A Halloween costume." },
   ],
   iron_golem: [
-    { names: ["Baby", "Golemite", "Clanky"], kind: BABY },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Butler"], what: "The Butler look." },
-    { names: ["Dappled"], what: "The dappled look." },
+    { names: ["Baby", "Golemite", "Clanky"], kind: BABY, rare: "1 in 20 iron golems" },
+    { names: ["Cherry"], what: "Pink cherry blossoms grow among the vines over its body, arms and legs, in place of its poppies.", biome: "cherry_grove", rare: "iron golems in cherry groves" },
+    { names: ["Butler"], what: "A butler’s black waistcoat and trousers, a white cravat and white spats. The pack draws no cracks on it, however hurt it is." },
+    { names: ["Dappled"], what: "Orange and red autumn leaves grow over its body, arms and legs in place of its vines and poppies, with one on its head.", biome: "dappled_forest", rare: "iron golems in dappled forests" },
   ],
   magma_cube: [
     { names: ["Baby", "Magmaling", "Ember"], kind: BABY },

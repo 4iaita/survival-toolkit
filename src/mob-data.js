@@ -35,7 +35,12 @@ const DEFAULT_SIZE = "big";
 const START_SIZES = { salmon: "medium" };
 // The pufferfish starts half puffed.
 const START_MOODS = { pufferfish: "half" };
-const MOOD_NAMES = { calm: "Calm", pet: "Pet", angry: "Angry", half: "Half Puffed", puffed: "Puffed Up" };
+const MOOD_NAMES = { calm: "Calm", pet: "Pet", angry: "Angry", half: "Half Puffed", puffed: "Puffed Up",
+  slightly_cracked: "Slightly Cracked", cracked: "Cracked", badly_cracked: "Badly Cracked" };
+// A mob whose moods aren't moods: what its row is called, and what its first (calm) one is. The iron golem's are its
+// cracks, as the game draws them when it's lost a quarter, half and three quarters of its health.
+const MOOD_ROWS = { iron_golem: { label: "Cracks", calm: "Not Cracked" } };
+const moodName = (mob, k) => (k === "calm" && MOOD_ROWS[mob] ? MOOD_ROWS[mob].calm : MOOD_NAMES[k]);
 // What a pet's collar comes in, as the dyes are called in DYES; red is what the game starts it with.
 const COLLAR_COLORS = ["red", "orange", "yellow", "lime", "green", "cyan", "light blue", "blue", "purple", "magenta", "pink", "white", "light gray", "gray", "black", "brown"];
 const DEFAULT_COLLAR = "red";

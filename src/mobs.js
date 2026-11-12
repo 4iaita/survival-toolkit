@@ -130,7 +130,9 @@ function faceSpot(face, fx, fy, fz) {
 // faint texels are see-through, which the scene can't blend, so they show in a fine checker, SHEER_FINE squares a texel
 // (the breeze's wind); scroll, it slides by that much of its width and
 // height a second, clock.t seconds in; glow, it shines in the dark, so it keeps its brightness and its faint texels
-// show, while dim darkens the rest for night (but not a lit texel's glow: the fainter it is, the less night dims it).
+// show, while dim darkens the rest for night (but not a lit texel's glow: the fainter it is, the less night dims it);
+// over, it's drawn over the layers before it where their faces meet, as the game draws an overlay on the same model
+// (the iron golem's cracks).
 const SHEER_FINE = 4;
 // The bones the pack's animations turn to face the camera, for the glow panels under them.
 const GLOW_TURNS = /^fsdyhky\d*$/i;
@@ -217,7 +219,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
         continue;
       }
       out.push({
-        lo, hi, glow, shell, bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow, shell, over: Boolean(flags.over), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
           let face = FACES[axis][side];
           if (mirror) {

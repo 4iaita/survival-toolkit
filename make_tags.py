@@ -107,6 +107,9 @@ WHAT = {
     ("nautilus", "halloween"): "A sea monster: a dark purple shell striped with crimson and hooked with spines, a black face with two glowing red eyes, and long tentacles curled at the tips.",
     ("zombie_nautilus", "sea monster nautiling"): "A baby zombie sea monster: a dark teal shell striped with green and hooked with spines, a black face with two glowing lime green eyes, and tentacles curled at the tips.",
     ("zombie_nautilus", "halloween"): "A zombie sea monster: a dark teal shell striped with green and hooked with spines, a black face with two glowing lime green eyes, and long tentacles curled at the tips.",
+    ("iron_golem", "cherry"): "Pink cherry blossoms grow among the vines over its body, arms and legs, in place of its poppies.",
+    ("iron_golem", "butler"): "A butler’s black waistcoat and trousers, a white cravat and white spats. The pack draws no cracks on it, however hurt it is.",
+    ("iron_golem", "dappled"): "Orange and red autumn leaves grow over its body, arms and legs in place of its vines and poppies, with one on its head.",
     ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
     ("ocelot", "witch kitten"): "A baby ocelot in a witch’s hat.",
@@ -157,6 +160,9 @@ RARE = {
     # 200 guardians (not elder guardians), spiders and cave spiders.
     ("guardian", "baby"): "1 in 200 guardians", ("spider", "baby"): "1 in 200 spiders",
     ("cave_spider", "baby"): "1 in 200 cave spiders",
+    # And 1 in 20 golems (iron, snow and copper).
+    ("iron_golem", "baby"): "1 in 20 iron golems",
+    ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
@@ -164,6 +170,7 @@ BIOME = {
     **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "rabbit", "sheep", "sniffer", "spider")},
     **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
     ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves", ("sniffer", "snowy"): "snowy",
+    ("iron_golem", "cherry"): "cherry_grove", ("iron_golem", "dappled"): "dappled_forest",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
 # name).

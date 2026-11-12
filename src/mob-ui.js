@@ -239,7 +239,8 @@ const dyeSwatch = (attr, c, pressed) =>
 function renderMoods() {
   const moods = moodsOf(mobTab.mob);
   $("mood-bar").hidden = !moods.length;
-  $("mood-try").innerHTML = moods.map(k => `<button type="button" class="name-chip" data-mood="${k}" aria-pressed="${k === mobMood}">${MOOD_NAMES[k]}</button>`).join("");
+  $("mood-label").textContent = (MOOD_ROWS[mobTab.mob] || { label: "Mood" }).label;
+  $("mood-try").innerHTML = moods.map(k => `<button type="button" class="name-chip" data-mood="${k}" aria-pressed="${k === mobMood}">${moodName(mobTab.mob, k)}</button>`).join("");
   const collared = Boolean(moodInfo() && moodInfo().collar);
   $("collar-row").hidden = !collared;
   if (collared) {
