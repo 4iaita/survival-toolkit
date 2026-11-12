@@ -102,7 +102,7 @@ const PACK_TAGS = {
   ],
   husk: [
     { names: ["Baby", "Sandy"], what: "A baby husk, its yellow eyes glowing all the while.", kind: BABY, night: true },
-    { names: ["Mummy", "Dusty"], what: "A mummy wrapped in bandages.", rare: "3 in 100 husks" },
+    { names: ["Mummy", "Dusty"], what: "A mummy wrapped in bandages, one yellow eye glowing through them.", rare: "3 in 100 husks", night: true },
   ],
   iron_golem: [
     { names: ["Dapper", "Agent"], what: "A secret agent: dark sunglasses and a black suit with gold buttons on its cuffs, a white shirt and a red tie." },
