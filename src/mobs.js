@@ -133,7 +133,7 @@ function faceSpot(face, fx, fy, fz) {
 // show, while dim darkens the rest for night (but not a lit texel's glow: the fainter it is, the less night dims it);
 // over, it's drawn over the layers before it where their faces meet, as the game draws an overlay on the same model
 // (the iron golem's cracks); behind, a soft glow the game draws behind the mob (a panel held behind its pivot, turned to
-// face the camera: the allay's halo), so it only shows round the mob, not over it.
+// face the camera: the allay's halo), so it only lights what's round the mob, not the mob itself.
 const SHEER_FINE = 4;
 // The bones the pack's animations turn to face the camera, for the glow panels under them.
 const GLOW_TURNS = /^fsdyhky\d*$/i;
@@ -460,7 +460,19 @@ const MOB_MAX_SCALE = 8, MOB_FEET_UP = 26, MOB_TAG_ROOM = 44, MOB_MARGIN = 28, S
 const MOTION_SAMPLES = 12;
 // yaw: how it's turned to start with, and after a reset (turnBack).
 function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) {
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d"), sceneCtx = ctx;
+  // Soft glows behind the mob (behind) go on a canvas of their own under the scene, added to the backdrop beneath it
+  // (the scene's own canvas can't add light to what's under it), and the mob hides them where it's in front.
+  let light = null;
+  const lightCtx = () => {
+    if (!light) {
+      light = Object.assign(document.createElement("canvas"), { className: "stage-light" });
+      light.setAttribute("aria-hidden", "true");
+      canvas.before(light);
+    }
+    if (light.width !== canvas.width || light.height !== canvas.height) Object.assign(light, { width: canvas.width, height: canvas.height });
+    return light.getContext("2d");
+  };
   let boxes = null, rest = null, fit = null, zoomed = 1, swims = false, yaw = startYaw, frame = 0, dragX = null, wanted = "";
   let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
   const draw = () => {
@@ -470,6 +482,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const dpr = dragX !== null || coarse ? 1 : Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
     canvas.width = w * dpr;
     canvas.height = h * dpr;
+    if (light) lightCtx().clearRect(0, 0, light.width, light.height);
     if (!boxes) return;
     // Fit the mob's usual size (a baby keeps its parent's scale, so it looks small): its height, seen a little
     // from above, under the name tag or in the water; and its widest turn across the canvas.
@@ -502,10 +515,11 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (shells.length) overShell(px, renderScene(shells, scene));
     ctx.putImageData(new ImageData(px, canvas.width, canvas.height), 0, 0);
     // Soft glows add their light over the rest, smooth and always facing the camera.
-    ctx.imageSmoothingEnabled = true;
     for (const { soft, span, tall, at, bones, facing, bright, behind } of boxes.soft || []) {
-      // A glow behind the mob goes under what's drawn already (the mob's own parts hide it); the rest adds its light on top.
-      ctx.globalCompositeOperation = behind ? "destination-over" : "lighter";
+      // A glow behind the mob adds its light to the backdrop, under the mob; the rest adds it on top.
+      const ctx = behind ? lightCtx() : sceneCtx;
+      ctx.globalCompositeOperation = "lighter";
+      ctx.imageSmoothingEnabled = true;
       const placed = [...bones, float], spot = placeBy(placed, at), [gx, gy] = camera(view).project(spot), sw = span * scale * dpr, sh = tall * scale * dpr;
       // Eyes fade out as the face turns away: full from the front and most of the side, gone from behind.
       if (facing) {
@@ -514,8 +528,8 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       } else ctx.globalAlpha = bright;
       ctx.drawImage(soft, gx - sw / 2, gy - sh / 2, sw, sh);
       ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
     }
-    ctx.globalCompositeOperation = "source-over";
     // A sleeping mob's Zs float up from it (16 of its pixels to a block, at its look's size).
     for (const [kind, age] of effects) {
       const img = kind === "z" && particleImage(kind);

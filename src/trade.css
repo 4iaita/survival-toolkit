@@ -42,9 +42,11 @@
   @keyframes clouds-in-gap { to { transform: translateX(40px); } }
 }
 /* The biome's countryside behind the scene (under the ground strip), then the scene itself. */
-.stage-backdrop, .stage-scene {
+.stage-backdrop, .stage-light, .stage-scene {
   position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); image-rendering: pixelated;
 }
+/* Light the mob gives off behind it (the allay's halo), added to the countryside under it as the game adds it. */
+.stage-light { pointer-events: none; mix-blend-mode: screen; mix-blend-mode: plus-lighter; }
 .stage-scene { z-index: 1; cursor: grab; touch-action: pan-y; }
 .stage-scene:active { cursor: grabbing; }
 .stage-scene:focus-visible { outline-offset: -3px; }
