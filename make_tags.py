@@ -106,6 +106,9 @@ WHAT = {
     ("camel_husk", "executioner calf"): "A baby executioner’s beast: a shaggy red-brown hide, an iron collar and iron cuffs on its legs, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
     ("husk", "halloween"): "An executioner: a red-brown hood over its head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes, iron cuffs on its wrists and an iron shackle on one ankle. It goes with the camel husk’s Executioner look, the beast it rides.",
     ("husk", "baby executioner"): "A baby executioner: a red-brown hood over its big head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes and an iron shackle on one ankle.",
+    ("parched", "halloween"): "An executioner: a red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, a ragged red-brown robe and a ragged belt over its bones, and iron cuffs on its wrists and ankles. It goes with the camel husk’s Executioner look, the beast it rides.",
+    ("parched", "baby executioner"): "A baby executioner: a big red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, long ragged sleeves curling at the ends, and iron cuffs on its ankles.",
+    ("parched", "baby"): "A baby parched with a big head, its yellow eyes glowing in the dark.",
     ("trader_llama", "halloween"): "A fortune teller’s costume: a purple robe with orange trim and tassels, rolled red and green rugs on its back, a purple headscarf, a green eye charm at its throat, a green orb that glows in the dark hanging at one side and a little purple creature, its magenta eyes glowing too, clinging to the other.",
     ("horse", "halloween"): "A wendigo: a bare deer skull with wide branching antlers on a bony neck, ribs and spine showing through a ragged hide the color of its coat, bone legs, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).",
     ("nautilus", "sea monster nautiling"): "A baby sea monster: a dark purple shell striped with crimson and hooked with spines, a black face with two glowing red eyes, and tentacles curled at the tips.",
@@ -172,6 +175,8 @@ RARE = {
     ("iron_golem", "baby"): "1 in 20 iron golems", ("snow_golem", "baby"): "1 in 20 snow golems", ("copper_golem", "baby"): "1 in 20 copper golems",
     # And 1 in 20 allays.
     ("allay", "baby"): "1 in 20 allays",
+    # And 1 in 200 parched.
+    ("parched", "baby"): "1 in 200 parched",
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
@@ -189,7 +194,7 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("sheep", "ghost lamb"), ("sheep", "halloween"), ("goat", "evil kiddo"), ("goat", "halloween"),
          ("frog", "baby imp"), ("frog", "halloween"), ("turtle", "halloween"),
          ("wolf", "hellhound pup"), ("wolf", "hellhound"),
-         ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween"), ("wandering_trader", "halloween"), ("camel_husk", "halloween"), ("camel_husk", "executioner calf"), ("husk", "halloween"), ("husk", "baby executioner"),
+         ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween"), ("wandering_trader", "halloween"), ("camel_husk", "halloween"), ("camel_husk", "executioner calf"), ("husk", "halloween"), ("husk", "baby executioner"), ("parched", "halloween"), ("parched", "baby executioner"), ("parched", "baby"),
          ("nautilus", "sea monster nautiling"), ("nautilus", "halloween"),
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
@@ -245,6 +250,8 @@ def main():
                     row["what"] = WHAT[mob, "baby"]
                 if (mob, "baby") in RARE:
                     row["rare"] = RARE[mob, "baby"]
+                if (mob, "baby") in NIGHT:
+                    row["night"] = True
             else:
                 row["what"] = describe(mob, look["names"])
                 if (mob, look["names"][0].lower()) in NIGHT:

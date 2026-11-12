@@ -172,9 +172,9 @@ const PACK_TAGS_MORE = {
     { names: ["Grizzly"], what: "A brown grizzly bear." },
   ],
   parched: [
-    { names: ["Baby", "Parchlet", "Dusty"], kind: BABY },
-    { names: ["Baby Executioner"], more: ["baby Executioner", "Baby executioner"], what: "A baby Executioner." },
-    { names: ["Halloween", "Executioner"], what: "A Halloween costume." },
+    { names: ["Baby", "Parchlet", "Dusty"], what: "A baby parched with a big head, its yellow eyes glowing in the dark.", night: true, kind: BABY, rare: "1 in 200 parched" },
+    { names: ["Baby Executioner"], more: ["baby Executioner", "Baby executioner"], what: "A baby executioner: a big red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, long ragged sleeves curling at the ends, and iron cuffs on its ankles.", night: true },
+    { names: ["Halloween", "Executioner"], what: "An executioner: a red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, a ragged red-brown robe and a ragged belt over its bones, and iron cuffs on its wrists and ankles. It goes with the camel husk’s Executioner look, the beast it rides.", night: true },
   ],
   parrot: [
     { names: ["Baby", "Chick", "Peep"], kind: BABY },
