@@ -3,7 +3,7 @@
 // of names a row already has go onto that row.
 const PACK_TAGS_MORE = {
   allay: [
-    { names: ["Baby", "Sprite", "Twinkle"], kind: BABY },
+    { names: ["Baby", "Sprite", "Twinkle"], kind: BABY, rare: "1 in 20 allays" },
   ],
   armadillo: [
     { names: ["Pumpkin Pup", "Baby Pumpkin"], more: ["pumpkin Pup", "Pumpkin pup", "baby Pumpkin", "Baby pumpkin"], what: "A baby armadillo with a carved pumpkin for a shell." },

@@ -165,6 +165,8 @@ RARE = {
     ("cave_spider", "baby"): "1 in 200 cave spiders",
     # And 1 in 20 golems (iron, snow and copper).
     ("iron_golem", "baby"): "1 in 20 iron golems", ("snow_golem", "baby"): "1 in 20 snow golems", ("copper_golem", "baby"): "1 in 20 copper golems",
+    # And 1 in 20 allays.
+    ("allay", "baby"): "1 in 20 allays",
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a

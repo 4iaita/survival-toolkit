@@ -28,9 +28,9 @@ const BABY = "baby", SNOWY = "snowy";
 const snowyIn = mobs => ({ names: ["Snowy", "Frosty"], kind: SNOWY, rare: `15% of ${mobs} in snowy biomes` });
 const PACK_TAGS = {
   allay: [
-    { names: ["Goldie"], what: "A golden allay.", rare: "1 in 10 allays" },
-    { names: ["Ghost", "Wisp"], what: "A white ghost allay." },
-    { names: ["Elf", "Jingle"], what: "An elf hat and collar for Christmas." },
+    { names: ["Goldie"], what: "A golden allay: gold all over, its wings too, with no blue glow round it.", rare: "1 in 10 allays" },
+    { names: ["Ghost", "Wisp"], what: "A ghost: a white sheet with two dark eyes over its head and body, its arms poking out, and no wings." },
+    { names: ["Elf", "Jingle"], what: "An elf: a green pointed hat with a jagged red brim and a gold bell on its tip, red and white striped sleeves and a green tunic." },
   ],
   armadillo: [{ names: ["Baby", "Pup", "Dylan"], kind: BABY }],
   axolotl: [{ names: ["Baby", "Lottie"], kind: BABY }],
