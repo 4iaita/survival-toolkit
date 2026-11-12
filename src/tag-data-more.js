@@ -247,7 +247,7 @@ const PACK_TAGS_MORE = {
     { names: ["Dappled"], what: "Its moss turned orange, like autumn leaves.", biome: "dappled_forest", rare: "sniffers in dappled forests" },
   ],
   snow_golem: [
-    { names: ["Baby", "Snowlet", "Jackling"], kind: BABY },
+    { names: ["Baby", "Snowlet", "Jackling"], what: "A small snowman, its head on a single ball of snow, with a coal face and no pumpkin.", kind: BABY, rare: "1 in 20 snow golems" },
   ],
   spider: [
     { names: ["Baby", "Spiderling", "Webby"], kind: BABY, rare: "1 in 200 spiders" },

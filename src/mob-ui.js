@@ -113,7 +113,7 @@ function showOnStage() {
   const armor = armored ? { kind: m.k, type: mobArmor.type, dye: mobArmor.dye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   const marks = marksInfo(), armorName = armored && MOB_ARMOR[m.k].kinds ? `${ARMOR_NAMES[m.k][mobArmor.type].toLowerCase()} ` : "";
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night: false, glowing: m.glowing || night, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k) }).then(ok => {
+  mobView.show(m.k, look, { plays: MOB_WOOL[m.k] && mobShorn && !babyShown(m.k, look) ? MOB_WOOL[m.k].shornPlays || null : null, flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night: false, glowing: m.glowing || night, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k) }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
   $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_TINTS[m.k] ? ` (${MOB_TINTS[m.k].map((r, i) => `${r.n.toLowerCase()} ${tintsOf(m.k)[i]}`).join(", ")})` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${mobArmor.dye ? `${mobArmor.dye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${carpetWorn(m.k, look) ? `, wearing ${article(mobCarpet)} ${mobCarpet} carpet` : ""}. Drag or use the arrow keys to turn it.`);
@@ -216,11 +216,14 @@ function renderWear() {
       : dyeSwatch("carpet", c, c === mobCarpet)).join("");
   }
   const wool = MOB_WOOL[k];
-  $("wool-bar").hidden = $("shear-bar").hidden = !wool;
+  $("shear-bar").hidden = !wool;
+  $("wool-bar").hidden = !(wool && wool.natural);
   if (!wool) return;
   const shorn = mobShorn && !baby;
-  $("wool-label").textContent = `Wool: ${titled(mobWool)}${wool.natural[mobWool] ? ` · ${wool.natural[mobWool]}` : " · Dyed"}`;
-  $("wool-try").innerHTML = [...Object.keys(wool.natural), ...COLLAR_COLORS.filter(c => !wool.natural[c])].map(c => dyeSwatch("wool", c, c === mobWool)).join("");
+  if (wool.natural) {
+    $("wool-label").textContent = `Wool: ${titled(mobWool)}${wool.natural[mobWool] ? ` · ${wool.natural[mobWool]}` : " · Dyed"}`;
+    $("wool-try").innerHTML = [...Object.keys(wool.natural), ...COLLAR_COLORS.filter(c => !wool.natural[c])].map(c => dyeSwatch("wool", c, c === mobWool)).join("");
+  }
   $("shear-try").innerHTML = chip("shorn", "", "Not sheared", !shorn) + chip("shorn", "on", "Sheared", shorn, baby && "The game doesn’t shear a lamb");
 }
 

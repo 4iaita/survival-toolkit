@@ -276,8 +276,13 @@ ARMOR_NAMES.zombie_nautilus = ARMOR_NAMES.nautilus;
 ARMOR_NAMES.zombie_horse = ARMOR_NAMES.horse;
 // The sheep's wool: any dye color (it starts white), or sheared. natural: the colors sheep spawn with, and how often;
 // shorn: the parts shearing takes off (its wool), and more for a look whose wool is a costume (the Halloween sheet hides
-// the ears when it's off, as the pack has it). The game doesn't shear a lamb.
+// the ears when it's off, as the pack has it). The game doesn't shear a lamb. A mob with no natural colors has no wool
+// row, only its shearing; shornPlays: the set of its animations it plays sheared (MOB_MOTIONS and MOB_ACTS'
+// "<mob>:<set>").
 const MOB_WOOL = {
+  // The snow golem's pumpkin: shearing takes it off (the pack hides it for q.is_sheared), and then it has no pumpkin to
+  // lift now and then. (The pack's baby has no pumpkin at all.)
+  snow_golem: { shorn: [["hmehcaf", false]], shornPlays: "sheared" },
   sheep: {
     natural: { white: "81.8% of sheep", black: "5% of sheep", gray: "5% of sheep", "light gray": "5% of sheep", brown: "3% of sheep", pink: "0.16% of sheep" },
     shorn: [["oggd*", false]],
