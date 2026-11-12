@@ -282,8 +282,8 @@ async function lookBoxes(look, { flip = false, tint = null, clock = null, night 
   // Armor is one more layer: { kind, a MOB_ARMOR key; type, which of its kinds (a horse's: leather, iron...); dye, its
   // color if any; crack, its wear if any; glint, if enchanted }. Undyed, some is tinted all the same (leather's brown).
   const piece = armor && MOB_ARMOR[armor.kind] && (MOB_ARMOR[armor.kind].kinds ? MOB_ARMOR[armor.kind].kinds[armor.type] : MOB_ARMOR[armor.kind]);
-  const dye = piece && (armor.dye || piece.undyed);
-  const worn = piece ? [[piece.model, [armor.dye ? piece.dyed : piece.plain, ...(armor.crack ? [piece.cracks[armor.crack]] : [])], [], { blend: true, ...(dye ? { dyes: [dye] } : {}), ...(armor.glint ? { glint: 1 } : {}) }]] : [];
+  const dyed = Boolean(piece && piece.dyed && armor.dye), dye = piece && (dyed ? armor.dye : piece.undyed);
+  const worn = piece ? [[piece.model, [dyed ? piece.dyed : piece.plain, ...(armor.crack ? [piece.cracks[armor.crack]] : [])], [], { blend: true, ...(dye ? { dyes: [dye] } : {}), ...(armor.glint ? { glint: 1 } : {}) }]] : [];
   const own = carpet ? look.layers.map(l => (carpet.layers[l[1][0]] ? [carpet.layers[l[1][0]], [carpet.texture], []] : l)) : look.layers;
   const shown = [...own.filter(([, , , flags = {}]) => night || glowing || !flags.glow || flags.soft), ...worn];
   const isRoot = bone => shown.some(([model]) => MOB_MODELS[model][2].some(([name, parent]) => parent < 0 && name.toLowerCase() === bone.toLowerCase()));
