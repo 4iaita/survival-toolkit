@@ -132,7 +132,8 @@ function faceSpot(face, fx, fy, fz) {
 // height a second, clock.t seconds in; glow, it shines in the dark, so it keeps its brightness and its faint texels
 // show, while dim darkens the rest for night (but not a lit texel's glow: the fainter it is, the less night dims it);
 // over, it's drawn over the layers before it where their faces meet, as the game draws an overlay on the same model
-// (the iron golem's cracks).
+// (the iron golem's cracks); behind, a soft glow the game draws behind the mob (a panel held behind its pivot, turned to
+// face the camera: the allay's halo), so it only shows round the mob, not over it.
 const SHEER_FINE = 4;
 // The bones the pack's animations turn to face the camera, for the glow panels under them.
 const GLOW_TURNS = /^fsdyhky\d*$/i;
@@ -215,7 +216,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
           at[axis] = pivotAt;
         }
         const rect = ["front", "right", "left"].map(face => faceRect(uv, dims, face)).find(r => r && r[2] && r[3]);
-        if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, bright: flags.bright === undefined ? 1 : flags.bright, bones: [...own, ...chainOf(i), ...upsideDown] });
+        if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, bright: flags.bright === undefined ? 1 : flags.bright, behind: Boolean(flags.behind), bones: [...own, ...chainOf(i), ...upsideDown] });
         continue;
       }
       out.push({
@@ -501,9 +502,10 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (shells.length) overShell(px, renderScene(shells, scene));
     ctx.putImageData(new ImageData(px, canvas.width, canvas.height), 0, 0);
     // Soft glows add their light over the rest, smooth and always facing the camera.
-    ctx.globalCompositeOperation = "lighter";
     ctx.imageSmoothingEnabled = true;
-    for (const { soft, span, tall, at, bones, facing, bright } of boxes.soft || []) {
+    for (const { soft, span, tall, at, bones, facing, bright, behind } of boxes.soft || []) {
+      // A glow behind the mob goes under what's drawn already (the mob's own parts hide it); the rest adds its light on top.
+      ctx.globalCompositeOperation = behind ? "destination-over" : "lighter";
       const placed = [...bones, float], spot = placeBy(placed, at), [gx, gy] = camera(view).project(spot), sw = span * scale * dpr, sh = tall * scale * dpr;
       // Eyes fade out as the face turns away: full from the front and most of the side, gone from behind.
       if (facing) {

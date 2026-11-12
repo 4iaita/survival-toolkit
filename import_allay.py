@@ -7,7 +7,8 @@ baby had the new model but nothing moved it). It has no kinds. The pack draws a 
 only draws round the others), which the stage leaves out, as it does every mob's; its glow panel (a soft halo) shows on
 the plain, Ghost and Elf looks, not on Goldie or a baby. Run import_additions.py first.
 """
-from import_port import port
+import import_additions as ia
+from import_port import port, put
 
 # It hovers, bobbing, its head swaying and its arms held out a little (the pack's idle), its wings beating (the pack's
 # flap, at half its speed so they can be seen). Its head turning to look at what it's after (the pack's head look) is
@@ -28,5 +29,20 @@ DANCE = [{"every": [2, 5], "ease": 0.2, "parts": [(key, 0, DANCES, []), (WINGS[0
          for key in ("oyilus", "busmoj", "dgngrt")]
 ACTS = [BLINK, *SPINS, *DANCE]
 
+
+def halo_behind():
+    """The halo drawn behind the allay (behind): the pack holds its glow panel 4 pixels behind its pivot, in the middle of
+    the allay, and turns it to face the camera, so in the game it's always behind the allay and only glows round it."""
+    text = ia.MODELS_JS.read_text()
+    looks = ia.parse_section(text, "MOB_LOOKS")["allay"]
+    for look in looks:
+        for layer in look["layers"]:
+            if len(layer) > 3 and layer[3].get("halo"):
+                layer[3]["behind"] = 1
+    ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "allay", looks))
+
+
 if __name__ == "__main__":
     port("allay", variants=[""], acts=ACTS, motions=MOTIONS, remodel=["goldie", "ghost", "elf"])
+    if ia.WRITE:
+        halo_behind()
