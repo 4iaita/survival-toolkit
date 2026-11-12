@@ -342,7 +342,7 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Nessie"], what: "Nessie, the Loch Ness monster: a dark teal sea serpent with a humped back of three ridged bumps, a long neck and a long tail curling up from either end lined with spines, four flippers and lime green eyes that glow in the dark.", night: true },
   ],
   vex: [
-    { names: ["Baby", "Vexling", "Wisplet"], kind: BABY },
+    { names: ["Baby", "Vexling", "Wisplet"], kind: BABY, rare: "1 in 200 vexes" },
   ],
   villager: [
     { names: ["Hazmat"], what: "The Hazmat look." },
