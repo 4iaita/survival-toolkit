@@ -143,8 +143,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Wendigo"], what: "A wendigo: a bare deer skull with wide branching antlers on a bony neck, ribs and spine showing through a ragged hide the color of its coat, bone legs, and eyes that glow in the dark (red, white, orange, purple or teal, by its coat).", night: true },
   ],
   husk: [
-    { names: ["Baby Executioner"], more: ["baby Executioner", "Baby executioner"], what: "A baby Executioner." },
-    { names: ["Halloween", "Executioner"], what: "A Halloween costume." },
+    { names: ["Baby Executioner"], more: ["baby Executioner", "Baby executioner"], what: "A baby executioner: a red-brown hood over its big head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes and an iron shackle on one ankle.", night: true },
+    { names: ["Halloween", "Executioner"], what: "An executioner: a red-brown hood over its head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes, iron cuffs on its wrists and an iron shackle on one ankle. It goes with the camel husk’s Executioner look, the beast it rides.", night: true },
   ],
   iron_golem: [
     { names: ["Baby", "Golemite", "Clanky"], kind: BABY, rare: "1 in 20 iron golems" },

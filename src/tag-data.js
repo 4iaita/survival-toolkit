@@ -101,7 +101,7 @@ const PACK_TAGS = {
     snowyIn("horses"),
   ],
   husk: [
-    { names: ["Baby", "Sandy"], kind: BABY },
+    { names: ["Baby", "Sandy"], what: "A baby husk, its yellow eyes glowing all the while.", kind: BABY, night: true },
     { names: ["Mummy", "Dusty"], what: "A mummy wrapped in bandages.", rare: "3 in 100 husks" },
   ],
   iron_golem: [
