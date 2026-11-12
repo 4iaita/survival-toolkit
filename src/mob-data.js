@@ -243,6 +243,8 @@ const MOB_MARKINGS = {
 // The game doesn't saddle a baby.
 const MOB_SADDLES = {
   camel: [["k255d6", true], ["3ja5d6", true]],
+  // The camel husk's saddle is the same parts on its own models (its reins too only show with a rider).
+  camel_husk: [["k255d6", true], ["3ja5d6", true]],
   pig: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true], ["2dh92l6klfg72f4qk255d6*", false]],
   // The horse's saddle, stirrups and bridle (its reins only show with a rider); a snowy horse's snow makes way for the saddle.
   horse: [["k255d6", true], ["klj2hj*", true], ["3m4cd6*", true], ["3ja5d6", true], ["f64ck255d6", true], ["alpha*NoFancyArmorSaddle*", false]],

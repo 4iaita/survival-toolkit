@@ -41,7 +41,7 @@ const PACK_TAGS = {
     { names: ["Qween", "Crown"], what: "A queen bee wearing a golden crown." },
   ],
   camel: [{ names: ["Baby", "Calf", "Camelo"], kind: BABY }],
-  camel_husk: [{ names: ["Baby", "Calf", "Camelo"], kind: BABY }],
+  camel_husk: [{ names: ["Baby", "Calf", "Camelo"], kind: BABY, rare: "1 in 20 camel husks" }],
   cat: [
     { names: ["Baby", "Kitten", "Kitty"], kind: BABY },
     { names: ["Party", "Purrty"], what: "A party hat." },

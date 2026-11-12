@@ -40,8 +40,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Mummy"], what: "Wrapped in bandages like a mummy." },
   ],
   camel_husk: [
-    { names: ["Executioner Calf", "Baby Executioner"], more: ["executioner Calf", "Executioner calf", "baby Executioner", "Baby executioner"], what: "The Executioner Calf look." },
-    { names: ["Halloween", "Executioner"], what: "A Halloween costume." },
+    { names: ["Executioner Calf", "Baby Executioner"], more: ["executioner Calf", "Executioner calf", "baby Executioner", "Baby executioner"], what: "A baby executioner’s beast: a shaggy red-brown hide, an iron collar and iron cuffs on its legs, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.", night: true },
+    { names: ["Halloween", "Executioner"], what: "An executioner’s beast: a shaggy red-brown hide, an iron collar round its neck and iron cuffs on its legs, a gray band over its back, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.", night: true },
   ],
   cat: [
     { names: ["Witch Kitten", "Baby Witch"], more: ["witch Kitten", "Witch kitten", "baby Witch", "Baby witch"], what: "A kitten in a witch’s hat." },
