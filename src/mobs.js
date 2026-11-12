@@ -134,6 +134,8 @@ function faceSpot(face, fx, fy, fz) {
 // over, it's drawn over the layers before it where their faces meet, as the game draws an overlay on the same model
 // (the iron golem's cracks); behind, a soft glow the game draws behind the mob (a panel held behind its pivot, turned to
 // face the camera: the allay's halo), so it only lights what's round the mob, not the mob itself.
+// rim, an outline the game draws only where the mob itself isn't (a stencil), glowing: the allay's, its parts again a
+// little bigger in one bright color, so it shows as a thin lit edge round the mob.
 const SHEER_FINE = 4;
 // The bones the pack's animations turn to face the camera, for the glow panels under them.
 const GLOW_TURNS = /^fsdyhky\d*$/i;
@@ -220,7 +222,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
         continue;
       }
       out.push({
-        lo, hi, glow, shell, over: Boolean(flags.over), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, over: Boolean(flags.over), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
           let face = FACES[axis][side];
           if (mirror) {
@@ -509,7 +511,13 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const float = { pivot: NO_MOVE, angles: NO_MOVE, move: [0, -rise, 0] };
     const placed = rise ? boxes.map(m => ({ ...m, bones: [...m.bones, float] })) : boxes;
     const scene = { ...view, width: canvas.width, height: canvas.height };
-    const px = renderScene(placed.filter(m => !m.shell), { ...scene, shadows: [[mid[0], mid[2], shadow]] });
+    const px = renderScene(placed.filter(m => !m.shell && !m.rim), { ...scene, shadows: [[mid[0], mid[2], shadow]] });
+    // Rims only show where the mob isn't drawn (they may go over its shadow).
+    const rims = placed.filter(m => m.rim);
+    if (rims.length) {
+      const rp = renderScene(rims, scene);
+      for (let i = 3; i < px.length; i += 4) if (rp[i] && px[i] < 255) px.set(rp.subarray(i - 3, i + 1), i - 3);
+    }
     // See-through shells (a slime's jelly) go on top of what's inside them.
     const shells = placed.filter(m => m.shell);
     if (shells.length) overShell(px, renderScene(shells, scene));
