@@ -111,6 +111,8 @@ WHAT = {
     ("iron_golem", "butler"): "A butler’s black waistcoat and trousers, a white cravat and white spats. The pack draws no cracks on it, however hurt it is.",
     ("iron_golem", "dappled"): "Orange and red autumn leaves grow over its body, arms and legs in place of its vines and poppies, with one on its head.",
     ("snow_golem", "baby"): "A small snowman, its head on a single ball of snow, with a coal face and no pumpkin.",
+    ("copper_golem", "maid"): "A maid’s outfit: a black dress with a white apron tied in a big bow at the back and a white frilled headband, its copper head and glowing eyes showing. The copper oxidizes with its stage.",
+    ("copper_golem", "halloween"): "A voodoo doll: a stitched brown burlap body, one black and one red button for eyes, and pins stuck in its head.",
     ("mooshroom", "zombified calf"): "A zombie mooshroom calf, rotting, its eyes glowing faintly.",
     ("mooshroom", "halloween"): "A zombie mooshroom, rotting, its eyes glowing faintly.",
     ("ocelot", "witch kitten"): "A baby ocelot in a witch’s hat.",
@@ -162,7 +164,7 @@ RARE = {
     ("guardian", "baby"): "1 in 200 guardians", ("spider", "baby"): "1 in 200 spiders",
     ("cave_spider", "baby"): "1 in 200 cave spiders",
     # And 1 in 20 golems (iron, snow and copper).
-    ("iron_golem", "baby"): "1 in 20 iron golems", ("snow_golem", "baby"): "1 in 20 snow golems",
+    ("iron_golem", "baby"): "1 in 20 iron golems", ("snow_golem", "baby"): "1 in 20 snow golems", ("copper_golem", "baby"): "1 in 20 copper golems",
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a

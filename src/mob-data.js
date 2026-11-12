@@ -198,6 +198,17 @@ const MOB_VARIANTS = {
     { k: "normal", n: "Normal", where: "Oceans but warm ones", say: "" },
     { k: "coral", n: "Coral", where: "Warm oceans", skins: { new_zombie_nautilus: "new_zombie_nautilus_coral", new_zombie_nautilus_baby: "new_zombie_nautilus_coral_baby" } },
   ],
+  // The copper golem's oxidation stages (the game's oxidation_level property): it starts unaffected when it's built and
+  // oxidizes as copper blocks do, unless it's waxed; fully oxidized, it can turn into a statue. Every look has a skin for
+  // each (import_copper_golem.py prints them). Weathered and oxidized, it blinks and spins its rod stiffly in its idles
+  // (the "weathered" climate's acts).
+  copper_golem: [
+    { k: "unaffected", n: "Unaffected", where: "Newly built", say: "" },
+    { k: "exposed", n: "Exposed", where: "Oxidizes over time, as copper blocks do" },
+    { k: "weathered", n: "Weathered", where: "Oxidizes over time, as copper blocks do", climate: "weathered" },
+    { k: "oxidized", n: "Oxidized", where: "Fully oxidized: it can turn into a statue", climate: "weathered" },
+  ].map((v, i) => (i ? { ...v, skins: Object.fromEntries(["", "_baby_3", "_robot_3", "_maid_4", "_halloween_3"]
+    .map(s => [`new_copper_golem${s}`, `new_copper_golem_${v.k}${s}`])) } : v)),
   tropicalfish: [
     ...["Kob", "Sunstreak", "Snooper", "Dasher", "Brinely", "Spotty"].map((n, i) => ({ k: n.toLowerCase(), n, where: "Small shape",
       ...(i ? { skins: { new_tropicalfish_1: `new_tropicalfish_${n.toLowerCase()}` } } : {}) })),

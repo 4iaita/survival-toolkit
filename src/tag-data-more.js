@@ -71,9 +71,9 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Fry", "Bubbles"], kind: BABY },
   ],
   copper_golem: [
-    { names: ["Baby", "Golemite", "Coggy"], kind: BABY },
-    { names: ["Maid"], what: "The Maid look." },
-    { names: ["Halloween", "Voodoo Doll", "Voodoo", "Doll"], more: ["voodoo Doll", "Voodoo doll"], what: "A Halloween costume." },
+    { names: ["Baby", "Golemite", "Coggy"], kind: BABY, rare: "1 in 20 copper golems" },
+    { names: ["Maid"], what: "A maid’s outfit: a black dress with a white apron tied in a big bow at the back and a white frilled headband, its copper head and glowing eyes showing. The copper oxidizes with its stage." },
+    { names: ["Halloween", "Voodoo Doll", "Voodoo", "Doll"], more: ["voodoo Doll", "Voodoo doll"], what: "A voodoo doll: a stitched brown burlap body, one black and one red button for eyes, and pins stuck in its head." },
   ],
   cow: [
     { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "A zombie calf, rotting, one eye glowing white in the dark.", night: true },

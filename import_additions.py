@@ -228,7 +228,7 @@ def main():
 
 
 # Mobs whose looks their own scripts own (import_panda.py, import_mooshroom.py, import_bat.py, import_cat.py, import_armadillo.py, import_bee.py, import_camel.py, import_chicken.py, import_cow.py, import_ocelot.py, import_axolotl.py): --refresh leaves them be.
-PORTED = {"panda", "mooshroom", "bat", "cat", "armadillo", "bee", "camel", "chicken", "cow", "ocelot", "axolotl", "pig", "spider", "cave_spider", "sheep", "goat", "sniffer", "horse", "donkey", "mule", "skeleton_horse", "zombie_horse", "llama", "trader_llama", "fox", "rabbit", "polar_bear", "frog", "parrot", "turtle", "dolphin", "wolf", "cod", "salmon", "pufferfish", "tropicalfish", "squid", "glow_squid", "nautilus", "zombie_nautilus", "guardian", "elder_guardian", "iron_golem", "snow_golem"}
+PORTED = {"panda", "mooshroom", "bat", "cat", "armadillo", "bee", "camel", "chicken", "cow", "ocelot", "axolotl", "pig", "spider", "cave_spider", "sheep", "goat", "sniffer", "horse", "donkey", "mule", "skeleton_horse", "zombie_horse", "llama", "trader_llama", "fox", "rabbit", "polar_bear", "frog", "parrot", "turtle", "dolphin", "wolf", "cod", "salmon", "pufferfish", "tropicalfish", "squid", "glow_squid", "nautilus", "zombie_nautilus", "guardian", "elder_guardian", "iron_golem", "snow_golem", "copper_golem"}
 
 
 def kept_layers(layers, geos):

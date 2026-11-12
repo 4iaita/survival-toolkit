@@ -55,7 +55,7 @@ const PACK_TAGS = {
     { names: ["Lava Chicken"], more: ["lava Chicken", "Lava chicken"], what: "A blazing lava chicken, as in Steve’s song from the movie." },
     { ...snowyIn("cold chickens"), needs: "Only cold chickens, the kind from snowy biomes.", climate: "cold" },
   ],
-  copper_golem: [{ names: ["Robot", "Windup"], what: "A wind-up toy robot." }],
+  copper_golem: [{ names: ["Robot", "Windup"], what: "A wind-up tin toy robot: blue, with square red and yellow eyes, gray arms, red feet, a red knob on a stalk for a rod, a yellow button on its chest and a gold wind-up key in its back. It rusts as it oxidizes." }],
   cow: [
     { names: ["Baby", "Calf", "Mr Mooch"], more: ["mr Mooch", "Mr mooch"], kind: BABY },
     { ...snowyIn("cold cows"), needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
