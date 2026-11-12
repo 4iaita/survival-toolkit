@@ -358,7 +358,7 @@ const PACK_TAGS_MORE = {
   ],
   wandering_trader: [
     { names: ["Baby", "Child"], kind: BABY },
-    { names: ["Halloween", "Fortune Teller"], more: ["fortune Teller", "Fortune teller"], what: "A Halloween costume." },
+    { names: ["Halloween", "Fortune Teller"], more: ["fortune Teller", "Fortune teller"], what: "A fortune teller: a purple robe with orange trim and a fringed hem, a red scarf hanging down its back, green boots, and an orange headband with a feather and a gold charm on it, the charm’s green eye and its own eyes glowing in the dark.", night: true },
   ],
   warden: [
     { names: ["Baby", "Wardenlet", "Thuddy"], kind: BABY },

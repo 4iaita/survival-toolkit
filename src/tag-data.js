@@ -170,7 +170,7 @@ const PACK_TAGS = {
     { names: ["Snowy", "Frozen"], kind: SNOWY },
   ],
   vindicator: [{ names: ["Clown", "Giggles"], what: "A creepy clown." }],
-  wandering_trader: [{ names: ["Snowy", "Frosty"], kind: SNOWY }],
+  wandering_trader: [{ names: ["Snowy", "Frosty"], kind: SNOWY, what: "Dressed for the cold: snow on its hood and shoulders, a fur-trimmed coat, a pack on its back with snow on it, frosty boots and a nose pink with cold.", rare: "wandering traders in snowy biomes" }],
   warden: [
     { names: ["Jack", "Gourden"], what: "A jack o’lantern warden, with a carved pumpkin head and vines." },
     { names: ["Yeti"], what: "A shaggy white yeti." },
