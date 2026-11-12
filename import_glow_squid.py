@@ -5,7 +5,7 @@
 Its looks get the pack's current models (the plain and baby ones went by the old pack's bones). It has no kinds and no
 names but its baby's. The stage shows it in a flooded cave. Run import_additions.py first.
 """
-from import_port import ia, port, put
+from import_port import ia, keep_rims, port, put
 from import_squid import ACTS, MOTIONS, seat_tentacles
 
 # It plays what the squid plays (its animations map lists the same ones): it pulses in the water and glances about now
@@ -34,7 +34,10 @@ def split_glow(look):
     return look
 
 
+# It has a glowing teal outline round it: kept as a rim (keep_rims).
+
 if __name__ == "__main__":
+    keep_rims()
     port("glow_squid", variants=[""], acts=ACTS, motions=MOTIONS, nested_poses=True, share=["squid"], fix_geos=seat_tentacles)
     if ia.WRITE:
         text = ia.MODELS_JS.read_text()

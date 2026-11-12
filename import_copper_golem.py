@@ -10,7 +10,7 @@ animations for those stages): those acts are the "weathered" climate's (MOB_CLIM
 import_additions.py first.
 """
 import import_additions as ia
-from import_port import port, put
+from import_port import keep_rims, port, put
 
 VARIANTS = ["", "exposed", "weathered", "oxidized"]
 
@@ -39,7 +39,7 @@ WEATHERED = [IDLE("tculwn", "iqrbsk"), IDLE("qofebb", "bmbehs")]
 # running, sitting, star) and at any stage of oxidation (an axe scrapes it back). The pack only reskins the statue as an
 # item held in the hand, standing, and the game poses the block in its own code, so the poses here are made on the
 # golem's own skeleton to look like the game's: degrees each bone turns (r) and how far the whole statue drops (root p).
-# A statue doesn't move, and its eyes don't glow (the glowing layers and lit eyes are left off). They're its moods
+# A statue doesn't move, and its eyes don't glow (the glowing layers, outline and lit eyes are left off). They're its moods
 # (MOB_MOODS), on a row of their own (MOOD_ROWS in src/mob-data.js).
 STATUES = {
     "statue_standing": {},
@@ -63,7 +63,7 @@ def statues():
             layers = []
             for layer in look["layers"]:
                 flags = {k: v for k, v in (layer[3] if len(layer) > 3 else {}).items() if k not in ("litBones",)}
-                if flags.get("glow"):
+                if flags.get("glow") or flags.get("rim"):
                     continue
                 layers.append(layer[:3] + ([flags] if flags else []))
             both = {**look.get("pose", {})}
@@ -74,7 +74,10 @@ def statues():
     ia.MODELS_JS.write_text(put(text, "MOB_MOODS", "copper_golem", out))
 
 
+# The plain and baby looks have a glowing outline round them, in the color of their copper: kept as rims (keep_rims).
+
 if __name__ == "__main__":
+    keep_rims()
     port("copper_golem", variants=VARIANTS, answers=answers, acts=ACTS, motions=MOTIONS,
          remodel=["robot", "maid", "halloween"], nested_poses=True,
          climates={"weathered": {}}, climate_acts={"weathered": WEATHERED})

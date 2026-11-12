@@ -9,7 +9,7 @@ and Dappled looks only show on a cold chicken, its Cherry one only on a temperat
 the page didn't have. It has no q.variant kinds: its climates are MOB_VARIANTS' (src/mob-data.js). Run
 import_additions.py first.
 """
-from import_port import im, port
+from import_port import im, keep_rims, port
 
 CLIMATES = {"warm": im._CLIMATE("warm"), "cold": im._CLIMATE("cold")}
 
@@ -49,6 +49,9 @@ NAMED = ["chicken jockey", "cooked", "lava chicken", "snowy", "halloween", "baby
          "chickzilla", "chickle", "turkey", "rooster", "duck", "cherry", "villager"]
 DAPPLED = [["dappled", "Dappled"]]
 
+# The Lava Chicken has a glowing gold outline round it: kept as a rim (keep_rims).
+
 if __name__ == "__main__":
+    keep_rims()
     port("chicken", variants=[""], acts=ACTS, motions=MOTIONS, remodel=NAMED, new_looks=DAPPLED, sets=SETS, plays=PLAYS, climates=CLIMATES,
          nested_poses=True)

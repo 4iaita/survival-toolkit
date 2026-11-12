@@ -15,6 +15,27 @@ import import_additions as ia
 im = ia.im
 
 
+def keep_rims():
+    """Keep the glowing outlines the pack draws round some mobs (the allay, the glow squid, the copper golem, the Lava
+    Chicken): their parts again a little bigger in one bright texel, with an emissive material that only draws where the
+    mob itself isn't (a stencil test against what its own layers write). import_models.py leaves out every layer that
+    only draws round others; these are kept as rim layers instead (src/mobs.js draws them unshaded round the mob). Call
+    it before port()."""
+    material_kind = im.material_kind
+
+    def kind_of(name, mats):
+        kind = material_kind(name, mats)
+        if kind != "stencil":
+            return kind
+        chain = []
+        while name and name not in chain:
+            chain.append(name)
+            name = mats.get(name, ("", {}))[0]
+        return "rim" if any(n.startswith("entity_emissive") for n in chain) else kind
+
+    im.material_kind = kind_of
+
+
 def renamed(bones):
     return {ia.ren(b): v for b, v in bones.items()}
 

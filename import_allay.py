@@ -8,7 +8,7 @@ only draws round the others), which the stage leaves out, as it does every mob's
 the plain, Ghost and Elf looks, not on Goldie or a baby. Run import_additions.py first.
 """
 import import_additions as ia
-from import_port import im, port, put
+from import_port import keep_rims, port, put
 
 # It hovers, bobbing, its head swaying and its arms held out a little (the pack's idle), its wings beating (the pack's
 # flap, at half its speed so they can be seen). Its head turning to look at what it's after (the pack's head look) is
@@ -42,25 +42,10 @@ def halo_behind():
     ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "allay", looks))
 
 
-# The pack also draws a glowing outline round it: its body, arms and wings again, 0.2 pixels bigger, in one bright texel
-# (cyan, gold on Goldie, white on the Ghost), with an emissive material that only draws where the allay itself isn't (a
-# stencil). That's most of how it glows, so here (only) such a layer is kept, as a rim (src/mobs.js), not left out.
-_material_kind = im.material_kind
-
-
-def material_kind(name, mats):
-    kind = _material_kind(name, mats)
-    if kind != "stencil":
-        return kind
-    chain = []
-    while name and name not in chain:
-        chain.append(name)
-        name = mats.get(name, ("", {}))[0]
-    return "rim" if any(n.startswith("entity_emissive") for n in chain) else kind
-
+# The pack also draws a glowing outline round it (cyan, gold on Goldie, white on the Ghost): kept as rims (keep_rims).
 
 if __name__ == "__main__":
-    im.material_kind = material_kind
+    keep_rims()
     port("allay", variants=[""], acts=ACTS, motions=MOTIONS, remodel=["goldie", "ghost", "elf"])
     if ia.WRITE:
         halo_behind()
