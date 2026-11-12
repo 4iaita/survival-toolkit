@@ -12,6 +12,10 @@
 .stage[data-biome="mineshaft"] { --sky: #0b0b10; --haze: #100d0a; }
 .stage[data-biome="mineshaft"]::after { filter: brightness(.5); }
 .stage[data-biome="mineshaft"]::before { display: none; }
+/* Inside a woodland mansion: no sky, a dim haze over the far wall, and a dark oak floor in the torchlight. */
+.stage[data-biome="mansion"] { --sky: #120c08; --haze: #1a120b; }
+.stage[data-biome="mansion"]::after { filter: brightness(.7); }
+.stage[data-biome="mansion"]::before { display: none; }
 .stage[data-biome="nether"] { --sky: #1c0605; --haze: #3a0f08; }
 /* The biomes some name tags' looks come from: the cherry grove's clear mountain sky, the pale garden's gray mist, the
    dappled forest's soft autumn haze, the sulfur caves' dark yellow murk. */

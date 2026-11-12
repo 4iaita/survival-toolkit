@@ -29,7 +29,6 @@ const BIOME_TINTS = {
   snowy: { foliage: "#60a17b", grass: "#80b497" },
   taiga: { foliage: "#68a464", grass: "#86b783" },
   forest: { foliage: "#59ae30", grass: "#79c05a" },
-  dark_forest: { foliage: "#59ae30", grass: "#507a32" },
   jungle: { foliage: "#30bb0b", grass: "#59c93c" },
   swamp: { foliage: "#6a7039", grass: "#6a7039", water: "#617b64" },
   // The wolf variants' wild biomes on the Mobs tab.
