@@ -3,6 +3,8 @@
  * far hills dotted with small trees, then a village building, trees and plants nearer by. Each layer fades
  * toward the horizon's haze, the far one more, so they read as distance. Foliage, grass and water take the
  * biome's tint the way the game colors them, and in snowy biomes everything wears a layer of snow.
+ * The village, for the Mobs tab's iron golem and villager, is the middle of a plains village: its well, bell and lamp
+ * post between houses, more roofs on the hills.
  * The forest, for the Mobs tab, is no village either: oaks and birches, with flowers and mushrooms underneath.
  * So is the mineshaft: a dark corridor of fence-post supports under plank beams, rails, a chest minecart, cobwebs and a
  * webbed-in spawner.
@@ -299,6 +301,15 @@ const spawnerCage = block("mob_spawner");
 // on some, cobwebs strung in their corners; rails along the floor, a chest minecart standing on them, and a spawner
 // netted round with webs, where cave spiders come from.
 const FENCE = { layers: [["oak_planks", null, [6, 10]]] };
+// The heart of a plains village: its well (cobblestone round the water, oak posts holding up a cobblestone roof), the
+// meeting point's bell hanging from an oak frame, a lamp post (a lantern on an oak fence post), a composter and a barrel by
+// a house, and a smaller house for the far hills.
+const villageWell = prop(["CCCC", "F..F", "F..F", "CCCC"], { C: blockTex("cobblestone"), F: FENCE });
+const bellFrame = prop(["PPP", "FbF", "F.F"], { P: blockTex("oak_planks"), F: FENCE, b: plantTex("bell") });
+const lampPost = prop(["L", "F", "F", "F"], { L: plantTex("lantern"), F: FENCE });
+const smallHouse = ({ roof, wall, frame, base }) => prop([".RRR.", "RRRRR", "FWGWF", "FWWWF", "BBBBB"], {
+  R: blockTex(roof), W: blockTex(wall), F: blockTex(frame), B: blockTex(base), G: blockTex("glass") });
+const PLAINS_HOUSE = { roof: "planks_dark_oak", wall: "oak_planks", frame: "log_oak", base: "cobblestone", door: "oak" };
 // webs: how many rows down the top corners are strung with cobwebs (the top row that many blocks in from each post).
 const mineFrame = (width, height, { torch = 0, webs = 0 } = {}) => {
   const inside = width - 2, row = (left, right) => `F${left}${".".repeat(inside - left.length - right.length)}${right}F`;
@@ -532,6 +543,15 @@ const BACKDROPS = {
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[oakTree(t), 0.06], [oakTree(t), 0.3], [oakTree(t), 0.55], [oakTree(t), 0.86]] },
     near: [[house({ roof: "planks_dark_oak", wall: "oak_planks", frame: "log_oak", base: "cobblestone", door: "oak" }), -14],
       [oakTree(t), -7], [plant("poppy"), -1], [wheatFarm, 2], [oakTree(t), 10], [block("hay_side", [".B", "BB"]), 8], [plant("dandelion"), 13]],
+  }),
+  // The middle of a plains village, the iron golem's and the villager's: houses either side, the well, the bell and a lamp
+  // post, a farm and hay bales, with more roofs on the far hills.
+  village: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [[oakTree(t), 0.05], [oakTree(t), 0.48], [oakTree(t), 0.93]],
+      landmarks: [[smallHouse(PLAINS_HOUSE), 0.2], [smallHouse(PLAINS_HOUSE), 0.33], [smallHouse(PLAINS_HOUSE), 0.66], [smallHouse(PLAINS_HOUSE), 0.8]] },
+    near: [[house(PLAINS_HOUSE), -14], [lampPost, -7], [plant("poppy"), -5], [villageWell, 2], [bellFrame, 7], [block("composter_side"), 10],
+      [block("hay_side", [".B", "BB"]), 11], [wheatFarm, 13]],
+    seed: 9,
   }),
   desert: () => ({
     hills: { top: blockTex("sand"), fill: blockTex("sand"), base: 2, rise: 4, landmarks: [[pyramid, 0.72]] },

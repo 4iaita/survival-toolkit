@@ -23,6 +23,7 @@ const hasArt = (...names) => names.every(n => art(n));
 // Biome colors from the game's color maps, for the gray textures it tints: foliage, grass and (swamp) water.
 const BIOME_TINTS = {
   plains: { foliage: "#77ab2f", grass: "#91bd59" },
+  village: { foliage: "#77ab2f", grass: "#91bd59" },
   desert: { foliage: "#aea42a", grass: "#bfb755" },
   savanna: { foliage: "#aea42a", grass: "#bfb755" },
   snowy: { foliage: "#60a17b", grass: "#80b497" },

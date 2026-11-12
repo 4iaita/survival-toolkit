@@ -107,7 +107,7 @@ const PACK_TAGS = {
   iron_golem: [
     { names: ["Dapper", "Agent"], what: "A secret agent: dark sunglasses and a black suit with gold buttons on its cuffs, a white shirt and a red tie." },
     { names: ["Frankenstein", "Frank"], what: "Frankenstein’s monster: a green face under flat black hair, an arrow stuck in its head, a ragged dark green coat over a purple shirt, dark trousers and green hands." },
-    { names: ["Claus"], what: "Santa Claus: a red suit and hat trimmed with white fur, a white beard, a black belt with a gold buckle, and a sack of presents and a candy cane on its back. Now and then it takes a present out of the sack and holds it out." },
+    { names: ["Claus"], what: "Santa Claus: a red suit and hat trimmed with white fur, a white beard, a black belt with a gold buckle, and a sack of presents and a candy cane on its back. Now and then it takes a present out of the sack and holds it out.", biome: "snowy" },
     { names: ["Snowy", "Frosty"], kind: SNOWY, rare: "iron golems in snowy biomes" },
   ],
   llama: [{ names: ["Baby", "Cria", "Kira"], kind: BABY }],
