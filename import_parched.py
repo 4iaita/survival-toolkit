@@ -28,12 +28,13 @@ ACTS = IDLES
 # sprite's pixels, on a bone of its own in the parched's right hand (its rightitem bone, which the pack binds the bow
 # to), on a copy of each look's skeleton, so the bow moves with the arm (and is twice as big on a baby, as the pack's
 # baby pose scales rightitem). The pack's own placement of the mesh is in the game's terms for attachables, which the
-# stage doesn't follow: the bow is stood upright in the fist (BOW_TURN: the sprite's diagonal turned to the vertical),
-# its grip (BOW_GRIP, the sprite's pixel) in the hand and its wood to the front, as the game's skeletons hold theirs.
+# stage doesn't follow: the bow is held as the game draws it on a parched (the wiki's renders of it, Java and Bedrock
+# alike): its grip (BOW_GRIP, the sprite's pixel) in the fist, the bow pointing forward from it, about level (BOW_TURN:
+# the sprite's diagonal turned from the fore-and-aft), its string on top and its wood underneath.
 BOW = "geometry.oreville_ans.ovshad"
 BOW_TEXTURE = "textures/oreville/ans/dhw"
 BOW_GRIP = (5, 8)
-BOW_TURN = 45
+BOW_TURN = -50
 BOW_KEY = f"{ia.PREFIX}parched_bow"
 BOW_HAND = (0, -2, 0)  # from the rightitem bone's pivot to the grip: the bottom of the fist
 SKELETONS = {"": "default", "baby": "irhbra", "baby executioner": "oxicyj", "halloween": "kvonsz"}
@@ -55,7 +56,7 @@ def bow_model(skeleton):
             if not sprite.getpixel((u, v))[3]:
                 continue
             # The sprite stands in the bow bone's y-z plane, a pixel thick across x, its grip at the bone's pivot.
-            z, y = grip[2] + (u - BOW_GRIP[0]) - 0.5, grip[1] + (BOW_GRIP[1] - v) - 0.5
+            z, y = grip[2] - (u - BOW_GRIP[0]) - 0.5, grip[1] + (v - BOW_GRIP[1]) - 0.5
             face = {"uv": [u, v], "uv_size": [1, 1]}
             cubes.append({"origin": [grip[0] - 0.5, y, z], "size": [1, 1, 1],
                           "uv": {f: dict(face) for f in ("north", "south", "east", "west", "up", "down")}})
