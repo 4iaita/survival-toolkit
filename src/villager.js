@@ -92,7 +92,7 @@ const FACES = [["right", "left"], ["top", "bottom"], ["front", "back"]];
 // A scene is boxes in game pixels: x right, y down with the ground at y = GROUND, z away from the camera
 // at rest. A box has lo and hi corners, maybe a bone (pivot, move, angles, maybe scale) turning it, or bones: a
 // chain of them, innermost first, as a model's bones nest; and color(axis, side, fx, fy, fz): its face's color at that
-// 0-1 spot in the box as 0xRRGGBB, or -1 where the face is see-through. side 0 is the box's low face on that axis.
+// 0-1 spot in the box as 0xRRGGBB (plus how much it glows, EMITS), or -1 where the face is see-through. side 0 is the box's low face on that axis.
 // A glowing box (glow) isn't shaded.
 const GROUND = 24, LID_TOP = 24 - 29, BLINK = 2.02;
 const dot = (p, q) => p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
@@ -116,6 +116,10 @@ function camera({ yaw, pitch = 0.2, scale, center, origin }) {
 
 // Ray-cast a scene into RGBA pixels. Each pixel takes the nearest face that isn't see-through there,
 // lit from the camera's upper left; where nothing is hit, shadows ([x, z, radius] on the ground) darken it.
+// A texel's color can also say how much of its own light it gives off, 0 to 255, in units of EMITS above its 0xRRGGBB
+// (a mob's emissive texels: glowing eyes): that much of it isn't shaded by the face it's on. A glowing box isn't shaded.
+const EMITS = 0x1000000;
+const shadeOf = (m, shade, color) => (m.glow ? 1 : shade + (1 - shade) * Math.floor(color / EMITS) / 255);
 function renderScene(boxes, { width, height, shadows = [], ...view }) {
   const { right, down, dir, scale, center, origin } = camera(view);
   const toWorld = ([a, b, c]) => [0, 1, 2].map(i => right[i] * a + down[i] * b + dir[i] * c);
@@ -185,15 +189,15 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
         const color = m.color(axis, side, frac(0, near), frac(1, near), frac(2, near));
         if (color >= 0) {
           bestT = near;
-          bestColor = color;
-          bestShade = m.glow ? 1 : m.shade[axis][side];
+          bestColor = color % EMITS;
+          bestShade = shadeOf(m, m.shade[axis][side], color);
         } else if (far < bestT) {
           // Through a see-through texel, the inside of the box's far face shows: the game draws both sides.
           const backSide = r[backAxis] > 0 ? 1 : 0, back = m.color(backAxis, backSide, frac(0, far), frac(1, far), frac(2, far));
           if (back >= 0) {
             bestT = far;
-            bestColor = back;
-            bestShade = m.glow ? 1 : m.shade[backAxis][backSide];
+            bestColor = back % EMITS;
+            bestShade = shadeOf(m, m.shade[backAxis][backSide], back);
           }
         }
       }

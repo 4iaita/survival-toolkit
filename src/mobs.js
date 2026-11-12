@@ -248,7 +248,9 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
             const lit = c => Math.min(255, Math.round(tex.px[k + c] * mul[c] + GLINT_COLOR[c] * shine));
             return lit(0) << 16 | lit(1) << 8 | lit(2);
           }
-          return Math.round(tex.px[k] * mul[0]) << 16 | Math.round(tex.px[k + 1] * mul[1]) << 8 | Math.round(tex.px[k + 2] * mul[2]);
+          // An emissive texel's own light (as much as it glows) isn't shaded by the face it's on (EMITS).
+          const rgb = Math.round(tex.px[k] * mul[0]) << 16 | Math.round(tex.px[k + 1] * mul[1]) << 8 | Math.round(tex.px[k + 2] * mul[2]);
+          return emissive ? rgb + Math.round(255 * (1 - alpha / 255)) * EMITS : rgb;
         },
       });
     }
