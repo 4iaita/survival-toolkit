@@ -24,6 +24,9 @@
  * So do the goat's jagged peaks: bare stone mountains, snow above the snow line, crags, ice and powder snow.
  * And the warm frog's mangrove swamp: mud and still water under mangroves standing on arching roots, propagules hanging
  * from their leaves.
+ * And the dark forest, the vex's (evokers summon it, and they live in its woodland mansions): dark oaks crowded close
+ * under a dark canopy, huge mushrooms between them, and a woodland mansion on the hills: dark oak walls and roofs on a
+ * cobblestone floor, dark oak log pillars and rows of windows.
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
  * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
@@ -196,6 +199,36 @@ const desertHouse = prop([
   "SSSHSSS",
   "SSSHSSS",
 ], { S: blockTex("smooth_sandstone"), X: blockTex("chiseled_sandstone"), O: blockTex("orange_terracotta"), H: DOORWAY });
+// A dark oak: a wide, flat canopy on a trunk two logs thick, as the game grows them.
+const darkOakTree = t => prop([
+  ".LLLLLL.",
+  "LLLLLLLL",
+  "LLLLLLLL",
+  ".LLTTLL.",
+  "...TT...",
+  "...TT...",
+], { L: leavesTex("leaves_dark_oak", t.foliage), T: blockTex("log_dark_oak") });
+// A woodland mansion: two floors of dark oak walls between dark oak log pillars, rows of windows, a birch plank band
+// between the floors, on a cobblestone ground floor with its door in the middle, under a stepped dark oak roof with a
+// tower roof rising from its middle.
+const woodlandMansion = prop([
+  "..........RRR..........",
+  ".........RRRRR.........",
+  "....RRRRRRRRRRRRRRR....",
+  "..RRRRRRRRRRRRRRRRRRR..",
+  "RRRRRRRRRRRRRRRRRRRRRRR",
+  "LPGPGPLPGPGPLPGPGPLPGPL",
+  "LPPPPPLPPPPPLPPPPPLPPPL",
+  "BBBBBBBBBBBBBBBBBBBBBBB",
+  "LPGPGPLPGPGPLPGPGPLPGPL",
+  "LPPPPPLPPPPPLPPPPPLPPPL",
+  "CCCCCCCCCCCCCCCCCCCCCCC",
+  "CGCGCGCCCCCDCCCCCGCGCGC",
+  "CCCCCCCCCCCdCCCCCCCCCCC",
+], {
+  R: blockTex("planks_dark_oak"), P: blockTex("planks_dark_oak"), L: blockTex("log_dark_oak"), G: blockTex("glass"),
+  B: blockTex("planks_birch"), C: blockTex("cobblestone"), D: blockTex("door_dark_oak_upper"), d: blockTex("door_dark_oak_lower"),
+});
 const pyramid = prop([
   "....S....",
   "...SOS...",
@@ -566,6 +599,16 @@ const BACKDROPS = {
   snowy: () => ({
     hills: { top: blockTex("snowy_grass_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[spruceTree(), 0.08], [spruceTree(), 0.3], [spruceTree(), 0.58], [spruceTree(), 0.9]] },
     near: [[igloo, -14], [spruceTree(), -7], [block("packed_ice", [".B", "BB"]), 2], [spruceTree(), 7], [spruceTree(), 12]],
+  }),
+  // The vex's dark forest: dark oaks thick on the hills round a woodland mansion; nearer, dark oaks and huge mushrooms
+  // either side, with grass, ferns and small mushrooms underneath.
+  dark_forest: t => ({
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3,
+      trees: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1].map(at => [darkOakTree(t), at]), landmarks: [[woodlandMansion, 0.5]] },
+    near: [[darkOakTree(t), -25], [darkOakTree(t), -16], [hugeRedMushroom(3), -10], [plant("short_grass", t.grass), -7], [plant("mushroom_brown"), -5],
+      [plant("fern", t.grass), -3], [plant("short_grass", t.grass), 3], [plant("mushroom_red"), 5], [hugeBrownMushroom(4), 7], [darkOakTree(t), 13],
+      [plant("short_grass", t.grass), 21], [darkOakTree(t), 23]],
+    seed: 45,
   }),
   forest: t => ({
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [

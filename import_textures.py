@@ -116,6 +116,9 @@ FILES = {
     "leaves_spruce": "blocks/leaves_spruce", "leaves_acacia": "blocks/leaves_acacia", "leaves_jungle": "blocks/leaves_jungle",
     "planks_spruce": "blocks/planks_spruce", "planks_acacia": "blocks/planks_acacia", "planks_dark_oak": "blocks/planks_big_oak",
     "cobblestone": "blocks/cobblestone", "mossy_cobblestone": "blocks/cobblestone_mossy",
+    # The dark forest backdrop: dark oaks and a woodland mansion.
+    "log_dark_oak": "blocks/log_big_oak", "leaves_dark_oak": "blocks/leaves_big_oak", "planks_birch": "blocks/planks_birch",
+    "door_dark_oak_upper": "blocks/door_dark_oak_upper", "door_dark_oak_lower": "blocks/door_dark_oak_lower",
     "door_oak_upper": "blocks/door_wood_upper", "door_oak_lower": "blocks/door_wood_lower",
     "door_spruce_upper": "blocks/door_spruce_upper", "door_spruce_lower": "blocks/door_spruce_lower",
     "door_acacia_upper": "blocks/door_acacia_upper", "door_acacia_lower": "blocks/door_acacia_lower",
