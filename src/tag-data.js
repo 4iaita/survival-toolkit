@@ -142,7 +142,7 @@ const PACK_TAGS = {
   ],
   ravager: [{ names: ["Krampus"], what: "A horned, chained beast for Krampus to ride." }],
   sheep: [{ names: ["Baby", "Lamb", "Wooly"], kind: BABY }, snowyIn("sheep")],
-  skeleton: [{ names: ["Snowy", "Frosty"], kind: SNOWY }],
+  skeleton: [{ names: ["Snowy", "Frosty"], kind: SNOWY, rare: "skeletons in snowy biomes" }],
   skeleton_horse: [{ names: ["Baby", "Foal", "Rattle"], kind: BABY }],
   slime: [
     { names: ["RGB", "Rainbow", "Disco", "jeb_"], more: ["Rgb"], moving: true, what: "A see-through slime that runs through the colors of the rainbow." },

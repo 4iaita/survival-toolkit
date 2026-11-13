@@ -64,18 +64,21 @@ def bow_model(skeleton):
     return {"description": {"texture_width": sprite.width, "texture_height": sprite.height}, "bones": [*chain, bow]}
 
 
-def add_bow():
-    """Each look's bow layer, last (a look written again by port() has none yet)."""
+def add_bow(mob="parched", skeletons=SKELETONS):
+    """Each look's bow layer, last (a look written again by port() has none yet), on a copy of its skeleton (skeletons:
+    first name -> the entity's geometry key for it). Other mobs holding a bow (the skeleton) draw it with the
+    parched's texture."""
     ents, _rcs, geos, *_ = im.read_pack()
-    d = ents["minecraft:parched"]
+    d = ents[f"minecraft:{mob}"]
     text = ia.MODELS_JS.read_text()
-    looks = ia.parse_section(text, "MOB_LOOKS")["parched"]
+    looks = ia.parse_section(text, "MOB_LOOKS")[mob]
+    prefix = f"{ia.PREFIX}{mob}_bow"
     for look in looks:
         name = (look["names"] or [""])[0]
-        key = "_".join(filter(None, [BOW_KEY, name.replace(" ", "_")]))
-        text = put(text, "MOB_MODELS", key, im.model(bow_model(geos[d["geometry"][SKELETONS[name]]])))
-        look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(BOW_KEY)] + [[key, [BOW_KEY], []]]
-    ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "parched", looks))
+        key = "_".join(filter(None, [prefix, name.replace(" ", "_")]))
+        text = put(text, "MOB_MODELS", key, im.model(bow_model(geos[d["geometry"][skeletons[name]]])))
+        look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(prefix)] + [[key, [BOW_KEY], []]]
+    ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", mob, looks))
     copy_texture(BOW_TEXTURE, BOW_KEY)
 
 

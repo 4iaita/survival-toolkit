@@ -231,12 +231,12 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Centipede"], what: "A Halloween costume." },
   ],
   skeleton: [
-    { names: ["Baby", "Skelly", "Boney"], kind: BABY },
-    { names: ["Halloween", "Scarecrow"], what: "A Halloween costume." },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Sulfur"], what: "The sulfur look." },
-    { names: ["Dappled"], what: "The dappled look." },
-    { names: ["Pale"], what: "The pale look." },
+    { names: ["Baby", "Skelly", "Boney"], kind: BABY, rare: "1 in 200 skeletons" },
+    { names: ["Halloween", "Scarecrow"], what: "A scarecrow: a wide-brimmed straw hat over a burlap sack face, a ragged green shirt with brown straps, and brown trousers." },
+    { names: ["Cherry"], what: "Pink cherry blossoms and green leaves twined round its ribs, one arm and one leg, and a blossom sprouting from the top of its skull.", biome: "cherry_grove", rare: "skeletons in cherry groves" },
+    { names: ["Sulfur"], what: "Crusted with yellow sulfur on its skull, ribs and one leg, the crust glowing faintly in the dark.", night: true, biome: "sulfur_caves", rare: "skeletons in sulfur caves" },
+    { names: ["Dappled"], what: "A crown of orange autumn leaves on its skull, dark red sprigs growing up from it, and more leaves on one shoulder.", biome: "dappled_forest", rare: "skeletons in dappled forests" },
+    { names: ["Pale"], what: "Pale moss on its gray-green arms and legs, dark ribs, a pale gray flower with an orange heart and bare dark twigs on top of its skull, and orange eyes that glow at night (the stage shows them lit).", night: true, biome: "pale_garden", rare: "skeletons in pale gardens" },
   ],
   slime: [
     { names: ["Baby", "Slimeling", "Bloblet"], kind: BABY },

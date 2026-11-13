@@ -148,6 +148,11 @@ WHAT = {
     ("spider", "dappled"): "Orange and red leaves on its back and head.",
     ("spider", "pale"): "Pale gray legs under a dark brown body, and orange eyes that glow.",
     ("spider", "halloween"): "A dark purple spider with magenta bands on its legs and a big bone-white skull, with pink eyes, for a back.",
+    ("skeleton", "halloween"): "A scarecrow: a wide-brimmed straw hat over a burlap sack face, a ragged green shirt with brown straps, and brown trousers.",
+    ("skeleton", "cherry"): "Pink cherry blossoms and green leaves twined round its ribs, one arm and one leg, and a blossom sprouting from the top of its skull.",
+    ("skeleton", "sulfur"): "Crusted with yellow sulfur on its skull, ribs and one leg, the crust glowing faintly in the dark.",
+    ("skeleton", "dappled"): "A crown of orange autumn leaves on its skull, dark red sprigs growing up from it, and more leaves on one shoulder.",
+    ("skeleton", "pale"): "Pale moss on its gray-green arms and legs, dark ribs, a pale gray flower with an orange heart and bare dark twigs on top of its skull, and orange eyes that glow at night (the stage shows them lit).",
     ("zombie", "baby frankenstein"): "Frankenstein’s monster as a baby: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Half of them, picked at random, have flat black hair and bolts in the sides of the head, the rest a stitched-up head with its pink brain showing.",
     ("zombie", "halloween"): "Frankenstein’s monster: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Its head is one of five, picked at random (and its arms and legs vary too): flat black hair, or a stitched-up skull with its pink brain showing, some with bolts in the sides.",
     ("zombie", "cherry"): "Pink cherry blossoms: a crown of them round its head and more on top, a garland across its chest and more on its arms, a strand of them trailing from one.",
@@ -183,6 +188,9 @@ RARE = {
     ("allay", "baby"): "1 in 20 allays",
     # And 1 in 200 parched and vexes.
     ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes",
+    ("skeleton", "baby"): "1 in 200 skeletons",
+    ("skeleton", "cherry"): "skeletons in cherry groves", ("skeleton", "sulfur"): "skeletons in sulfur caves",
+    ("skeleton", "dappled"): "skeletons in dappled forests", ("skeleton", "pale"): "skeletons in pale gardens",
     ("zombie", "cherry"): "zombies in cherry groves", ("zombie", "sulfur"): "zombies in sulfur caves",
     ("zombie", "dappled"): "zombies in dappled forests", ("zombie", "pale"): "zombies in pale gardens",
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
@@ -194,6 +202,7 @@ BIOME = {
     **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
     ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves", ("sniffer", "snowy"): "snowy",
     ("iron_golem", "cherry"): "cherry_grove", ("iron_golem", "dappled"): "dappled_forest",
+    ("skeleton", "cherry"): "cherry_grove", ("skeleton", "sulfur"): "sulfur_caves", ("skeleton", "dappled"): "dappled_forest", ("skeleton", "pale"): "pale_garden",
     ("zombie", "cherry"): "cherry_grove", ("zombie", "sulfur"): "sulfur_caves", ("zombie", "dappled"): "dappled_forest", ("zombie", "pale"): "pale_garden",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
@@ -206,7 +215,7 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween"), ("wandering_trader", "halloween"), ("camel_husk", "halloween"), ("camel_husk", "executioner calf"), ("husk", "halloween"), ("husk", "baby executioner"), ("parched", "halloween"), ("parched", "baby executioner"), ("parched", "baby"),
          ("nautilus", "sea monster nautiling"), ("nautilus", "halloween"),
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
-         ("zombie", "sulfur"), ("zombie", "pale")}
+         ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
