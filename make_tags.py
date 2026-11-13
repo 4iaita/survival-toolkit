@@ -153,6 +153,7 @@ WHAT = {
     ("skeleton", "sulfur"): "Crusted with yellow sulfur on its skull, ribs and one leg, the crust glowing faintly in the dark.",
     ("skeleton", "dappled"): "A crown of orange autumn leaves on its skull, dark red sprigs growing up from it, and more leaves on one shoulder.",
     ("skeleton", "pale"): "Pale moss on its gray-green arms and legs, dark ribs, a pale gray flower with an orange heart and bare dark twigs on top of its skull, and orange eyes that glow at night (the stage shows them lit).",
+    ("stray", "halloween"): "The Grim Reaper: a dark navy hooded robe frosted pale blue at the hems, bony ribs showing in the shadow of its hood, a scythe across its back and a soul lantern at its side whose blue flame glows in the dark.",
     ("zombie", "baby frankenstein"): "Frankenstein’s monster as a baby: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Half of them, picked at random, have flat black hair and bolts in the sides of the head, the rest a stitched-up head with its pink brain showing.",
     ("zombie", "halloween"): "Frankenstein’s monster: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Its head is one of five, picked at random (and its arms and legs vary too): flat black hair, or a stitched-up skull with its pink brain showing, some with bolts in the sides.",
     ("zombie", "cherry"): "Pink cherry blossoms: a crown of them round its head and more on top, a garland across its chest and more on its arms, a strand of them trailing from one.",
@@ -188,7 +189,7 @@ RARE = {
     ("allay", "baby"): "1 in 20 allays",
     # And 1 in 200 parched and vexes.
     ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes",
-    ("skeleton", "baby"): "1 in 200 skeletons",
+    ("skeleton", "baby"): "1 in 200 skeletons", ("stray", "baby"): "1 in 200 strays",
     ("skeleton", "cherry"): "skeletons in cherry groves", ("skeleton", "sulfur"): "skeletons in sulfur caves",
     ("skeleton", "dappled"): "skeletons in dappled forests", ("skeleton", "pale"): "skeletons in pale gardens",
     ("zombie", "cherry"): "zombies in cherry groves", ("zombie", "sulfur"): "zombies in sulfur caves",
@@ -215,7 +216,8 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween"), ("wandering_trader", "halloween"), ("camel_husk", "halloween"), ("camel_husk", "executioner calf"), ("husk", "halloween"), ("husk", "baby executioner"), ("parched", "halloween"), ("parched", "baby executioner"), ("parched", "baby"),
          ("nautilus", "sea monster nautiling"), ("nautilus", "halloween"),
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
-         ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale")}
+         ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale"),
+         ("stray", "baby"), ("stray", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

@@ -258,8 +258,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Skull"], what: "A dark purple spider with magenta bands on its legs and a big bone-white skull, with pink eyes, for a back." },
   ],
   stray: [
-    { names: ["Baby", "Strayling", "Frostling"], kind: BABY },
-    { names: ["Halloween", "Grim Reaper", "Reaper"], more: ["grim Reaper", "Grim reaper"], what: "A Halloween costume." },
+    { names: ["Baby", "Strayling", "Frostling"], night: true, kind: BABY, rare: "1 in 200 strays" },
+    { names: ["Halloween", "Grim Reaper", "Reaper"], more: ["grim Reaper", "Grim reaper"], what: "The Grim Reaper: a dark navy hooded robe frosted pale blue at the hems, bony ribs showing in the shadow of its hood, a scythe across its back and a soul lantern at its side whose blue flame glows in the dark.", night: true },
   ],
   strider: [
     { names: ["Demon Stridling", "Baby Demon"], more: ["demon Stridling", "Demon stridling", "baby Demon", "Baby demon"], what: "The Demon Stridling look." },
