@@ -72,6 +72,7 @@ const NO_ARMOR = { on: false, type: "", dye: "", crack: "", glint: false };
 let mobArmor = NO_ARMOR;
 const moodsOf = k => (MOB_MOODS[k] ? ["calm", ...Object.keys(MOB_MOODS[k])] : []);
 const moodInfo = () => (mobMood !== "calm" && MOB_MOODS[mobTab.mob] && MOB_MOODS[mobTab.mob][mobMood]) || null;
+const moodStage = () => (MOOD_STAGE[mobTab.mob] && MOOD_STAGE[mobTab.mob][mobMood]) || {};
 const collarTint = { color: hex(DYES[DEFAULT_COLLAR]) };
 // The look the stage shows: a name's, else the baby look for a baby, else the plain one.
 const shownLook = () => {
@@ -115,7 +116,7 @@ function showOnStage() {
   const armor = armored ? { kind: m.k, type: mobArmor.type, dye: armorDye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   const marks = marksInfo(), armorName = armored && MOB_ARMOR[m.k].kinds ? `${ARMOR_NAMES[m.k][mobArmor.type].toLowerCase()} ` : "";
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { plays: MOB_WOOL[m.k] && mobShorn && !babyShown(m.k, look) ? MOB_WOOL[m.k].shornPlays || null : null, flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: t && t.moving ? mobClock : null, night: false, glowing: m.glowing || night, stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k) }).then(ok => {
+  mobView.show(m.k, look, { plays: MOB_WOOL[m.k] && mobShorn && !babyShown(m.k, look) ? MOB_WOOL[m.k].shornPlays || null : null, flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: (t && t.moving) || moodStage().moving ? mobClock : null, night: false, glowing: m.glowing || night || Boolean(moodStage().glowing), stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k) }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
   $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_TINTS[m.k] ? ` (${MOB_TINTS[m.k].map((r, i) => `${r.n.toLowerCase()} ${tintsOf(m.k)[i]}`).join(", ")})` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${armorDye ? `${armorDye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${carpetWorn(m.k, look) ? `, wearing ${article(mobCarpet)} ${mobCarpet} carpet` : ""}. Drag or use the arrow keys to turn it.`);
@@ -562,11 +563,11 @@ $("tag-results").addEventListener("click", e => {
 $("tag-search").addEventListener("input", e => { mobTab.query = e.target.value; renderTagSearch(); saveMobTab(); });
 $("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderMobs(); });
 
-// The jeb_ sheep's wool fades through the dye colors and scrolling textures run while they're on the stage, unless
+// The jeb_ sheep's wool fades through the dye colors and scrolling textures (a name's or a mood's) run while they're on the stage, unless
 // the reader asks for less motion.
 setInterval(() => {
   const t = currentTag(), rainbow = t && t.rainbow;
-  if (!t || (!rainbow && !t.moving) || calmMotion() || document.hidden || $("view-mobs").hidden) return;
+  if ((!rainbow && !(t && t.moving) && !moodStage().moving) || calmMotion() || document.hidden || $("view-mobs").hidden) return;
   if (rainbow) {
     jebStep = (jebStep + 1) % (JEB_COLORS.length * 6);
     const i = Math.floor(jebStep / 6), f = (jebStep % 6) / 6;

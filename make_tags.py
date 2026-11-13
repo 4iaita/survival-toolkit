@@ -105,6 +105,12 @@ WHAT = {
     ("camel_husk", "halloween"): "An executioner’s beast: a shaggy red-brown hide, an iron collar round its neck and iron cuffs on its legs, a gray band over its back, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
     ("camel_husk", "executioner calf"): "A baby executioner’s beast: a shaggy red-brown hide, an iron collar and iron cuffs on its legs, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
     ("bogged", "halloween"): "A scarecrow: a carved pumpkin for a head, its eyes glowing in the dark over a jagged grin, under a floppy wide-brimmed green hat with a brown band and a sprig sticking out of its crown, a ragged green collar round its neck and more rags about its hips, and arms and legs of brown branches with twigs sprouting from them. It has no mushrooms to shear.",
+    ("creeper", "cherry"): "A crown of pink cherry blossoms round the top of its head, more blossoms on its sides and back, and one on its chest.",
+    ("creeper", "blossom"): "Pink all over, covered in cherry blossoms, with a few green patches showing through.",
+    ("creeper", "sulfur"): "Its head crusted with pale yellow sulfur, a lumpy crust on top that glows faintly in the dark.",
+    ("creeper", "dappled"): "Orange, red and yellow autumn leaves on its head and feet, and shelf fungus growing from its body.",
+    ("creeper", "poplar"): "Covered all over in orange, red and yellow autumn leaves.",
+    ("creeper", "pale"): "Faded to a washed-out gray-green, paler down its front, its feet dark gray and mottled.",
     ("drowned", "halloween"): "The Gillman, the creature from the lagoon: green scales all over, a crest of yellow-green fins on its head and more at its cheeks like gills, a tan face with glowing orange eyes under a heavy brow and a wide-open mouth, red inside with white teeth, a tan belly, fins down its arms and legs, and clawed feet.",
     ("drowned", "baby gillman"): "The Gillman as a baby: a big green-scaled head with a crest of yellow-green fins and more at its cheeks, glowing orange eyes over a wide-open, toothy red mouth, a tan belly and fins down its arms and legs.",
     ("husk", "halloween"): "An executioner: a red-brown hood over its head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes, iron cuffs on its wrists and an iron shackle on one ankle. It goes with the camel husk’s Executioner look, the beast it rides.",
@@ -198,6 +204,15 @@ RARE = {
     ("zombie", "cherry"): "zombies in cherry groves", ("zombie", "sulfur"): "zombies in sulfur caves",
     ("zombie", "dappled"): "zombies in dappled forests", ("zombie", "pale"): "zombies in pale gardens",
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
+    # And 1 in 200 creepers; and in cherry groves and dappled forests, 1 in 100 creepers get the Blossom or Poplar look
+    # in place of the Cherry or Dappled one.
+    ("creeper", "baby"): "1 in 200 creepers",
+    ("creeper", "cherry"): "99 in 100 creepers in cherry groves",
+    ("creeper", "blossom"): "1 in 100 creepers in cherry groves",
+    ("creeper", "sulfur"): "creepers in sulfur caves",
+    ("creeper", "dappled"): "99 in 100 creepers in dappled forests",
+    ("creeper", "poplar"): "1 in 100 creepers in dappled forests",
+    ("creeper", "pale"): "creepers in pale gardens",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
@@ -208,6 +223,7 @@ BIOME = {
     ("iron_golem", "cherry"): "cherry_grove", ("iron_golem", "dappled"): "dappled_forest",
     ("skeleton", "cherry"): "cherry_grove", ("skeleton", "sulfur"): "sulfur_caves", ("skeleton", "dappled"): "dappled_forest", ("skeleton", "pale"): "pale_garden",
     ("zombie", "cherry"): "cherry_grove", ("zombie", "sulfur"): "sulfur_caves", ("zombie", "dappled"): "dappled_forest", ("zombie", "pale"): "pale_garden",
+    ("creeper", "cherry"): "cherry_grove", ("creeper", "blossom"): "cherry_grove", ("creeper", "sulfur"): "sulfur_caves", ("creeper", "dappled"): "dappled_forest", ("creeper", "poplar"): "dappled_forest", ("creeper", "pale"): "pale_garden",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
 # name).
@@ -221,7 +237,7 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
          ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale"),
          ("stray", "baby"), ("stray", "halloween"), ("drowned", "halloween"), ("drowned", "baby gillman"),
-         ("bogged", "baby"), ("bogged", "halloween")}
+         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

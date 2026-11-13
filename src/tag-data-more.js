@@ -86,12 +86,12 @@ const PACK_TAGS_MORE = {
     { names: ["Dappled"], what: "The dappled look." },
   ],
   creeper: [
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Blossom"], what: "The blossom look." },
-    { names: ["Sulfur"], what: "The sulfur look." },
-    { names: ["Dappled"], what: "The dappled look." },
-    { names: ["Poplar"], what: "The poplar look." },
-    { names: ["Pale"], what: "The pale look." },
+    { names: ["Cherry"], what: "A crown of pink cherry blossoms round the top of its head, more blossoms on its sides and back, and one on its chest.", biome: "cherry_grove", rare: "99 in 100 creepers in cherry groves" },
+    { names: ["Blossom"], what: "Pink all over, covered in cherry blossoms, with a few green patches showing through.", biome: "cherry_grove", rare: "1 in 100 creepers in cherry groves" },
+    { names: ["Sulfur"], what: "Its head crusted with pale yellow sulfur, a lumpy crust on top that glows faintly in the dark.", night: true, biome: "sulfur_caves", rare: "creepers in sulfur caves" },
+    { names: ["Dappled"], what: "Orange, red and yellow autumn leaves on its head and feet, and shelf fungus growing from its body.", biome: "dappled_forest", rare: "99 in 100 creepers in dappled forests" },
+    { names: ["Poplar"], what: "Covered all over in orange, red and yellow autumn leaves.", biome: "dappled_forest", rare: "1 in 100 creepers in dappled forests" },
+    { names: ["Pale"], what: "Faded to a washed-out gray-green, paler down its front, its feet dark gray and mottled.", biome: "pale_garden", rare: "creepers in pale gardens" },
   ],
   drowned: [
     { names: ["Baby Gillman", "Baby Gill Man"], more: ["baby Gillman", "Baby gillman", "baby gill Man", "baby Gill man", "baby Gill Man", "Baby gill man", "Baby gill Man", "Baby Gill man"], what: "The Gillman as a baby: a big green-scaled head with a crest of yellow-green fins and more at its cheeks, glowing orange eyes over a wide-open, toothy red mouth, a tan belly and fins down its arms and legs.", night: true },

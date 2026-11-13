@@ -65,10 +65,10 @@ const PACK_TAGS = {
     { names: ["Spruce", "Twinkle"], what: "A spruce Christmas tree." },
   ],
   creeper: [
-    { names: ["Baby", "Creeperling", "Boomlet"], kind: BABY },
-    { names: ["Skeleton"], what: "A skeleton creeper, all bones." },
-    { names: ["Pig"], what: "A pink creeper with a pig’s face." },
-    { names: ["Snowy", "Frosty"], kind: SNOWY },
+    { names: ["Baby", "Creeperling", "Boomlet"], kind: BABY, rare: "1 in 200 creepers" },
+    { names: ["Skeleton"], what: "A skeleton creeper: a bony gray skull with the creeper’s face, a spine and ribs with sticks of TNT tucked inside them, and bony feet." },
+    { names: ["Pig"], what: "A pink creeper with a pig’s face: a snout, small eyes and floppy ears, and its feet pink trotters." },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, rare: "creepers in snowy biomes" },
   ],
   dolphin: [
     { names: ["Baby", "Calf", "Flippy"], kind: BABY },

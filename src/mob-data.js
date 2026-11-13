@@ -15,6 +15,8 @@ const ELDER_ZOOM = 0.75, GUARDIAN_ZOOM = 0.6;
 const PANDA_ROOM = 0.72;
 // A polar bear rears up on its hind legs now and then (MOB_ACTS), twice as tall as it stands: room for its head.
 const BEAR_ROOM = 0.65;
+// A charged creeper leaps up with its legs splayed now and then (MOB_MOODS' jolt): room for it.
+const CREEPER_ROOM = 0.85;
 // The nautiluses' models are made facing the other way from the rest.
 const TURNED_ROUND = { root: { r: [0, 180, 0] } };
 // A nautilus is about as tall as it's long, so fitted to the water it would fill it up to its name tag: drawn smaller.
@@ -37,11 +39,16 @@ const START_SIZES = { salmon: "medium" };
 const START_MOODS = { pufferfish: "half" };
 const MOOD_NAMES = { calm: "Calm", pet: "Pet", angry: "Angry", half: "Half Puffed", puffed: "Puffed Up",
   slightly_cracked: "Slightly Cracked", cracked: "Cracked", badly_cracked: "Badly Cracked",
-  statue_standing: "Standing Statue", statue_running: "Running Statue", statue_sitting: "Sitting Statue", statue_star: "Star Statue" };
+  statue_standing: "Standing Statue", statue_running: "Running Statue", statue_sitting: "Sitting Statue", statue_star: "Star Statue",
+  charged: "Charged" };
 // A mob whose moods aren't moods: what its row is called, and what its first (calm) one is. The iron golem's are its
 // cracks, as the game draws them when it's lost a quarter, half and three quarters of its health; the copper golem's,
-// the statue it can turn into once it's oxidized, in one of four poses.
-const MOOD_ROWS = { iron_golem: { label: "Cracks", calm: "Not Cracked" }, copper_golem: { label: "Statue", calm: "Alive" } };
+// the statue it can turn into once it's oxidized, in one of four poses; the creeper's, whether lightning has charged it.
+const MOOD_ROWS = { iron_golem: { label: "Cracks", calm: "Not Cracked" }, copper_golem: { label: "Statue", calm: "Alive" },
+  creeper: { label: "Lightning", calm: "Not Charged" } };
+// Moods whose layers run or shine: moving, a texture that scrolls (as a name's moving does); glowing, glowing layers shown
+// by day too (as a mob's glowing does). The charged creeper's lightning aura runs over it, as bright by day as at night.
+const MOOD_STAGE = { creeper: { charged: { moving: true, glowing: true } } };
 const moodName = (mob, k) => (k === "calm" && MOOD_ROWS[mob] ? MOOD_ROWS[mob].calm : MOOD_NAMES[k]);
 // What a pet's collar comes in, as the dyes are called in DYES; red is what the game starts it with.
 const COLLAR_COLORS = ["red", "orange", "yellow", "lime", "green", "cyan", "light blue", "blue", "purple", "magenta", "pink", "white", "light gray", "gray", "black", "brown"];
@@ -332,7 +339,7 @@ const MOBS = [
   { k: "snow_golem", n: "Snow Golem", g: "Village", biome: "snowy" }, { k: "villager", n: "Villager", g: "Village", biome: "village" },
   { k: "wandering_trader", n: "Wandering Trader", g: "Village" },
   { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "cave" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert" },
-  { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave" },
+  { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
   { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
   { k: "evoker", n: "Evoker", g: "Monsters" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
   { k: "husk", n: "Husk", g: "Monsters", biome: "desert" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", stand: { body: { p: [0, 22, 0] } } },
