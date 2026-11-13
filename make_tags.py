@@ -104,6 +104,8 @@ WHAT = {
     ("wandering_trader", "halloween"): "A fortune teller: a purple robe with orange trim and a fringed hem, a red scarf hanging down its back, green boots, and an orange headband with a feather and a gold charm on it, the charm’s green eye and its own eyes glowing in the dark.",
     ("camel_husk", "halloween"): "An executioner’s beast: a shaggy red-brown hide, an iron collar round its neck and iron cuffs on its legs, a gray band over its back, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
     ("camel_husk", "executioner calf"): "A baby executioner’s beast: a shaggy red-brown hide, an iron collar and iron cuffs on its legs, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
+    ("drowned", "halloween"): "The Gillman, the creature from the lagoon: green scales all over, a crest of yellow-green fins on its head and more at its cheeks like gills, a tan face with glowing orange eyes under a heavy brow and a wide-open mouth, red inside with white teeth, a tan belly, fins down its arms and legs, and clawed feet.",
+    ("drowned", "baby gillman"): "The Gillman as a baby: a big green-scaled head with a crest of yellow-green fins and more at its cheeks, glowing orange eyes over a wide-open, toothy red mouth, a tan belly and fins down its arms and legs.",
     ("husk", "halloween"): "An executioner: a red-brown hood over its head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes, iron cuffs on its wrists and an iron shackle on one ankle. It goes with the camel husk’s Executioner look, the beast it rides.",
     ("husk", "baby executioner"): "A baby executioner: a red-brown hood over its big head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes and an iron shackle on one ankle.",
     ("parched", "halloween"): "An executioner: a red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, a ragged red-brown robe and a ragged belt over its bones, and iron cuffs on its wrists and ankles. It goes with the camel husk’s Executioner look, the beast it rides.",
@@ -217,7 +219,7 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("nautilus", "sea monster nautiling"), ("nautilus", "halloween"),
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
          ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale"),
-         ("stray", "baby"), ("stray", "halloween")}
+         ("stray", "baby"), ("stray", "halloween"), ("drowned", "halloween"), ("drowned", "baby gillman")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

@@ -75,7 +75,7 @@ const PACK_TAGS = {
     { names: ["Bubblegum"], what: "A pink dolphin: rosy pink all over, its flippers paler.", rare: "1 in 100 dolphins" },
   ],
   donkey: [{ names: ["Baby", "Foal"], kind: BABY }],
-  drowned: [{ names: ["Baby", "Splashy"], kind: BABY }, { names: ["Snowy", "Frosty"], kind: SNOWY }],
+  drowned: [{ names: ["Baby", "Splashy"], kind: BABY }, { names: ["Snowy", "Frosty"], kind: SNOWY, rare: "drowned in snowy biomes" }],
   enderman: [
     { names: ["Baby", "Enderchild", "Endie"], kind: BABY, rare: "1 in 200 endermen" },
     { names: ["Green", "Beanie"], what: "Green eyes instead of purple.", rare: "1 in 200 endermen" },

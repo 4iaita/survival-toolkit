@@ -94,8 +94,8 @@ const PACK_TAGS_MORE = {
     { names: ["Pale"], what: "The pale look." },
   ],
   drowned: [
-    { names: ["Baby Gillman", "Baby Gill Man"], more: ["baby Gillman", "Baby gillman", "baby gill Man", "baby Gill man", "baby Gill Man", "Baby gill man", "Baby gill Man", "Baby Gill man"], what: "A baby Gillman." },
-    { names: ["Halloween", "Gillman", "Gill Man"], more: ["gill Man", "Gill man"], what: "A Halloween costume." },
+    { names: ["Baby Gillman", "Baby Gill Man"], more: ["baby Gillman", "Baby gillman", "baby gill Man", "baby Gill man", "baby Gill Man", "Baby gill man", "Baby gill Man", "Baby Gill man"], what: "The Gillman as a baby: a big green-scaled head with a crest of yellow-green fins and more at its cheeks, glowing orange eyes over a wide-open, toothy red mouth, a tan belly and fins down its arms and legs.", night: true },
+    { names: ["Halloween", "Gillman", "Gill Man"], more: ["gill Man", "Gill man"], what: "The Gillman, the creature from the lagoon: green scales all over, a crest of yellow-green fins on its head and more at its cheeks like gills, a tan face with glowing orange eyes under a heavy brow and a wide-open mouth, red inside with white teeth, a tan belly, fins down its arms and legs, and clawed feet.", night: true },
   ],
   elder_guardian: [
     { names: ["Baby", "Fry", "Beamy"], kind: BABY },
