@@ -379,12 +379,12 @@ const PACK_TAGS_MORE = {
     { names: ["Hellhound", "Hell Hound", "Halloween"], more: ["hell Hound", "Hell hound"], what: "A hellhound: a hulking demon hound with spiky ears and fangs, ragged spines down its back and tail and eyes that glow in the dark. Its colors follow the wolf’s variant: crimson on a pale wolf, gray on an ashen one, black, purple on a chestnut one, red on a rusty one, icy cyan on a snowy one, mossy green on a spotted one, bone white on a striped one and brown on a woods one, its eyes glowing orange, red, purple, cyan or lime green to match. Named Halloween, it’s this or a skeleton wolf (1 in 10), picked at random.", night: true },
   ],
   zombie: [
-    { names: ["Baby Frankenstein"], more: ["baby Frankenstein", "Baby frankenstein"], what: "A baby Frankenstein." },
-    { names: ["Halloween", "Frankenstein"], what: "A Halloween costume." },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Sulfur"], what: "The sulfur look." },
-    { names: ["Dappled"], what: "The dappled look." },
-    { names: ["Pale"], what: "The pale look." },
+    { names: ["Baby Frankenstein"], more: ["baby Frankenstein", "Baby frankenstein"], what: "Frankenstein’s monster as a baby: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Half of them, picked at random, have flat black hair and bolts in the sides of the head, the rest a stitched-up head with its pink brain showing." },
+    { names: ["Halloween", "Frankenstein"], what: "Frankenstein’s monster: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Its head is one of five, picked at random (and its arms and legs vary too): flat black hair, or a stitched-up skull with its pink brain showing, some with bolts in the sides." },
+    { names: ["Cherry"], what: "Pink cherry blossoms: a crown of them round its head and more on top, a garland across its chest and more on its arms, a strand of them trailing from one.", biome: "cherry_grove", rare: "zombies in cherry groves" },
+    { names: ["Sulfur"], what: "Crusted with yellow sulfur on its head, shoulders, shirt and one foot, the crust glowing faintly in the dark.", night: true, biome: "sulfur_caves", rare: "zombies in sulfur caves" },
+    { names: ["Dappled"], what: "Orange, red and yellow autumn leaves on its head and shoulders, and a shelf fungus growing from a mossy patch on one leg. About 3 in 10 have a bare twig sticking out of the head, and 1 in 200 wear a carved pumpkin with a jack-o’-lantern face.", biome: "dappled_forest", rare: "zombies in dappled forests" },
+    { names: ["Pale"], what: "Faded: a dark, mossy gray-green head with glowing orange eyes, a washed-out teal shirt and ragged gray trousers.", night: true, biome: "pale_garden", rare: "zombies in pale gardens" },
   ],
   zombie_nautilus: [
     { names: ["Sea Monster Nautiling", "Baby Sea Monster"], more: ["sea monster Nautiling", "sea Monster nautiling", "sea Monster Nautiling", "Sea monster nautiling", "Sea monster Nautiling", "Sea Monster nautiling", "baby sea Monster", "baby Sea monster", "baby Sea Monster", "Baby sea monster", "Baby sea Monster", "Baby Sea monster"], what: "A baby zombie sea monster: a dark teal shell striped with green and hooked with spines, a black face with two glowing lime green eyes, and tentacles curled at the tips.", night: true },

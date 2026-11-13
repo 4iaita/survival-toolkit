@@ -190,10 +190,10 @@ const PACK_TAGS = {
   zoglin: [{ names: ["Baby", "Zoglet", "Zoggin"], kind: BABY }],
   zombie: [
     { names: ["Baby", "Rotty"], kind: BABY },
-    { names: ["Brian", "Glare"], what: "Eyes that glow in the dark.", rare: "1 in 200 zombies" },
-    { names: ["Zanta"], what: "A zombie Santa.", rare: "1 in 200 zombies in snowy biomes" },
-    { names: ["Snowman"], what: "A snowman’s head with a top hat.", rare: "1 in 200 zombies in snowy biomes" },
-    { names: ["Snowy", "Frosty"], kind: SNOWY },
+    { names: ["Brian", "Glare"], what: "Eyes that glow white in the dark, with a soft glow round them.", rare: "1 in 200 zombies", night: true },
+    { names: ["Zanta", "Festive"], what: "A zombie Santa: a red hat trimmed with white fur, a white beard, a red coat with a gold belt buckle, torn at the hem, and red trousers over one black boot and one bare green foot. Named Festive, it’s this or the Snowman, picked at random.", rare: "1 in 200 zombies in snowy biomes", biome: "snowy" },
+    { names: ["Snowman"], what: "A snowman’s head, with coal eyes and a carrot nose, and a black top hat with a red band (on half of those named Snowman; the ones that spawn as snowmen have none), over snow and icicles on its shoulders and arms and frost on its feet.", rare: "1 in 200 zombies in snowy biomes", biome: "snowy" },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, rare: "zombies in snowy biomes" },
   ],
   zombie_horse: [{ names: ["Baby", "Foal", "Rumble"], kind: BABY }],
   zombie_nautilus: [

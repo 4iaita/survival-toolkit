@@ -148,6 +148,12 @@ WHAT = {
     ("spider", "dappled"): "Orange and red leaves on its back and head.",
     ("spider", "pale"): "Pale gray legs under a dark brown body, and orange eyes that glow.",
     ("spider", "halloween"): "A dark purple spider with magenta bands on its legs and a big bone-white skull, with pink eyes, for a back.",
+    ("zombie", "baby frankenstein"): "Frankenstein’s monster as a baby: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Half of them, picked at random, have flat black hair and bolts in the sides of the head, the rest a stitched-up head with its pink brain showing.",
+    ("zombie", "halloween"): "Frankenstein’s monster: green, in a purple coat over a pale ragged shirt, dark ragged trousers and brown boots. Its head is one of five, picked at random (and its arms and legs vary too): flat black hair, or a stitched-up skull with its pink brain showing, some with bolts in the sides.",
+    ("zombie", "cherry"): "Pink cherry blossoms: a crown of them round its head and more on top, a garland across its chest and more on its arms, a strand of them trailing from one.",
+    ("zombie", "sulfur"): "Crusted with yellow sulfur on its head, shoulders, shirt and one foot, the crust glowing faintly in the dark.",
+    ("zombie", "dappled"): "Orange, red and yellow autumn leaves on its head and shoulders, and a shelf fungus growing from a mossy patch on one leg. About 3 in 10 have a bare twig sticking out of the head, and 1 in 200 wear a carved pumpkin with a jack-o’-lantern face.",
+    ("zombie", "pale"): "Faded: a dark, mossy gray-green head with glowing orange eyes, a washed-out teal shirt and ragged gray trousers.",
 }
 # Looks that only show in one climate (the pack checks the mob's climate too): (mob, the lower-case name) -> that
 # climate, which the stage switches to, and what the row says it needs.
@@ -177,6 +183,8 @@ RARE = {
     ("allay", "baby"): "1 in 20 allays",
     # And 1 in 200 parched and vexes.
     ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes",
+    ("zombie", "cherry"): "zombies in cherry groves", ("zombie", "sulfur"): "zombies in sulfur caves",
+    ("zombie", "dappled"): "zombies in dappled forests", ("zombie", "pale"): "zombies in pale gardens",
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
@@ -186,6 +194,7 @@ BIOME = {
     **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
     ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves", ("sniffer", "snowy"): "snowy",
     ("iron_golem", "cherry"): "cherry_grove", ("iron_golem", "dappled"): "dappled_forest",
+    ("zombie", "cherry"): "cherry_grove", ("zombie", "sulfur"): "sulfur_caves", ("zombie", "dappled"): "dappled_forest", ("zombie", "pale"): "pale_garden",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
 # name).
@@ -196,7 +205,8 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("wolf", "hellhound pup"), ("wolf", "hellhound"),
          ("horse", "wendigo foal"), ("horse", "halloween"), ("trader_llama", "halloween"), ("wandering_trader", "halloween"), ("camel_husk", "halloween"), ("camel_husk", "executioner calf"), ("husk", "halloween"), ("husk", "baby executioner"), ("parched", "halloween"), ("parched", "baby executioner"), ("parched", "baby"),
          ("nautilus", "sea monster nautiling"), ("nautilus", "halloween"),
-         ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween")}
+         ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
+         ("zombie", "sulfur"), ("zombie", "pale")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
