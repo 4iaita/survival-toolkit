@@ -29,8 +29,8 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Spark", "Sizzle"], kind: BABY },
   ],
   bogged: [
-    { names: ["Baby", "Boglet", "Murklet"], kind: BABY },
-    { names: ["Halloween", "Scarecrow"], what: "A Halloween costume." },
+    { names: ["Baby", "Boglet", "Murklet"], night: true, kind: BABY, rare: "1 in 200 bogged" },
+    { names: ["Halloween", "Scarecrow"], what: "A scarecrow: a carved pumpkin for a head, its eyes glowing in the dark over a jagged grin, under a floppy wide-brimmed green hat with a brown band and a sprig sticking out of its crown, a ragged green collar round its neck and more rags about its hips, and arms and legs of brown branches with twigs sprouting from them. It has no mushrooms to shear.", night: true },
   ],
   breeze: [
     { names: ["Baby", "Breezeling", "Gusty"], kind: BABY },

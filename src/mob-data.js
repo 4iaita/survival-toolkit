@@ -297,6 +297,9 @@ ARMOR_NAMES.zombie_horse = ARMOR_NAMES.horse;
 const MOB_WOOL = {
   // The snow golem's pumpkin: shearing takes it off (the pack hides it for q.is_sheared), and then it has no pumpkin to
   // lift now and then. (The pack's baby has no pumpkin at all.)
+  // The bogged's mushrooms, a red and a brown on its head: shearing takes them off (the pack hides them for q.is_sheared,
+  // and while it wears something on its head).
+  bogged: { shorn: [["emk9jgge*", false]] },
   snow_golem: { shorn: [["hmehcaf", false]], shornPlays: "sheared" },
   sheep: {
     natural: { white: "81.8% of sheep", black: "5% of sheep", gray: "5% of sheep", "light gray": "5% of sheep", brown: "3% of sheep", pink: "0.16% of sheep" },
