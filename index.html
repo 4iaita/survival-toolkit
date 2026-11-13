@@ -6072,8 +6072,11 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
     // The dye goes on a whole masked layer, or on the bones that take one of their own (a wolf's collar).
     const dye = flags.mask || (flags.dyeBones || []).some(pattern => boneMatches(name, pattern)) ? tint : null;
     for (const [x, y, z, w, h, d, uv, extra = {}] of cubes) {
-      const g = (extra.inflate || 0) * size, top = toScene([x, y + h, z]);
-      const lo = top.map(v => v - g), hi = [top[0] + w * size + g, top[1] + h * size + g, top[2] + d * size + g];
+      // A cube's size can be negative (it reaches back from its origin): inflating it still grows it (shrinks it, for a
+      // negative inflate) on every side, so on such an axis the inflate goes the other way (the Sulfur creeper's
+      // crystals, shrunk inside its head).
+      const g = (extra.inflate || 0) * size, top = toScene([x, y + h, z]), gs = [w, h, d].map(v => (v < 0 ? -g : g));
+      const lo = top.map((v, k) => v - gs[k]), hi = [top[0] + w * size + gs[0], top[1] + h * size + gs[1], top[2] + d * size + gs[2]];
       const own = extra.rotation ? [{ pivot: toScene(extra.pivot), angles: angles(extra.rotation) }] : [];
       const mirror = extra.mirror && Array.isArray(uv), dims = [w, h, d];
       if (sprite) {
