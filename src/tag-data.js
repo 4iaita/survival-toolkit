@@ -11,8 +11,8 @@ const GAME_TAGS = [
     what: "Its wool fades through all 16 dye colors, over and over. Shearing it still gives wool of its real color." },
   { names: ["Toast"], mob: "rabbit", look: "pack",
     what: "Gives it Toast’s black-and-white coat, added in memory of a player’s lost pet rabbit." },
-  { names: ["Johnny"], mob: "vindicator",
-    what: "Makes it attack almost every mob nearby, not just players, villagers and iron golems. It leaves other illagers alone, and looks the same.",
+  { names: ["Johnny"], mob: "vindicator", look: "pack",
+    what: "Makes it attack almost every mob nearby, not just players, villagers and iron golems. It leaves other illagers alone. It looks the same, but always having a target it holds its iron axe up, its brows lowered, and chops now and then.",
     java: "It spares ghasts too, and even attacks the ravager it’s riding." },
 ];
 
