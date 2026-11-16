@@ -200,8 +200,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Butcher"], what: "A Halloween costume." },
   ],
   pillager: [
-    { names: ["Baby", "Pillaglet", "Grumpy"], kind: BABY },
-    { names: ["Halloween", "Helsing"], what: "A Halloween costume." },
+    { names: ["Baby", "Pillaglet", "Grumpy"], kind: BABY, rare: "1 in 200 pillagers" },
+    { names: ["Halloween", "Helsing"], what: "A vampire hunter: a wide-brimmed brown hat with a crossbow bolt stuck through it, long black hair, a dark red scarf pulled up over its mouth so only its eyes show, glowing white with red pupils in the dark, and a long brown coat with a cape. At its belt it carries one of three things, picked at random: four glowing potion vials, two on each hip (the stage shows these), a quiver of bolts or a wooden stake.", night: true },
   ],
   pufferfish: [
     { names: ["Baby", "Fry", "Bubbles"], what: "Keeps it small and deflated: it never puffs up, even when something comes near.", kind: BABY },

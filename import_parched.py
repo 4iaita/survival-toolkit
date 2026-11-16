@@ -40,46 +40,50 @@ BOW_HAND = (0, -2, 0)  # from the rightitem bone's pivot to the grip: the bottom
 SKELETONS = {"": "default", "baby": "irhbra", "baby executioner": "oxicyj", "halloween": "kvonsz"}
 
 
-def bow_model(skeleton):
-    """skeleton (the look's pack geometry) with no cubes of its own, and the bow in its right hand."""
+def bow_model(skeleton, texture=BOW_TEXTURE, grip_px=BOW_GRIP, turn=BOW_TURN, name="bow"):
+    """skeleton (the look's pack geometry) with no cubes of its own, and the bow in its right hand (or another item drawn
+    as a sprite: its texture, the sprite's pixel held in the fist, its turn, about x or [x, y, z], and its bone's
+    name)."""
     bones = {b["name"]: b for b in skeleton["bones"]}
-    chain, name = [], "rightitem"
-    while name:
-        chain.insert(0, {k: v for k, v in bones[name].items() if k != "cubes"})
-        name = bones[name].get("parent")
+    chain, bone = [], "rightitem"
+    while bone:
+        chain.insert(0, {k: v for k, v in bones[bone].items() if k != "cubes"})
+        bone = bones[bone].get("parent")
     hand = bones["rightitem"]["pivot"]
     grip = [h + o for h, o in zip(hand, BOW_HAND)]
-    sprite = Image.open(im.texture_file(BOW_TEXTURE)).convert("RGBA")
+    sprite = Image.open(im.texture_file(texture)).convert("RGBA")
     cubes = []
     for v in range(sprite.height):
         for u in range(sprite.width):
             if not sprite.getpixel((u, v))[3]:
                 continue
             # The sprite stands in the bow bone's y-z plane, a pixel thick across x, its grip at the bone's pivot.
-            z, y = grip[2] - (u - BOW_GRIP[0]) - 0.5, grip[1] + (v - BOW_GRIP[1]) - 0.5
+            z, y = grip[2] - (u - grip_px[0]) - 0.5, grip[1] + (v - grip_px[1]) - 0.5
             face = {"uv": [u, v], "uv_size": [1, 1]}
             cubes.append({"origin": [grip[0] - 0.5, y, z], "size": [1, 1, 1],
                           "uv": {f: dict(face) for f in ("north", "south", "east", "west", "up", "down")}})
-    bow = {"name": "bow", "parent": "rightitem", "pivot": grip, "rotation": [BOW_TURN, 0, 0], "cubes": cubes}
-    return {"description": {"texture_width": sprite.width, "texture_height": sprite.height}, "bones": [*chain, bow]}
+    item = {"name": name, "parent": "rightitem", "pivot": grip, "rotation": list(turn) if isinstance(turn, (list, tuple)) else [turn, 0, 0],
+            "cubes": cubes}
+    return {"description": {"texture_width": sprite.width, "texture_height": sprite.height}, "bones": [*chain, item]}
 
 
-def add_bow(mob="parched", skeletons=SKELETONS):
+def add_bow(mob="parched", skeletons=SKELETONS, item="bow", texture=BOW_TEXTURE, texture_key=BOW_KEY, grip=BOW_GRIP, turn=BOW_TURN):
     """Each look's bow layer, last (a look written again by port() has none yet), on a copy of its skeleton (skeletons:
     first name -> the entity's geometry key for it). Other mobs holding a bow (the skeleton) draw it with the
-    parched's texture."""
+    parched's texture. item, texture, texture_key, grip and turn: another item held as a sprite (the pillager's
+    crossbow), as bow_model's."""
     ents, _rcs, geos, *_ = im.read_pack()
     d = ents[f"minecraft:{mob}"]
     text = ia.MODELS_JS.read_text()
     looks = ia.parse_section(text, "MOB_LOOKS")[mob]
-    prefix = f"{ia.PREFIX}{mob}_bow"
+    prefix = f"{ia.PREFIX}{mob}_{item}"
     for look in looks:
         name = (look["names"] or [""])[0]
         key = "_".join(filter(None, [prefix, name.replace(" ", "_")]))
-        text = put(text, "MOB_MODELS", key, im.model(bow_model(geos[d["geometry"][skeletons[name]]])))
-        look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(prefix)] + [[key, [BOW_KEY], []]]
+        text = put(text, "MOB_MODELS", key, im.model(bow_model(geos[d["geometry"][skeletons[name]]], texture, grip, turn, item)))
+        look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(prefix)] + [[key, [texture_key], []]]
     ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", mob, looks))
-    copy_texture(BOW_TEXTURE, BOW_KEY)
+    copy_texture(texture, texture_key)
 
 
 if __name__ == "__main__":

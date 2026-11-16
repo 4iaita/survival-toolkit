@@ -115,6 +115,7 @@ WHAT = {
     ("drowned", "baby gillman"): "The Gillman as a baby: a big green-scaled head with a crest of yellow-green fins and more at its cheeks, glowing orange eyes over a wide-open, toothy red mouth, a tan belly and fins down its arms and legs.",
     ("husk", "halloween"): "An executioner: a red-brown hood over its head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes, iron cuffs on its wrists and an iron shackle on one ankle. It goes with the camel husk’s Executioner look, the beast it rides.",
     ("husk", "baby executioner"): "A baby executioner: a red-brown hood over its big head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes and an iron shackle on one ankle.",
+    ("pillager", "halloween"): "A vampire hunter: a wide-brimmed brown hat with a crossbow bolt stuck through it, long black hair, a dark red scarf pulled up over its mouth so only its eyes show, glowing white with red pupils in the dark, and a long brown coat with a cape. At its belt it carries one of three things, picked at random: four glowing potion vials, two on each hip (the stage shows these), a quiver of bolts or a wooden stake.",
     ("parched", "halloween"): "An executioner: a red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, a ragged red-brown robe and a ragged belt over its bones, and iron cuffs on its wrists and ankles. It goes with the camel husk’s Executioner look, the beast it rides.",
     ("parched", "baby executioner"): "A baby executioner: a big red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, long ragged sleeves curling at the ends, and iron cuffs on its ankles.",
     ("parched", "baby"): "A baby parched with a big head, its yellow eyes glowing in the dark.",
@@ -198,6 +199,7 @@ RARE = {
     ("allay", "baby"): "1 in 20 allays",
     # And 1 in 200 parched and vexes.
     ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes",
+    ("pillager", "baby"): "1 in 200 pillagers",
     ("skeleton", "baby"): "1 in 200 skeletons", ("stray", "baby"): "1 in 200 strays", ("bogged", "baby"): "1 in 200 bogged",
     ("skeleton", "cherry"): "skeletons in cherry groves", ("skeleton", "sulfur"): "skeletons in sulfur caves",
     ("skeleton", "dappled"): "skeletons in dappled forests", ("skeleton", "pale"): "skeletons in pale gardens",
@@ -237,7 +239,7 @@ NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombi
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
          ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale"),
          ("stray", "baby"), ("stray", "halloween"), ("drowned", "halloween"), ("drowned", "baby gillman"),
-         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur")}
+         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur"), ("pillager", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

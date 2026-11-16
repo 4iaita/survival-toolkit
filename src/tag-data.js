@@ -133,7 +133,10 @@ const PACK_TAGS = {
     snowyIn("cold pigs"),
   ],
   piglin: [{ names: ["Baby", "Piglet"], kind: BABY }],
-  pillager: [{ names: ["Krampus"], what: "Krampus, the horned Christmas demon." }, { names: ["Snowy", "Frosty"], kind: SNOWY }],
+  pillager: [
+    { names: ["Krampus"], what: "Krampus, the horned Christmas demon: long black horns twisting up from its head, shaggy gray fur over its head and down its chin, long pointed ears, red eyes, and a red coat trimmed with tan fur." },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, what: "Dressed for the cold: a horned iron helmet hung with icicles, a dark hood wrapped round its face so only its eyes and its nose, red with cold, show, snow-crusted cream fur over its shoulders and back, a teal tunic and frosty boots.", rare: "pillagers in snowy biomes" },
+  ],
   polar_bear: [{ names: ["Baby", "Cub", "Knut"], kind: BABY }],
   rabbit: [
     { names: ["Baby", "Bunny", "Thumper"], kind: BABY },
