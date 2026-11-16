@@ -354,7 +354,7 @@ const PACK_TAGS_MORE = {
     { names: ["Dappled"], what: "The dappled look." },
   ],
   vindicator: [
-    { names: ["Baby", "Vindilet", "Grumpy"], kind: BABY },
+    { names: ["Baby", "Vindilet", "Grumpy"], kind: BABY, rare: "1 in 200 vindicators" },
   ],
   wandering_trader: [
     { names: ["Baby", "Child"], kind: BABY },

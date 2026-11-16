@@ -172,7 +172,7 @@ const PACK_TAGS = {
     { names: ["Elf"], what: "Dresses it as a Christmas elf." },
     { names: ["Snowy", "Frozen"], kind: SNOWY },
   ],
-  vindicator: [{ names: ["Clown", "Giggles"], what: "A creepy clown." }],
+  vindicator: [{ names: ["Clown", "Giggles"], what: "A creepy clown: a white painted face with blue streaks running down from its eyes, a red ball nose, big tufts of red hair at its sides, a ruff striped red and white round its neck, a suit red on one side and blue on the other with white buttons, and red and white striped trousers with ruffled cuffs." }],
   wandering_trader: [{ names: ["Snowy", "Frosty"], kind: SNOWY, what: "Dressed for the cold: snow on its hood and shoulders, a fur-trimmed coat, a pack on its back with snow on it, frosty boots and a nose pink with cold.", rare: "wandering traders in snowy biomes" }],
   warden: [
     { names: ["Jack", "Gourden"], what: "A jack o’lantern warden, with a carved pumpkin head and vines." },
