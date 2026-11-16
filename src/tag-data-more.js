@@ -113,8 +113,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Eye"], what: "A Halloween costume." },
   ],
   evoker: [
-    { names: ["Baby", "Vindilet", "Grumpy"], kind: BABY },
-    { names: ["Halloween", "Dracula"], what: "A Halloween costume." },
+    { names: ["Baby", "Vindilet", "Grumpy"], kind: BABY, rare: "1 in 200 evokers" },
+    { names: ["Halloween", "Dracula"], what: "Dracula: pale lilac skin, black hair swept back into two jagged points, pointed ears, red eyes glowing in the dark, fangs, and a black cape with a high collar and a red lining over a dark suit, its folded arms in white sleeves.", night: true },
   ],
   fox: [
     { names: ["Raccoon"], what: "A raccoon: gray fur with a black mask round its eyes, black ears, a white snout with a black nose and a long tail ringed in black and pale gray." },

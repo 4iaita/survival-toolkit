@@ -341,7 +341,7 @@ const MOBS = [
   { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "cave" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert" },
   { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
   { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
-  { k: "evoker", n: "Evoker", g: "Monsters" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
+  { k: "evoker", n: "Evoker", g: "Monsters", biome: "mansion" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
   { k: "husk", n: "Husk", g: "Monsters", biome: "desert" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", stand: { body: { p: [0, 22, 0] } } },
   { k: "pillager", n: "Pillager", g: "Monsters", biome: "village" }, { k: "ravager", n: "Ravager", g: "Monsters" },
   { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "cave" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
