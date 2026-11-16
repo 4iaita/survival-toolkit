@@ -31,14 +31,16 @@ REMODEL = ["krampus", "snowy", "halloween"]
 # crossbow sprite drawn as a texture mesh, which the stage can't draw: here it's a cube for each pixel, as the parched's
 # bow (add_bow), on a copy of each look's skeleton (SKELETONS: the entity's geometry key for each look), in its right
 # hand. The pack places the mesh in the game's terms for attachables, which the stage doesn't follow: the crossbow is
-# turned (CROSSBOW_TURN) so that in the pack's hold pose its stock runs from the right fist (gripped behind the trigger,
-# CROSSBOW_GRIP) forward to the left one, pointing ahead and a little to the left, its bow upright at the front, as the
-# game's renders hold one. The pack doesn't scale it down on a baby, which holds a full-size crossbow.
+# held as the game draws one in a pillager's hand (the wiki's Bedrock render, its arm hanging): gripped on the stock
+# behind the trigger (CROSSBOW_GRIP), upright beside the arm, its tip pointing forward and down from the fist, its bow
+# at the front and its butt rising back towards the elbow (CROSSBOW_TURN, about the hand's x). In the pack's hold pose,
+# its arm raised a little, it points ahead, about level, moving with the arm. The pack doesn't scale it down on a baby,
+# which holds a full-size crossbow.
 SKELETONS = {"": "default", "krampus": "hltdtx", "snowy": "crvgzv", "baby": "apanel", "halloween": "vevqfw"}
 CROSSBOW = "textures/items/crossbow_standby"
 CROSSBOW_KEY = f"{ia.PREFIX}pillager_crossbow"
 CROSSBOW_GRIP = (10, 10)
-CROSSBOW_TURN = (-100, -30, 15)
+CROSSBOW_TURN = -90
 
 # Its Halloween look (Helsing) carries one of three things at its belt, picked at random (v.rvgres, 0 to 2): a quiver of
 # bolts, four potion vials or a wooden stake. The importer answers Math.random_integer(0, 2) with 1: the vials, which
