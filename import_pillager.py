@@ -40,7 +40,11 @@ REMODEL = ["krampus", "snowy", "halloween"]
 SKELETONS = {"": "default", "krampus": "hltdtx", "snowy": "crvgzv", "baby": "apanel", "halloween": "vevqfw"}
 CROSSBOW = "textures/items/crossbow_standby"
 CROSSBOW_KEY = f"{ia.PREFIX}pillager_crossbow"
-CROSSBOW_MESH = {"position": [0, -5, -3], "rotation": [90, 0, -49], "wield_position": [0.5, -0.5, -1.5], "wield_rotation": [0, -3, 3.25]}
+# The game's numbers put the crossbow's middle at the front of the robe (its outer layer, inflated, reaches 3.5 pixels
+# in front of the body's middle): the stage's crossbow is a pixel thick and the bob tilts both robe and arm, so it
+# sank into the robe. It hangs CLEAR pixels further forward than the game's, clear of the robe all through the bob.
+CLEAR = 1.5
+CROSSBOW_MESH = {"position": [0, -5, -3], "rotation": [90, 0, -49], "wield_position": [0.5, -0.5, -1.5 - CLEAR], "wield_rotation": [0, -3, 3.25]}
 BABY_HAND = 0.5
 
 
