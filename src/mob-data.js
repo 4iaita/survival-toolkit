@@ -343,7 +343,7 @@ const MOBS = [
   { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
   { k: "evoker", n: "Evoker", g: "Monsters", biome: "mansion" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
   { k: "husk", n: "Husk", g: "Monsters", biome: "desert" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", stand: { body: { p: [0, 22, 0] } } },
-  { k: "pillager", n: "Pillager", g: "Monsters", biome: "village", stand: { root: { r: [0, 40, 0] } } }, { k: "ravager", n: "Ravager", g: "Monsters" },
+  { k: "pillager", n: "Pillager", g: "Monsters", biome: "village" }, { k: "ravager", n: "Ravager", g: "Monsters" },
   { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "cave" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
   { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 2.5 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "cave" }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
   { k: "stray", n: "Stray", g: "Monsters", biome: "snowy" }, { k: "vex", n: "Vex", g: "Monsters", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", g: "Monsters", biome: "mansion" }, { k: "warden", n: "Warden", g: "Monsters", biome: "cave" }, { k: "witch", n: "Witch", g: "Monsters" },

@@ -32,18 +32,16 @@ REMODEL = ["krampus", "snowy", "halloween"]
 # bow (add_bow), on a copy of each look's skeleton (SKELETONS: the entity's geometry key for each look), in its right
 # hand. The pack places the mesh in the game's terms for attachables, which the stage doesn't follow: the crossbow is
 # placed by eye to match the wiki's Bedrock render of a standing pillager: gripped on the stock behind the trigger
-# (CROSSBOW_GRIP), a little below and in front of the fist (CROSSBOW_HAND, from the rightitem bone's pivot), upright
-# beside the leg, its bow low at the front and its butt rising back towards the chest, and turned 45 degrees about the
-# upright so its face shows from the front-left, as the pack turns its mesh (CROSSBOW_TURN, about the hand's x and y).
-# The pack doesn't scale it down on a baby, whose full-size crossbow would hang through the ground: the stage holds it
-# at half size (BABY_HAND: the baby look's rightitem scaled, a post-step), as the game draws a baby's held item. The
-# stage starts it turned to its right (stand in MOBS, src/mob-data.js), so the crossbow's face shows, as in the game's
-# render.
+# (CROSSBOW_GRIP), a little below and in front of the fist (CROSSBOW_HAND, from the rightitem bone's pivot), hanging
+# beside its right leg facing forward, its bow low and out at the side and its stock rising across the front of its body
+# towards its chest (CROSSBOW_TURN, about the hand's x and y). The pack doesn't scale it down on a baby, whose full-size
+# crossbow would hang through the ground: the stage holds it at half size (BABY_HAND: the baby look's rightitem scaled,
+# a post-step), as the game draws a baby's held item.
 SKELETONS = {"": "default", "krampus": "hltdtx", "snowy": "crvgzv", "baby": "apanel", "halloween": "vevqfw"}
 CROSSBOW = "textures/items/crossbow_standby"
 CROSSBOW_KEY = f"{ia.PREFIX}pillager_crossbow"
 CROSSBOW_GRIP = (10, 10)
-CROSSBOW_TURN = (-60, 45, 0)
+CROSSBOW_TURN = (-60, -90, 0)
 CROSSBOW_HAND = (1, -5, -6)
 BABY_HAND = 0.5
 
