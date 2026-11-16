@@ -6,7 +6,7 @@ Its looks all get the pack's current models (the plain, Krampus and Snowy ones w
 Halloween ones had the new models but nothing moved them). Its models, animations and controllers are its own, not the
 vindicator's or the evoker's: it bobs where they sway. It has no kinds. The game has no babies
 of it; the pack makes 1 in 200 pillagers babies by itself. In snowy biomes the pack dresses every pillager in its Snowy
-look (with its biome looks setting on). It holds a crossbow (CROSSBOW). Run import_additions.py first.
+look (with its biome looks setting on). It holds a crossbow (CROSSBOW_MESH). Run import_additions.py first.
 """
 from import_parched import add_bow
 from import_port import ia, port, put
@@ -28,21 +28,19 @@ ACTS = [BLINK]
 REMODEL = ["krampus", "snowy", "halloween"]
 
 # The game's pillagers always carry a crossbow. The pack's (its attachable, minecraft:crossbow) is the game's unloaded
-# crossbow sprite drawn as a texture mesh, which the stage can't draw: here it's a cube for each pixel, as the parched's
-# bow (add_bow), on a copy of each look's skeleton (SKELETONS: the entity's geometry key for each look), in its right
-# hand. The pack places the mesh in the game's terms for attachables, which the stage doesn't follow: the crossbow is
-# placed by eye to match the wiki's Bedrock render of a standing pillager: gripped on the stock behind the trigger
-# (CROSSBOW_GRIP), a little below and in front of the fist (CROSSBOW_HAND, from the rightitem bone's pivot), hanging
-# beside its right leg facing forward, its bow low and out at the side and its stock rising across the front of its body
-# towards its chest (CROSSBOW_TURN, about the hand's x and y). The pack doesn't scale it down on a baby, whose full-size
-# crossbow would hang through the ground: the stage holds it at half size (BABY_HAND: the baby look's rightitem scaled,
-# a post-step), as the game draws a baby's held item.
+# crossbow sprite drawn as a texture mesh, which the stage can't draw: here it's a cube for each pixel (mesh_model, in
+# import_parched.py), on a copy of each look's skeleton (SKELETONS: the entity's geometry key for each look), in its
+# right hand, placed as the game places it: the vanilla game's crossbow attachable (Mojang's bedrock-samples) puts the
+# mesh on the bone bound to rightitem at (0, -5, -3), turned (90, 0, -49), and its third-person wield moves that bone
+# (0.5, -0.5, -1.5) and turns it (0, -3, 3.25) (CROSSBOW_MESH). A texture mesh lies flat until it's turned, so it hangs
+# from the fist facing forward over its right thigh, its bow low at the side and its stock rising across its front, as
+# the game's Bedrock render shows it. The pack doesn't scale it down on a baby, whose full-size crossbow would hang
+# through the ground: the stage holds it at half size (BABY_HAND: the baby look's rightitem scaled, a post-step), as the
+# game draws a baby's held item.
 SKELETONS = {"": "default", "krampus": "hltdtx", "snowy": "crvgzv", "baby": "apanel", "halloween": "vevqfw"}
 CROSSBOW = "textures/items/crossbow_standby"
 CROSSBOW_KEY = f"{ia.PREFIX}pillager_crossbow"
-CROSSBOW_GRIP = (10, 10)
-CROSSBOW_TURN = (-60, -90, 0)
-CROSSBOW_HAND = (1, -5, -6)
+CROSSBOW_MESH = {"position": [0, -5, -3], "rotation": [90, 0, -49], "wield_position": [0.5, -0.5, -1.5], "wield_rotation": [0, -3, 3.25]}
 BABY_HAND = 0.5
 
 
@@ -61,6 +59,5 @@ def baby_hand():
 if __name__ == "__main__":
     port("pillager", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL)
     if ia.WRITE:
-        add_bow("pillager", SKELETONS, "crossbow", CROSSBOW, CROSSBOW_KEY, CROSSBOW_GRIP, CROSSBOW_TURN,
-                CROSSBOW_HAND)
+        add_bow("pillager", SKELETONS, "crossbow", CROSSBOW, CROSSBOW_KEY, mesh=CROSSBOW_MESH)
         baby_hand()

@@ -67,11 +67,41 @@ def bow_model(skeleton, texture=BOW_TEXTURE, grip_px=BOW_GRIP, turn=BOW_TURN, na
     return {"description": {"texture_width": sprite.width, "texture_height": sprite.height}, "bones": [*chain, item]}
 
 
-def add_bow(mob="parched", skeletons=SKELETONS, item="bow", texture=BOW_TEXTURE, texture_key=BOW_KEY, grip=BOW_GRIP, turn=BOW_TURN, hand=BOW_HAND):
+def mesh_model(skeleton, texture, mesh, name, plane="xz", flip=(False, False)):
+    """skeleton with no cubes of its own, and an item sprite in its right hand placed as a game attachable places a
+    texture mesh: mesh = {position, rotation} (the mesh's, on the bone bound to rightitem) and {wield_position,
+    wield_rotation} (the attachable's third-person animation of that bone). The sprite's pixels are cubes a pixel
+    thick, the sprite centred on the mesh's position and lying in plane ("xz": flat, its u along x and v along z, as a
+    texture mesh lies before it's turned), flip mirroring u or v."""
+    bones = {b["name"]: b for b in skeleton["bones"]}
+    chain, bone = [], "rightitem"
+    while bone:
+        chain.insert(0, {k: v for k, v in bones[bone].items() if k != "cubes"})
+        bone = bones[bone].get("parent")
+    hand = bones["rightitem"]["pivot"]
+    wield = {"name": f"{name}_wield", "parent": "rightitem", "pivot": list(hand), "rotation": list(mesh.get("wield_rotation", [0, 0, 0]))}
+    at = [h + w + m for h, w, m in zip(hand, mesh.get("wield_position", [0, 0, 0]), mesh["position"])]
+    sprite = Image.open(im.texture_file(texture)).convert("RGBA")
+    cubes = []
+    for v in range(sprite.height):
+        for u in range(sprite.width):
+            if not sprite.getpixel((u, v))[3]:
+                continue
+            a = (sprite.width - 1 - u if flip[0] else u) - sprite.width / 2
+            b = (sprite.height - 1 - v if flip[1] else v) - sprite.height / 2
+            face = {"uv": [u, v], "uv_size": [1, 1]}
+            origin = [at[0] + a, at[1] - 0.5, at[2] + b] if plane == "xz" else [at[0] + a, at[1] - b - 1, at[2] - 0.5]
+            cubes.append({"origin": origin, "size": [1, 1, 1], "uv": {f: dict(face) for f in ("north", "south", "east", "west", "up", "down")}})
+    item = {"name": name, "parent": wield["name"], "pivot": at, "rotation": list(mesh["rotation"]), "cubes": cubes}
+    return {"description": {"texture_width": sprite.width, "texture_height": sprite.height}, "bones": [*chain, wield, item]}
+
+
+def add_bow(mob="parched", skeletons=SKELETONS, item="bow", texture=BOW_TEXTURE, texture_key=BOW_KEY, grip=BOW_GRIP, turn=BOW_TURN, hand=BOW_HAND,
+            mesh=None):
     """Each look's bow layer, last (a look written again by port() has none yet), on a copy of its skeleton (skeletons:
     first name -> the entity's geometry key for it). Other mobs holding a bow (the skeleton) draw it with the
     parched's texture. item, texture, texture_key, grip and turn: another item held as a sprite (the pillager's
-    crossbow), and hand, as bow_model's."""
+    crossbow), and hand, as bow_model's; or mesh, an item placed as the game places it (mesh_model)."""
     ents, _rcs, geos, *_ = im.read_pack()
     d = ents[f"minecraft:{mob}"]
     text = ia.MODELS_JS.read_text()
@@ -80,7 +110,9 @@ def add_bow(mob="parched", skeletons=SKELETONS, item="bow", texture=BOW_TEXTURE,
     for look in looks:
         name = (look["names"] or [""])[0]
         key = "_".join(filter(None, [prefix, name.replace(" ", "_")]))
-        text = put(text, "MOB_MODELS", key, im.model(bow_model(geos[d["geometry"][skeletons[name]]], texture, grip, turn, item, hand)))
+        skeleton = geos[d["geometry"][skeletons[name]]]
+        model = mesh_model(skeleton, texture, mesh, item) if mesh else bow_model(skeleton, texture, grip, turn, item, hand)
+        text = put(text, "MOB_MODELS", key, im.model(model))
         look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(prefix)] + [[key, [texture_key], []]]
     ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", mob, looks))
     copy_texture(texture, texture_key)
