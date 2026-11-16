@@ -40,12 +40,14 @@ JOHNNY = {"motions": [("zygxsz", 1), ("czfrre", 1, "held"), ("ovmxnb", 1)], "act
 # The game's vindicators carry an iron axe. The pack's (its attachable, minecraft:iron_axe) is, with its 3D items
 # setting off as it starts, the game's iron axe sprite drawn as a texture mesh: here it's a cube for each pixel, as the
 # parched's bow (bow_model), in its right hand, on Johnny's look only (the pack hides it on a vindicator with no target).
-# It's held as the game holds a tool, as the pillager's crossbow: gripped near the foot of its handle (AXE_GRIP), its
-# head forward and up from the fist when the arm hangs (AXE_TURN), so with the arm raised it's held up over its head.
+# It's held as the game draws a vindicator's raised axe (the wiki's renders): gripped near the foot of its handle
+# (AXE_GRIP), standing straight up from the fist, its blade forward. The game holds an item at right angles to the
+# forearm and raises the arm straight out; the pack's raise lifts it 25 degrees higher, so the axe is turned that much
+# further forward (AXE_TURN) to stand upright in it.
 AXE = "textures/items/iron_axe"
 AXE_KEY = f"{ia.PREFIX}vindicator_axe"
 AXE_GRIP = (4, 12)
-AXE_TURN = -90
+AXE_TURN = -20
 
 
 def add_axe():
