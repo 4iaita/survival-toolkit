@@ -153,7 +153,7 @@ const PACK_TAGS_MORE = {
     { names: ["Dappled"], what: "Orange and red autumn leaves grow over its body, arms and legs in place of its vines and poppies, with one on its head.", biome: "dappled_forest", rare: "iron golems in dappled forests" },
   ],
   magma_cube: [
-    { names: ["Baby", "Magmaling", "Ember"], kind: BABY },
+    { names: ["Baby", "Magmaling", "Ember"], what: "Draws it as small as a small magma cube, whatever its own size, in its own size’s skin. Only the look changes: it keeps its size’s health and drops.", kind: BABY },
   ],
   mooshroom: [
     { names: ["Zombified Calf", "Baby Zombified"], more: ["zombified Calf", "Zombified calf", "baby Zombified", "Baby zombified"], what: "A zombie mooshroom calf, rotting, its eyes glowing faintly.", night: true },
