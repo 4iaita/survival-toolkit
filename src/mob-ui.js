@@ -113,15 +113,16 @@ const wool = { color: [255, 255, 255] }, mobClock = { t: 0 };
 let jebStep = 0;
 
 // The stage: the mob's own biome (its variant's, for one that has them), a name's own biome (biome: the cherry grove for
-// a Cherry look) and a snowy village for snowy names, always by day. A name whose difference is a glow (night: glowing
-// eyes) shows its glowing layers all the same, so they can be seen against the day.
+// a Cherry look) and a snowy village for snowy names, by day but for the plains at night (night, the phantom's and the
+// night's undead), where glowing layers show. A name whose difference is a glow (night: glowing eyes) shows its glowing
+// layers all the same, so they can be seen against the day.
 function showOnStage() {
   const m = mobOf(mobTab.mob), t = currentTag(), variant = variantInfo();
   const look = t && t.look ? t.look : mobBaby && babyLook(m.k) > 0 ? babyLook(m.k) : 0;
   const tagEl = $("mob-tag");
   tagEl.textContent = t ? (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]) : "";
   const rowBiome = (rowKinds(m.k).find(x => x.biome) || {}).biome;
-  const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? "snowy" : rowBiome || (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
+  const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? "snowy" : rowBiome || (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || biome === "night" || glowsOnly(MOB_LOOKS[m.k], look);
   mobStage.dataset.biome = biome;
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);
   mobBackdrop.show(biome);

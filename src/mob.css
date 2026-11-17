@@ -16,6 +16,19 @@
 .stage[data-biome="mansion"] { --sky: #120c08; --haze: #1a120b; }
 .stage[data-biome="mansion"]::after { filter: brightness(.7); }
 .stage[data-biome="mansion"]::before { display: none; }
+/* A trial chamber: no sky, a warm dim haze over the tuff, and a tuff brick floor in the bulbs' light. */
+.stage[data-biome="trial_chamber"] { --sky: #16110d; --haze: #2b241e; }
+.stage[data-biome="trial_chamber"]::after { filter: brightness(.75); }
+.stage[data-biome="trial_chamber"]::before { display: none; }
+/* A stronghold: no sky, a cold dark haze over the stone bricks, and a stone brick floor in the torchlight. */
+.stage[data-biome="stronghold"] { --sky: #0d0d10; --haze: #18181d; }
+.stage[data-biome="stronghold"]::after { filter: brightness(.6); }
+.stage[data-biome="stronghold"]::before { display: none; }
+/* The plains at night: a deep blue sky, lighter toward the horizon, dim clouds, and the grass in the dark (not black:
+   the mob still has to be seen against it). */
+.stage[data-biome="night"] { --sky: #0b1430; --haze: #33467a; }
+.stage[data-biome="night"]::before { opacity: .18; }
+.stage[data-biome="night"]::after { filter: brightness(.62) saturate(.8) hue-rotate(8deg); }
 .stage[data-biome="nether"] { --sky: #1c0605; --haze: #3a0f08; }
 /* The biomes some name tags' looks come from: the cherry grove's clear mountain sky, the pale garden's gray mist, the
    dappled forest's soft autumn haze, the sulfur caves' dark yellow murk. */

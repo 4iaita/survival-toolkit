@@ -27,6 +27,11 @@
  * And the inside of a woodland mansion, the vex's (evokers summon it, and they live in the mansions): a hall of dark oak
  * walls between dark oak log pillars under a beamed ceiling, a birch band along them, windows onto the dark forest
  * outside, bookshelves, a chest and a door, lit by torches on the pillars.
+ * And a trial chamber, the breeze's: tuff brick walls, tuff pillars with lit copper bulbs, copper grates, trial spawners and
+ * vaults. And a stronghold's portal room, the silverfish's: stone brick walls, cracked and mossy, iron doors and barred
+ * windows, bookshelves, the end portal's frames on their steps and the silverfish spawner.
+ * The plains have a night too, for the phantom and the undead horses and zombie villagers that come out at night: the
+ * same hills and house darkened and blue under stars and the moon, its windows lit.
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
  * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
@@ -415,6 +420,26 @@ const mesa = rows => prop(rows, { T: blockTex("terracotta"), O: blockTex("orange
 const snowDrift = rows => prop(rows, { S: blockTex("snow"), P: blockTex("powder_snow"), R: blockTex("stone") });
 // A crag on a mountainside: stone, andesite, calcite and gravel, an emerald showing in one, packed ice in another.
 const crag = rows => prop(rows, { S: blockTex("stone"), A: blockTex("andesite"), C: blockTex("calcite"), G: blockTex("gravel"), E: blockTex("emerald_ore"), I: blockTex("packed_ice") });
+// A trial chamber, the breeze's: tuff brick walls and pillars of polished and chiseled tuff, copper bulbs lit on them,
+// copper grates, trial spawners and vaults on cut copper steps, weathered and oxidized here and there.
+const TRIAL = {
+  T: blockTex("tuff_bricks"), P: blockTex("polished_tuff"), X: blockTex("chiseled_tuff"), K: blockTex("chiseled_tuff_bricks"),
+  B: blockTex("copper_bulb_lit"), b: blockTex("oxidized_copper_bulb_lit"), C: blockTex("cut_copper"), W: blockTex("weathered_cut_copper"),
+  O: blockTex("oxidized_cut_copper"), G: plantTex("copper_grate"), g: plantTex("oxidized_copper_grate"), w: plantTex("weathered_copper_grate"),
+  H: blockTex("chiseled_copper"), h: blockTex("oxidized_chiseled_copper"), S: blockTex("trial_spawner"), V: blockTex("vault"),
+};
+const trialPillar = bulb => prop(["K", "P", "P", bulb, "P", "P", "P", "X"], TRIAL);
+const trial = rows => prop(rows, TRIAL);
+// A stronghold's portal room, the silverfish's: stone brick walls, cracked and mossy, an iron door, a barred window,
+// torches, and the end portal's frames on their stepped platform with the silverfish spawner on the steps.
+const STRONGHOLD = {
+  S: blockTex("stone_bricks"), M: blockTex("mossy_stone_bricks"), C: blockTex("cracked_stone_bricks"), X: blockTex("chiseled_stone_bricks"),
+  D: blockTex("door_iron_upper"), d: blockTex("door_iron_lower"), I: plantTex("iron_bars"), T: plantTex("torch"), W: plantTex("cobweb"),
+  F: blockTex("end_portal_frame"), Z: blockTex("mob_spawner"), K: blockTex("bookshelf"),
+};
+const stronghold = rows => prop(rows, STRONGHOLD);
+// A plains window lit from inside, for the night.
+const LIT_WINDOW = { layers: [["glass"]], under: "#e9b65a" };
 const BACKDROPS = {
   flooded_cave: () => ({
     mist: { far: 0.7, near: 0.06 },
@@ -601,6 +626,38 @@ const BACKDROPS = {
       [mansionPillar, 25]],
     lights: [[-16, 7.5], [-2, 7.5], [12, 7.5]],
   }),
+  // A trial chamber, the breeze's (it only spawns from their trial spawners): pillars with copper bulbs, grates,
+  // spawners and vaults, under a tuff brick ceiling, lit by the bulbs.
+  trial_chamber: () => ({
+    mist: { far: 0.5, near: 0.12 },
+    wall: { rock: ["tuff_bricks", "tuff_bricks", "polished_tuff", "tuff_bricks", "chiseled_tuff_bricks"], ores: ["chiseled_tuff", "chiseled_tuff", "polished_tuff"] },
+    ceiling: { rock: ["tuff_bricks", "polished_tuff", "tuff_bricks", "chiseled_tuff_bricks"], drip: [], shade: 0.25 },
+    near: [[trialPillar("B"), -26], [trial(["gw", "wg", "gg"]), -24], [trial([".S.", "WOW"]), -19], [trialPillar("b"), -14],
+      [trial(["V", "C"]), -10], [trial(["HCh"]), -7], [trial(["S"]), 5], [trial(["OO.", "WOW"]), 7],
+      [trialPillar("B"), 11], [trial(["V", "O"]), 14], [trial(["Gg", "gG", "GG"]), 17], [trial(["..S", "CWO"]), 20], [trialPillar("b"), 25]],
+    lights: [[-26, 4.5], [-14, 4.5], [11, 4.5], [25, 4.5]],
+    lightColor: "255, 196, 128",
+  }),
+  // A stronghold's portal room, the silverfish's: the end portal's frames on their steps, the room's silverfish spawner,
+  // an iron door, a barred window, bookshelves from the library next door, cobwebs, and torches for light.
+  stronghold: () => ({
+    mist: { far: 0.55, near: 0.14 },
+    wall: { rock: ["stone_bricks", "stone_bricks", "mossy_stone_bricks", "stone_bricks", "cracked_stone_bricks"], ores: ["cracked_stone_bricks", "mossy_stone_bricks", "chiseled_stone_bricks"] },
+    ceiling: { rock: ["stone_bricks", "mossy_stone_bricks", "cracked_stone_bricks", "stone_bricks"], drip: [], shade: 0.3 },
+    near: [[stronghold(["SXS", "SDS", "SdS"]), -25], [stronghold(["T", ".", "."]), -21], [stronghold(["SSSS", "SIIS", "SIIS", "SCSS", "MSSC"]), -19],
+      [stronghold(["KK", "KK"]), -14], [stronghold(["W.", "WW"]), -11], [stronghold(["T", ".", "."]), -8],
+      [stronghold(["..FFF..", ".SMSCS.", "SSCSSMS"]), -4], [stronghold(["Z.", "SS"]), 4], [stronghold(["T", ".", "."]), 8],
+      [stronghold(["SSSS", "SIIS", "SIIS", "SSMS", "CSSS"]), 11], [stronghold(["KK", "KK", "KK"]), 16], [stronghold(["T", ".", "."]), 20],
+      [stronghold(["SXS", "SDS", "SdS"]), 23]],
+    lights: [[-21, 2.5], [-8, 2.5], [8, 2.5], [20, 2.5]],
+  }),
+  // The plains at night, the phantom's (it comes out over any biome at night) and the night's undead: the plains'
+  // hills and house, darkened and blue under stars and the moon, the house's windows lit.
+  night: t => {
+    const scene = BACKDROPS.plains(t);
+    return { ...scene, seed: BIOMES.findIndex(b => b.k === "plains") + 1, night: { shade: "rgba(12, 20, 48, .45)", moon: 0.78 },
+      near: [[house({ ...PLAINS_HOUSE, window: LIT_WINDOW }), -14], ...scene.near.slice(1)], lights: [[-13, 2.5], [-9, 2.5]], lightColor: "255, 190, 100" };
+  },
   forest: t => ({
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [
       [oakTree(t), 0.01], [birchTree(), 0.08], [oakTree(t), 0.15], [oakTree(t), 0.22], [birchTree(), 0.29], [oakTree(t), 0.36], [birchTree(), 0.43], [oakTree(t), 0.5],
@@ -916,6 +973,33 @@ function drawCeiling(ctx, { rock, drip, low, shade = 0 }, width, size, seed, hor
   }
 }
 
+// Night over a scene: what's drawn so far shaded (shade), then stars and a full moon (at moon across the sky) behind it.
+function drawNight(ctx, { shade, moon = 0.75 }, width, horizon, size, seed) {
+  ctx.globalCompositeOperation = "source-atop";
+  ctx.fillStyle = shade;
+  ctx.fillRect(0, 0, width, horizon + size);
+  ctx.globalCompositeOperation = "destination-over";
+  const random = rng(seed), px = Math.max(1, Math.round(size / 8));
+  // The moon: a pale square, a few gray craters on it, and a soft halo round it.
+  const m = 2 * size, mx = Math.round(width * moon), my = Math.round(horizon * 0.18);
+  ctx.fillStyle = "#7d8496";
+  for (const [x, y, w, h] of [[3, 3, 3, 2], [9, 5, 4, 3], [5, 10, 3, 3], [11, 11, 2, 2], [2, 7, 2, 2]]) ctx.fillRect(mx + (x * m) / 16, my + (y * m) / 16, (w * m) / 16, (h * m) / 16);
+  ctx.fillStyle = "#e9ecdc";
+  ctx.fillRect(mx, my, m, m);
+  const halo = ctx.createRadialGradient(mx + m / 2, my + m / 2, m / 2, mx + m / 2, my + m / 2, 3 * m);
+  halo.addColorStop(0, "rgba(220, 228, 255, .28)");
+  halo.addColorStop(1, "rgba(220, 228, 255, 0)");
+  ctx.fillStyle = halo;
+  ctx.fillRect(mx - 3 * m, my - 3 * m, 7 * m, 7 * m);
+  // Stars: square pixels of one or two sizes, some brighter.
+  for (let i = Math.round((width * horizon) / (size * size * 1.6)); i > 0; i--) {
+    const x = Math.floor(random() * width), y = Math.floor(random() * horizon * 0.85), big = random() < 0.15;
+    ctx.fillStyle = `rgba(235, 240, 255, ${(0.35 + random() * 0.6).toFixed(2)})`;
+    ctx.fillRect(x, y, big ? 2 * px : px, big ? 2 * px : px);
+  }
+  ctx.globalCompositeOperation = "source-over";
+}
+
 // The backdrop canvas for a stage: far hills at FAR and the nearer props at NEAR CSS pixels per block,
 // standing on the top edge of the stage's ground strip (GROUND_STRIP pixels tall). It redraws when the
 // stage changes size.
@@ -956,6 +1040,8 @@ function backdropView(canvas) {
       for (const [p, at] of scene.near) drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
     }, mist.near);
     if (scene.crystals) drawCrystals(ctx, crystalsOf(scene.near.map(([p, at]) => [p, canvas.width / 2 + at * NEAR * dpr, horizon]), NEAR * dpr), NEAR * dpr);
+    // At night everything drawn so far is darkened and turned blue, and stars and the moon come out behind it.
+    if (scene.night) drawNight(ctx, scene.night, canvas.width, horizon, NEAR * dpr, 17);
     if (scene.water) {
       if (scene.water.sun) drawSurface(ctx, canvas.width, NEAR * dpr, scene.water.surface, scene.water.pads);
       if (scene.water.wash) {

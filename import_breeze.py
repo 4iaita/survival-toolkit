@@ -9,9 +9,10 @@ in 200 breezes babies by itself; the game has none), whose wind is the grown bre
 is the only one for minecraft:breeze. Its scripts set biome variables (snowy, cherry, sulfur, dappled, pale) that nothing
 it draws reads. Run import_additions.py first.
 
-The pack draws it in two states, by whether it has a target (MOB_MOODS, the Wind row): with none it calms down (its wind
-shrinks to nothing, it sinks 6 pixels and its rods hang straight down), which is how it's drawn on its own; with one it
-whirls (its wind spreads out again, it rises and its rods splay out 25 degrees), and its sway and spin go twice as fast.
+The pack draws it in two states, by whether it has a target: with none it calms down (its wind shrinks to nothing, it
+sinks 6 pixels and its rods hang straight down); with one it whirls (its wind spreads out again, it rises and its rods
+splay out 25 degrees), and its sway and spin go twice as fast. The stage shows it whirling only, as the pack draws it
+with a target: its wind always slides round it (MOOD_STAGE in src/mob-data.js).
 """
 import json
 
@@ -35,13 +36,12 @@ def read_pack():
     return ents, rcs, geos, mats, anims, props, armors
 
 
-# It hovers, its head and wind swaying (the pack's idle, which its anim_time_update plays 1.5 times as fast, 3 times with
-# a target), its rods spinning round under it, and it's calmed down (the pack's calm, held at its end: its wind shrunk
-# to nothing, sunk 6 pixels, rods straight). Whirling, it plays them twice as fast, wound up (the pack's czfrre, held at
-# its end). Left out: its head and pupils turning to its target (target, which also turns a bone holding only a locator),
-# its slide (weighted by how fast it moves, 0.01 standing), its jump, its shot (an attack), its flinch when hurt, its
-# deaths, and its sounds and particles.
-CALM = [("idle", 1, 1.5), ("spin_baked", 1), ("calm", 1, "held")]
+# It hovers whirling: its head and wind swaying (the pack's idle, which its anim_time_update plays 3 times as fast with a
+# target), its rods spinning round under it twice as fast as calm (540 degrees a second), wound up (the pack's czfrre,
+# held at its end: its wind spread out, risen, rods splayed). Left out: calming down and its calm loop (no target), its
+# head and pupils turning to its target (target, which also turns a bone holding only a locator), its slide (weighted by
+# how fast it moves, 0.01 standing), its jump, its shot (an attack), its flinch when hurt, its deaths, and its sounds and
+# particles.
 WHIRLING = [("idle", 1, 3), ("spin_baked", 1, 2), ("czfrre", 1, "held")]
 
 # Every 0.5 to 2.5 seconds it blinks: its pupils stretch over its eyes for 0.15 seconds (the pack's blink), at half speed
@@ -52,5 +52,4 @@ ACTS = [BLINK]
 
 if __name__ == "__main__":
     im.read_pack = read_pack
-    port("breeze", variants=[""], acts=ACTS, motions=CALM, answers=lambda v: {"has_target": 0.0},
-         moods={"whirling": {"answers": {"has_target": 1.0}, "motions": WHIRLING, "act": ACTS}})
+    port("breeze", variants=[""], acts=ACTS, motions=WHIRLING, answers=lambda v: {"has_target": 1.0})

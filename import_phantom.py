@@ -15,11 +15,12 @@ it draws reads. Run import_additions.py first.
 from import_port import im, port
 
 # It hovers, beating its wings, its body bobbing and its head and tail swinging with each beat (the pack's flight state
-# for flying slower than 3 blocks a second, bgzzgz, 0.75 seconds a beat), its wings swaying a little more over six
+# for flying slower than 3 blocks a second, bgzzgz, 0.75 seconds a beat, played at half speed: 1.5 seconds, as the pack's
+# looked too fast on the stage), its wings swaying a little more over six
 # seconds (the pack's idle, which otherwise tips it to its target). Left out: its other flight states (gliding fast,
 # wings held out, and climbing, beating faster), its deaths, and its fire and death particles. The pack gives it no
 # idles and no blink.
-MOTIONS = [("gddkln", 1), ("kpngdd", 1)]
+MOTIONS = [("gddkln", 1), ("kpngdd", 1, 0.5)]
 
 
 if __name__ == "__main__":

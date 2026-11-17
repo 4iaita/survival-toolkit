@@ -185,6 +185,18 @@ FILES = {
     "sulfur_spike_down_tip": "blocks/sulfur_spike_down_tip",
     # The mineshaft: its rails, chests and the deepslate deep down.
     "rail": "blocks/rail_normal", "chest_front": "blocks/chest_front",
+    # The silverfish's stronghold: stone bricks, cracked and mossy, an iron door, and the portal room's frames.
+    "stone_bricks": "blocks/stonebrick", "cracked_stone_bricks": "blocks/stonebrick_cracked",
+    "door_iron_upper": "blocks/door_iron_upper", "door_iron_lower": "blocks/door_iron_lower",
+    "end_portal_frame": "blocks/endframe_side",
+    # The breeze's trial chamber: tuff and copper, its spawners, vaults and copper bulbs.
+    "tuff_bricks": "blocks/tuff_bricks", "chiseled_tuff": "blocks/chiseled_tuff", "chiseled_tuff_bricks": "blocks/chiseled_tuff_bricks",
+    "polished_tuff": "blocks/polished_tuff", "cut_copper": "blocks/cut_copper", "weathered_cut_copper": "blocks/weathered_cut_copper",
+    "oxidized_cut_copper": "blocks/oxidized_cut_copper", "copper_grate": "blocks/copper_grate",
+    "weathered_copper_grate": "blocks/weathered_copper_grate", "oxidized_copper_grate": "blocks/oxidized_copper_grate",
+    "chiseled_copper": "blocks/chiseled_copper", "oxidized_chiseled_copper": "blocks/oxidized_chiseled_copper",
+    "copper_bulb_lit": "blocks/copper_bulb_lit", "oxidized_copper_bulb_lit": "blocks/oxidized_copper_bulb_lit",
+    "trial_spawner": "blocks/trial_spawner_side_active", "vault": "blocks/vault_front_on",
 }
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color

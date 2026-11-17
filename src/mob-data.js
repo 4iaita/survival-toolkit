@@ -1,7 +1,7 @@
 /* ---------- Mobs ---------- */
 // Mobs on the Mobs tab, in groups like the creative inventory's. k is the MOB_LOOKS key and the spawn egg
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; biome, the village biome its stage shows
-// (a BIOMES key, village, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, cave, mineshaft, mansion, nether, end, end_island, ocean, lush, flooded_cave or swamp_water; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, village, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, cave, mineshaft, mansion, trial_chamber, stronghold, night, nether, end, end_island, ocean, lush, flooded_cave or swamp_water; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -41,15 +41,16 @@ const START_MOODS = { pufferfish: "half" };
 const MOOD_NAMES = { calm: "Calm", pet: "Pet", angry: "Angry", half: "Half Puffed", puffed: "Puffed Up",
   slightly_cracked: "Slightly Cracked", cracked: "Cracked", badly_cracked: "Badly Cracked",
   statue_standing: "Standing Statue", statue_running: "Running Statue", statue_sitting: "Sitting Statue", statue_star: "Star Statue",
-  charged: "Charged", whirling: "Whirling" };
+  charged: "Charged" };
 // A mob whose moods aren't moods: what its row is called, and what its first (calm) one is. The iron golem's are its
 // cracks, as the game draws them when it's lost a quarter, half and three quarters of its health; the copper golem's,
 // the statue it can turn into once it's oxidized, in one of four poses; the creeper's, whether lightning has charged it.
 const MOOD_ROWS = { iron_golem: { label: "Cracks", calm: "Not Cracked" }, copper_golem: { label: "Statue", calm: "Alive" },
-  creeper: { label: "Lightning", calm: "Not Charged" }, breeze: { label: "Wind", calm: "Calm" } };
+  creeper: { label: "Lightning", calm: "Not Charged" } };
 // Moods whose layers run or shine: moving, a texture that scrolls (as a name's moving does); glowing, glowing layers shown
-// by day too (as a mob's glowing does). The charged creeper's lightning aura runs over it, as bright by day as at night.
-const MOOD_STAGE = { creeper: { charged: { moving: true, glowing: true } }, breeze: { whirling: { moving: true } } };
+// by day too (as a mob's glowing does). The charged creeper's lightning aura runs over it, as bright by day as at night;
+// the breeze's wind always slides round it (it only has its one, calm, mood).
+const MOOD_STAGE = { creeper: { charged: { moving: true, glowing: true } }, breeze: { calm: { moving: true } } };
 const moodName = (mob, k) => (k === "calm" && MOOD_ROWS[mob] ? MOOD_ROWS[mob].calm : MOOD_NAMES[k]);
 // What a pet's collar comes in, as the dyes are called in DYES; red is what the game starts it with.
 const COLLAR_COLORS = ["red", "orange", "yellow", "lime", "green", "cyan", "light blue", "blue", "purple", "magenta", "pink", "white", "light gray", "gray", "black", "brown"];
@@ -401,17 +402,17 @@ const MOBS = [
   { k: "allay", n: "Allay", g: "Village", stand: lift(10) }, { k: "copper_golem", n: "Copper Golem", g: "Village" }, { k: "iron_golem", n: "Iron Golem", g: "Village", biome: "village" },
   { k: "snow_golem", n: "Snow Golem", g: "Village", biome: "snowy" }, { k: "villager", n: "Villager", g: "Village", biome: "village" },
   { k: "wandering_trader", n: "Wandering Trader", g: "Village" },
-  { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "cave" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert" },
+  { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "trial_chamber" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert" },
   { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
   { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
   { k: "evoker", n: "Evoker", g: "Monsters", biome: "mansion" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
-  { k: "husk", n: "Husk", g: "Monsters", biome: "desert" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", stand: { body: { p: [0, 22, 0] } } },
+  { k: "husk", n: "Husk", g: "Monsters", biome: "desert" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", biome: "night", stand: { body: { p: [0, 22, 0] } } },
   { k: "pillager", n: "Pillager", g: "Monsters", biome: "village" }, { k: "ravager", n: "Ravager", g: "Monsters", biome: "village" },
-  { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "cave" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
-  { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
+  { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "stronghold" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
+  { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters", biome: "night" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
   { k: "stray", n: "Stray", g: "Monsters", biome: "snowy" }, { k: "vex", n: "Vex", g: "Monsters", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", g: "Monsters", biome: "mansion" }, { k: "warden", n: "Warden", g: "Monsters", biome: "cave" }, { k: "witch", n: "Witch", g: "Monsters", biome: "swamp" },
-  { k: "zombie", n: "Zombie", g: "Monsters", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", g: "Monsters" },
-  { k: "zombie_nautilus", n: "Zombie Nautilus", g: "Monsters", biome: "ocean", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", g: "Monsters", biome: "cave" },
+  { k: "zombie", n: "Zombie", g: "Monsters", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", g: "Monsters", biome: "night" },
+  { k: "zombie_nautilus", n: "Zombie Nautilus", g: "Monsters", biome: "ocean", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", g: "Monsters", biome: "night" },
   { k: "blaze", n: "Blaze", g: "Nether", biome: "nether", stand: { root: { p: [0, 14, 0] } } }, { k: "ghast", n: "Ghast", g: "Nether", biome: "nether", stand: { root: { p: [0, 15, 0] } } }, { k: "happy_ghast", n: "Happy Ghast", g: "Nether", stand: { root: { p: [0, 33, 0] } } }, { k: "hoglin", n: "Hoglin", g: "Nether", biome: "nether" },
   { k: "magma_cube", n: "Magma Cube", g: "Nether", biome: "nether", zoom: 2.5 }, { k: "piglin", n: "Piglin", g: "Nether", biome: "nether" }, { k: "piglin_brute", n: "Piglin Brute", g: "Nether", biome: "nether" },
   { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
