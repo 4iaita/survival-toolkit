@@ -228,26 +228,28 @@ const MOB_VARIANTS = {
     { k: "oxidized", n: "Oxidized", where: "Fully oxidized: it can turn into a statue", climate: "weathered" },
   ].map((v, i) => (i ? { ...v, skins: Object.fromEntries(["", "_baby_3", "_robot_3", "_maid_4", "_halloween_3"]
     .map(s => [`new_copper_golem${s}`, `new_copper_golem_${v.k}${s}`])) } : v)),
-  // The villager's professions (the game's q.variant), the farmer first: each has an outfit of its own over its biome's,
-  // a snowy one on some, and a Trick or Treat costume of its own (import_villager.py prints them). Unemployed villagers
-  // and nitwits wear no badge, and named Trick or Treat they dress as the Ghost (MOB_CLIMATES). Its biome and level are
-  // rows of their own (MOB_ROWS).
+  // The villager's professions (the game's q.variant), unemployed first, as the stage starts it: each has an outfit of
+  // its own over its biome's, a snowy one on some, and a Trick or Treat costume of its own (import_villager.py prints
+  // them, over the farmer's, which its looks are built with). Unemployed villagers and nitwits wear no badge, and named
+  // Trick or Treat they dress as the Ghost (MOB_CLIMATES). Its biome is a row of its own (MOB_ROWS).
   villager: [
+    { k: "unemployed", n: "Unemployed", where: "Has no job site yet", climate: "unemployed" },
     ...[["farmer", "Farmer", "Composter"], ["fisherman", "Fisherman", "Barrel"], ["shepherd", "Shepherd", "Loom"],
       ["fletcher", "Fletcher", "Fletching Table"], ["librarian", "Librarian", "Lectern"], ["cartographer", "Cartographer", "Cartography Table"],
       ["cleric", "Cleric", "Brewing Stand"], ["armorer", "Armorer", "Blast Furnace"], ["weaponsmith", "Weaponsmith", "Grindstone"],
       ["toolsmith", "Toolsmith", "Smithing Table"], ["butcher", "Butcher", "Smoker"], ["leatherworker", "Leatherworker", "Cauldron"],
       ["mason", "Mason", "Stonecutter"]].map(([k, n, block], i) => ({ k, n, where: `Works at a ${block.toLowerCase()}`, ...(i ? { skins: villagerSkins(k) } : {}) })),
-    { k: "unemployed", n: "Unemployed", where: "Has no job site yet", climate: "unemployed" },
     { k: "nitwit", n: "Nitwit", where: "Never takes a job", climate: "nitwit" },
   ],
   // The zombie villager's professions, as the villager's (it keeps its outfit when it's turned, and a cured one keeps its
-  // job): the same outfits, the farmer first. Its biome is a row of its own (MOB_ROWS).
+  // job): the same outfits, unemployed first, as the stage starts it (its looks are built with the farmer's). Its biome is
+  // a row of its own (MOB_ROWS).
   zombie_villager: [
+    { k: "unemployed", n: "Unemployed", where: "Had no job, or spawned with none", skins: zombieVillagerSkins("unemployed") },
     ...[["farmer", "Farmer"], ["fisherman", "Fisherman"], ["shepherd", "Shepherd"], ["fletcher", "Fletcher"], ["librarian", "Librarian"],
       ["cartographer", "Cartographer"], ["cleric", "Cleric"], ["armorer", "Armorer"], ["weaponsmith", "Weaponsmith"], ["toolsmith", "Toolsmith"],
-      ["butcher", "Butcher"], ["leatherworker", "Leatherworker"], ["mason", "Mason"], ["unemployed", "Unemployed"], ["nitwit", "Nitwit"]]
-      .map(([k, n], i) => ({ k, n, where: i < 13 ? `Was a ${n.toLowerCase()}, or spawned as one` : k === "nitwit" ? "Was a nitwit, or spawned as one" : "Had no job, or spawned with none", ...(i ? { skins: zombieVillagerSkins(k) } : {}) })),
+      ["butcher", "Butcher"], ["leatherworker", "Leatherworker"], ["mason", "Mason"], ["nitwit", "Nitwit"]]
+      .map(([k, n], i) => ({ k, n, where: `Was a ${n.toLowerCase()}, or spawned as one`, ...(i ? { skins: zombieVillagerSkins(k) } : {}) })),
   ],
   tropicalfish: [
     ...["Kob", "Sunstreak", "Snooper", "Dasher", "Brinely", "Spotty"].map((n, i) => ({ k: n.toLowerCase(), n, where: "Small shape",
@@ -264,10 +266,9 @@ const MOB_TINTS = {
 };
 // Rows of kinds a mob comes in besides its variant: k, n (what the row is called) and kinds, each with k, n and where as
 // MOB_VARIANTS', say (how the stage's description puts it), skins (textures drawn in place of the look's own, over the variant's and the rows' before it) and biome
-// (the stage's, over the variant's). The first kind is the one it starts with. off: variants that wear none of the
-// row's parts, whose buttons are off on them (offWhy says so). The villager's biome (the game's q.mark_variant) picks its
-// outfit and where its skin's shades start among the pack's twelve (darkest in deserts and savannas, lightest in snowy
-// villages and taigas); its level (q.trade_tier), the badge on its belt (import_villager.py prints them).
+// (the stage's, over the variant's). The first kind is the one it starts with. The villager's biome (the game's
+// q.mark_variant) picks its outfit and where its skin's shades start among the pack's twelve (darkest in deserts and
+// savannas, lightest in snowy villages and taigas): import_villager.py prints them.
 const villagerBiome = k => ({ new_villager_1: `new_villager_${k}_1`, new_villager_baby_1: `new_villager_${k}_baby_1` });
 const VILLAGER_DARK = { new_villager: "new_villager_desert", new_villager_baby: "new_villager_desert_baby" };
 const VILLAGER_PALE = { new_villager: "new_villager_snow", new_villager_baby: "new_villager_snow_baby" };
@@ -281,11 +282,6 @@ const MOB_ROWS = {
       { k: "snow", n: "Snow", say: "from a snowy village", where: "Snowy villages (with the pack’s biome looks on, they’re Snowy)", biome: "snowy", skins: { ...VILLAGER_PALE, ...villagerBiome("snow") } },
       { k: "swamp", n: "Swamp", say: "from the swamp", where: "Born in a swamp", biome: "swamp", skins: villagerBiome("swamp") },
       { k: "taiga", n: "Taiga", say: "from the taiga", where: "Taiga villages", biome: "taiga", skins: { ...VILLAGER_PALE, ...villagerBiome("taiga") } },
-    ] },
-    { k: "level", n: "Level", off: ["unemployed", "nitwit"], offWhy: "Only a villager with a job wears a badge", kinds: [
-      { k: "novice", n: "Novice", say: "novice level", where: "Stone badge: a new trader" },
-      ...[["apprentice", "Apprentice", "iron", "Iron"], ["journeyman", "Journeyman", "gold", "Gold"], ["expert", "Expert", "emerald", "Emerald"], ["master", "Master", "diamond", "Diamond"]]
-        .map(([k, n, s, badge]) => ({ k, n, say: `${k} level`, where: `${badge} badge: traded with enough to level up`, skins: { new_villager_2: `new_villager_${s}_2` } })),
     ] },
   ],
   // The zombie villager's biome, as the villager's: its outfit only (its skin is the zombie's green whatever the biome).

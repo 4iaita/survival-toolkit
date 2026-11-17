@@ -9,8 +9,8 @@ controllers are its own, not the zombie's or the villager's (its four stances ar
 keys), so it shares nothing but the villager's profession outfits, the same textures, and the game's baby_transform.
 
 Its skin is the zombie's green over its biome's outfit (q.mark_variant, as the villager's) and its profession's
-(q.variant, the villager's outfits; a baby has none): the stage's variants are its professions, the farmer first as the villager's, and
-its biome is a row of its own (MOB_ROWS in src/mob-data.js): this prints its skins. It has no skin shades and no level
+(q.variant, the villager's outfits; a baby has none): its looks are built as a farmer's, the stage's variants are its
+professions (unemployed first, as the villager's), and its biome is a row of its own (MOB_ROWS in src/mob-data.js): this prints its skins. It has no skin shades and no level
 badge. Its eyes, white with red pupils, glow (faint texels on an emissive material). The game has babies of it; the pack
 makes none by itself. Run import_additions.py first.
 """
@@ -18,8 +18,8 @@ import import_additions as ia
 from import_port import im, port, put
 from import_villager import BIOMES, finish, game_any, look, rows
 
-# The professions, by the game's q.variant: the farmer (1) first, as the villager's, then the rest in the game's order,
-# unemployed (0) and the nitwit (14) last. Its outfits are the villager's.
+# The professions, by the game's q.variant: the farmer (1) first, as its looks are built with it, then the rest in the
+# game's order, unemployed (0) and the nitwit (14) last. Its outfits are the villager's.
 PROFESSIONS = ["farmer", "fisherman", "shepherd", "fletcher", "librarian", "cartographer", "cleric", "armorer",
                "weaponsmith", "toolsmith", "butcher", "leatherworker", "mason", "unemployed", "nitwit"]
 VARIANTS = [*range(1, 14), 0, 14]

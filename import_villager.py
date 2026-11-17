@@ -10,11 +10,11 @@ keys), but its nervous flinch and its blink are the trader's, the same animation
 
 A villager's skin is three textures on one model: a base skin (the game's skin id, 0 to 5, from where its biome's
 villagers start among the pack's twelve), its biome's outfit (q.mark_variant: plains, desert, jungle, savanna, snow,
-swamp or taiga) and its profession's (q.variant). A badge on its belt shows its level (q.trade_tier), but not on an
-unemployed villager, a nitwit or a baby. The stage's variants are its professions (the game's q.variant), the farmer
-first; unemployed and nitwit are climates (MOB_CLIMATES), as the pack draws them without the badge, and Trick or Treat
-on them as the Ghost. Its biome and level are rows of their own (MOB_ROWS in src/mob-data.js), skins over the
-profession's: this prints them. Every villager shown has skin id 0 (the darkest of its biome's six skins), which also
+swamp or taiga) and its profession's (q.variant). A badge on its belt shows its level (q.trade_tier: the stage shows
+a novice's, stone), but not on an unemployed villager, a nitwit or a baby. Its looks are built as a farmer's, and the
+stage's variants are its professions (the game's q.variant), unemployed first; unemployed and nitwit are climates
+(MOB_CLIMATES), as the pack draws them without the badge, and Trick or Treat on them as the Ghost. Its biome is a row of
+its own (MOB_ROWS in src/mob-data.js), skins over the profession's: this prints them. Every villager shown has skin id 0 (the darkest of its biome's six skins), which also
 picks its stance. The game has babies of it (always unemployed); the pack makes none by itself. Run import_additions.py
 first.
 """
@@ -24,14 +24,13 @@ import import_additions as ia
 from import_port import copy_texture, im, port, put
 from import_wandering_trader import BLINK, FLINCH
 
-# The professions, by the game's q.variant: the farmer (1) first, as the stage starts with it, then the rest in the
-# game's order. Unemployed (0) and nitwit (14) are climates.
+# The professions, by the game's q.variant: the farmer (1) first, as its looks are built with it, then the rest in the
+# game's order. Unemployed (0) and nitwit (14) are climates (the stage starts it unemployed).
 PROFESSIONS = ["farmer", "fisherman", "shepherd", "fletcher", "librarian", "cartographer", "cleric", "armorer",
                "weaponsmith", "toolsmith", "butcher", "leatherworker", "mason"]
 CLIMATES = {"unemployed": {"variant": 0.0}, "nitwit": {"variant": 14.0}}
-# The biomes, by the game's q.mark_variant, and the levels, by q.trade_tier (stone, iron, gold, emerald, diamond).
+# The biomes, by the game's q.mark_variant.
 BIOMES = ["plains", "desert", "jungle", "savanna", "snow", "swamp", "taiga"]
-LEVELS = ["stone", "iron", "gold", "emerald", "diamond"]
 
 
 def game_any(x, *values):
@@ -111,10 +110,10 @@ def finish(mob="villager"):
 
 
 def rows(mob="villager", answers=answers, climates_said=CLIMATES, spec=None):
-    """The rows' skins (the villager's biome and level): for each kind, the textures that differ from the plain
+    """The rows' skins (the villager's biome): for each kind, the textures that differ from the plain
     farmer's, in every look and climate, by their keys in src/mob-models.js. New textures are copied as
     new_<mob>_<kind>... spec: [(row, kinds, what the game says for kind k)]."""
-    spec = spec or [("biome", BIOMES, lambda k: {"mark_variant": float(k)}), ("level", LEVELS, lambda k: {"trade_tier": float(k)})]
+    spec = spec or [("biome", BIOMES, lambda k: {"mark_variant": float(k)})]
     ents, rcs, geos, mats, anims, *_ = im.read_pack()
     d = ents[f"minecraft:{mob}"]
     text = ia.MODELS_JS.read_text()

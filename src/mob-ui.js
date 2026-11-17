@@ -55,13 +55,11 @@ let mobVariant = "";
 // white wool, not sheared, to start with.
 let mobSaddle = false, mobWool = "white", mobShorn = false;
 const variantInfo = () => (MOB_VARIANTS[mobTab.mob] || []).find(v => v.k === mobVariant) || (MOB_VARIANTS[mobTab.mob] || [])[0] || null;
-// The kinds it's picked in its other rows (MOB_ROWS), by row: a row not picked yet has its first. A row whose parts the
-// variant doesn't wear (off: an unemployed villager's badge) is left out.
+// The kinds it's picked in its other rows (MOB_ROWS), by row: a row not picked yet has its first.
 let mobRows = {};
 const rowsOf = k => MOB_ROWS[k] || [];
-const rowOff = (row, v = variantInfo()) => Boolean(row.off && v && row.off.includes(v.k));
 const rowKind = row => row.kinds.find(x => x.k === mobRows[row.k]) || row.kinds[0];
-const rowKinds = k => rowsOf(k).filter(r => !rowOff(r)).map(rowKind);
+const rowKinds = k => rowsOf(k).map(rowKind);
 // The textures the stage draws in place of the look's own: the variant's, then each row's over them.
 function pickedSkins(k) {
   const out = { ...((variantInfo() || {}).skins || {}) };
@@ -197,16 +195,15 @@ function renderVariants() {
   $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
 }
 
-// A row of buttons for each of its other rows (MOB_ROWS), and what the picked kind is and where it's found; off on a
-// variant that wears none of it.
+// A row of buttons for each of its other rows (MOB_ROWS), and what the picked kind is and where it's found.
 function renderRows() {
   $("kind-rows").innerHTML = rowsOf(mobTab.mob).map(r => {
-    const v = rowKind(r), off = rowOff(r);
+    const v = rowKind(r);
     return `
     <div class="try-bar">
-      <span class="cat-label" id="row-label-${r.k}">${r.n}: ${v.n}${off ? ` · ${esc(r.offWhy)}` : v.where ? ` · ${esc(v.where)}` : ""}</span>
+      <span class="cat-label" id="row-label-${r.k}">${r.n}: ${v.n}${v.where ? ` · ${esc(v.where)}` : ""}</span>
       <div class="try-tags" role="group" aria-labelledby="row-label-${r.k}">${r.kinds.map(x =>
-        `<button type="button" class="name-chip" data-row="${r.k}" data-kind="${x.k}" title="${esc(off ? r.offWhy : x.where)}" aria-pressed="${x === v}"${off ? " disabled" : ""}>${x.n}</button>`).join("")}</div>
+        `<button type="button" class="name-chip" data-row="${r.k}" data-kind="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("")}</div>
     </div>`;
   }).join("");
 }
@@ -485,7 +482,6 @@ $("variant-try").addEventListener("click", e => {
   if (currentTag() && !fitsVariant(currentTag())) mobTab.name = mobTab.say = "";
   mobView.turnBack();
   renderVariants();
-  renderRows();
   renderTry();
   renderMobResult();
   showOnStage();
@@ -495,7 +491,7 @@ $("variant-try").addEventListener("click", e => {
 $("kind-rows").addEventListener("click", e => {
   const b = e.target.closest("button[data-row]");
   const row = b && rowsOf(mobTab.mob).find(r => r.k === b.dataset.row);
-  if (!row || b.disabled || b.dataset.kind === rowKind(row).k) return;
+  if (!row || b.dataset.kind === rowKind(row).k) return;
   mobRows = { ...mobRows, [row.k]: b.dataset.kind };
   renderRows();
   showOnStage();
