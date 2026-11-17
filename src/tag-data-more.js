@@ -180,8 +180,8 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Chick", "Peep"], kind: BABY },
   ],
   phantom: [
-    { names: ["Baby", "Phantlet", "Flappy"], kind: BABY },
-    { names: ["Halloween", "Bat"], what: "A Halloween costume." },
+    { names: ["Baby", "Phantlet", "Flappy"], night: true, kind: BABY, rare: "1 in 200 phantoms" },
+    { names: ["Halloween", "Bat"], what: "A giant bat: a dark furry body and head with two tall pointed ears, two little white fangs and red eyes that glow in the dark, broad black wings with crimson undersides and pale claws at their bends, and two little legs trailing behind.", night: true },
   ],
   pig: [
     { names: ["Zombified Piglet", "Baby Zombified"], more: ["zombified Piglet", "Zombified piglet", "baby Zombified", "Baby zombified"], what: "A zombie piglet, its pink flesh rotting green at the edges, with bare bone showing on its side and legs, and one eye glowing white in the dark.", night: true },

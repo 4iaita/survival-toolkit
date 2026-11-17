@@ -104,6 +104,7 @@ WHAT = {
     ("wandering_trader", "halloween"): "A fortune teller: a purple robe with orange trim and a fringed hem, a red scarf hanging down its back, green boots, and an orange headband with a feather and a gold charm on it, the charm’s green eye and its own eyes glowing in the dark.",
     ("camel_husk", "halloween"): "An executioner’s beast: a shaggy red-brown hide, an iron collar round its neck and iron cuffs on its legs, a gray band over its back, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
     ("camel_husk", "executioner calf"): "A baby executioner’s beast: a shaggy red-brown hide, an iron collar and iron cuffs on its legs, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
+    ("phantom", "halloween"): "A giant bat: a dark furry body and head with two tall pointed ears, two little white fangs and red eyes that glow in the dark, broad black wings with crimson undersides and pale claws at their bends, and two little legs trailing behind.",
     ("bogged", "halloween"): "A scarecrow: a carved pumpkin for a head, its eyes glowing in the dark over a jagged grin, under a floppy wide-brimmed green hat with a brown band and a sprig sticking out of its crown, a ragged green collar round its neck and more rags about its hips, and arms and legs of brown branches with twigs sprouting from them. It has no mushrooms to shear.",
     ("creeper", "cherry"): "A crown of pink cherry blossoms round the top of its head, more blossoms on its sides and back, and one on its chest.",
     ("creeper", "blossom"): "Pink all over, covered in cherry blossoms, with a few green patches showing through.",
@@ -275,7 +276,7 @@ RARE = {
     # And 1 in 20 allays.
     ("allay", "baby"): "1 in 20 allays",
     # And 1 in 200 parched and vexes.
-    ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes", ("breeze", "baby"): "1 in 200 breezes",
+    ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes", ("breeze", "baby"): "1 in 200 breezes", ("phantom", "baby"): "1 in 200 phantoms",
     ("pillager", "baby"): "1 in 200 pillagers", ("vindicator", "baby"): "1 in 200 vindicators",
     ("evoker", "baby"): "1 in 200 evokers", ("witch", "baby"): "1 in 200 witches", ("ravager", "baby"): "1 in 200 ravagers",
     ("witch", "cherry"): "witches in cherry groves",
@@ -324,7 +325,7 @@ NIGHT = {("chicken", "halloween"), ("villager", "trick or treat"), ("chicken", "
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
          ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale"),
          ("stray", "baby"), ("stray", "halloween"), ("drowned", "halloween"), ("drowned", "baby gillman"),
-         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur"), ("pillager", "halloween"), ("evoker", "halloween")}
+         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur"), ("pillager", "halloween"), ("evoker", "halloween"), ("phantom", "baby"), ("phantom", "halloween")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 
