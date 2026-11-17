@@ -24,8 +24,6 @@ const hasArt = (...names) => names.every(n => art(n));
 const BIOME_TINTS = {
   plains: { foliage: "#77ab2f", grass: "#91bd59" },
   village: { foliage: "#77ab2f", grass: "#91bd59" },
-  // The plains at night, the phantom's and the night's undead.
-  night: { foliage: "#77ab2f", grass: "#91bd59" },
   desert: { foliage: "#aea42a", grass: "#bfb755" },
   savanna: { foliage: "#aea42a", grass: "#bfb755" },
   snowy: { foliage: "#60a17b", grass: "#80b497" },

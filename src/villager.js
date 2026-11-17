@@ -468,11 +468,13 @@ function villagerScene(canvas, tag, { onTurn = () => {} } = {}) {
 }
 
 // The biome's ground texture, tiled under the villager.
-const groundArt = biome => {
-  // Only villages are BIOMES; the Mobs tab's cave, trial chamber, stronghold, night, nether, End, ocean, lush and flooded caves, the tadpole's swamp water, the wolves' wild
+const groundArt = night => {
+  // A biome's night has its floor by day (the stage dims it).
+  const biome = night.replace(/_night$/, "");
+  // Only villages are BIOMES; the Mobs tab's cave, trial chamber, stronghold, nether, End, ocean, lush and flooded caves, the tadpole's swamp water, the wolves' wild
   // biomes, the panda's bamboo jungle, the mooshroom's mushroom fields and the warm frog's mangrove swamp have floors of their own.
   const name = (BIOMES.find(b => b.k === biome) || { ground: { village: "grass_top", forest: "grass_top", snowy_taiga: "snow", grove: "snow", peaks: "snow", pine_taiga: "podzol_top",
-    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", night: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "tuff", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel", mangrove_swamp: "mud", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
+    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", plains: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "tuff", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel", mangrove_swamp: "mud", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
   if (!tex) return icon(`biome:${biome}`);
   return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };

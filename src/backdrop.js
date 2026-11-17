@@ -31,7 +31,9 @@
  * vaults. And a stronghold's portal room, the silverfish's: stone brick walls, cracked and mossy, iron doors and barred
  * windows, bookshelves, the end portal's frames on their steps and the silverfish spawner.
  * The plains have a night too, for the phantom and the undead horses and zombie villagers that come out at night: the
- * same hills and house darkened and blue under stars and the moon, its windows lit.
+ * same hills and house darkened and blue under stars and the moon, its windows lit. So do the swamp (the bogged's and
+ * the witch's), the desert (the husk's, the parched's and the camel husk's), the snowy village (the stray's) and the
+ * ocean (the drowned's and the zombie nautilus's, seen from underwater: dim moonlight from a dark surface).
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
  * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
@@ -653,9 +655,9 @@ const BACKDROPS = {
   }),
   // The plains at night, the phantom's (it comes out over any biome at night) and the night's undead: the plains'
   // hills and house, darkened and blue under stars and the moon, the house's windows lit.
-  night: t => {
+  plains_night: t => {
     const scene = BACKDROPS.plains(t);
-    return { ...scene, seed: BIOMES.findIndex(b => b.k === "plains") + 1, night: { shade: "rgba(12, 20, 48, .45)", moon: 0.78 },
+    return { ...scene, night: NIGHTS.default.night,
       near: [[house({ ...PLAINS_HOUSE, window: LIT_WINDOW }), -14], ...scene.near.slice(1)], lights: [[-13, 2.5], [-9, 2.5]], lightColor: "255, 190, 100" };
   },
   forest: t => ({
@@ -974,11 +976,15 @@ function drawCeiling(ctx, { rock, drip, low, shade = 0 }, width, size, seed, hor
 }
 
 // Night over a scene: what's drawn so far shaded (shade), then stars and a full moon (at moon across the sky) behind it.
-function drawNight(ctx, { shade, moon = 0.75 }, width, horizon, size, seed) {
+function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, size, seed) {
   ctx.globalCompositeOperation = "source-atop";
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, width, horizon + size);
   ctx.globalCompositeOperation = "destination-over";
+  if (!stars) {
+    ctx.globalCompositeOperation = "source-over";
+    return;
+  }
   const random = rng(seed), px = Math.max(1, Math.round(size / 8));
   // The moon: a pale square, a few gray craters on it, and a soft halo round it.
   const m = 2 * size, mx = Math.round(width * moon), my = Math.round(horizon * 0.18);
@@ -1000,6 +1006,16 @@ function drawNight(ctx, { shade, moon = 0.75 }, width, horizon, size, seed) {
   ctx.globalCompositeOperation = "source-over";
 }
 
+// The other biomes' nights (desert_night...): what changes from the biome by day. Above water, everything darkened and
+// blue under stars and the moon (the swamp's a murkier green-gray); underwater, the ocean's, no sky to see but dim
+// moonlight slanting down from a dark surface.
+const NIGHTS = {
+  default: { night: { shade: "rgba(12, 20, 48, .45)", moon: 0.78 } },
+  swamp: { night: { shade: "rgba(10, 22, 30, .5)", moon: 0.7 } },
+  snowy: { night: { shade: "rgba(14, 24, 60, .38)", moon: 0.74 } },
+  ocean: { night: { shade: "rgba(4, 12, 36, .52)", stars: false }, water: { sun: true, shafts: 0.4, surface: "#3f6290" } },
+};
+
 // The backdrop canvas for a stage: far hills at FAR and the nearer props at NEAR CSS pixels per block,
 // standing on the top edge of the stage's ground strip (GROUND_STRIP pixels tall). It redraws when the
 // stage changes size.
@@ -1013,9 +1029,12 @@ function backdropView(canvas) {
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     const ctx = canvas.getContext("2d");
-    const t = BIOME_TINTS[biome], scene = BACKDROPS[biome](t), snowy = biome === "snowy" || Boolean(scene.snowy), mist = scene.mist || HAZE;
+    // A biome's night (swamp_night): its own scene if it has one (the plains', its windows lit), else the biome's under NIGHTS.
+    const base = biome.replace(/_night$/, ""), t = BIOME_TINTS[base];
+    const scene = BACKDROPS[biome] ? BACKDROPS[biome](t) : { ...BACKDROPS[base](t), ...(base === biome ? {} : NIGHTS[base] || NIGHTS.default) };
+    const snowy = base === "snowy" || Boolean(scene.snowy), mist = scene.mist || HAZE;
     // The hills' shape: a village biome's by its place in BIOMES, a scene's own seed otherwise.
-    const seed = scene.seed || BIOMES.findIndex(b => b.k === biome) + 1;
+    const seed = scene.seed || BIOMES.findIndex(b => b.k === base) + 1;
     const haze = getComputedStyle(canvas).getPropertyValue("--haze").trim() || "#bcd5ff";
     const horizon = (h - GROUND_STRIP + 2) * dpr;
     // Each layer is drawn on its own canvas, then washed with the haze where it has pixels.

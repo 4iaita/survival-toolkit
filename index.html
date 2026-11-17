@@ -546,11 +546,22 @@ a.mc-btn { text-decoration: none; }
 .stage[data-biome="stronghold"] { --sky: #0d0d10; --haze: #18181d; }
 .stage[data-biome="stronghold"]::after { filter: brightness(.6); }
 .stage[data-biome="stronghold"]::before { display: none; }
-/* The plains at night: a deep blue sky, lighter toward the horizon, dim clouds, and the grass in the dark (not black:
+/* A biome at night (the plains'): a deep blue sky, lighter toward the horizon, dim clouds, and the grass in the dark (not black:
    the mob still has to be seen against it). */
-.stage[data-biome="night"] { --sky: #0b1430; --haze: #33467a; }
-.stage[data-biome="night"]::before { opacity: .18; }
-.stage[data-biome="night"]::after { filter: brightness(.62) saturate(.8) hue-rotate(8deg); }
+.stage[data-biome$="_night"]::before { opacity: .18; }
+.stage[data-biome$="_night"]::after { filter: brightness(.62) saturate(.8) hue-rotate(8deg); }
+.stage[data-biome="plains_night"] { --sky: #0b1430; --haze: #33467a; }
+/* The other biomes' nights: the swamp's murky, the desert's a little warmer at the horizon, the snowy village's bright
+   snow, and the ocean's deep blue water with no clouds. */
+.stage[data-biome="swamp_night"] { --sky: #0b1622; --haze: #2d3e45; }
+.stage[data-biome="swamp_night"]::after { filter: brightness(.55) saturate(.8); }
+.stage[data-biome="desert_night"] { --sky: #0d1532; --haze: #4a4f78; }
+.stage[data-biome="desert_night"]::after { filter: brightness(.6) saturate(.75); }
+.stage[data-biome="snowy_night"] { --sky: #101a3c; --haze: #4c5d92; }
+.stage[data-biome="snowy_night"]::after { filter: brightness(.72) saturate(.85); }
+.stage[data-biome="ocean_night"] { --sky: #0d3157; --haze: #031427; }
+.stage[data-biome="ocean_night"]::before { display: none; }
+.stage[data-biome="ocean_night"]::after { filter: brightness(.42) saturate(.6); }
 .stage[data-biome="nether"] { --sky: #1c0605; --haze: #3a0f08; }
 /* The biomes some name tags' looks come from: the cherry grove's clear mountain sky, the pale garden's gray mist, the
    dappled forest's soft autumn haze, the sulfur caves' dark yellow murk. */
@@ -1417,8 +1428,6 @@ const hasArt = (...names) => names.every(n => art(n));
 const BIOME_TINTS = {
   plains: { foliage: "#77ab2f", grass: "#91bd59" },
   village: { foliage: "#77ab2f", grass: "#91bd59" },
-  // The plains at night, the phantom's and the night's undead.
-  night: { foliage: "#77ab2f", grass: "#91bd59" },
   desert: { foliage: "#aea42a", grass: "#bfb755" },
   savanna: { foliage: "#aea42a", grass: "#bfb755" },
   snowy: { foliage: "#60a17b", grass: "#80b497" },
@@ -3615,11 +3624,13 @@ function villagerScene(canvas, tag, { onTurn = () => {} } = {}) {
 }
 
 // The biome's ground texture, tiled under the villager.
-const groundArt = biome => {
-  // Only villages are BIOMES; the Mobs tab's cave, trial chamber, stronghold, night, nether, End, ocean, lush and flooded caves, the tadpole's swamp water, the wolves' wild
+const groundArt = night => {
+  // A biome's night has its floor by day (the stage dims it).
+  const biome = night.replace(/_night$/, "");
+  // Only villages are BIOMES; the Mobs tab's cave, trial chamber, stronghold, nether, End, ocean, lush and flooded caves, the tadpole's swamp water, the wolves' wild
   // biomes, the panda's bamboo jungle, the mooshroom's mushroom fields and the warm frog's mangrove swamp have floors of their own.
   const name = (BIOMES.find(b => b.k === biome) || { ground: { village: "grass_top", forest: "grass_top", snowy_taiga: "snow", grove: "snow", peaks: "snow", pine_taiga: "podzol_top",
-    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", night: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "tuff", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel", mangrove_swamp: "mud", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
+    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", plains: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "tuff", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel", mangrove_swamp: "mud", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
   if (!tex) return icon(`biome:${biome}`);
   return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };
@@ -3657,7 +3668,9 @@ const groundArt = biome => {
  * vaults. And a stronghold's portal room, the silverfish's: stone brick walls, cracked and mossy, iron doors and barred
  * windows, bookshelves, the end portal's frames on their steps and the silverfish spawner.
  * The plains have a night too, for the phantom and the undead horses and zombie villagers that come out at night: the
- * same hills and house darkened and blue under stars and the moon, its windows lit.
+ * same hills and house darkened and blue under stars and the moon, its windows lit. So do the swamp (the bogged's and
+ * the witch's), the desert (the husk's, the parched's and the camel husk's), the snowy village (the stray's) and the
+ * ocean (the drowned's and the zombie nautilus's, seen from underwater: dim moonlight from a dark surface).
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
  * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
  */
@@ -4279,9 +4292,9 @@ const BACKDROPS = {
   }),
   // The plains at night, the phantom's (it comes out over any biome at night) and the night's undead: the plains'
   // hills and house, darkened and blue under stars and the moon, the house's windows lit.
-  night: t => {
+  plains_night: t => {
     const scene = BACKDROPS.plains(t);
-    return { ...scene, seed: BIOMES.findIndex(b => b.k === "plains") + 1, night: { shade: "rgba(12, 20, 48, .45)", moon: 0.78 },
+    return { ...scene, night: NIGHTS.default.night,
       near: [[house({ ...PLAINS_HOUSE, window: LIT_WINDOW }), -14], ...scene.near.slice(1)], lights: [[-13, 2.5], [-9, 2.5]], lightColor: "255, 190, 100" };
   },
   forest: t => ({
@@ -4600,11 +4613,15 @@ function drawCeiling(ctx, { rock, drip, low, shade = 0 }, width, size, seed, hor
 }
 
 // Night over a scene: what's drawn so far shaded (shade), then stars and a full moon (at moon across the sky) behind it.
-function drawNight(ctx, { shade, moon = 0.75 }, width, horizon, size, seed) {
+function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, size, seed) {
   ctx.globalCompositeOperation = "source-atop";
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, width, horizon + size);
   ctx.globalCompositeOperation = "destination-over";
+  if (!stars) {
+    ctx.globalCompositeOperation = "source-over";
+    return;
+  }
   const random = rng(seed), px = Math.max(1, Math.round(size / 8));
   // The moon: a pale square, a few gray craters on it, and a soft halo round it.
   const m = 2 * size, mx = Math.round(width * moon), my = Math.round(horizon * 0.18);
@@ -4626,6 +4643,16 @@ function drawNight(ctx, { shade, moon = 0.75 }, width, horizon, size, seed) {
   ctx.globalCompositeOperation = "source-over";
 }
 
+// The other biomes' nights (desert_night...): what changes from the biome by day. Above water, everything darkened and
+// blue under stars and the moon (the swamp's a murkier green-gray); underwater, the ocean's, no sky to see but dim
+// moonlight slanting down from a dark surface.
+const NIGHTS = {
+  default: { night: { shade: "rgba(12, 20, 48, .45)", moon: 0.78 } },
+  swamp: { night: { shade: "rgba(10, 22, 30, .5)", moon: 0.7 } },
+  snowy: { night: { shade: "rgba(14, 24, 60, .38)", moon: 0.74 } },
+  ocean: { night: { shade: "rgba(4, 12, 36, .52)", stars: false }, water: { sun: true, shafts: 0.4, surface: "#3f6290" } },
+};
+
 // The backdrop canvas for a stage: far hills at FAR and the nearer props at NEAR CSS pixels per block,
 // standing on the top edge of the stage's ground strip (GROUND_STRIP pixels tall). It redraws when the
 // stage changes size.
@@ -4639,9 +4666,12 @@ function backdropView(canvas) {
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     const ctx = canvas.getContext("2d");
-    const t = BIOME_TINTS[biome], scene = BACKDROPS[biome](t), snowy = biome === "snowy" || Boolean(scene.snowy), mist = scene.mist || HAZE;
+    // A biome's night (swamp_night): its own scene if it has one (the plains', its windows lit), else the biome's under NIGHTS.
+    const base = biome.replace(/_night$/, ""), t = BIOME_TINTS[base];
+    const scene = BACKDROPS[biome] ? BACKDROPS[biome](t) : { ...BACKDROPS[base](t), ...(base === biome ? {} : NIGHTS[base] || NIGHTS.default) };
+    const snowy = base === "snowy" || Boolean(scene.snowy), mist = scene.mist || HAZE;
     // The hills' shape: a village biome's by its place in BIOMES, a scene's own seed otherwise.
-    const seed = scene.seed || BIOMES.findIndex(b => b.k === biome) + 1;
+    const seed = scene.seed || BIOMES.findIndex(b => b.k === base) + 1;
     const haze = getComputedStyle(canvas).getPropertyValue("--haze").trim() || "#bcd5ff";
     const horizon = (h - GROUND_STRIP + 2) * dpr;
     // Each layer is drawn on its own canvas, then washed with the haze where it has pixels.
@@ -6717,7 +6747,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
 /* ---------- Mobs ---------- */
 // Mobs on the Mobs tab, in groups like the creative inventory's. k is the MOB_LOOKS key and the spawn egg
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; biome, the village biome its stage shows
-// (a BIOMES key, village, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, cave, mineshaft, mansion, trial_chamber, stronghold, night, nether, end, end_island, ocean, lush, flooded_cave or swamp_water; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, village, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, cave, mineshaft, mansion, trial_chamber, stronghold, nether, end, end_island, ocean, lush, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -7118,17 +7148,17 @@ const MOBS = [
   { k: "allay", n: "Allay", g: "Village", stand: lift(10) }, { k: "copper_golem", n: "Copper Golem", g: "Village" }, { k: "iron_golem", n: "Iron Golem", g: "Village", biome: "village" },
   { k: "snow_golem", n: "Snow Golem", g: "Village", biome: "snowy" }, { k: "villager", n: "Villager", g: "Village", biome: "village" },
   { k: "wandering_trader", n: "Wandering Trader", g: "Village" },
-  { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "trial_chamber" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert" },
+  { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp_night" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "trial_chamber" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert_night" },
   { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
-  { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
+  { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean_night", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
   { k: "evoker", n: "Evoker", g: "Monsters", biome: "mansion" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
-  { k: "husk", n: "Husk", g: "Monsters", biome: "desert" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", biome: "night", stand: { body: { p: [0, 22, 0] } } },
+  { k: "husk", n: "Husk", g: "Monsters", biome: "desert_night" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert_night" }, { k: "phantom", n: "Phantom", g: "Monsters", biome: "plains_night", stand: { body: { p: [0, 22, 0] } } },
   { k: "pillager", n: "Pillager", g: "Monsters", biome: "village" }, { k: "ravager", n: "Ravager", g: "Monsters", biome: "village" },
   { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "stronghold" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
-  { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters", biome: "night" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
-  { k: "stray", n: "Stray", g: "Monsters", biome: "snowy" }, { k: "vex", n: "Vex", g: "Monsters", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", g: "Monsters", biome: "mansion" }, { k: "warden", n: "Warden", g: "Monsters", biome: "cave" }, { k: "witch", n: "Witch", g: "Monsters", biome: "swamp" },
-  { k: "zombie", n: "Zombie", g: "Monsters", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", g: "Monsters", biome: "night" },
-  { k: "zombie_nautilus", n: "Zombie Nautilus", g: "Monsters", biome: "ocean", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", g: "Monsters", biome: "night" },
+  { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters", biome: "plains_night" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
+  { k: "stray", n: "Stray", g: "Monsters", biome: "snowy_night" }, { k: "vex", n: "Vex", g: "Monsters", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", g: "Monsters", biome: "mansion" }, { k: "warden", n: "Warden", g: "Monsters", biome: "cave" }, { k: "witch", n: "Witch", g: "Monsters", biome: "swamp_night" },
+  { k: "zombie", n: "Zombie", g: "Monsters", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", g: "Monsters", biome: "plains_night" },
+  { k: "zombie_nautilus", n: "Zombie Nautilus", g: "Monsters", biome: "ocean_night", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", g: "Monsters", biome: "plains_night" },
   { k: "blaze", n: "Blaze", g: "Nether", biome: "nether", stand: { root: { p: [0, 14, 0] } } }, { k: "ghast", n: "Ghast", g: "Nether", biome: "nether", stand: { root: { p: [0, 15, 0] } } }, { k: "happy_ghast", n: "Happy Ghast", g: "Nether", stand: { root: { p: [0, 33, 0] } } }, { k: "hoglin", n: "Hoglin", g: "Nether", biome: "nether" },
   { k: "magma_cube", n: "Magma Cube", g: "Nether", biome: "nether", zoom: 2.5 }, { k: "piglin", n: "Piglin", g: "Nether", biome: "nether" }, { k: "piglin_brute", n: "Piglin Brute", g: "Nether", biome: "nether" },
   { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
@@ -8705,8 +8735,8 @@ const wool = { color: [255, 255, 255] }, mobClock = { t: 0 };
 let jebStep = 0;
 
 // The stage: the mob's own biome (its variant's, for one that has them), a name's own biome (biome: the cherry grove for
-// a Cherry look) and a snowy village for snowy names, by day but for the plains at night (night, the phantom's and the
-// night's undead), where glowing layers show. A name whose difference is a glow (night: glowing eyes) shows its glowing
+// a Cherry look) and a snowy village for snowy names (at night for a mob that stands in a night), by day but for the
+// nights (plains_night, swamp_night...: the phantom's and the undead's), where glowing layers show. A name whose difference is a glow (night: glowing eyes) shows its glowing
 // layers all the same, so they can be seen against the day.
 function showOnStage() {
   const m = mobOf(mobTab.mob), t = currentTag(), variant = variantInfo();
@@ -8714,7 +8744,7 @@ function showOnStage() {
   const tagEl = $("mob-tag");
   tagEl.textContent = t ? (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]) : "";
   const rowBiome = (rowKinds(m.k).find(x => x.biome) || {}).biome;
-  const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? "snowy" : rowBiome || (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || biome === "night" || glowsOnly(MOB_LOOKS[m.k], look);
+  const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? (/_night$/.test(m.biome || "") ? "snowy_night" : "snowy") : rowBiome || (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || /_night$/.test(biome) || glowsOnly(MOB_LOOKS[m.k], look);
   mobStage.dataset.biome = biome;
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);
   mobBackdrop.show(biome);
