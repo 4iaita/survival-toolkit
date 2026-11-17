@@ -55,6 +55,23 @@ let mobVariant = "";
 // white wool, not sheared, to start with.
 let mobSaddle = false, mobWool = "white", mobShorn = false;
 const variantInfo = () => (MOB_VARIANTS[mobTab.mob] || []).find(v => v.k === mobVariant) || (MOB_VARIANTS[mobTab.mob] || [])[0] || null;
+// The kinds it's picked in its other rows (MOB_ROWS), by row: a row not picked yet has its first. A row whose parts the
+// variant doesn't wear (off: an unemployed villager's badge) is left out.
+let mobRows = {};
+const rowsOf = k => MOB_ROWS[k] || [];
+const rowOff = (row, v = variantInfo()) => Boolean(row.off && v && row.off.includes(v.k));
+const rowKind = row => row.kinds.find(x => x.k === mobRows[row.k]) || row.kinds[0];
+const rowKinds = k => rowsOf(k).filter(r => !rowOff(r)).map(rowKind);
+// The textures the stage draws in place of the look's own: the variant's, then each row's over them.
+function pickedSkins(k) {
+  const out = { ...((variantInfo() || {}).skins || {}) };
+  for (const kind of rowKinds(k)) {
+    const skins = kind.skins || {};
+    for (const [from, to] of Object.entries(out)) if (skins[to]) out[from] = skins[to];
+    for (const [from, to] of Object.entries(skins)) if (!(from in out)) out[from] = to;
+  }
+  return Object.keys(out).length ? out : null;
+}
 // Its markings, for a mob that has some (MOB_MARKINGS), and its chest, for one that can carry one (MOB_CHESTS): none to
 // start with.
 let mobMarks = "", mobChest = false;
@@ -105,7 +122,8 @@ function showOnStage() {
   const look = t && t.look ? t.look : mobBaby && babyLook(m.k) > 0 ? babyLook(m.k) : 0;
   const tagEl = $("mob-tag");
   tagEl.textContent = t ? (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]) : "";
-  const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? "snowy" : (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
+  const rowBiome = (rowKinds(m.k).find(x => x.biome) || {}).biome;
+  const biome = t && t.biome ? t.biome : t && t.kind === SNOWY ? "snowy" : rowBiome || (variant && variant.biome) || m.biome || "plains", night = Boolean(t && t.night) || glowsOnly(MOB_LOOKS[m.k], look);
   mobStage.dataset.biome = biome;
   mobStage.style.setProperty("--ground", `url('${groundArt(biome)}')`);
   mobBackdrop.show(biome);
@@ -116,10 +134,10 @@ function showOnStage() {
   const armor = armored ? { kind: m.k, type: mobArmor.type, dye: armorDye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   const marks = marksInfo(), armorName = armored && MOB_ARMOR[m.k].kinds ? `${ARMOR_NAMES[m.k][mobArmor.type].toLowerCase()} ` : "";
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { plays: MOB_WOOL[m.k] && mobShorn && !babyShown(m.k, look) ? MOB_WOOL[m.k].shornPlays || null : null, flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: (t && t.moving) || moodStage().moving ? mobClock : null, night: false, glowing: m.glowing || night || Boolean(moodStage().glowing), stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: (variant && variant.skins) || null, overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k) }).then(ok => {
+  mobView.show(m.k, look, { plays: MOB_WOOL[m.k] && mobShorn && !babyShown(m.k, look) ? MOB_WOOL[m.k].shornPlays || null : null, flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: (t && t.moving) || moodStage().moving ? mobClock : null, night: false, glowing: m.glowing || night || Boolean(moodStage().glowing), stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: pickedSkins(m.k), overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k) }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
-  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_TINTS[m.k] ? ` (${MOB_TINTS[m.k].map((r, i) => `${r.n.toLowerCase()} ${tintsOf(m.k)[i]}`).join(", ")})` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${armorDye ? `${armorDye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${carpetWorn(m.k, look) ? `, wearing ${article(mobCarpet)} ${mobCarpet} carpet` : ""}. Drag or use the arrow keys to turn it.`);
+  $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${rowKinds(m.k).map(x => `, ${x.say || x.n.toLowerCase()}`).join("")}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_TINTS[m.k] ? ` (${MOB_TINTS[m.k].map((r, i) => `${r.n.toLowerCase()} ${tintsOf(m.k)[i]}`).join(", ")})` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? `, in ${mobArmor.glint ? "enchanted " : ""}${armorDye ? `${armorDye} ` : ""}${armorName}armor` : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${carpetWorn(m.k, look) ? `, wearing ${article(mobCarpet)} ${mobCarpet} carpet` : ""}. Drag or use the arrow keys to turn it.`);
 }
 
 // A name that hides what the mob wears (hides: "saddle" or "armor", a nautilus named Saddleless or Armourless): the
@@ -177,6 +195,20 @@ function renderVariants() {
   $("variant-bar").hidden = !variants;
   $("variant-label").textContent = v ? `Variant: ${v.n}${v.where ? ` · ${v.where}` : ""}` : "Variant";
   $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
+}
+
+// A row of buttons for each of its other rows (MOB_ROWS), and what the picked kind is and where it's found; off on a
+// variant that wears none of it.
+function renderRows() {
+  $("kind-rows").innerHTML = rowsOf(mobTab.mob).map(r => {
+    const v = rowKind(r), off = rowOff(r);
+    return `
+    <div class="try-bar">
+      <span class="cat-label" id="row-label-${r.k}">${r.n}: ${v.n}${off ? ` · ${esc(r.offWhy)}` : v.where ? ` · ${esc(v.where)}` : ""}</span>
+      <div class="try-tags" role="group" aria-labelledby="row-label-${r.k}">${r.kinds.map(x =>
+        `<button type="button" class="name-chip" data-row="${r.k}" data-kind="${x.k}" title="${esc(off ? r.offWhy : x.where)}" aria-pressed="${x === v}"${off ? " disabled" : ""}>${x.n}</button>`).join("")}</div>
+    </div>`;
+  }).join("");
 }
 
 // The markings buttons, for a mob whose coat has them, and what each looks like and how often.
@@ -370,6 +402,7 @@ function renderMobs() {
   renderMobPicker();
   renderAge();
   renderVariants();
+  renderRows();
   renderMarks();
   renderTints();
   renderWear();
@@ -396,6 +429,7 @@ function pickMob(k, name) {
     mobArmor = NO_ARMOR;
     mobSize = startSize(k);
     mobVariant = mobMarks = "";
+    mobRows = {};
     mobSaddle = mobShorn = mobChest = false;
     mobCarpet = "";
     mobTints = {};
@@ -451,11 +485,21 @@ $("variant-try").addEventListener("click", e => {
   if (currentTag() && !fitsVariant(currentTag())) mobTab.name = mobTab.say = "";
   mobView.turnBack();
   renderVariants();
+  renderRows();
   renderTry();
   renderMobResult();
   showOnStage();
   saveMobTab();
   refocus(`#variant-try button[data-variant="${mobVariant}"]`);
+});
+$("kind-rows").addEventListener("click", e => {
+  const b = e.target.closest("button[data-row]");
+  const row = b && rowsOf(mobTab.mob).find(r => r.k === b.dataset.row);
+  if (!row || b.disabled || b.dataset.kind === rowKind(row).k) return;
+  mobRows = { ...mobRows, [row.k]: b.dataset.kind };
+  renderRows();
+  showOnStage();
+  refocus(`#kind-rows button[data-row="${row.k}"][data-kind="${b.dataset.kind}"]`);
 });
 $("marks-try").addEventListener("click", e => {
   const b = e.target.closest("button[data-marks]");

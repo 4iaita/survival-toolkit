@@ -171,6 +171,13 @@ WHAT = {
     ("zombie", "sulfur"): "Crusted with yellow sulfur on its head, shoulders, shirt and one foot, the crust glowing faintly in the dark.",
     ("zombie", "dappled"): "Orange, red and yellow autumn leaves on its head and shoulders, and a shelf fungus growing from a mossy patch on one leg. About 3 in 10 have a bare twig sticking out of the head, and 1 in 200 wear a carved pumpkin with a jack-o’-lantern face.",
     ("zombie", "pale"): "Faded: a dark, mossy gray-green head with glowing orange eyes, a washed-out teal shirt and ragged gray trousers.",
+    ("villager", "hazmat"): "A yellow hazmat suit: a hood with a wide black visor and a black respirator over its nose, black bands at the waist and black boots.",
+    ("villager", "replica"): "An uncanny copy of a villager, two of them fused side by side: one wide head with two noses and a row of eyes under a single long brow, and a robe twice as wide. Named Replica or Life Form, it’s this, the tall one or the triplet one, picked at random; now and then it glances sharply over its shoulder or shudders.",
+    ("villager", "replica tall"): "An uncanny copy of a villager, stretched tall: a long head with its eyes at different heights and a long nose, a long robe, and an arm hanging at its side under its folded ones.",
+    ("villager", "replica triplets"): "An uncanny copy of a villager with arms enough for three: two pairs folded one above the other across a chest too broad for it.",
+    ("villager", "trick or treat"): "A trick-or-treater in a mask, a scarf in the mask’s colors, matching shoes and a treat pail, the mask’s eyes glowing in the dark. Each profession has its own: the farmer a carved pumpkin, the fisherman a guardian, the shepherd a spider, the fletcher a skeleton, the librarian a dark purple eye mask, the cartographer a zombie, the cleric a witch’s hat, the armorer an iron golem, the weaponsmith a knight’s helmet, the toolsmith a creaking, the butcher a piglin, the leatherworker a cow and the mason a creeper, with a TNT pail. An unemployed villager or a nitwit named this dresses as the Ghost.",
+    ("villager", "cherry"): "Cherry blossoms scattered over its head, a pink and white blossom-print shirt and dark wine-red trousers, under its profession’s hat and apron.",
+    ("villager", "dappled"): "Dressed for autumn: a dark red cap, a red coat whose sleeves fade to orange and yellow like turning leaves, green and yellow striped mittens, a ragged orange and yellow hem and green leggings, under its profession’s hat and apron.",
 }
 # Looks that only show in one climate (the pack checks the mob's climate too): (mob, the lower-case name) -> that
 # climate, which the stage switches to, and what the row says it needs.
@@ -217,6 +224,7 @@ RARE = {
     ("creeper", "dappled"): "99 in 100 creepers in dappled forests",
     ("creeper", "poplar"): "1 in 100 creepers in dappled forests",
     ("creeper", "pale"): "creepers in pale gardens",
+    ("villager", "cherry"): "villagers in cherry groves", ("villager", "dappled"): "villagers in dappled forests",
 }
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
@@ -228,10 +236,11 @@ BIOME = {
     ("skeleton", "cherry"): "cherry_grove", ("skeleton", "sulfur"): "sulfur_caves", ("skeleton", "dappled"): "dappled_forest", ("skeleton", "pale"): "pale_garden",
     ("zombie", "cherry"): "cherry_grove", ("zombie", "sulfur"): "sulfur_caves", ("zombie", "dappled"): "dappled_forest", ("zombie", "pale"): "pale_garden",
     ("creeper", "cherry"): "cherry_grove", ("creeper", "blossom"): "cherry_grove", ("creeper", "sulfur"): "sulfur_caves", ("creeper", "dappled"): "dappled_forest", ("creeper", "poplar"): "dappled_forest", ("creeper", "pale"): "pale_garden",
+    ("villager", "cherry"): "cherry_grove", ("villager", "dappled"): "dappled_forest",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
 # name).
-NIGHT = {("chicken", "halloween"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
+NIGHT = {("chicken", "halloween"), ("villager", "trick or treat"), ("chicken", "baby zombified"), ("cow", "zombified calf"), ("cow", "halloween"),
          ("mooshroom", "zombified calf"), ("mooshroom", "halloween"), ("pig", "zombified piglet"), ("pig", "halloween"),
          ("sheep", "ghost lamb"), ("sheep", "halloween"), ("goat", "evil kiddo"), ("goat", "halloween"),
          ("frog", "baby imp"), ("frog", "halloween"), ("turtle", "halloween"),

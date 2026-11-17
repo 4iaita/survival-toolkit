@@ -192,7 +192,8 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
     if (!boneShown(name, rules) || (name.toLowerCase() === "blink" && !flags.openEyes && !eyesShut)) return;
     // A bone scaled to nothing is hidden.
     if (chainOf(i).some(b => b.scale && b.scale.some(v => !v))) return;
-    const least = (flags.litBones || []).some(pattern => boneMatches(name, pattern)) ? 1 : solid;
+    // opaqueBones: drawn with a material that ignores alpha (the villager's eyes, texels of alpha 2): every texel shows.
+    const least = (flags.litBones || []).some(pattern => boneMatches(name, pattern)) ? 1 : (flags.opaqueBones || []).some(pattern => boneMatches(name, pattern)) ? 0 : solid;
     // Where alpha says how much a texel glows (lit, litBones), the faintest shine at full strength even at night, as the
     // game's emissive materials draw them (a zombie pig's eye, a baby spider's).
     const emissive = least === 1 && !glow;

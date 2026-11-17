@@ -456,6 +456,21 @@ def material_kind(name, mats):
     return "lit" if any(n.startswith("entity_emissive") or n in GAME_EMISSIVE for n in chain) else None
 
 
+# Mobs some of whose bones the pack draws with the game's plain entity material, which ignores alpha: the villager's
+# eyes, whose whites and pupils are texels of alpha 2 (they'd be holes, cut out). An importer adds its mob.
+OPAQUE_BONE_MOBS = set()
+
+
+def opaque(name, mats):
+    """Whether a material draws every texel solid, whatever its alpha: it comes down to the game's entity material with
+    no alpha test or blending on the way."""
+    chain = []
+    while name and name not in chain:
+        chain.append(name)
+        name = mats.get(name, ("", {}))[0]
+    return chain[-1:] == ["entity"] and not any("alpha" in n for n in chain)
+
+
 # ---------- Looks ----------
 
 # The pack's glow panels fade with how dark it is here: v.twozkac, 1 at full strength. A panel whose overlay still covers
@@ -601,7 +616,7 @@ def look(d, rcs, mats, anims, name, held=False, mood=None):
         if d.get("identifier") in LAYER_DYES:
             flags["dyes"] = LAYER_DYES[d["identifier"]]
         # Single bones can have a material of their own: the cats' eyes are emissive, on faint texels.
-        lit_bones, dye_bones, shell_bones = [], [], []
+        lit_bones, dye_bones, shell_bones, opaque_bones = [], [], [], []
         for m in rc.get("materials", []):
             for pat, expr in m.items():
                 bone_mat = evaluate(expr, renv)
@@ -610,12 +625,16 @@ def look(d, rcs, mats, anims, name, held=False, mood=None):
                     lit_bones.append(pat)
                 if pat != "*" and bone_kind == "mask" and pat not in dye_bones:
                     dye_bones.append(pat)
+                if pat != "*" and d.get("identifier") in OPAQUE_BONE_MOBS and isinstance(bone_mat, tuple) and pat not in opaque_bones and opaque(next((v for k, v in d.get("materials", {}).items() if k.lower() == bone_mat[1]), ""), mats):
+                    opaque_bones.append(pat)
                 if pat != "*" and d.get("identifier") in SHELLED and isinstance(bone_mat, tuple) and pat not in shell_bones and blended(next((v for k, v in d.get("materials", {}).items() if k.lower() == bone_mat[1]), ""), mats):
                     shell_bones.append(pat)
         if lit_bones:
             flags["litBones"] = lit_bones
         if shell_bones:
             flags["shellBones"] = shell_bones
+        if opaque_bones:
+            flags["opaqueBones"] = opaque_bones
         # And some take a color the game gives them: a pet wolf's collar. (Only there: other mobs list these for armor the
         # stage doesn't show.)
         if dye_bones and mood and mood.get("is_tamed"):
@@ -1043,7 +1062,7 @@ def main():
           " * MOB_LOOKS: mob -> its looks, the first for no name: { names, scale, layers }, each layer [model, [textures,",
           " * bottom first], [[bone pattern, shown], ...], flags], flags maybe glow (light added on top, faded out by",
           " * day), mask (the texture's alpha is a dye mask), lit (its alpha is how much it glows), dyeBones (bone patterns dyed on their own), shellBones (bone patterns that are see-through shells), litBones (bone patterns",
-          " * lit on their own), sheer (its faint texels are see-through), scroll (u and v per",
+          " * lit on their own), opaqueBones (bone patterns drawn solid whatever their alpha), sheer (its faint texels are see-through), scroll (u and v per",
           " * second), openEyes (its blink bone is the open eye), dyes (a color name per texture), soft (a glow drawn as soft light facing the camera) eyes (a soft glow at its bone's pivot, on the face, gone from behind), halo (the same, seen from any side) and bright (how strong a soft glow is); pose, bone -> {r: rotation, p: position,",
           " * s: scale} from animations the name turns on; motions, loops it plays in place of the mob's (MOB_MOTIONS), without its acts; plays, the set of the mob's animations it plays instead (MOB_MOTIONS and MOB_ACTS' \"<mob>:<set>\"). Textures are in MOB_SKINS (art/mobs/).",
           " * PROP_LOOKS: item -> the look it takes in the hand of an armor stand named §§, like a mob's look.",
