@@ -204,7 +204,11 @@ const PACK_TAGS = {
     { names: ["Armourless"], what: "Hides its armor. It still wears it, and is still protected by it.", needs: "Put armor on it first.", hides: "armor" },
     { names: ["Saddleless"], what: "Hides its saddle, so you seem to ride it bareback.", needs: "Put a saddle on it first. You still need the saddle to ride.", hides: "saddle" },
   ],
-  zombie_villager: [{ names: ["Baby", "Zomblet", "Zillager"], kind: BABY }, { names: ["Snowy", "Frosty"], kind: SNOWY }],
+  zombie_villager: [
+    { names: ["Baby", "Zomblet", "Zillager"], kind: BABY },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, what: "Frozen: its skin a colder, bluer green and its nose icy blue. A farmer, fisherman, shepherd, fletcher, librarian, armorer or butcher wears a snowy version of its outfit too.",
+      rare: "zombie villagers in snowy biomes" },
+  ],
   zombified_piglin: [{ names: ["Baby", "Piggly"], kind: BABY }],
 };
 // What the shared looks do.

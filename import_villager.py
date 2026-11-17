@@ -99,25 +99,27 @@ def over(layers):
             layer[3:] = [{**(layer[3] if len(layer) > 3 else {}), "over": 1}]
 
 
-def finish():
+def finish(mob="villager"):
     """Every look's outfit and badge drawn over its skin, in its climates too."""
     text = ia.MODELS_JS.read_text()
-    looks = ia.parse_section(text, "MOB_LOOKS")["villager"]
-    climates = ia.parse_section(text, "MOB_CLIMATES")["villager"]
+    looks = ia.parse_section(text, "MOB_LOOKS")[mob]
+    climates = ia.parse_section(text, "MOB_CLIMATES").get(mob, {})
     for look in [*looks, *(l for spec in climates.values() for l in spec["looks"].values())]:
         over(look["layers"])
-    text = put(text, "MOB_LOOKS", "villager", looks)
-    ia.MODELS_JS.write_text(put(text, "MOB_CLIMATES", "villager", climates))
+    text = put(text, "MOB_LOOKS", mob, looks)
+    ia.MODELS_JS.write_text(put(text, "MOB_CLIMATES", mob, climates) if climates else text)
 
 
-def rows():
-    """The biome and level rows' skins: for each, the textures that differ from the plain farmer's, in every look and
-    climate, by their keys in src/mob-models.js. New textures are copied as new_villager_<kind>..."""
+def rows(mob="villager", answers=answers, climates_said=CLIMATES, spec=None):
+    """The rows' skins (the villager's biome and level): for each kind, the textures that differ from the plain
+    farmer's, in every look and climate, by their keys in src/mob-models.js. New textures are copied as
+    new_<mob>_<kind>... spec: [(row, kinds, what the game says for kind k)]."""
+    spec = spec or [("biome", BIOMES, lambda k: {"mark_variant": float(k)}), ("level", LEVELS, lambda k: {"trade_tier": float(k)})]
     ents, rcs, geos, mats, anims, *_ = im.read_pack()
-    d = ents["minecraft:villager"]
+    d = ents[f"minecraft:{mob}"]
     text = ia.MODELS_JS.read_text()
-    looks = ia.parse_section(text, "MOB_LOOKS")["villager"]
-    climates = ia.parse_section(text, "MOB_CLIMATES")["villager"]
+    looks = ia.parse_section(text, "MOB_LOOKS")[mob]
+    climates = ia.parse_section(text, "MOB_CLIMATES").get(mob, {})
     bi = next(i for i, l in enumerate(looks) if "Baby" in l["names"])
     keys = {}
     out = {}
@@ -126,7 +128,7 @@ def rows():
         return "" if i == 0 else "Baby" if i == bi else looks[i]["names"][0]
 
     cases = [(i, l["layers"], {}) for i, l in enumerate(looks)]
-    cases += [(int(i), l["layers"], CLIMATES[c]) for c, spec in climates.items() for i, l in spec["looks"].items()]
+    cases += [(int(i), l["layers"], climates_said[c]) for c, s in climates.items() for i, l in s["looks"].items()]
     # The path each key stands for, from the plain answers.
     for i, layers, extra in cases:
         lay, _, _ = im.look(d, rcs, mats, anims, name_of(i), mood={**answers(0), **extra})
@@ -134,7 +136,7 @@ def rows():
         for (_, texs, _, _), layer in zip(lay, layers):
             for t, key in zip(texs, layer[1]):
                 keys.setdefault(t, key)
-    for row, kinds, said in (("biome", BIOMES, lambda k: {"mark_variant": float(k)}), ("level", LEVELS, lambda k: {"trade_tier": float(k)})):
+    for row, kinds, said in spec:
         for k, kind in enumerate(kinds):
             if not k:
                 continue
@@ -145,9 +147,9 @@ def rows():
                     for t, o in zip(texs, texs2):
                         if t == o or t not in keys:
                             continue
-                        new = keys.setdefault(o, keys[t].replace(f"{ia.PREFIX}villager", f"{ia.PREFIX}villager_{kind}", 1))
+                        new = keys.setdefault(o, keys[t].replace(f"{ia.PREFIX}{mob}", f"{ia.PREFIX}{mob}_{kind}", 1))
                         out.setdefault(row, {}).setdefault(kind, {})[keys[t]] = new
-                        if ia.WRITE and new.startswith(f"{ia.PREFIX}villager_{kind}"):
+                        if ia.WRITE and new.startswith(f"{ia.PREFIX}{mob}_{kind}"):
                             copy_texture(o, new)
     print("rows:", json.dumps(out))
 

@@ -78,6 +78,11 @@ const catSkins = v => Object.fromEntries(["", "_baby", "_halloween_2", "_witch_k
 const SNOWY_JOBS = new Set(["fisherman", "shepherd", "fletcher", "librarian", "armorer", "butcher"]);
 const villagerSkins = p => ({ new_villager_1_1: `new_villager_${p}_1_1`, new_villager_snowy_1_1: `new_villager_${p}${SNOWY_JOBS.has(p) ? "_snowy" : ""}_1_1`,
   new_villager_trick_or_treat_2: `new_villager_${p}_trick_or_treat_2` });
+// A zombie villager wears the villager's outfits, the same textures (import_zombie_villager.py): an unemployed one's
+// is the villager's baby's, and they have no snowy ones of their own.
+const ZOMBIE_JOBS = { unemployed: "new_villager_baby_1_1", nitwit: "new_villager_nitwit_1_1" };
+const zombieVillagerSkins = p => (ZOMBIE_JOBS[p] ? { new_villager_1_1: ZOMBIE_JOBS[p], new_villager_snowy_1_1: ZOMBIE_JOBS[p] }
+  : { new_villager_1_1: villagerSkins(p).new_villager_1_1, new_villager_snowy_1_1: villagerSkins(p).new_villager_snowy_1_1 });
 const MOB_VARIANTS = {
   // The chickens' climates: the warm one has its own skin, the cold one its own model and skin too (MOB_CLIMATES).
   chicken: [
@@ -236,6 +241,14 @@ const MOB_VARIANTS = {
     { k: "unemployed", n: "Unemployed", where: "Has no job site yet", climate: "unemployed" },
     { k: "nitwit", n: "Nitwit", where: "Never takes a job", climate: "nitwit" },
   ],
+  // The zombie villager's professions, as the villager's (it keeps its outfit when it's turned, and a cured one keeps its
+  // job): the same outfits, the farmer first. Its biome is a row of its own (MOB_ROWS).
+  zombie_villager: [
+    ...[["farmer", "Farmer"], ["fisherman", "Fisherman"], ["shepherd", "Shepherd"], ["fletcher", "Fletcher"], ["librarian", "Librarian"],
+      ["cartographer", "Cartographer"], ["cleric", "Cleric"], ["armorer", "Armorer"], ["weaponsmith", "Weaponsmith"], ["toolsmith", "Toolsmith"],
+      ["butcher", "Butcher"], ["leatherworker", "Leatherworker"], ["mason", "Mason"], ["unemployed", "Unemployed"], ["nitwit", "Nitwit"]]
+      .map(([k, n], i) => ({ k, n, where: i < 13 ? `Was a ${n.toLowerCase()}, or spawned as one` : k === "nitwit" ? "Was a nitwit, or spawned as one" : "Had no job, or spawned with none", ...(i ? { skins: zombieVillagerSkins(k) } : {}) })),
+  ],
   tropicalfish: [
     ...["Kob", "Sunstreak", "Snooper", "Dasher", "Brinely", "Spotty"].map((n, i) => ({ k: n.toLowerCase(), n, where: "Small shape",
       ...(i ? { skins: { new_tropicalfish_1: `new_tropicalfish_${n.toLowerCase()}` } } : {}) })),
@@ -274,6 +287,14 @@ const MOB_ROWS = {
       ...[["apprentice", "Apprentice", "iron", "Iron"], ["journeyman", "Journeyman", "gold", "Gold"], ["expert", "Expert", "emerald", "Emerald"], ["master", "Master", "diamond", "Diamond"]]
         .map(([k, n, s, badge]) => ({ k, n, say: `${k} level`, where: `${badge} badge: traded with enough to level up`, skins: { new_villager_2: `new_villager_${s}_2` } })),
     ] },
+  ],
+  // The zombie villager's biome, as the villager's: its outfit only (its skin is the zombie's green whatever the biome).
+  // It stays in its cave.
+  zombie_villager: [
+    { k: "biome", n: "Biome", kinds: [["plains", "Plains", "the plains"], ["desert", "Desert", "deserts"], ["jungle", "Jungle", "jungles"], ["savanna", "Savanna", "savannas"],
+      ["snow", "Snow", "snowy biomes"], ["swamp", "Swamp", "swamps"], ["taiga", "Taiga", "taigas"]]
+      .map(([k, n, where], i) => ({ k, n, say: `from ${where === "snowy biomes" ? "a snowy biome" : where === "the plains" ? where : `a ${n.toLowerCase()}`}`, where: `Turned or spawned in ${where}`,
+        ...(i ? { skins: { new_zombie_villager_1: `new_zombie_villager_${k}_1`, new_zombie_villager_baby_1: `new_zombie_villager_${k}_baby_1` } } : {}) })) },
   ],
 };
 // Markings a mob's coat can have besides its variant: k, n and where as MOB_VARIANTS'; over, textures laid over the
