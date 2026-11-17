@@ -9,7 +9,7 @@ The game has no babies of it; the pack makes 1 in 200 vindicators babies by itse
 size). Named Clown (or with the pack's seasonal setting on), it's drawn as the clown instead, never as a baby. Run
 import_additions.py first.
 """
-from import_parched import bow_model
+from import_parched import BOW_HAND, bow_model
 from import_port import copy_texture, ia, im, port, put
 
 # It stands swaying a little, its head nodding and its arms at its sides (zygxsz: the pack's model has no crossed arms,
@@ -55,6 +55,10 @@ AXE_TURN = -20
 # key for each). The baby's model is drawn at half size, its axe with it.
 HANG_TURN = -45
 SKELETONS = {"": "default", "clown": "ljymoe", "baby": "tdrznc"}
+# The grip, from the look's rightitem bone (as bow_model's hand_at): the bottom of the fist on the plain and Clown arms,
+# where the pack puts the bone. On the baby's thick arm the pack puts it at the arm's outer back edge, so the axe hung
+# beside the fist: its grip is moved to the middle of the fist.
+HANDS = {"baby": (3, -2.5, -2)}
 
 
 def add_axe():
@@ -69,7 +73,7 @@ def add_axe():
             key, model = AXE_KEY, bow_model(geos[d["geometry"]["default"]], AXE, AXE_GRIP, AXE_TURN, "axe")
         else:
             key = "_".join(filter(None, [AXE_KEY, "hanging", name]))
-            model = bow_model(geos[d["geometry"][SKELETONS[name]]], AXE, AXE_GRIP, HANG_TURN, "axe")
+            model = bow_model(geos[d["geometry"][SKELETONS[name]]], AXE, AXE_GRIP, HANG_TURN, "axe", HANDS.get(name, BOW_HAND))
         text = put(text, "MOB_MODELS", key, im.model(model))
         look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(AXE_KEY)] + [[key, [AXE_KEY], []]]
     ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "vindicator", looks))
