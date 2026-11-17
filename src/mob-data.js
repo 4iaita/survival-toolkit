@@ -41,15 +41,15 @@ const START_MOODS = { pufferfish: "half" };
 const MOOD_NAMES = { calm: "Calm", pet: "Pet", angry: "Angry", half: "Half Puffed", puffed: "Puffed Up",
   slightly_cracked: "Slightly Cracked", cracked: "Cracked", badly_cracked: "Badly Cracked",
   statue_standing: "Standing Statue", statue_running: "Running Statue", statue_sitting: "Sitting Statue", statue_star: "Star Statue",
-  charged: "Charged" };
+  charged: "Charged", whirling: "Whirling" };
 // A mob whose moods aren't moods: what its row is called, and what its first (calm) one is. The iron golem's are its
 // cracks, as the game draws them when it's lost a quarter, half and three quarters of its health; the copper golem's,
 // the statue it can turn into once it's oxidized, in one of four poses; the creeper's, whether lightning has charged it.
 const MOOD_ROWS = { iron_golem: { label: "Cracks", calm: "Not Cracked" }, copper_golem: { label: "Statue", calm: "Alive" },
-  creeper: { label: "Lightning", calm: "Not Charged" } };
+  creeper: { label: "Lightning", calm: "Not Charged" }, breeze: { label: "Wind", calm: "Calm" } };
 // Moods whose layers run or shine: moving, a texture that scrolls (as a name's moving does); glowing, glowing layers shown
 // by day too (as a mob's glowing does). The charged creeper's lightning aura runs over it, as bright by day as at night.
-const MOOD_STAGE = { creeper: { charged: { moving: true, glowing: true } } };
+const MOOD_STAGE = { creeper: { charged: { moving: true, glowing: true } }, breeze: { whirling: { moving: true } } };
 const moodName = (mob, k) => (k === "calm" && MOOD_ROWS[mob] ? MOOD_ROWS[mob].calm : MOOD_NAMES[k]);
 // What a pet's collar comes in, as the dyes are called in DYES; red is what the game starts it with.
 const COLLAR_COLORS = ["red", "orange", "yellow", "lime", "green", "cyan", "light blue", "blue", "purple", "magenta", "pink", "white", "light gray", "gray", "black", "brown"];

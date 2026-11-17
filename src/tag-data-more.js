@@ -33,7 +33,7 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Scarecrow"], what: "A scarecrow: a carved pumpkin for a head, its eyes glowing in the dark over a jagged grin, under a floppy wide-brimmed green hat with a brown band and a sprig sticking out of its crown, a ragged green collar round its neck and more rags about its hips, and arms and legs of brown branches with twigs sprouting from them. It has no mushrooms to shear.", night: true },
   ],
   breeze: [
-    { names: ["Baby", "Breezeling", "Gusty"], kind: BABY },
+    { names: ["Baby", "Breezeling", "Gusty"], kind: BABY, rare: "1 in 200 breezes" },
   ],
   camel: [
     { names: ["Baby Mummy", "Mummy Calf"], more: ["baby Mummy", "Baby mummy", "mummy Calf", "Mummy calf"], what: "A baby camel wrapped in bandages like a mummy." },
