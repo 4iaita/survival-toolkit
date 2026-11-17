@@ -365,8 +365,8 @@ const PACK_TAGS_MORE = {
     { names: ["Bacteria"], what: "The Bacteria look." },
   ],
   witch: [
-    { names: ["Baby", "Witchlet", "Hexy"], kind: BABY },
-    { names: ["Cherry"], what: "The cherry grove look." },
+    { names: ["Baby", "Witchlet", "Hexy"], kind: BABY, rare: "1 in 200 witches" },
+    { names: ["Cherry"], what: "Dressed for a cherry grove: a hat of mossy green leaves dotted with pink blossoms, leaves drooping over its brim, and a deep pink robe with leafy vines and pink blossoms climbing it.", biome: "cherry_grove", rare: "witches in cherry groves" },
   ],
   wither: [
     { names: ["Baby", "Witherling", "Sooty"], kind: BABY },

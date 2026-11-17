@@ -180,9 +180,9 @@ const PACK_TAGS = {
     { names: ["William"], what: "A red bow tie and a walking cane." },
   ],
   witch: [
-    { names: ["Emeralda"], what: "A green-skinned witch.", rare: "1 in 20 witches" },
-    { names: ["Cackle", "Warty"], what: "A warty green witch in a tall black hat.", rare: "1 in 20 witches" },
-    { names: ["Snowy", "Frosty"], kind: SNOWY },
+    { names: ["Emeralda"], what: "A green-skinned witch, in the usual purple robe and hat with its glowing green gem.", rare: "1 in 20 witches" },
+    { names: ["Cackle", "Warty"], what: "A warty green witch dressed all in black: a wide black hat with a plum band and a silver buckle, a black robe, and green legs.", rare: "1 in 20 witches" },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, what: "Dressed for the cold: its hat crusted with snow and hung with icicles, its nose frosted blue, and a blue coat trimmed with white fur, a fur collar and frosty boots.", rare: "witches in snowy biomes" },
   ],
   wolf: [
     { names: ["Baby", "Puppy"], kind: BABY },

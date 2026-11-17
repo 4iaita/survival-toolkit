@@ -116,6 +116,7 @@ WHAT = {
     ("husk", "halloween"): "An executioner: a red-brown hood over its head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes, iron cuffs on its wrists and an iron shackle on one ankle. It goes with the camel husk’s Executioner look, the beast it rides.",
     ("husk", "baby executioner"): "A baby executioner: a red-brown hood over its big head with iron spikes sticking out of it and a single eyehole, its yellow eye glowing in the dark, a ragged collar over ragged brown clothes and an iron shackle on one ankle.",
     ("pillager", "halloween"): "A vampire hunter: a wide-brimmed brown hat with a crossbow bolt stuck through it, long black hair, a dark red scarf pulled up over its mouth so only its eyes show, glowing white with red pupils in the dark, and a long brown coat with a cape. At its belt it carries one of three things, picked at random: four glowing potion vials, two on each hip (the stage shows these), a quiver of bolts or a wooden stake.",
+    ("witch", "cherry"): "Dressed for a cherry grove: a hat of mossy green leaves dotted with pink blossoms, leaves drooping over its brim, and a deep pink robe with leafy vines and pink blossoms climbing it.",
     ("evoker", "halloween"): "Dracula: pale lilac skin, black hair swept back into two jagged points, pointed ears, red eyes glowing in the dark, fangs, and a black cape with a high collar and a red lining over a dark suit, its folded arms in white sleeves.",
     ("parched", "halloween"): "An executioner: a red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, a ragged red-brown robe and a ragged belt over its bones, and iron cuffs on its wrists and ankles. It goes with the camel husk’s Executioner look, the beast it rides.",
     ("parched", "baby executioner"): "A baby executioner: a big red-brown hood with iron spikes sticking out of it and two yellow eyes glowing in the dark from under it, long ragged sleeves curling at the ends, and iron cuffs on its ankles.",
@@ -209,7 +210,8 @@ RARE = {
     # And 1 in 200 parched and vexes.
     ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes",
     ("pillager", "baby"): "1 in 200 pillagers", ("vindicator", "baby"): "1 in 200 vindicators",
-    ("evoker", "baby"): "1 in 200 evokers",
+    ("evoker", "baby"): "1 in 200 evokers", ("witch", "baby"): "1 in 200 witches",
+    ("witch", "cherry"): "witches in cherry groves",
     ("skeleton", "baby"): "1 in 200 skeletons", ("stray", "baby"): "1 in 200 strays", ("bogged", "baby"): "1 in 200 bogged",
     ("skeleton", "cherry"): "skeletons in cherry groves", ("skeleton", "sulfur"): "skeletons in sulfur caves",
     ("skeleton", "dappled"): "skeletons in dappled forests", ("skeleton", "pale"): "skeletons in pale gardens",
@@ -239,7 +241,7 @@ BIOME = {
     ("zombie", "cherry"): "cherry_grove", ("zombie", "sulfur"): "sulfur_caves", ("zombie", "dappled"): "dappled_forest", ("zombie", "pale"): "pale_garden",
     ("creeper", "cherry"): "cherry_grove", ("creeper", "blossom"): "cherry_grove", ("creeper", "sulfur"): "sulfur_caves", ("creeper", "dappled"): "dappled_forest", ("creeper", "poplar"): "dappled_forest", ("creeper", "pale"): "pale_garden",
     ("villager", "cherry"): "cherry_grove", ("villager", "dappled"): "dappled_forest",
-    ("zombie_villager", "cherry"): "cherry_grove",
+    ("zombie_villager", "cherry"): "cherry_grove", ("witch", "cherry"): "cherry_grove",
 }
 # Looks whose eyes glow (faint texels under an emissive material), which the stage shows at night: (mob, the lower-case
 # name).
