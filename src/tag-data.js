@@ -148,9 +148,9 @@ const PACK_TAGS = {
   skeleton: [{ names: ["Snowy", "Frosty"], kind: SNOWY, rare: "skeletons in snowy biomes" }],
   skeleton_horse: [{ names: ["Baby", "Foal", "Rattle"], kind: BABY }],
   slime: [
-    { names: ["RGB", "Rainbow", "Disco", "jeb_"], more: ["Rgb"], moving: true, what: "A see-through slime that runs through the colors of the rainbow." },
-    { names: ["Snowman"], what: "A snowman’s head with a top hat and a carrot nose.", rare: "1 in 200 slimes in snowy biomes" },
-    { names: ["Snowy", "Frosty"], kind: SNOWY },
+    { names: ["RGB", "Rainbow", "Disco", "jeb_"], more: ["Rgb"], moving: true, what: "A see-through slime whose jelly and the cube inside it run through the colors of the rainbow, over and over." },
+    { names: ["Snowman"], what: "A snowman’s head: a cube of snow with coal eyes, a carrot nose and a lump of coal below it. Named, one in two, picked at random, wears a black top hat with a red band; one that comes by itself never does.", biome: "snowy", rare: "1 in 200 slimes in snowy biomes" },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, what: "Its jelly an icy blue flecked with snowflakes, and frost on top of the green cube inside it.", rare: "slimes in snowy biomes" },
   ],
   sniffer: [{ names: ["Baby", "Hatchling", "Snifflet"], kind: BABY }],
   snow_golem: [{ names: ["Snowman", "Frosty"], what: "A classic snowman: no pumpkin, a coal face with a wide smile, and a red and green checked scarf round its neck, one end hanging down its front." }],

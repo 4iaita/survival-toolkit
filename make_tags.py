@@ -130,6 +130,7 @@ WHAT = {
     ("iron_golem", "cherry"): "Pink cherry blossoms grow among the vines over its body, arms and legs, in place of its poppies.",
     ("iron_golem", "butler"): "A butler’s black waistcoat and trousers, a white cravat and white spats. The pack draws no cracks on it, however hurt it is.",
     ("iron_golem", "dappled"): "Orange and red autumn leaves grow over its body, arms and legs in place of its vines and poppies, with one on its head.",
+    ("slime", "baby"): "Draws it as small as a small slime, whatever its own size, in its own size’s skin. Only the look changes: it keeps its size’s health and drops.",
     ("snow_golem", "baby"): "A small snowman, its head on a single ball of snow, with a coal face and no pumpkin.",
     ("copper_golem", "maid"): "A maid’s outfit: a black dress with a white apron tied in a big bow at the back and a white frilled headband, its copper head and glowing eyes showing. The copper oxidizes with its stage.",
     ("copper_golem", "halloween"): "A voodoo doll: a stitched brown burlap body, one black and one red button for eyes, and pins stuck in its head.",

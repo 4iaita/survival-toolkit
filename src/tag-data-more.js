@@ -239,7 +239,7 @@ const PACK_TAGS_MORE = {
     { names: ["Pale"], what: "Pale moss on its gray-green arms and legs, dark ribs, a pale gray flower with an orange heart and bare dark twigs on top of its skull, and orange eyes that glow at night (the stage shows them lit).", night: true, biome: "pale_garden", rare: "skeletons in pale gardens" },
   ],
   slime: [
-    { names: ["Baby", "Slimeling", "Bloblet"], kind: BABY },
+    { names: ["Baby", "Slimeling", "Bloblet"], what: "Draws it as small as a small slime, whatever its own size, in its own size’s skin. Only the look changes: it keeps its size’s health and drops.", kind: BABY },
   ],
   sniffer: [
     { names: ["Snowy", "Frosty"], what: "Snow heaped on its back and head, its moss frosted a pale blue-green, and frost on its feet.", biome: "snowy", rare: "sniffers in snowy biomes" },
