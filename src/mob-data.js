@@ -33,8 +33,9 @@ const DRAGON_STAND = {
 // START_SIZES lists.
 const SIZE_NAMES = { small: "Small", medium: "Medium", big: "Big" };
 const DEFAULT_SIZE = "big";
-// The salmon starts at medium, a salmon's usual size (small ones are half as big, large ones half as big again).
-const START_SIZES = { salmon: "medium" };
+// The salmon starts at medium, a salmon's usual size (small ones are half as big, large ones half as big again); so do
+// the slime and the magma cube.
+const START_SIZES = { salmon: "medium", slime: "medium", magma_cube: "medium" };
 // The pufferfish starts half puffed.
 const START_MOODS = { pufferfish: "half" };
 const MOOD_NAMES = { calm: "Calm", pet: "Pet", angry: "Angry", half: "Half Puffed", puffed: "Puffed Up",
@@ -377,11 +378,10 @@ const MOB_WOOL = {
   },
 };
 // Mobs that have babies in the game itself, bred or born: the stage can show one as a baby, in the look the pack
-// gives its babies (the one its Baby name shows). Other mobs only look like babies with that name. A small sulfur cube is
-// the game's baby: it splits off a big one and grows up.
+// gives its babies (the one its Baby name shows). Other mobs only look like babies with that name.
 const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chicken", "cow", "dolphin", "donkey", "drowned", "fox", "glow_squid", "goat",
   "hoglin", "horse", "husk", "llama", "mooshroom", "mule", "nautilus", "ocelot", "panda", "pig", "piglin", "polar_bear", "rabbit", "sheep",
-  "sniffer", "squid", "strider", "sulfur_cube", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
+  "sniffer", "squid", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
 // Mobs the game has no babies of that the pack makes babies of all the same, 1 in 5 of them (with its setting for
 // that): the stage can show them as babies too, in the pack's baby look.
 const PACK_BABIES = new Set(["cod", "frog", "parrot", "salmon", "tropicalfish"]);
@@ -408,7 +408,7 @@ const MOBS = [
   { k: "husk", n: "Husk", g: "Monsters", biome: "desert" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert" }, { k: "phantom", n: "Phantom", g: "Monsters", stand: { body: { p: [0, 22, 0] } } },
   { k: "pillager", n: "Pillager", g: "Monsters", biome: "village" }, { k: "ravager", n: "Ravager", g: "Monsters", biome: "village" },
   { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "cave" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
-  { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 2.5 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "cave" }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
+  { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
   { k: "stray", n: "Stray", g: "Monsters", biome: "snowy" }, { k: "vex", n: "Vex", g: "Monsters", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", g: "Monsters", biome: "mansion" }, { k: "warden", n: "Warden", g: "Monsters", biome: "cave" }, { k: "witch", n: "Witch", g: "Monsters", biome: "swamp" },
   { k: "zombie", n: "Zombie", g: "Monsters", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", g: "Monsters" },
   { k: "zombie_nautilus", n: "Zombie Nautilus", g: "Monsters", biome: "ocean", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", g: "Monsters", biome: "cave" },

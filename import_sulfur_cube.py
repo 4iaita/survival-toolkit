@@ -4,8 +4,8 @@
     python3 import_sulfur_cube.py path/to/unpacked/pack path/to/textures [--write]
 
 Its looks were already the new pack's (import_additions.py added it). It has no kinds. The game has two sizes, large and
-small, the small one its baby (it grows up), drawn with a smaller model of its own; the pack's Baby name gives that look
-too. Its entity is the only one for minecraft:sulfur_cube; its models, animations and controllers are its own (it shares
+small (the small one splits off a large one and grows up), which the stage shows as sizes (MOB_SIZES, sizes()): the
+pack draws the small one with a smaller model of its own, and its Baby name gives that look too. Its entity is the only one for minecraft:sulfur_cube; its models, animations and controllers are its own (it shares
 only the slime's and magma cube's pop, particle and sound controllers).
 
 Its body is jelly the game draws see-through (the pack's outer material, alpha blended): its shell bones, as the slime's.
@@ -24,6 +24,8 @@ with none of its animations (set "still"); with a block in it, the pack then hid
 which the stage doesn't show. The blocks it can take in (the game's absorbed block, by the item the game says it holds)
 aren't shown either.
 """
+import json
+
 from import_port import ia, im, port, put
 
 # What the game says of a sulfur cube with no block in it: its archetype property is "none" (the importer would answer 0,
@@ -100,6 +102,23 @@ SETS = {"ball": {"motions": [], "acts": []}, "still": {"motions": [], "acts": []
 STILL = ["§s", "§b", "§l"]
 
 
+def sizes(looks):
+    """MOB_SIZES: big, and small (the game's small sulfur cube, which splits off a big one and grows up: q.max_health 4),
+    which the pack draws with its small model whatever its name, as the Baby look is. Named for a ball, it's that small
+    cube with no face (the face layers only show without a ball name) and stands still; named §s, §b or §l, it keeps that
+    size. Its model is smaller in itself (10 pixels to 18), so it takes no zoom of its own."""
+    baby = next(l for l in looks if "Baby" in l["names"])
+    small = []
+    for look in looks:
+        out = {**json.loads(json.dumps(look)), "layers": json.loads(json.dumps(baby["layers"]))}
+        out.pop("pose", None)
+        if look.get("plays") == "ball":
+            main = out["layers"][0]
+            main[2] = [r for r in main[2] if not r[0].startswith(tuple(FRAMES.values()))] + [[f"{b}*", False] for b in FRAMES.values()]
+        small.append(out)
+    return {"big": {"zoom": 1}, "small": {"zoom": 1, "looks": small}}
+
+
 def finish():
     """Each look with a face: the face layers dropped and frame 0 shown on its body, as the plain look is drawn with no
     block in it (its inner cube shown, its jelly see-through, and the § looks' pose that hides all but a block dropped);
@@ -124,6 +143,7 @@ def finish():
         if name in STILL:
             look["plays"] = "still"
     text = put(text, "MOB_LOOKS", "sulfur_cube", looks)
+    text = put(text, "MOB_SIZES", "sulfur_cube", sizes(looks))
     # The face layers' models (one square per part) are no look's any more.
     a = text.index("const MOB_MODELS = {")
     b = text.index("\n};", a)

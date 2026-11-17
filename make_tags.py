@@ -196,6 +196,7 @@ WHAT = {
     ("sulfur_cube", "§s"): "Draws it at half its size, without its animations. With a block in it, the pack hides the cube and shows only its block, at half size: a way to place small blocks. The stage shows it with none.",
     ("sulfur_cube", "§b"): "Draws it without its animations. With a block in it, the pack hides the cube and shows only its block, at full size. The stage shows it with none.",
     ("sulfur_cube", "§l"): "Draws it twice its size, without its animations. With a block in it, the pack hides the cube and shows only its block, twice as big. The stage shows it with none.",
+    ("sulfur_cube", "baby"): "Draws it as a small sulfur cube, whatever its size. Only the look changes: it keeps its size’s health and drops.",
     ("snow_golem", "baby"): "A small snowman, its head on a single ball of snow, with a coal face and no pumpkin.",
     ("copper_golem", "maid"): "A maid’s outfit: a black dress with a white apron tied in a big bow at the back and a white frilled headband, its copper head and glowing eyes showing. The copper oxidizes with its stage.",
     ("copper_golem", "halloween"): "A voodoo doll: a stitched brown burlap body, one black and one red button for eyes, and pins stuck in its head.",
@@ -299,6 +300,8 @@ RARE = {
 # The biomes those looks come from, which the stage shows behind a mob with that name: (mob, the lower-case name) -> a
 # backdrop (src/backdrop.js).
 BIOME = {
+    # The sulfur cube stands in the sulfur caves; named for a ball, it's shown on the plains.
+    **{("sulfur_cube", name): "plains" for name in ("baseball", "basketball", "beach ball", "billiards", "black billiards", "blue billiards", "brown billiards", "green billiards", "red billiards", "white billiards", "yellow billiards", "billiards spot", "maroon billiards spot", "black billiards spot", "blue billiards spot", "green billiards spot", "purple billiards spot", "red billiards spot", "yellow billiards spot", "billiards stripe", "maroon billiards stripe", "blue billiards stripe", "green billiards stripe", "purple billiards stripe", "red billiards stripe", "yellow billiards stripe", "bowling", "blue bowling ball", "green bowling ball", "orange bowling ball", "red bowling ball", "white bowling ball", "bowling pin", "bomb", "cricket", "curling", "blue curling", "green curling", "yellow curling", "die", "soccer", "golf", "green golf ball", "orange golf ball", "pink golf ball", "yellow golf ball", "hockey", "plastic", "blue plastic", "green plastic", "red plastic", "yellow plastic", "tennis", "volleyball", "axolotl floaty", "creeper floaty", "chick floaty", "squid floaty", "turtle floaty", "cheese", "rugby ball")},
     **{(mob, "cherry"): "cherry_grove" for mob in ("chicken", "cow", "pig", "rabbit", "sheep", "sniffer", "spider")},
     **{(mob, "dappled"): "dappled_forest" for mob in ("chicken", "cow", "pig", "sheep", "sniffer", "spider")},
     ("spider", "pale"): "pale_garden", ("spider", "sulfur"): "sulfur_caves", ("sniffer", "snowy"): "snowy",
