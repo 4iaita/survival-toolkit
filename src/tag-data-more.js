@@ -227,8 +227,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Pumpkin"], what: "A Halloween costume." },
   ],
   silverfish: [
-    { names: ["Baby", "Bug", "Wiggles"], kind: BABY },
-    { names: ["Halloween", "Centipede"], what: "A Halloween costume." },
+    { names: ["Baby", "Bug", "Wiggles"], kind: BABY, rare: "1 in 200 silverfish" },
+    { names: ["Halloween", "Centipede"], what: "A centipede: a long dark red-brown body in segments, seven pairs of bent orange legs along its sides, two long thin feelers reaching forward from its head and two short prongs at its tail." },
   ],
   skeleton: [
     { names: ["Baby", "Skelly", "Boney"], kind: BABY, rare: "1 in 200 skeletons" },

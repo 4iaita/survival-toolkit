@@ -105,6 +105,7 @@ WHAT = {
     ("camel_husk", "halloween"): "An executioner’s beast: a shaggy red-brown hide, an iron collar round its neck and iron cuffs on its legs, a gray band over its back, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
     ("camel_husk", "executioner calf"): "A baby executioner’s beast: a shaggy red-brown hide, an iron collar and iron cuffs on its legs, spikes sticking out of its head and hump, and yellow eyes that glow in the dark.",
     ("phantom", "halloween"): "A giant bat: a dark furry body and head with two tall pointed ears, two little white fangs and red eyes that glow in the dark, broad black wings with crimson undersides and pale claws at their bends, and two little legs trailing behind.",
+    ("silverfish", "halloween"): "A centipede: a long dark red-brown body in segments, seven pairs of bent orange legs along its sides, two long thin feelers reaching forward from its head and two short prongs at its tail.",
     ("bogged", "halloween"): "A scarecrow: a carved pumpkin for a head, its eyes glowing in the dark over a jagged grin, under a floppy wide-brimmed green hat with a brown band and a sprig sticking out of its crown, a ragged green collar round its neck and more rags about its hips, and arms and legs of brown branches with twigs sprouting from them. It has no mushrooms to shear.",
     ("creeper", "cherry"): "A crown of pink cherry blossoms round the top of its head, more blossoms on its sides and back, and one on its chest.",
     ("creeper", "blossom"): "Pink all over, covered in cherry blossoms, with a few green patches showing through.",
@@ -276,7 +277,7 @@ RARE = {
     # And 1 in 20 allays.
     ("allay", "baby"): "1 in 20 allays",
     # And 1 in 200 parched and vexes.
-    ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes", ("breeze", "baby"): "1 in 200 breezes", ("phantom", "baby"): "1 in 200 phantoms",
+    ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes", ("breeze", "baby"): "1 in 200 breezes", ("phantom", "baby"): "1 in 200 phantoms", ("silverfish", "baby"): "1 in 200 silverfish",
     ("pillager", "baby"): "1 in 200 pillagers", ("vindicator", "baby"): "1 in 200 vindicators",
     ("evoker", "baby"): "1 in 200 evokers", ("witch", "baby"): "1 in 200 witches", ("ravager", "baby"): "1 in 200 ravagers",
     ("witch", "cherry"): "witches in cherry groves",
