@@ -22,14 +22,17 @@ MOTIONS = [("qmodun", 1), ("idle", 1), ("tkqbys", 1)]
 # It blinks: the pack shows its shut eyes (3dafc, renamed blink) for the last sixth of a second of every 1.83 (its blink
 # loop, blinking.step, while it isn't roaring); here every 3 to 7 seconds, over its swaying (keep).
 BLINK = {"every": [3, 7], "keep": True, "parts": [(None, 0, 0.1667, [["blink", True]])]}
-# When a shield blocks its charge it's stunned (khnacx: its head lolls and wobbles, its eyes pulse, its body sways),
-# for STUNNED seconds (the game's 40 ticks), over its swaying.
+# When a shield blocks its charge it's stunned (khnacx: its head lolls and wobbles, its eyes pulse, its body sways) for
+# STUNNED seconds (the game's 40 ticks), and then, as the game has it, it roars (roaring, with ermejm: it rears back, its
+# jaw gaping, and shakes its head from side to side), knocking back what's near: one act, over its swaying, the stun
+# blending into the roar as the stage blends one part into the next. The pack blends into and out of the stun over 0.12
+# seconds, where something has just struck it; played now and then, that snapped its head down and back up, so the act
+# eases in over EASE seconds instead (the roar ends where it started).
 STUNNED = 2
-STUN = {"every": [3, 7], "keep": True, "ease": 0.12, "parts": [("khnacx", 0, STUNNED, [])]}
-# Then it roars (roaring, with ermejm: it rears back, its jaw gaping, and shakes its head from side to side), knocking
-# back what's near. The stage plays the two apart, now and then.
-ROAR = {"every": [3, 7], "keep": True, "ease": 0.12, "parts": [("roaring", 0, None, []), ("ermejm", 0, None, [])]}
-ACTS = [BLINK, STUN, ROAR]
+EASE = 0.5
+STUN = {"every": [3, 7], "keep": True, "ease": EASE,
+        "parts": [("khnacx", 0, STUNNED, []), ("roaring", STUNNED, None, []), ("ermejm", STUNNED, None, [])]}
+ACTS = [BLINK, STUN]
 
 REMODEL = ["krampus"]
 
