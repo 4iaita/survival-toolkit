@@ -210,7 +210,7 @@ RARE = {
     # And 1 in 200 parched and vexes.
     ("parched", "baby"): "1 in 200 parched", ("vex", "baby"): "1 in 200 vexes",
     ("pillager", "baby"): "1 in 200 pillagers", ("vindicator", "baby"): "1 in 200 vindicators",
-    ("evoker", "baby"): "1 in 200 evokers", ("witch", "baby"): "1 in 200 witches",
+    ("evoker", "baby"): "1 in 200 evokers", ("witch", "baby"): "1 in 200 witches", ("ravager", "baby"): "1 in 200 ravagers",
     ("witch", "cherry"): "witches in cherry groves",
     ("skeleton", "baby"): "1 in 200 skeletons", ("stray", "baby"): "1 in 200 strays", ("bogged", "baby"): "1 in 200 bogged",
     ("skeleton", "cherry"): "skeletons in cherry groves", ("skeleton", "sulfur"): "skeletons in sulfur caves",

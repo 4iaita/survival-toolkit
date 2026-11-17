@@ -143,7 +143,7 @@ const PACK_TAGS = {
     { names: ["Killer Bunny"], what: "The Killer Bunny’s white fur, with red eyes that glow in the dark. Only the look: it stays as harmless as any rabbit.", night: true },
     { names: ["Toast"], what: "Draws the game’s Toast coat in the pack’s style, and takes “toast” in lower case too." },
   ],
-  ravager: [{ names: ["Krampus"], what: "A horned, chained beast for Krampus to ride." }],
+  ravager: [{ names: ["Krampus"], what: "A beast for Krampus to ride: shaggy dark gray fur, long jagged black horns, red eyes, a brown leather saddle studded with gold and strapped on with a big gold buckle, and green and gold wraps trimmed with fur on its legs, over studded brown boots." }],
   sheep: [{ names: ["Baby", "Lamb", "Wooly"], kind: BABY }, snowyIn("sheep")],
   skeleton: [{ names: ["Snowy", "Frosty"], kind: SNOWY, rare: "skeletons in snowy biomes" }],
   skeleton_horse: [{ names: ["Baby", "Foal", "Rattle"], kind: BABY }],

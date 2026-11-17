@@ -212,7 +212,7 @@ const PACK_TAGS_MORE = {
     { names: ["Cherry"], what: "A pink cherry blossom on its head, by one ear, over its own coat.", biome: "cherry_grove", rare: "rabbits in cherry groves" },
   ],
   ravager: [
-    { names: ["Baby", "Ravaglet", "Rumble"], kind: BABY },
+    { names: ["Baby", "Ravaglet", "Rumble"], kind: BABY, rare: "1 in 200 ravagers" },
   ],
   salmon: [
     { names: ["Baby", "Smolt", "Streamer"], kind: BABY },
