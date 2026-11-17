@@ -377,10 +377,11 @@ const MOB_WOOL = {
   },
 };
 // Mobs that have babies in the game itself, bred or born: the stage can show one as a baby, in the look the pack
-// gives its babies (the one its Baby name shows). Other mobs only look like babies with that name.
+// gives its babies (the one its Baby name shows). Other mobs only look like babies with that name. A small sulfur cube is
+// the game's baby: it splits off a big one and grows up.
 const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chicken", "cow", "dolphin", "donkey", "drowned", "fox", "glow_squid", "goat",
   "hoglin", "horse", "husk", "llama", "mooshroom", "mule", "nautilus", "ocelot", "panda", "pig", "piglin", "polar_bear", "rabbit", "sheep",
-  "sniffer", "squid", "strider", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
+  "sniffer", "squid", "strider", "sulfur_cube", "trader_llama", "turtle", "villager", "wolf", "zoglin", "zombie", "zombie_villager", "zombified_piglin"]);
 // Mobs the game has no babies of that the pack makes babies of all the same, 1 in 5 of them (with its setting for
 // that): the stage can show them as babies too, in the pack's baby look.
 const PACK_BABIES = new Set(["cod", "frog", "parrot", "salmon", "tropicalfish"]);
