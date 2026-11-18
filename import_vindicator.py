@@ -9,6 +9,8 @@ The game has no babies of it; the pack makes 1 in 200 vindicators babies by itse
 size). Named Clown (or with the pack's seasonal setting on), it's drawn as the clown instead, never as a baby. Run
 import_additions.py first.
 """
+import json
+
 from import_parched import BOW_HAND, bow_model
 from import_port import copy_texture, ia, im, port, put
 
@@ -36,7 +38,9 @@ REMODEL = ["clown"]
 # left arm out), its brows lowered (ovmxnb), swaying as it does, blinking, and now and then chopping (attack: the pack's
 # swing of the axe, which the game plays as it hits).
 CHOP = {"every": [3, 7], "keep": True, "parts": [("attack", 0, None, [])]}
-JOHNNY = {"motions": [("zygxsz", 1), ("czfrre", 1, "held"), ("ovmxnb", 1)], "acts": [BLINK, CHOP]}
+# The pack's raise also turns its waist 18 degrees: left out (czfrre_facing), and Johnny stands in the still pose its
+# other looks do (qmodun, held), so it faces the way they do.
+JOHNNY = {"motions": [("zygxsz", 1), ("qmodun", 1, "held"), ("czfrre_facing", 1, "held"), ("ovmxnb", 1)], "acts": [BLINK, CHOP]}
 
 # The game's vindicators carry an iron axe. The pack's (its attachable, minecraft:iron_axe) is, with its 3D items
 # setting off as it starts, the game's iron axe sprite drawn as a texture mesh: here it's a cube for each pixel, as the
@@ -75,11 +79,30 @@ def add_axe():
             key = "_".join(filter(None, [AXE_KEY, "hanging", name]))
             model = bow_model(geos[d["geometry"][SKELETONS[name]]], AXE, AXE_GRIP, HANG_TURN, "axe", HANDS.get(name, BOW_HAND))
         text = put(text, "MOB_MODELS", key, im.model(model))
-        look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(AXE_KEY)] + [[key, [AXE_KEY], []]]
+        # held: the stage frames the vindicator on its body, not its axe (src/mobs.js), so every look stands in the same place.
+        look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(AXE_KEY)] + [[key, [AXE_KEY], [], {"held": 1}]]
     ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "vindicator", looks))
     copy_texture(AXE, AXE_KEY)
 
+_read_pack = im.read_pack
+
+
+def read_pack():
+    """czfrre_facing: the pack's raise (czfrre) without its waist's turn."""
+    ents, rcs, geos, mats, anims, props, armors = _read_pack()
+    keys = ents["minecraft:vindicator"]["animations"]
+    raise_ = json.loads(json.dumps(anims[keys["czfrre"]]))
+    for frame in raise_["bones"]["waist"]["rotation"].values():
+        for v in [frame] if isinstance(frame, list) else [frame.get("pre"), frame.get("post")]:
+            if v:
+                v[1] = 0
+    anims["animation.vindicator_czfrre_facing"] = raise_
+    keys["czfrre_facing"] = "animation.vindicator_czfrre_facing"
+    return ents, rcs, geos, mats, anims, props, armors
+
+
 if __name__ == "__main__":
+    im.read_pack = read_pack
     port("vindicator", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL, new_looks=[["Johnny"]],
          sets={"johnny": JOHNNY}, plays={"Johnny": "johnny"})
     if ia.WRITE:

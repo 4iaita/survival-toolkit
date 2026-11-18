@@ -226,7 +226,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
         continue;
       }
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, over: Boolean(flags.over), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
           let face = FACES[axis][side];
           if (mirror) {
@@ -654,7 +654,9 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         const all = [];
         for (const moving of moments) all.push(ground(await lookBoxes(shape, { ...options, moving })));
         if (!all[0] || !all[0].length) return { boxes: all[0], bounds: null };
-        const each = all.map(boxesBounds);
+        // An item a mob holds (a layer flagged held: the vindicator's axe) is left out, so the mob is framed on its body
+        // whatever it holds and however it holds it.
+        const each = all.map(some => boxesBounds(some.some(m => !m.held) ? some.filter(m => !m.held) : some));
         const bounds = [each.reduce((a, b) => a.map((v, k) => Math.min(v, b[0][k])), each[0][0]), each.reduce((a, b) => a.map((v, k) => Math.max(v, b[1][k])), each[0][1])];
         const spots = !swim ? [] : all.flatMap(some => some.flatMap(m => {
           const part = visiblePart(m);
