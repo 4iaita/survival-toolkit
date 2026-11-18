@@ -669,7 +669,7 @@ const BACKDROPS = {
   deep_dark: () => ({
     mist: { far: 0.55, near: 0.14 },
     wall: { rock: ["deepslate", "deepslate", "sculk", "deepslate_tiles", "deepslate"], ores: ["sculk", "deepslate_tiles"] },
-    ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate_tiles"], drip: [], shade: 0.35 },
+    ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate_tiles"], drip: [], shade: 0.2 },
     near: [[deepDark(["L", "X", "D", "C", "D", "D", "X"]), -25], [deepDark(["S.", "KK"]), -21], [deepDark(["A"]), -17],
       [deepDark(["H", "K"]), -14], [deepDark(["L", "X", "D", "D", "C", "D", "X"]), -11], [deepDark(["c", "P"]), -7],
       [deepDark(["XRRRRRX", "R.....R", "R.....R", "R.....R", "R.....R", "TTTTTTT"]), 5], [deepDark(["L", "X", "C", "D", "D", "D", "X"]), 13],

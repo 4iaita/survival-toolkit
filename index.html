@@ -546,9 +546,10 @@ a.mc-btn { text-decoration: none; }
 .stage[data-biome="stronghold"] { --sky: #0d0d10; --haze: #18181d; }
 .stage[data-biome="stronghold"]::after { filter: brightness(.6); }
 .stage[data-biome="stronghold"]::before { display: none; }
-/* The deep dark: no sky, a cold blue-black haze over the deepslate, and the sculk floor barely lit by soul lanterns. */
-.stage[data-biome="deep_dark"] { --sky: #04070a; --haze: #0b1a20; }
-.stage[data-biome="deep_dark"]::after { filter: brightness(.6); }
+/* The deep dark: no sky, a cold blue-gray haze over the deepslate (kept light enough for the near-black Bacteria to
+   stand out),, and an ancient city's deepslate tile floor lit by soul lanterns. */
+.stage[data-biome="deep_dark"] { --sky: #16262e; --haze: #3a5c66; }
+.stage[data-biome="deep_dark"]::after { filter: brightness(.95); }
 .stage[data-biome="deep_dark"]::before { display: none; }
 /* A biome at night (the plains'): a deep blue sky, lighter toward the horizon, dim clouds, and the grass in the dark (not black:
    the mob still has to be seen against it). */
@@ -3637,7 +3638,7 @@ const groundArt = night => {
   // Only villages are BIOMES; the Mobs tab's cave, trial chamber, stronghold, deep dark, nether, End, ocean, lush and flooded caves, the tadpole's swamp water, the wolves' wild
   // biomes, the panda's bamboo jungle, the mooshroom's mushroom fields and the warm frog's mangrove swamp have floors of their own.
   const name = (BIOMES.find(b => b.k === biome) || { ground: { village: "grass_top", forest: "grass_top", snowy_taiga: "snow", grove: "snow", peaks: "snow", pine_taiga: "podzol_top",
-    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", deep_dark: "sculk", plains: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "tuff", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel", mangrove_swamp: "mud", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
+    spruce_taiga: "podzol_top", sparse_jungle: "grass_top", bamboo_jungle: "grass_top", mushroom_fields: "mycelium_top", savanna_plateau: "grass_top", badlands: "coarse_dirt", mineshaft: "gravel", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", deep_dark: "deepslate_tiles", plains: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "tuff", nether: "netherrack", end: "end_stone", end_island: "end_stone", ocean: "sand", lush: "moss_block", flooded_cave: "gravel", mangrove_swamp: "mud", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
   if (!tex) return icon(`biome:${biome}`);
   return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };
@@ -4313,7 +4314,7 @@ const BACKDROPS = {
   deep_dark: () => ({
     mist: { far: 0.55, near: 0.14 },
     wall: { rock: ["deepslate", "deepslate", "sculk", "deepslate_tiles", "deepslate"], ores: ["sculk", "deepslate_tiles"] },
-    ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate_tiles"], drip: [], shade: 0.35 },
+    ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate_tiles"], drip: [], shade: 0.2 },
     near: [[deepDark(["L", "X", "D", "C", "D", "D", "X"]), -25], [deepDark(["S.", "KK"]), -21], [deepDark(["A"]), -17],
       [deepDark(["H", "K"]), -14], [deepDark(["L", "X", "D", "D", "C", "D", "X"]), -11], [deepDark(["c", "P"]), -7],
       [deepDark(["XRRRRRX", "R.....R", "R.....R", "R.....R", "R.....R", "TTTTTTT"]), 5], [deepDark(["L", "X", "C", "D", "D", "D", "X"]), 13],

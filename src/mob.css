@@ -24,9 +24,10 @@
 .stage[data-biome="stronghold"] { --sky: #0d0d10; --haze: #18181d; }
 .stage[data-biome="stronghold"]::after { filter: brightness(.6); }
 .stage[data-biome="stronghold"]::before { display: none; }
-/* The deep dark: no sky, a cold blue-black haze over the deepslate, and the sculk floor barely lit by soul lanterns. */
-.stage[data-biome="deep_dark"] { --sky: #04070a; --haze: #0b1a20; }
-.stage[data-biome="deep_dark"]::after { filter: brightness(.6); }
+/* The deep dark: no sky, a cold blue-gray haze over the deepslate (kept light enough for the near-black Bacteria to
+   stand out),, and an ancient city's deepslate tile floor lit by soul lanterns. */
+.stage[data-biome="deep_dark"] { --sky: #16262e; --haze: #3a5c66; }
+.stage[data-biome="deep_dark"]::after { filter: brightness(.95); }
 .stage[data-biome="deep_dark"]::before { display: none; }
 /* A biome at night (the plains'): a deep blue sky, lighter toward the horizon, dim clouds, and the grass in the dark (not black:
    the mob still has to be seen against it). */
