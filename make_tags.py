@@ -107,6 +107,7 @@ WHAT = {
     ("phantom", "halloween"): "A giant bat: a dark furry body and head with two tall pointed ears, two little white fangs and red eyes that glow in the dark, broad black wings with crimson undersides and pale claws at their bends, and two little legs trailing behind.",
     ("silverfish", "halloween"): "A centipede: a long dark red-brown body in segments, seven pairs of bent orange legs along its sides, two long thin feelers reaching forward from its head and two short prongs at its tail.",
     ("bogged", "halloween"): "A scarecrow: a carved pumpkin for a head, its eyes glowing in the dark over a jagged grin, under a floppy wide-brimmed green hat with a brown band and a sprig sticking out of its crown, a ragged green collar round its neck and more rags about its hips, and arms and legs of brown branches with twigs sprouting from them. It has no mushrooms to shear.",
+    ("warden", "bacteria"): "A tall, thin creature all in black, like a shadow: a boxy head with a dark gaping mouth and no eyes, long spindly arms and legs jointed like scaffolding, and thin black tendrils trailing from its head and arms.",
     ("creaking", "dappled"): "Its bark a warm oak brown in place of the pale garden’s gray, with orange and red autumn twigs sprouting from its head and shoulders, and orange shelf fungus growing on its shoulders, an arm and a leg; its three eyes glow orange.",
     ("creeper", "cherry"): "A crown of pink cherry blossoms round the top of its head, more blossoms on its sides and back, and one on its chest.",
     ("creeper", "blossom"): "Pink all over, covered in cherry blossoms, with a few green patches showing through.",
@@ -290,6 +291,7 @@ RARE = {
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
     # And 1 in 200 creepers; and in cherry groves and dappled forests, 1 in 100 creepers get the Blossom or Poplar look
     # in place of the Cherry or Dappled one.
+    ("warden", "baby"): "1 in 200 wardens",
     ("creaking", "baby"): "1 in 200 creakings", ("creaking", "dappled"): "creakings in dappled forests",
     ("creeper", "baby"): "1 in 200 creepers",
     ("creeper", "cherry"): "99 in 100 creepers in cherry groves",

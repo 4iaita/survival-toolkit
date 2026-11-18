@@ -29,7 +29,9 @@
  * outside, bookshelves, a chest and a door, lit by torches on the pillars.
  * And a trial chamber, the breeze's: tuff brick walls, tuff pillars with lit copper bulbs, copper grates, trial spawners and
  * vaults. And a stronghold's portal room, the silverfish's: stone brick walls, cracked and mossy, iron doors and barred
- * windows, bookshelves, the end portal's frames on their steps and the silverfish spawner.
+ * windows, bookshelves, the end portal's frames on their steps and the silverfish spawner. And the deep dark, the
+ * warden's: an ancient city's deepslate brick pillars and its portal's reinforced deepslate frame, overgrown with sculk,
+ * sculk sensors and shriekers, lit by soul lanterns and candles.
  * The plains have a night too, for the phantom and the undead horses and zombie villagers that come out at night: the
  * same hills and house darkened and blue under stars and the moon, its windows lit. So do the swamp (the bogged's and
  * the witch's), the desert (the husk's, the parched's and the camel husk's), the snowy village (the stray's) and the
@@ -440,6 +442,15 @@ const STRONGHOLD = {
   F: blockTex("end_portal_frame"), Z: blockTex("mob_spawner"), K: blockTex("bookshelf"),
 };
 const stronghold = rows => prop(rows, STRONGHOLD);
+// The deep dark, the warden's: an ancient city's deepslate brick pillars, cracked and chiseled, and the reinforced
+// deepslate frame of its portal, overgrown with sculk, sculk sensors and shriekers on it, a catalyst, and soul lanterns
+// and candles for light.
+const DEEP_DARK = {
+  D: blockTex("deepslate_bricks"), C: blockTex("cracked_deepslate_bricks"), X: blockTex("chiseled_deepslate"), P: blockTex("polished_deepslate"),
+  T: blockTex("deepslate_tiles"), R: blockTex("reinforced_deepslate"), K: blockTex("sculk"), A: blockTex("sculk_catalyst"),
+  S: plantTex("sculk_sensor"), H: plantTex("sculk_shrieker"), L: plantTex("soul_lantern"), c: plantTex("candle_lit"),
+};
+const deepDark = rows => prop(rows, DEEP_DARK);
 // A plains window lit from inside, for the night.
 const LIT_WINDOW = { layers: [["glass"]], under: "#e9b65a" };
 const BACKDROPS = {
@@ -652,6 +663,19 @@ const BACKDROPS = {
       [stronghold(["SSSS", "SIIS", "SIIS", "SSMS", "CSSS"]), 11], [stronghold(["KK", "KK", "KK"]), 16], [stronghold(["T", ".", "."]), 20],
       [stronghold(["SXS", "SDS", "SdS"]), 23]],
     lights: [[-21, 2.5], [-8, 2.5], [8, 2.5], [20, 2.5]],
+  }),
+  // The deep dark, the warden's (it comes out of the ground there, summoned by shriekers): an ancient city's pillars and
+  // the frame of its portal in the deepslate, sculk spread over it all, lit by soul lanterns.
+  deep_dark: () => ({
+    mist: { far: 0.55, near: 0.14 },
+    wall: { rock: ["deepslate", "deepslate", "sculk", "deepslate_tiles", "deepslate"], ores: ["sculk", "deepslate_tiles"] },
+    ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate_tiles"], drip: [], shade: 0.35 },
+    near: [[deepDark(["L", "X", "D", "C", "D", "D", "X"]), -25], [deepDark(["S.", "KK"]), -21], [deepDark(["A"]), -17],
+      [deepDark(["H", "K"]), -14], [deepDark(["L", "X", "D", "D", "C", "D", "X"]), -11], [deepDark(["c", "P"]), -7],
+      [deepDark(["XRRRRRX", "R.....R", "R.....R", "R.....R", "R.....R", "TTTTTTT"]), 5], [deepDark(["L", "X", "C", "D", "D", "D", "X"]), 13],
+      [deepDark(["H.", "KK", "KC"]), 16], [deepDark(["c", "P"]), 20], [deepDark(["L", "X", "D", "D", "D", "C", "X"]), 24]],
+    lights: [[-25, 6.5], [-11, 6.5], [13, 6.5], [24, 6.5]],
+    lightColor: "110, 215, 230",
   }),
   // The plains at night, the phantom's (it comes out over any biome at night) and the night's undead: the plains'
   // hills and house, darkened and blue under stars and the moon, the house's windows lit.

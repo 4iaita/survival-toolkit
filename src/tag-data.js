@@ -175,9 +175,9 @@ const PACK_TAGS = {
   vindicator: [{ names: ["Clown", "Giggles"], what: "A creepy clown: a white painted face with blue streaks running down from its eyes, a red ball nose, big tufts of red hair at its sides, a ruff striped red and white round its neck, a suit red on one side and blue on the other with white buttons, and red and white striped trousers with ruffled cuffs." }],
   wandering_trader: [{ names: ["Snowy", "Frosty"], kind: SNOWY, what: "Dressed for the cold: snow on its hood and shoulders, a fur-trimmed coat, a pack on its back with snow on it, frosty boots and a nose pink with cold.", rare: "wandering traders in snowy biomes" }],
   warden: [
-    { names: ["Jack", "Gourden"], what: "A jack o’lantern warden, with a carved pumpkin head and vines." },
-    { names: ["Yeti"], what: "A shaggy white yeti." },
-    { names: ["William"], what: "A red bow tie and a walking cane." },
+    { names: ["Jack", "Gourden"], night: true, what: "A jack o’lantern: a carved pumpkin head with a face glowing orange, a body of green vines and leaves with a carved pumpkin in its chest, a fire flickering inside it, and curling vines in place of its tendrils." },
+    { names: ["Yeti"], what: "A yeti: shaggy pale blue fur from head to foot, curled tan ram’s horns, a dark blue face with white fangs, and a dark blue patch on its chest." },
+    { names: ["William"], what: "Dressed up: a red bow tie at its neck and a dark red walking cane with a silver band in its hand." },
   ],
   witch: [
     { names: ["Emeralda"], what: "A green-skinned witch, in the usual purple robe and hat with its glowing green gem.", rare: "1 in 20 witches" },

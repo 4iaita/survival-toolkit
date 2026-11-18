@@ -197,7 +197,16 @@ FILES = {
     "chiseled_copper": "blocks/chiseled_copper", "oxidized_chiseled_copper": "blocks/oxidized_chiseled_copper",
     "copper_bulb_lit": "blocks/copper_bulb_lit", "oxidized_copper_bulb_lit": "blocks/oxidized_copper_bulb_lit",
     "trial_spawner": "blocks/trial_spawner_side_active", "vault": "blocks/vault_front_on",
+    # The warden's deep dark: sculk and its sensors, shriekers and catalysts, an ancient city's deepslate and the
+    # reinforced deepslate of its portal frame, soul lanterns and candles.
+    "sculk": "blocks/sculk", "sculk_catalyst": "blocks/sculk_catalyst_side", "sculk_sensor": "blocks/sculk_sensor_side",
+    "sculk_shrieker": "blocks/sculk_shrieker_side", "deepslate_bricks": "blocks/deepslate/deepslate_bricks",
+    "cracked_deepslate_bricks": "blocks/deepslate/cracked_deepslate_bricks", "chiseled_deepslate": "blocks/deepslate/chiseled_deepslate",
+    "polished_deepslate": "blocks/deepslate/polished_deepslate", "reinforced_deepslate": "blocks/reinforced_deepslate_side",
+    "soul_lantern": "items/soul_lantern", "candle_lit": "blocks/candles/candle_lit",
 }
+# Animated block textures, a strip of frames top to bottom: only their first frame is kept.
+FIRST_FRAME = {"sculk"}
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"
@@ -275,7 +284,11 @@ def main():
     missing = []
     for name, file in sorted(FILES.items()):
         src = pack / f"{file}.png"
-        if src.exists():
+        if src.exists() and name in FIRST_FRAME:
+            from PIL import Image
+            img = Image.open(src)
+            img.crop((0, 0, img.width, img.width)).save(out / f"{name}.png")
+        elif src.exists():
             shutil.copyfile(src, out / f"{name}.png")
         elif src.with_suffix(".tga").exists():
             tga_to_png(src.with_suffix(".tga"), out / f"{name}.png")

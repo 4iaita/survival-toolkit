@@ -361,8 +361,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Fortune Teller"], more: ["fortune Teller", "Fortune teller"], what: "A fortune teller: a purple robe with orange trim and a fringed hem, a red scarf hanging down its back, green boots, and an orange headband with a feather and a gold charm on it, the charm’s green eye and its own eyes glowing in the dark.", night: true },
   ],
   warden: [
-    { names: ["Baby", "Wardenlet", "Thuddy"], kind: BABY },
-    { names: ["Bacteria"], what: "The Bacteria look." },
+    { names: ["Baby", "Wardenlet", "Thuddy"], kind: BABY, rare: "1 in 200 wardens" },
+    { names: ["Bacteria"], what: "A tall, thin creature all in black, like a shadow: a boxy head with a dark gaping mouth and no eyes, long spindly arms and legs jointed like scaffolding, and thin black tendrils trailing from its head and arms." },
   ],
   witch: [
     { names: ["Baby", "Witchlet", "Hexy"], kind: BABY, rare: "1 in 200 witches" },
