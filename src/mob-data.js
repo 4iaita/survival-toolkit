@@ -403,7 +403,7 @@ const MOBS = [
   { k: "snow_golem", n: "Snow Golem", g: "Village", biome: "snowy" }, { k: "villager", n: "Villager", g: "Village", biome: "village" },
   { k: "wandering_trader", n: "Wandering Trader", g: "Village" },
   { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp_night" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "trial_chamber" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert_night" },
-  { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
+  { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters", biome: "pale_garden_night" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
   { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean_night", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
   { k: "evoker", n: "Evoker", g: "Monsters", biome: "mansion" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
   { k: "husk", n: "Husk", g: "Monsters", biome: "desert_night" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert_night" }, { k: "phantom", n: "Phantom", g: "Monsters", biome: "plains_night", stand: { body: { p: [0, 22, 0] } } },

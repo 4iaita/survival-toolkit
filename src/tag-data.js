@@ -61,8 +61,8 @@ const PACK_TAGS = {
     { ...snowyIn("cold cows"), needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
   ],
   creaking: [
-    { names: ["Baby", "Twiggy", "Creakling"], kind: BABY },
-    { names: ["Spruce", "Twinkle"], what: "A spruce Christmas tree." },
+    { names: ["Baby", "Twiggy", "Creakling"], kind: BABY, rare: "1 in 200 creakings" },
+    { names: ["Spruce", "Twinkle"], what: "A Christmas tree: drooping spruce boughs cover it from head to foot, a gold star on top, and strings of red, green, blue and yellow lights that twinkle on and off all over it, its eyes glowing orange through the needles." },
   ],
   creeper: [
     { names: ["Baby", "Creeperling", "Boomlet"], kind: BABY, rare: "1 in 200 creepers" },

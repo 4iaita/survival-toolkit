@@ -107,6 +107,7 @@ WHAT = {
     ("phantom", "halloween"): "A giant bat: a dark furry body and head with two tall pointed ears, two little white fangs and red eyes that glow in the dark, broad black wings with crimson undersides and pale claws at their bends, and two little legs trailing behind.",
     ("silverfish", "halloween"): "A centipede: a long dark red-brown body in segments, seven pairs of bent orange legs along its sides, two long thin feelers reaching forward from its head and two short prongs at its tail.",
     ("bogged", "halloween"): "A scarecrow: a carved pumpkin for a head, its eyes glowing in the dark over a jagged grin, under a floppy wide-brimmed green hat with a brown band and a sprig sticking out of its crown, a ragged green collar round its neck and more rags about its hips, and arms and legs of brown branches with twigs sprouting from them. It has no mushrooms to shear.",
+    ("creaking", "dappled"): "Its bark a warm oak brown in place of the pale garden’s gray, with orange and red autumn twigs sprouting from its head and shoulders, and orange shelf fungus growing on its shoulders, an arm and a leg; its three eyes glow orange.",
     ("creeper", "cherry"): "A crown of pink cherry blossoms round the top of its head, more blossoms on its sides and back, and one on its chest.",
     ("creeper", "blossom"): "Pink all over, covered in cherry blossoms, with a few green patches showing through.",
     ("creeper", "sulfur"): "Its head crusted with pale yellow sulfur, a lumpy crust on top that glows faintly in the dark.",
@@ -289,6 +290,7 @@ RARE = {
     ("iron_golem", "cherry"): "iron golems in cherry groves", ("iron_golem", "dappled"): "iron golems in dappled forests",
     # And 1 in 200 creepers; and in cherry groves and dappled forests, 1 in 100 creepers get the Blossom or Poplar look
     # in place of the Cherry or Dappled one.
+    ("creaking", "baby"): "1 in 200 creakings", ("creaking", "dappled"): "creakings in dappled forests",
     ("creeper", "baby"): "1 in 200 creepers",
     ("creeper", "cherry"): "99 in 100 creepers in cherry groves",
     ("creeper", "blossom"): "1 in 100 creepers in cherry groves",
@@ -310,6 +312,7 @@ BIOME = {
     ("iron_golem", "cherry"): "cherry_grove", ("iron_golem", "dappled"): "dappled_forest",
     ("skeleton", "cherry"): "cherry_grove", ("skeleton", "sulfur"): "sulfur_caves", ("skeleton", "dappled"): "dappled_forest", ("skeleton", "pale"): "pale_garden",
     ("zombie", "cherry"): "cherry_grove", ("zombie", "sulfur"): "sulfur_caves", ("zombie", "dappled"): "dappled_forest", ("zombie", "pale"): "pale_garden",
+    ("creaking", "dappled"): "dappled_forest",
     ("creeper", "cherry"): "cherry_grove", ("creeper", "blossom"): "cherry_grove", ("creeper", "sulfur"): "sulfur_caves", ("creeper", "dappled"): "dappled_forest", ("creeper", "poplar"): "dappled_forest", ("creeper", "pale"): "pale_garden",
     ("villager", "cherry"): "cherry_grove", ("villager", "dappled"): "dappled_forest",
     ("zombie_villager", "cherry"): "cherry_grove", ("witch", "cherry"): "cherry_grove",
@@ -326,7 +329,7 @@ NIGHT = {("chicken", "halloween"), ("villager", "trick or treat"), ("chicken", "
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
          ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale"),
          ("stray", "baby"), ("stray", "halloween"), ("drowned", "halloween"), ("drowned", "baby gillman"),
-         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur"), ("pillager", "halloween"), ("evoker", "halloween"), ("phantom", "baby"), ("phantom", "halloween")}
+         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur"), ("pillager", "halloween"), ("evoker", "halloween"), ("phantom", "baby"), ("phantom", "halloween"), ("creaking", "dappled")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

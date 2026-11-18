@@ -83,7 +83,7 @@ const PACK_TAGS_MORE = {
     { names: ["Dappled"], what: "Orange leaves on its head.", biome: "dappled_forest", needs: "Only cold cows, the kind from snowy biomes.", climate: "cold" },
   ],
   creaking: [
-    { names: ["Dappled"], what: "The dappled look." },
+    { names: ["Dappled"], what: "Its bark a warm oak brown in place of the pale garden’s gray, with orange and red autumn twigs sprouting from its head and shoulders, and orange shelf fungus growing on its shoulders, an arm and a leg; its three eyes glow orange.", night: true, biome: "dappled_forest", rare: "creakings in dappled forests" },
   ],
   creeper: [
     { names: ["Cherry"], what: "A crown of pink cherry blossoms round the top of its head, more blossoms on its sides and back, and one on its chest.", biome: "cherry_grove", rare: "99 in 100 creepers in cherry groves" },
