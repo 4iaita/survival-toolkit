@@ -328,6 +328,8 @@ const MOB_SADDLES = {
   // The nautilus's saddle and its straps and stirrups (the zombie nautilus's too).
   nautilus: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true]],
   zombie_nautilus: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true]],
+  // The strider's saddle and its straps (on the Halloween look, a layer of the saddled costume's own model).
+  strider: [["k255d6", true], ["klj2h*", true], ["3m4cd6*", true]],
 };
 // Mobs that can carry a chest: the [bone pattern, shown] rules a chest on it shows, as the pack's render controllers do for
 // q.is_chested. The game doesn't give a baby one.

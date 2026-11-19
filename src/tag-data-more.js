@@ -262,8 +262,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Grim Reaper", "Reaper"], more: ["grim Reaper", "Grim reaper"], what: "The Grim Reaper: a dark navy hooded robe frosted pale blue at the hems, bony ribs showing in the shadow of its hood, a scythe across its back and a soul lantern at its side whose blue flame glows in the dark.", night: true },
   ],
   strider: [
-    { names: ["Demon Stridling", "Baby Demon"], more: ["demon Stridling", "Demon stridling", "baby Demon", "Baby demon"], what: "The Demon Stridling look." },
-    { names: ["Halloween", "Demon"], what: "A Halloween costume." },
+    { names: ["Demon Stridling", "Baby Demon"], more: ["demon Stridling", "Demon stridling", "baby Demon", "Baby demon"], what: "A baby strider dressed as a little demon: two tan horns on top, red bat wings with tan webbing, a thin red tail with a spade-shaped tip, tan hooves and small tan hooks beside its red eyes. Its bristles are gone under the costume." },
+    { names: ["Halloween", "Demon"], what: "Dresses it as a demon: two tall tan horns on top, red bat wings with tan webbing, a thin red tail with a spade-shaped tip, tan hooves and small tan hooks beside its eyes, which glow red. Its bristles are gone under the costume; it can still be saddled." },
   ],
   sulfur_cube: [
     { names: ["Baby"], what: "Draws it as a small sulfur cube, whatever its size. Only the look changes: it keeps its size’s health and drops.", kind: BABY },
