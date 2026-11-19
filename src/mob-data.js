@@ -21,9 +21,9 @@ const CREEPER_ROOM = 0.85;
 const TURNED_ROUND = { root: { r: [0, 180, 0] } };
 // A nautilus is about as tall as it's long, so fitted to the water it would fill it up to its name tag: drawn smaller.
 const NAUTILUS_ZOOM = 0.75;
-// The happy ghast drawn to scale with the ghast: 4 blocks across (its 64-pixel head) to the ghast's 4.5 (its 16-pixel head
-// at the 4.5 times the game draws it), each fitted to the stage on its own.
-const HAPPY_GHAST_ZOOM = 0.6;
+// The happy ghast about as big as the ghast on the stage (a little bigger, as the user preferred to drawing it to scale,
+// 4 blocks across to the ghast's 4.5), floating as high: each is fitted to the stage on its own, the lift included.
+const HAPPY_GHAST_ZOOM = 0.9;
 // The dragon flies, and its proportions are the pack's own: everything at 0.9, the wings put back to full size, the thighs a little slimmer.
 const DRAGON_STAND = {
   root: { p: [0, 115, 0], s: [0.9, 0.9, 0.9] }, rightWing: { s: [1.11, 1.11, 1.11] }, leftWing: { s: [1.11, 1.11, 1.11] },
@@ -423,7 +423,7 @@ const MOBS = [
   { k: "stray", n: "Stray", g: "Monsters", biome: "snowy_night" }, { k: "vex", n: "Vex", g: "Monsters", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", g: "Monsters", biome: "mansion" }, { k: "warden", n: "Warden", g: "Monsters", biome: "deep_dark" }, { k: "witch", n: "Witch", g: "Monsters", biome: "swamp_night" },
   { k: "zombie", n: "Zombie", g: "Monsters", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", g: "Monsters", biome: "plains_night" },
   { k: "zombie_nautilus", n: "Zombie Nautilus", g: "Monsters", biome: "ocean_night", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", g: "Monsters", biome: "plains_night" },
-  { k: "blaze", n: "Blaze", g: "Nether", biome: "nether", stand: { root: { p: [0, 8, 0] } } }, { k: "ghast", n: "Ghast", g: "Nether", biome: "nether", stand: { root: { p: [0, 15, 0] } } }, { k: "happy_ghast", n: "Happy Ghast", g: "Nether", stand: { root: { p: [0, 33, 0] } }, zoom: HAPPY_GHAST_ZOOM }, { k: "hoglin", n: "Hoglin", g: "Nether", biome: "nether" },
+  { k: "blaze", n: "Blaze", g: "Nether", biome: "nether", stand: { root: { p: [0, 8, 0] } } }, { k: "ghast", n: "Ghast", g: "Nether", biome: "nether", stand: { root: { p: [0, 15, 0] } } }, { k: "happy_ghast", n: "Happy Ghast", g: "Nether", stand: { root: { p: [0, 64, 0] } }, zoom: HAPPY_GHAST_ZOOM }, { k: "hoglin", n: "Hoglin", g: "Nether", biome: "nether" },
   { k: "magma_cube", n: "Magma Cube", g: "Nether", biome: "nether", zoom: 2.5 }, { k: "piglin", n: "Piglin", g: "Nether", biome: "nether" }, { k: "piglin_brute", n: "Piglin Brute", g: "Nether", biome: "nether" },
   { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
   { k: "zombified_piglin", n: "Zombified Piglin", bedrockName: "Zombie Pigman", g: "Nether", biome: "nether" }, { k: "wither", n: "Wither", g: "Nether", biome: "nether", stand: lift(8) },

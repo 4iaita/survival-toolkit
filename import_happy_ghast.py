@@ -135,7 +135,16 @@ def harnesses():
             key = f"{ia.PREFIX}happy_ghast_harness_{color}" + (f"_{i}" if i else "")
             models[key] = im.model(g)
             textures.setdefault(texs[0], f"{ia.PREFIX}happy_ghast_harness_{color}")
-            out.append([key, [textures[texs[0]]], rules[1:] if rules[:1] == [["*", True]] else rules] + ([flags] if flags else []))
+            rules = rules[1:] if rules[:1] == [["*", True]] else rules
+            # A panel held behind the head and turned to the camera (the light blue harness's big halo, 37 pixels
+            # behind it) is only ever behind the happy ghast in the game: a layer of its own, behind, apart from the
+            # panels in front (its goggles' glow), or its light would wash over the face.
+            halos = [b["name"] for b in g["bones"] if flags.get("soft") and any(c["size"][2] == 0 and c["origin"][2] > 0 for c in b.get("cubes", []))]
+            if halos:
+                out.append([key, [textures[texs[0]]], [*rules, *([b, False] for b in halos)], flags])
+                out.append([key, [textures[texs[0]]], [*rules, ["*", False], *([b, True] for b in halos)], {**flags, "behind": 1}])
+            else:
+                out.append([key, [textures[texs[0]]], rules] + ([flags] if flags else []))
         played = [a if isinstance(a, str) else next(iter(a)) for a in d["scripts"]["animate"]]
         loops = []
         for key in HARNESS_LOOPS:
