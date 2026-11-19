@@ -26,7 +26,7 @@ const PACK_TAGS_MORE = {
     { names: ["Moth"], what: "A moth, black, brown, green or pink at random. The stage shows a black one." },
   ],
   blaze: [
-    { names: ["Baby", "Spark", "Sizzle"], kind: BABY },
+    { names: ["Baby", "Spark", "Sizzle"], kind: BABY, rare: "1 in 200 blazes" },
   ],
   bogged: [
     { names: ["Baby", "Boglet", "Murklet"], night: true, kind: BABY, rare: "1 in 200 bogged" },

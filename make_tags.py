@@ -296,6 +296,7 @@ RARE = {
     ("warden", "baby"): "1 in 200 wardens",
     ("creaking", "baby"): "1 in 200 creakings", ("creaking", "dappled"): "creakings in dappled forests",
     ("creeper", "baby"): "1 in 200 creepers",
+    ("blaze", "baby"): "1 in 200 blazes",
     ("creeper", "cherry"): "99 in 100 creepers in cherry groves",
     ("creeper", "blossom"): "1 in 100 creepers in cherry groves",
     ("creeper", "sulfur"): "creepers in sulfur caves",
