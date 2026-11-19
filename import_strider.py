@@ -15,17 +15,23 @@ minecraft:strider. Run import_additions.py first.
 """
 from import_port import copy_texture, ia, im, port, put
 
-# It stands as its walk leaves it standing (move, timed by the distance it's walked: its first frame, held), its body
-# swaying and its bristles waving, as the pack has it while it carries a rider and stands still (oyabwp: 3.27 seconds
-# round, as the old stage's loop). On its own the pack gives it nothing more while it stands. Left out: its walk, run
-# and sprint, its eyes and body following its target (look_at_target), its sitting and swaying while it rides another
-# strider, its jumps, falls and landing, and its deaths.
-MOTIONS = [("move", 1, "held"), ("oyabwp", 1)]
+# It stands swaying, its bristles waving, as the pack has it while it carries a rider and stands still (oyabwp: 3.27
+# seconds round, as the old stage's loop); on its own the pack gives it nothing more while it stands. Its legs stay as
+# its model has them: the pack's walk (move, timed by the distance it's walked) would freeze it mid-stride, a hind leg
+# lifted off the ground, so it's left out. Also left out: its run and sprint, its eyes and body following its target
+# (look_at_target), its sitting and swaying while it rides another strider, its jumps, falls and landing, and its
+# deaths.
+MOTIONS = [("oyabwp", 1)]
 
 # It blinks: its eyelids (6q6da5k) drop over its eyes for 0.15 seconds, after 0.5 to 2.5 seconds, as the pack's blink
 # controller has it, over its swaying (keep). The demon costume has no eyelids: there it does nothing.
 BLINK = {"every": [0.5, 2.5], "keep": True, "parts": [("blinking.0", 0, None, [])]}
 ACTS = [BLINK]
+
+# Out of lava the game has it shaking with cold (q.is_shaking): the pack draws it in purple skins (the Halloween
+# costume's lose their glow, on the game's own material), with no shiver of its own. A mood (MOB_MOODS), as the
+# charged creeper's.
+MOODS = {"cold": {"answers": {"is_shaking": 1.0}, "motions": MOTIONS, "act": ACTS}}
 
 REMODEL = ["demon stridling", "halloween"]
 
@@ -46,10 +52,17 @@ def saddle():
     look["layers"].append([key, [key], [["*", False]]])
     copy_texture(texs[0], key)
     text = put(text, "MOB_MODELS", key, im.model(geos[geo]))
-    ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "strider", looks))
+    text = put(text, "MOB_LOOKS", "strider", looks)
+    # Cold, the saddled costume's purple skin.
+    (_, cold_texs, _, _), = im.look(d, rcs, mats, anims, "Halloween", mood={"is_saddled": 1.0, "is_shaking": 1.0})[0]
+    moods = ia.parse_section(text, "MOB_MOODS")["strider"]
+    cold = next(l for l in moods["cold"]["looks"] if (l["names"] or [""])[0] == "halloween")
+    cold["layers"].append([key, [f"{key}_cold"], [["*", False]]])
+    copy_texture(cold_texs[0], f"{key}_cold")
+    ia.MODELS_JS.write_text(put(text, "MOB_MOODS", "strider", moods))
 
 
 if __name__ == "__main__":
-    port("strider", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL)
+    port("strider", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL, moods=MOODS)
     if ia.WRITE:
         saddle()
