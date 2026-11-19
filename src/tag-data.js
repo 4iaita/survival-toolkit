@@ -83,7 +83,7 @@ const PACK_TAGS = {
     { names: ["Snowy", "Frosty"], kind: SNOWY },
   ],
   fox: [{ names: ["Baby", "Kit", "Foxie"], kind: BABY }],
-  ghast: [{ names: ["Boo"], what: "Shrinks it to a little ghastling." }],
+  ghast: [{ names: ["Boo"], what: "Shrinks it to a little ghastling, drawn just as the pack draws its baby: a small white head with slitted, teary eyes and a tiny mouth over short tentacles." }],
   glow_squid: [{ names: ["Baby", "Glowling", "Twinkle"], kind: BABY }],
   goat: [{ names: ["Baby", "Kiddo"], kind: BABY }],
   happy_ghast: [

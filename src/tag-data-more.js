@@ -128,6 +128,9 @@ const PACK_TAGS_MORE = {
     { names: ["Sapo"], what: "A child crouching like a frog in an orange frog hood with a yellow band, with the frog’s big eyes on top, green hair, and green and yellow legs." },
     { names: ["Halloween", "Imp", "Gremlin", "Gargoyle"], what: "An imp: a devil frog with big pointed bat ears, two pale tusks and eyes that glow in the dark. It’s red, olive or gray as the frog is temperate, cold or warm, and its eyes glow yellow, or lime green on a warm one.", night: true },
   ],
+  ghast: [
+    { names: ["Baby", "Ghastlet", "Whimper"], kind: BABY, rare: "1 in 200 ghasts" },
+  ],
   goat: [
     { names: ["Evil Kiddo", "Baby Evil Goat", "Baby Demon Goat", "Baby Evil"], more: ["Baby Demon", "evil Kiddo", "Evil kiddo", "baby evil Goat", "baby Evil goat", "baby Evil Goat", "Baby evil goat", "Baby evil Goat", "Baby Evil goat", "baby demon Goat", "baby Demon goat", "baby Demon Goat", "Baby demon goat", "Baby demon Goat", "Baby Demon goat", "baby Evil", "Baby evil", "baby Demon", "Baby demon"], what: "A baby demon goat: black, with two little horns, red inside its ears, a red forked devil’s tail and pale eyes that glow in the dark.", night: true },
     { names: ["Halloween", "Evil Goat", "Demon Goat", "Evil"], more: ["Demon", "evil Goat", "Evil goat", "demon Goat", "Demon goat"], what: "A demon goat: shaggy and black, with big curling red horns, a red forked devil’s tail and pale eyes, its horns and eyes glowing in the dark.", night: true },
@@ -407,7 +410,6 @@ const PACK_SPELLINGS_MORE = {
   creaking: [{"after": "Spruce", "names": ["festive", "Festive"]}],
   creeper: [{"after": "Skeleton", "names": ["halloween", "Halloween"]}],
   enderman: [{"after": "Nutcracker", "names": ["festive", "Festive"]}],
-  ghast: [{"after": "Boo", "names": ["baby", "Baby", "ghastlet", "Ghastlet", "whimper", "Whimper"]}],
   horse: [{"after": "Reindeer", "names": ["dasher", "Dasher", "dancer", "Dancer", "prancer", "Prancer", "vixen", "Vixen", "comet", "Comet", "cupid", "Cupid", "donner", "Donner", "blitzen", "Blitzen"]}, {"after": "Rudolph", "names": ["festive", "Festive"]}],
   iron_golem: [{"after": "Frankenstein", "names": ["halloween", "Halloween"]}, {"after": "Claus", "names": ["festive", "Festive"]}],
   pillager: [{"after": "Krampus", "names": ["festive", "Festive"]}],
