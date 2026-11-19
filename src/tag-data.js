@@ -91,7 +91,7 @@ const PACK_TAGS = {
     { names: ["Enderman Balloon"], more: ["Enderman balloon"], what: "Turns it into a hot air balloon shaped like an enderman’s head, its purple eyes on black, its seams stitched, over a narrower base with a burner’s vent in front. It hides its harness too." },
     { names: ["Pig Balloon"], more: ["Pig balloon"], what: "Turns it into a hot air balloon shaped like a pig’s head, snout and all, its seams stitched, over a narrower base with a burner’s vent in front. It hides its harness too." },
     { names: ["Pumpkin Balloon"], more: ["Pumpkin balloon"], what: "Turns it into a hot air balloon shaped like a carved pumpkin, its stem and a curling leaf on top, its seams stitched, over a narrower base with a burner’s vent in front. It hides its harness too." },
-    { names: ["Saddleless"], what: "Hides its harness, so you seem to ride it bareback.", needs: "Put a harness on it first. You still need the harness to ride." },
+    { names: ["Saddleless"], what: "Hides its harness, so you seem to ride it bareback.", needs: "Put a harness on it first. You still need the harness to ride.", hides: "armor" },
   ],
   hoglin: [{ names: ["Baby", "Hoglet", "Hoggin"], kind: BABY }],
   horse: [

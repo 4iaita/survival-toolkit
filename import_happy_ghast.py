@@ -18,13 +18,14 @@ flat mouth, 0 a soft smile, 1 a smile, 2 a big smile with its eyes shut in happy
 at 0, but every idle ends by stepping through 0 and 1 to 2 (uzwbkg), so it wears the big smile nearly all the time: the
 stage shows that (fix), and the idles' faces as act parts.
 
-Left out: its harness (worn as the harness item's attachable, a model of its own for each of the 16 colors), Saddleless
-(which only hides the harness), its leash knots (shown while it pulls a boat or a horse), its wiggle as it's harnessed,
+Its harnesses are MOB_ARMOR's kinds (harnesses(), the page calls the bar Harness): each color's attachable, a model of
+its own, with its own loops; a happy ghast named Saddleless hides it (hides: "armor"). The pack also shrinks a harnessed
+happy ghast's body to 0.935 (v.onoiya), left out. Left out too: its leash knots (shown while it pulls a boat or a horse), its wiggle as it's harnessed,
 how it settles and its tentacles hang still while it's ridden or told to stay, its tilts as it flies (by how fast it
 moves and turns: nothing standing), the balloons' sway as they're towed, and its deaths.
 """
 import import_additions as ia
-from import_port import port, put
+from import_port import copy_texture, im, port, put
 
 BALLOONS = ["creeper balloon", "enderman balloon", "pig balloon", "pumpkin balloon"]
 BABY_SCALE = 0.25  # v.onoiya: 0.2484375 for a named baby, 0.99375 for a grown one with no harness
@@ -79,8 +80,90 @@ def finish():
     ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "happy_ghast", looks))
 
 
+# Its harnesses, in the game's dye order. Each is the harness item's attachable, worn on its body: in this pack a model
+# of its own for each color (and its texture), not one model dyed.
+HARNESSES = ["white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple",
+             "blue", "brown", "green", "red", "black"]
+# The harness's own loops while it's worn with no rider: its goggles pushed up (iqgqqn's first state, cxqbtk, held), the
+# swing every harness has (vmqrcm: all but a tail fin's swish go by how fast it flies, nothing standing) and the black,
+# light blue and yellow harnesses' wings beating (uauoua). Left out: the glow panels' turn to the camera and their
+# fade-in (axkhjp, wlqxdl: the stage draws soft glows facing the camera itself), the purple harness's panels shrinking
+# as the camera looks down on them (qapdci) and the cyan one's random twitch now and then (oghmvl).
+HARNESS_LOOPS = ["vmqrcm", "uauoua"]
+HARNESS_HELD = {"iqgqqn": "cxqbtk"}
+
+
+def harnesses():
+    """MOB_ARMOR's entry (a kind for each color: its layers, as the pack's render controllers draw the attachable, each
+    on a model with the happy ghast's skeleton so it follows its head; and its loops), the models, and the textures to
+    copy (pack path -> key). Not on babies (the stage's rule, and the pack's: !v.cdrzno) nor balloons (bare)."""
+    import copy
+    import json
+
+    from import_port import renamed
+    ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
+    for g in geos.values():
+        ia.rename_geo(g)
+    ghast = ents["minecraft:happy_ghast"]
+    skeleton = [{k: v for k, v in b.items() if k != "cubes"} for b in geos[ghast["geometry"]["default"]]["bones"]]
+    found = {}
+    for top in (im.pack, im.pack / "subpacks" / im.SUBPACK):
+        for f in sorted((top / "attachables").glob("*.json")) if (top / "attachables").is_dir() else []:
+            d = json.loads(f.read_text(encoding="utf-8")).get("minecraft:attachable", {}).get("description", {})
+            if d.get("identifier", "").endswith("_harness"):
+                found[d["identifier"].split(":")[1][: -len("_harness")]] = d
+    strength, im.GLOW_STRENGTH = im.GLOW_STRENGTH, "habcyx"  # its glow panels' strength fades in by v.habcyx
+    kinds, models, textures = {}, {}, {}
+    for color in HARNESSES:
+        d = copy.deepcopy(found[color])
+        layers, _, _ = im.look(d, rcs, mats, anims, "")
+        out = []
+        for i, (geo, texs, rules, flags) in enumerate(layers):
+            g = copy.deepcopy(geos[geo])
+            bones = copy.deepcopy(skeleton)
+            have = {b["name"] for b in bones}
+            for b in g["bones"]:
+                if b["name"] in have:  # its root bone, head: the happy ghast's own, with the harness's cubes on it
+                    next(x for x in bones if x["name"] == b["name"]).setdefault("cubes", []).extend(b.get("cubes", []))
+                else:
+                    bones.append({**b, "parent": b.get("parent") or "head"})
+            g["bones"] = bones
+            rules = [[ia.ren(p), on] for p, on in rules]
+            if flags.get("litBones"):
+                flags = {**flags, "litBones": [ia.ren(p) for p in flags["litBones"]]}
+            im.glow_panels(g, rules, flags)
+            key = f"{ia.PREFIX}happy_ghast_harness_{color}" + (f"_{i}" if i else "")
+            models[key] = im.model(g)
+            textures.setdefault(texs[0], f"{ia.PREFIX}happy_ghast_harness_{color}")
+            out.append([key, [textures[texs[0]]], rules[1:] if rules[:1] == [["*", True]] else rules] + ([flags] if flags else []))
+        played = [a if isinstance(a, str) else next(iter(a)) for a in d["scripts"]["animate"]]
+        loops = []
+        for key in HARNESS_LOOPS:
+            if key in played:
+                loop = im.baked_loop(d, anims, key, 1)
+                loop["bones"] = renamed({b: ch for b, ch in loop["bones"].items() if any(
+                    any(abs(v - (1 if k == "s" else 0)) > 1e-6 for f in frames for v in f) for k, frames in ch.items())})
+                if loop["bones"]:
+                    loops.append(loop)
+        for ctl, key in HARNESS_HELD.items():
+            if ctl in played:
+                held = im.baked_held(d, anims, key)
+                held["bones"] = renamed(held["bones"])
+                loops.append(held)
+        kinds[color] = {"layers": out, **({"motions": loops} if loops else {})}
+    im.GLOW_STRENGTH = strength
+    return {"kinds": kinds, "bare": BALLOONS}, models, textures
+
+
 if __name__ == "__main__":
     port("happy_ghast", variants=[""], acts=ACTS, motions=MOTIONS, remodel=BALLOONS, sets=SETS, fix=fix,
          plays={b: "balloon" for b in BALLOONS})
     if ia.WRITE:
         finish()
+        entry, models, textures = harnesses()
+        for path, key in sorted(textures.items(), key=lambda kv: kv[1]):
+            copy_texture(path, key)
+        text = ia.MODELS_JS.read_text()
+        for key, model in models.items():
+            text = put(text, "MOB_MODELS", key, model)
+        ia.MODELS_JS.write_text(put(text, "MOB_ARMOR", "happy_ghast", entry))

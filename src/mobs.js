@@ -292,9 +292,10 @@ async function lookBoxes(look, { flip = false, tint = null, clock = null, night 
   // color if any; crack, its wear if any; glint, if enchanted }. Undyed, some is tinted all the same (leather's brown).
   const piece = armor && MOB_ARMOR[armor.kind] && (MOB_ARMOR[armor.kind].kinds ? MOB_ARMOR[armor.kind].kinds[armor.type] : MOB_ARMOR[armor.kind]);
   const dyed = Boolean(piece && piece.dyed && armor.dye), dye = piece && (dyed ? armor.dye : piece.undyed);
-  const worn = piece ? [[piece.model, [dyed ? piece.dyed : piece.plain, ...(armor.crack ? [piece.cracks[armor.crack]] : [])], [], { blend: true, ...(dye ? { dyes: [dye] } : {}), ...(armor.glint ? { glint: 1 } : {}) }]] : [];
+  // A kind can be layers of its own (the happy ghast's harnesses: a model and glow for each color).
+  const worn = piece && piece.layers ? piece.layers : piece ? [[piece.model, [dyed ? piece.dyed : piece.plain, ...(armor.crack ? [piece.cracks[armor.crack]] : [])], [], { blend: true, ...(dye ? { dyes: [dye] } : {}), ...(armor.glint ? { glint: 1 } : {}) }]] : [];
   const own = carpet ? look.layers.map(l => (carpet.layers[l[1][0]] ? [carpet.layers[l[1][0]], [carpet.texture], []] : l)) : look.layers;
-  const shown = [...own.filter(([, , , flags = {}]) => night || glowing || !flags.glow || flags.soft), ...worn];
+  const shown = [...own, ...worn].filter(([, , , flags = {}]) => night || glowing || !flags.glow || flags.soft);
   const isRoot = bone => shown.some(([model]) => MOB_MODELS[model][2].some(([name, parent]) => parent < 0 && name.toLowerCase() === bone.toLowerCase()));
   const placed = stand && Object.fromEntries(Object.entries(stand).map(([bone, b]) => [bone, b.p && isRoot(bone) ? { ...b, p: b.p.map(v => v / size) } : b]));
   const layers = await Promise.all(shown.map(([, textures, , flags = {}]) => {
@@ -347,7 +348,11 @@ function layerBones(pose, bones, frameAt, weight = 1) {
     for (const [ch, frames] of Object.entries(channels)) {
       const [a, b, mix] = frameAt(frames);
       out[ch] = a.map((v, k) => {
-        const now = v + (b[k] - v) * mix, was = out[ch] && out[ch][k];
+        // A turn goes the short way round between frames: a spin baked as a loop wraps from 351 degrees back to 0, which
+        // would whip it backwards a whole turn at the end of every loop.
+        let d = b[k] - v;
+        if (ch === "r" && Math.abs(d) > 180) d -= 360 * Math.round(d / 360);
+        const now = v + d * mix, was = out[ch] && out[ch][k];
         return ch === "s" ? (1 + (now - 1) * weight) * (was === undefined ? 1 : was) : now * weight + (was || 0);
       });
     }
@@ -644,7 +649,10 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // another of the mob's sets (plays: a chick's, in MOB_MOTIONS and MOB_ACTS as "<mob>:<set>"); so can what it wears
       // (plays, a sheared snow golem's).
       const setKey = plays || look.plays ? `${mob}:${plays || look.plays}` : null;
-      const loops = look.motions || (setKey && MOB_MOTIONS[setKey]) || (mooded ? mooded.motions : (climated && climated.motions) || MOB_MOTIONS[mob] || null);
+      const ownLoops = look.motions || (setKey && MOB_MOTIONS[setKey]) || (mooded ? mooded.motions : (climated && climated.motions) || MOB_MOTIONS[mob] || null);
+      // What it wears can have loops of its own, played over the mob's (a harness's wings beating).
+      const kinds = armor && MOB_ARMOR[armor.kind] && MOB_ARMOR[armor.kind].kinds, wornLoops = (kinds && kinds[armor.type] && kinds[armor.type].motions) || null;
+      const loops = wornLoops ? [...(ownLoops || []), ...wornLoops] : ownLoops;
       const nextAct_ = look.motions ? null : setKey ? MOB_ACTS[setKey] || null : mooded ? mooded.act : (climated && climated.act) || MOB_ACTS[mob] || null;
       // A look's boxes as it starts, and the space it moves through as it animates: its bounds and, for a swimmer, the
       // corners of what shows of its boxes at each moment (spots).
