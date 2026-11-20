@@ -228,12 +228,12 @@ const MOB_VARIANTS = {
   // oxidizes as copper blocks do, unless it's waxed; fully oxidized, it can turn into a statue. Every look has a skin for
   // each (import_copper_golem.py prints them). Weathered and oxidized, it blinks and spins its rod stiffly in its idles
   // (the "weathered" climate's acts).
-  // The shulker's colors (the game's q.variant: 16 undyed, as it spawns in End cities; the 16 dyes, in Bedrock's own order,
+  // The shulker's colors, as swatches (undyed in its own purple; the game's q.variant: 16 undyed, as it spawns in End cities; the 16 dyes, in Bedrock's own order,
   // which a player gives it with a dye). Each is a skin of its own, the Halloween look's too (its pumpkin stays orange; its candle and the glow inside take the color).
   shulker: [
-    { k: "undyed", n: "Undyed", where: "End cities", say: "" },
+    { k: "undyed", n: "Undyed", where: "End cities", say: "", swatch: "#a953a5" },
     ...["White", "Light gray", "Gray", "Black", "Brown", "Red", "Orange", "Yellow", "Lime", "Green", "Cyan", "Light blue", "Blue", "Purple", "Magenta", "Pink"]
-      .map(n => ({ k: n.toLowerCase().replace(" ", "_"), n, where: `Dyed ${n.toLowerCase()}` })),
+      .map(n => ({ k: n.toLowerCase().replace(" ", "_"), n, where: `Dyed ${n.toLowerCase()}`, swatch: DYES[n.toLowerCase()] })),
   ].map((v, i) => (i ? { ...v, skins: { new_shulker: `new_shulker_${v.k}`, new_shulker_halloween: `new_shulker_${v.k}_halloween` } } : v)),
   copper_golem: [
     { k: "unaffected", n: "Unaffected", where: "Newly built", say: "" },

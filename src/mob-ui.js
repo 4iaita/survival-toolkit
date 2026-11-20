@@ -193,7 +193,10 @@ function renderVariants() {
   const variants = MOB_VARIANTS[mobTab.mob], v = variantInfo();
   $("variant-bar").hidden = !variants;
   $("variant-label").textContent = v ? `Variant: ${v.n}${v.where ? ` · ${v.where}` : ""}` : "Variant";
-  $("variant-try").innerHTML = variants ? variants.map(x => `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
+  // A variant with a swatch (a color: the shulker's dyes) is a button in that color, as a dye's is.
+  $("variant-try").innerHTML = variants ? variants.map(x => x.swatch
+    ? `<button type="button" class="collar-swatch" data-variant="${x.k}" style="background:${x.swatch}" title="${esc(x.n)}" aria-label="${esc(x.n)}" aria-pressed="${x === v}"></button>`
+    : `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
 }
 
 // A row of buttons for each of its other rows (MOB_ROWS), and what the picked kind is and where it's found.
