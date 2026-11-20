@@ -19,6 +19,8 @@ const BEAR_ROOM = 0.65;
 const CREEPER_ROOM = 0.85;
 // The nautiluses' models are made facing the other way from the rest.
 const TURNED_ROUND = { root: { r: [0, 180, 0] } };
+// A shulker opens right up now and then (MOB_ACTS), its lid rising a block over its shell: room for it.
+const SHULKER_ROOM = 0.7;
 // A nautilus is about as tall as it's long, so fitted to the water it would fill it up to its name tag: drawn smaller.
 const NAUTILUS_ZOOM = 0.75;
 // The happy ghast about as big as the ghast on the stage (a little bigger, as the user preferred to drawing it to scale,
@@ -429,5 +431,5 @@ const MOBS = [
   { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
   { k: "zombified_piglin", n: "Zombified Piglin", bedrockName: "Zombie Pigman", g: "Nether", biome: "nether" }, { k: "wither", n: "Wither", g: "Nether", biome: "nether", stand: lift(8) },
   { k: "ender_dragon", n: "Ender Dragon", g: "End", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", g: "End", biome: "end", glowing: true },
-  { k: "endermite", n: "Endermite", g: "End", biome: "end" }, { k: "shulker", n: "Shulker", g: "End", biome: "end" },
+  { k: "endermite", n: "Endermite", g: "End", biome: "end" }, { k: "shulker", n: "Shulker", g: "End", biome: "end", zoom: SHULKER_ROOM },
 ];
