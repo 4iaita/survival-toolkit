@@ -24,11 +24,9 @@ const NAUTILUS_ZOOM = 0.75;
 // The happy ghast about as big as the ghast on the stage (a little bigger, as the user preferred to drawing it to scale,
 // 4 blocks across to the ghast's 4.5), floating as high: each is fitted to the stage on its own, the lift included.
 const HAPPY_GHAST_ZOOM = 0.9;
-// The dragon flies, and its proportions are the pack's own: everything at 0.9, the wings put back to full size, the thighs a little slimmer.
-const DRAGON_STAND = {
-  root: { p: [0, 115, 0], s: [0.9, 0.9, 0.9] }, rightWing: { s: [1.11, 1.11, 1.11] }, leftWing: { s: [1.11, 1.11, 1.11] },
-  loqnofr: { s: [0.95, 0.95, 0.95] }, qjgfyeo: { s: [0.95, 0.95, 0.95] },
-};
+// The dragon flies: lifted as high as before (its loop's setup pose lifts it 16 pixels more, and gives it the pack's
+// proportions: everything at 0.9, the wings at 1.11 of that, the thighs at 0.95).
+const DRAGON_STAND = { root: { p: [0, 99, 0] } };
 // What the moods are called on the stage: every mob starts calm (a pufferfish deflated) but those START_MOODS lists;
 // MOB_MOODS says which others it has (the pufferfish's: half puffed and puffed up, as the game puffs it when something
 // comes near).
