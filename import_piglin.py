@@ -6,27 +6,31 @@ Its looks all get the pack's current models (the plain and baby ones went by the
 Halloween ones had the new models but nothing moved them). Its models are the piglin brute's too (the same geometry, on
 the brute's own textures), but not the zombified piglin's; its blink and idles and their controllers are the brute's
 and the zombified piglin's, the same animations, but its stances are its own. It has no kinds the stage shows: the
-game's q.variant only says what it carries (0 a crossbow, 1 a golden sword), and the pack gives each its own stance. The
+game's q.variant only says what it carries (0 a crossbow, 1 a golden sword, half and half), and the pack gives each its
+own stance; the stage shows the crossbow piglin (q.variant 0, the importer's answer), holding its crossbow. The
 game has babies of it; the pack makes none by itself (v.tocraa=0), and a baby named Baby is drawn as the game's own
 (the same big head and sway). Its eyes (3dafc, on an emissive material) are lit, and its glow panels (8dgo1 and 8dgo2,
 over its eyes) fade in over seconds (v.habcyx); the Halloween costume hides them (the pack's overlay blacks them out),
 and babies have none. Its entity is the only one for minecraft:piglin. Run import_additions.py first.
 """
 import import_additions as ia
-from import_parched import bow_model
+from import_pillager import CROSSBOW, CROSSBOW_KEY, CROSSBOW_MESH
+from import_parched import bow_model, mesh_model
 from import_port import copy_texture, im, port, put
 
 im.GLOW_STRENGTH = "habcyx"
 
-# It stands as a piglin with a golden sword does (q.variant 1): swaying, its head nodding and its ears flicking (the
-# pack's uvuvat, 1.6 seconds round), its arms eased a little out and one foot a little forward (hrllie, the pose the pack
-# eases into when it stands still, held), its golden sword in its hand (add_weapon, below). Left out: the crossbow piglin's stance
-# (q.variant 0: a slower sway, tytiby, with its arms held up and across as if carrying a crossbow, vdhjyz), its head
-# following what it looks at (nnxixp), its walks and runs (by move speed), fleeing, its crossbow drawn and fired, its
-# attacks, admiring gold (it holds a gold ingot up and looks it over, egezmj: the stage has no ingot to show), riding a
-# hoglin or anything else, jumps, falls, landing and its deaths. The pack has no dance after a hunt and no shake while it
-# turns into a zombified piglin in the Overworld (q.is_shaking only turns its body as it dies).
-MOTIONS = [("vnxdqo", 1), ("dwdraj", 1, "held")]
+# It stands as a piglin with a crossbow does (q.variant 0): swaying, its head tipping from side to side and its weight
+# shifting (the pack's tytiby, 1.8 seconds round, as the old stage's), its arms hanging and its crossbow in its right
+# fist, as the game draws a crossbow piglin (the wiki's render). The pack also plays a carrying pose of its own all the
+# while (vdhjyz: its body turned, its right arm out and its left reaching across its chest), which is left out: with
+# the crossbow where the game puts it, the left hand reached for nothing, as the pillager's two-handed hold did. Also
+# left out: the sword piglin's stance (q.variant 1: uvuvat, the brute's), its head following what it looks at (nnxixp),
+# its walks and runs (by move speed), fleeing, its crossbow drawn and fired, its attacks, admiring gold (it holds a gold
+# ingot up and looks it over, egezmj: the stage has no ingot to show), riding a hoglin or anything else, jumps, falls,
+# landing and its deaths. The pack has no dance after a hunt and no shake while it turns into a zombified piglin in the
+# Overworld (q.is_shaking only turns its body as it dies).
+MOTIONS = [("gclbvp", 1)]
 
 # It blinks: its open eyes (3dafc) and its glow panels shrink to nothing for 0.15 seconds, every 1 to 3.75 seconds (the
 # pack's blink controller), over its stance (keep).
@@ -45,17 +49,20 @@ PLAYS = {"baby": "baby", "baby butcher": "baby"}
 REMODEL = ["baby butcher", "halloween"]
 
 
-# The game's sword piglins carry a golden sword. The pack's (its attachable, minecraft:golden_sword) is, with its 3D items
-# setting off as it starts, the game's sprite drawn as a texture mesh: here it's a cube for each pixel, as the
-# vindicator's axe (bow_model), in its right hand, on a copy of each look's skeleton (SWORD_LOOKS: the entity's
-# geometry key for each look that holds it), held as the game draws a piglin's sword (the wiki's renders): at right
-# angles to its hanging forearm, the blade out in front of the fist (HANG_TURN, the vindicator's), its handle through
-# the middle of the fist (fist()): the guard just in front of it and the pommel just behind. The game's baby piglins
-# hold nothing.
+# Its crossbow: the pillager's (import_pillager.py), the game's unloaded crossbow sprite as cubes (mesh_model), placed as
+# the game's crossbow attachable places it with the pillager's wield (its stock in the fist), on a copy of each adult
+# look's skeleton (CROSSBOW_LOOKS: the entity's geometry key for each), drawn with the pillager's texture. The game's
+# baby piglins hold nothing.
+CROSSBOW_LOOKS = {"": "default", "halloween": "eapnwa"}
+
+# The zombified piglin's golden sword (import_zombified_piglin.py). The pack's (its attachable, minecraft:golden_sword)
+# is, with its 3D items setting off as it starts, the game's sprite drawn as a texture mesh: here it's a cube for each
+# pixel, as the vindicator's axe (bow_model), in the right hand, held as the game draws a sword in a hanging hand (the
+# wiki's renders): at right angles to the forearm, the blade out in front of the fist (HANG_TURN, the vindicator's), its
+# handle through the middle of the fist (fist()): the guard just in front of it and the pommel just behind.
 SWORD = "textures/items/gold_sword"
 SWORD_GRIP = (3, 12)
 HANG_TURN = -45
-SWORD_LOOKS = {"": "default", "halloween": "eapnwa"}
 
 
 def fist(skeleton):
@@ -69,13 +76,13 @@ def fist(skeleton):
     return (x + w / 2 - pivot[0], y + 2 - pivot[1], z + d / 2 - pivot[2])
 
 
-def add_weapon(mob, item, texture, grip, looks_of, turn=HANG_TURN, entity=None):
+def add_weapon(mob, item, texture, grip, looks_of, turn=HANG_TURN, entity=None, mesh=None, tex_key=None):
     """The weapon: a layer of its own, last, on a copy of each holding look's skeleton (looks_of: first name -> the
     entity's geometry key), gripped in the middle of the fist."""
     ents, _rcs, geos, *_ = im.read_pack()
     d = ents[f"minecraft:{entity or mob}"]
     key = f"{ia.PREFIX}{mob}_{item}"
-    tex_key = f"{ia.PREFIX}piglin_{item}"
+    tex_key = tex_key or f"{ia.PREFIX}piglin_{item}"
     text = ia.MODELS_JS.read_text()
     looks = ia.parse_section(text, "MOB_LOOKS")[mob]
     for look in looks:
@@ -85,7 +92,7 @@ def add_weapon(mob, item, texture, grip, looks_of, turn=HANG_TURN, entity=None):
             continue
         model_key = "_".join(filter(None, [key, name.replace(" ", "_")]))
         skeleton = geos[d["geometry"][looks_of[name]]]
-        model = bow_model(skeleton, texture, grip, turn, item, fist(skeleton))
+        model = mesh_model(skeleton, texture, mesh, item) if mesh else bow_model(skeleton, texture, grip, turn, item, fist(skeleton))
         text = put(text, "MOB_MODELS", model_key, im.model(model))
         # held: the stage frames the mob on its body, not its weapon (src/mobs.js).
         look["layers"].append([model_key, [tex_key], [], {"held": 1}])
@@ -114,7 +121,6 @@ def reuse(mob):
 
 
 if __name__ == "__main__":
-    port("piglin", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL, sets=SETS, plays=PLAYS,
-         answers=lambda v: {"variant": 1.0})
+    port("piglin", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL, sets=SETS, plays=PLAYS)
     if ia.WRITE:
-        add_weapon("piglin", "sword", SWORD, SWORD_GRIP, SWORD_LOOKS)
+        add_weapon("piglin", "crossbow", CROSSBOW, None, CROSSBOW_LOOKS, mesh=CROSSBOW_MESH, tex_key=CROSSBOW_KEY)
