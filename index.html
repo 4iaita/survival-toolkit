@@ -3310,7 +3310,7 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { lo, hi, color: m.color, glow: m.glow, over: m.over, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
   });
   // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
   const shadowSpans = shadows.map(([sx, sz, radius]) => {
@@ -3347,8 +3347,19 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
           if (Math.max(t1, t2) < far) { far = Math.max(t1, t2); backAxis = i; }
         }
         // Where two faces meet, the first box's shows, but an overlay's (over) shows over what's under it.
-        if (near > far || near > bestT || (near === bestT && !m.over)) continue;
+        if (near > far || (m.inside ? far : near) > bestT || (near === bestT && !m.over)) continue;
         const frac = (i, t) => (m.hi[i] > m.lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * t - m.lo[i]) / (m.hi[i] - m.lo[i]))) : 0);
+        // A box drawn from inside only (inside: the game culls its outsides) shows its far faces.
+        if (m.inside) {
+          const backSide = r[backAxis] > 0 ? 1 : 0, back = far <= bestT ? m.color(backAxis, backSide, frac(0, far), frac(1, far), frac(2, far)) : -1;
+          // Lit as seen: from inside, the face looks inwards.
+          if (back >= 0) {
+            bestT = far;
+            bestColor = back % EMITS;
+            bestShade = shadeOf(m, m.shade[backAxis][1 - backSide], back);
+          }
+          continue;
+        }
         const side = r[axis] > 0 ? 0 : 1;
         const color = m.color(axis, side, frac(0, near), frac(1, near), frac(2, near));
         if (color >= 0) {
@@ -5641,7 +5652,7 @@ const MOB_LOOKS = {
   "elder_guardian": [{"names":[],"scale":1.0,"layers":[["new_guardian",["new_elder_guardian"],[]]]},{"names":["baby","Baby","fry","Fry","beamy","Beamy"],"scale":0.284,"layers":[["new_guardian_baby",["new_elder_guardian_baby"],[]]],"pose":{"root":{"p":[0,16,0]}},"plays":"baby"}],
   "ender_dragon": [{"names":[],"scale":1.0,"layers":[["new_ender_dragon",["new_ender_dragon"],[],{"lit":1}]]}],
   "enderman": [{"names":[],"scale":1.0,"layers":[["new_enderman",["new_enderman"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_1",["new_enderman_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]},{"names":["baby","Baby","enderchild","Enderchild","endie","Endie"],"scale":0.5,"layers":[["new_enderman_baby",["new_enderman_baby"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]],"pose":{"root":{"s":[2,2,2]},"head":{"s":[2,2,2]}},"plays":"baby"},{"names":["nutcracker","Nutcracker","festive","Festive"],"scale":1.0,"layers":[["new_enderman",["new_enderman"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_nutcracker_1",["new_enderman_nutcracker_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",true],["5jme*",true],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]],"pose":{"rightitem":{"s":[0,0,0]}}},{"names":["snowy","Snowy","frosty","Frosty"],"scale":1.0,"layers":[["new_enderman",["new_enderman"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_snowy_1",["new_enderman_snowy_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]},{"names":["green","Green","beanie","Beanie"],"scale":1.0,"layers":[["new_enderman",["new_enderman_green"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_1",["new_enderman_green_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]},{"names":["sunderman","Sunderman"],"scale":1.0,"layers":[["new_enderman",["new_enderman"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_sunderman_1",["new_enderman_sunderman_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]},{"names":["cherry","Cherry"],"scale":1.0,"layers":[["new_enderman",["new_enderman"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_cherry_1",["new_enderman_cherry_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]},{"names":["sulfur","Sulfur"],"scale":1.0,"layers":[["new_enderman",["new_enderman_sulfur"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_sulfur_1",["new_enderman_sulfur_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"lit":1,"litBones":["hmhadk","l66l9","6q6k","b2o"]}]]},{"names":["dappled","Dappled"],"scale":1.0,"layers":[["new_enderman",["new_enderman"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_dappled_1",["new_enderman_dappled_1"],[["rightarm",true],["leftarm",true],["72c62jek",false]]],["new_enderman_1",["new_enderman_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]},{"names":["halloween","Halloween","magician","Magician"],"scale":1.0,"layers":[["new_enderman",["new_enderman"],[["fsdyhky1",true]],{"bright":0.8,"glow":1,"soft":1,"eyes":1}],["new_enderman_halloween_1",["new_enderman_halloween_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]},{"names":["pale","Pale"],"scale":1.0,"layers":[["new_enderman_pale_1",["new_enderman_pale_1"],[["hmhadk",true],["6q6k*",true],["l66l9",false],["rightarm",true],["leftarm",true],["kla4c*",false],["5jme*",false],["72c62jek",false],["e2kc",false],["kfgogn6jd2q2",true],["kfgogn6jd2q3",true],["kfgogn6jd2q4",false],["kfgogn6jd2q5",false]],{"litBones":["hmhadk","l66l9","6q6k"]}]]}],
-  "endermite": [{"names":[],"scale":1.0,"layers":[["new_endermite",["new_endermite"],[["6q6",true]],{"lit":1,"litBones":["6q632dd"]}]]},{"names":["baby","Baby","mite","Mite","twitchy","Twitchy"],"scale":1.0,"layers":[["new_endermite_baby",["new_endermite_baby"],[["6q6",true]],{"lit":1,"litBones":["6q632dd"]}]]},{"names":["halloween","Halloween","eye","Eye"],"scale":1.0,"layers":[["new_endermite_halloween",["new_endermite_halloween"],[["6q6",true]],{"lit":1,"litBones":["6q632dd"]}]]}],
+  "endermite": [{"names":[],"scale":1.0,"layers":[["new_endermite",["new_endermite"],[["6q6",true]],{"lit":1,"litBones":["6q632dd"]}]]},{"names":["baby","Baby","mite","Mite","twitchy","Twitchy"],"scale":1.0,"layers":[["new_endermite_baby",["new_endermite_baby"],[["6q6",true]],{"lit":1,"litBones":["6q632dd"]}]]},{"names":["halloween","Halloween","eye","Eye"],"scale":1.0,"layers":[["new_endermite_halloween",["new_endermite_halloween"],[["6q6",true]],{"lit":1,"litBones":["6q632dd"],"insideBones":["6q632dd"]}]]}],
   "evoker": [{"names":[],"scale":1.0,"layers":[["new_evoker",["new_evoker"],[["2jek",true],["leftarm",false],["rightarm",false]]]]},{"names":["baby","Baby","vindilet","Vindilet","grumpy","Grumpy"],"scale":1.0,"layers":[["new_evoker_baby",["new_evoker_baby"],[["2jek",true],["leftarm",false],["rightarm",false]]]]},{"names":["halloween","Halloween","dracula","Dracula"],"scale":1.0,"layers":[["new_evoker_halloween",["new_evoker_halloween"],[["2jek",true],["leftarm",false],["rightarm",false]],{"lit":1}]]}],
   "fox": [{"names":[],"scale":1.0,"layers":[["new_fox",["new_fox"],[["head",true],["head_kd66h",false]]]]},{"names":["baby","Baby","kit","Kit","foxie","Foxie"],"scale":0.5,"layers":[["new_fox_baby",["new_fox_baby"],[["head",true],["head_kd66h",false]]]],"pose":{"head":{"p":[0,2,2],"s":[1.3,1.3,1.3]},"96d5_al6e_dg42lgj":{"p":[0,-1,-2]},"d625_dg42lgj":{"p":[0.8,0.35,1.7]}}},{"names":["raccoon","Raccoon"],"scale":1.0,"layers":[["new_fox_raccoon",["new_fox_raccoon"],[["head",true],["head_kd66h",false]]]]},{"names":["jimothy","Jimothy"],"scale":1.0,"layers":[["new_fox_jimothy",["new_fox_jimothy"],[["head",true],["head_kd66h",false]]]],"pose":{"head":{"p":[0,0,7]},"d625_dg42lgj":{"p":[0,-2,4]}},"plays":"jimothy"}],
   "frog": [{"names":[],"scale":1.0,"layers":[["new_frog_1",["new_frog_1"],[["4jg2caf8_body",true],["lgf8m6",true]]]]},{"names":["baby","Baby","froglet","Froglet","hoppy","Hoppy"],"scale":1.0,"layers":[["new_frog_baby_1",["new_frog_baby_1"],[["4jg2caf8_body",true],["lgf8m6",true]]]]},{"names":["baby imp","baby Imp","Baby imp","Baby Imp","baby gremlin","baby Gremlin","Baby gremlin","Baby Gremlin","baby gargoyle","baby Gargoyle","Baby gargoyle","Baby Gargoyle"],"scale":1.0,"layers":[["new_frog_baby_imp_1",["new_frog_baby_imp_1"],[["4jg2caf8_body",true],["lgf8m6",true]],{"lit":1}]]},{"names":["rana","Rana"],"scale":1.0,"layers":[["new_frog_rana_1",["new_frog_rana_1"],[["4jg2caf8_body",true],["lgf8m6",false],["j2f26q63dafc*",false]]]],"plays":"own_eyes"},{"names":["rhadora","Rhadora"],"scale":1.0,"layers":[["new_frog_rana_1",["new_frog_rhadora_1"],[["4jg2caf8_body",true],["lgf8m6",false],["j2f26q63dafc*",false]]]],"plays":"own_eyes"},{"names":["sapo","Sapo"],"scale":1.0,"layers":[["new_frog_rana_1",["new_frog_sapo_1"],[["4jg2caf8_body",true],["lgf8m6",false],["j2f26q63dafc*",false]]]],"plays":"own_eyes"},{"names":["halloween","Halloween","imp","Imp","gremlin","Gremlin","gargoyle","Gargoyle"],"scale":1.0,"layers":[["new_frog_halloween_1",["new_frog_halloween_1"],[["4jg2caf8_body",true],["lgf8m6",true]],{"lit":1}]]}],
@@ -6314,6 +6325,9 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
     // game's emissive materials draw them (a zombie pig's eye, a baby spider's).
     const emissive = least === 1 && !glow;
     const shell = (flags.shellBones || []).some(pattern => boneMatches(name, pattern));
+    // insideBones: the game culls the outsides of their cubes (a negative size turns a cube inside out), so only the
+    // far faces show, seen from within (the Eye endermite's jelly, its pupil showing through the top).
+    const inside = (flags.insideBones || []).some(pattern => boneMatches(name, pattern));
     // The dye goes on a whole masked layer, or on the bones that take one of their own (a wolf's collar).
     const dye = flags.mask || (flags.dyeBones || []).some(pattern => boneMatches(name, pattern)) ? tint : null;
     for (const [x, y, z, w, h, d, uv, extra = {}] of cubes) {
@@ -6341,9 +6355,20 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
         if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, bright: flags.bright === undefined ? 1 : flags.bright, behind: Boolean(flags.behind), bones: [...own, ...chainOf(i), ...upsideDown] });
         continue;
       }
+      // An inside-out cube (inside) lays its faces out from its origin, as the game does: where a size is negative its
+      // far corner comes first, so its up face is at the bottom. Its corners are sorted for the renderer, and the faces
+      // and spots on them flipped back on those axes.
+      // Its inflate goes from its origin too, as the game works out a cube's corners: on an axis where its size is
+      // negative, inflating it draws it in (the Eye endermite's pink jelly sits inside its dark one).
+      const flipped = inside ? [0, 1, 2].map(k => hi[k] < lo[k]) : [false, false, false];
+      for (const k of [0, 1, 2]) if (flipped[k]) [lo[k], hi[k]] = [hi[k] + 2 * g, lo[k] - 2 * g];
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
+          if (flipped[axis]) side = 1 - side;
+          if (flipped[0]) fx = 0.9999 - fx;
+          if (flipped[1]) fy = 0.9999 - fy;
+          if (flipped[2]) fz = 0.9999 - fz;
           let face = FACES[axis][side];
           if (mirror) {
             fx = 0.9999 - fx;
@@ -6856,8 +6881,6 @@ const BEAR_ROOM = 0.65;
 const CREEPER_ROOM = 0.85;
 // The nautiluses' models are made facing the other way from the rest.
 const TURNED_ROUND = { root: { r: [0, 180, 0] } };
-// A shulker opens right up now and then (MOB_ACTS), its lid rising a block over its shell: room for it.
-const SHULKER_ROOM = 0.7;
 // A nautilus is about as tall as it's long, so fitted to the water it would fill it up to its name tag: drawn smaller.
 const NAUTILUS_ZOOM = 0.75;
 // The happy ghast about as big as the ghast on the stage (a little bigger, as the user preferred to drawing it to scale,
@@ -7268,7 +7291,7 @@ const MOBS = [
   { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
   { k: "zombified_piglin", n: "Zombified Piglin", bedrockName: "Zombie Pigman", g: "Nether", biome: "nether" }, { k: "wither", n: "Wither", g: "Nether", biome: "nether", stand: lift(8) },
   { k: "ender_dragon", n: "Ender Dragon", g: "End", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", g: "End", biome: "end", glowing: true },
-  { k: "endermite", n: "Endermite", g: "End", biome: "end" }, { k: "shulker", n: "Shulker", g: "End", biome: "end", zoom: SHULKER_ROOM },
+  { k: "endermite", n: "Endermite", g: "End", biome: "end" }, { k: "shulker", n: "Shulker", g: "End", biome: "end" },
 ];
 
 /* ---------- Name tags ---------- */
@@ -7602,7 +7625,7 @@ const PACK_TAGS_MORE = {
   ],
   endermite: [
     { names: ["Baby", "Mite", "Twitchy"], kind: BABY, rare: "1 in 200 endermites" },
-    { names: ["Halloween", "Eye"], what: "A glowing pink box carried on four thin, bent dark purple legs over a flat dark purple body, whose underside has a dark frame round a pink square." },
+    { names: ["Halloween", "Eye"], what: "A see-through pink jelly box on a flat dark purple body, carried on four thin, bent dark purple legs, with a dark slit pupil and a peach glint floating in it under the top, like a big eye." },
   ],
   evoker: [
     { names: ["Baby", "Vindilet", "Grumpy"], kind: BABY, rare: "1 in 200 evokers" },

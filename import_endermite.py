@@ -12,7 +12,7 @@ glow: the plain look's eyes (two magenta texels of alpha 3). Its scripts also wo
 sulfur, dappled, pale) that nothing it draws reads. Its entity (entity/drz.json) is the only one for
 minecraft:endermite. Run import_additions.py first.
 """
-from import_port import port
+from import_port import ia, port, put
 
 # It stands breathing and fidgeting (the pack's idle, kuxyzf: its body swelling a little, its head and tail nodding and
 # tipping from side to side, 1.6 seconds round), and wriggling a little (the pack's move, which it plays only while it
@@ -27,5 +27,27 @@ MOTIONS = [("idle", 1), ("move", 0.4, 0.5)]
 BLINK = {"every": [0.2, 3.2], "keep": True, "parts": [("blinking.vertical", 0, None, [])]}
 ACTS = [BLINK]
 
+# The Halloween look's jelly (6q632dd): two cubes of negative size, a pink one inflated and a darker one, which the game
+# turns inside out and lays out from their origins, the inflate drawing the pink one in. So it's seen from within: a
+# see-through pink box over its body, the slit pupil (2pak) showing through its top, as it looks in the game. The stage
+# draws such bones that way (insideBones, src/mobs.js).
+JELLY = "6q632dd"
+
+
+def finish():
+    """The Halloween look's jelly drawn inside out (insideBones)."""
+    text = ia.MODELS_JS.read_text()
+    looks = ia.parse_section(text, "MOB_LOOKS")["endermite"]
+    for look in looks:
+        if "Halloween" in look["names"]:
+            for layer in look["layers"]:
+                if len(layer) < 4:
+                    layer.append({})
+                layer[3]["insideBones"] = [JELLY]
+    ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", "endermite", looks))
+
+
 if __name__ == "__main__":
     port("endermite", variants=[""], acts=ACTS, motions=MOTIONS, remodel=["halloween"])
+    if ia.WRITE:
+        finish()

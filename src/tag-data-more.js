@@ -110,7 +110,7 @@ const PACK_TAGS_MORE = {
   ],
   endermite: [
     { names: ["Baby", "Mite", "Twitchy"], kind: BABY, rare: "1 in 200 endermites" },
-    { names: ["Halloween", "Eye"], what: "A glowing pink box carried on four thin, bent dark purple legs over a flat dark purple body, whose underside has a dark frame round a pink square." },
+    { names: ["Halloween", "Eye"], what: "A see-through pink jelly box on a flat dark purple body, carried on four thin, bent dark purple legs, with a dark slit pupil and a peach glint floating in it under the top, like a big eye." },
   ],
   evoker: [
     { names: ["Baby", "Vindilet", "Grumpy"], kind: BABY, rare: "1 in 200 evokers" },

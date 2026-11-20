@@ -198,6 +198,9 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
     // game's emissive materials draw them (a zombie pig's eye, a baby spider's).
     const emissive = least === 1 && !glow;
     const shell = (flags.shellBones || []).some(pattern => boneMatches(name, pattern));
+    // insideBones: the game culls the outsides of their cubes (a negative size turns a cube inside out), so only the
+    // far faces show, seen from within (the Eye endermite's jelly, its pupil showing through the top).
+    const inside = (flags.insideBones || []).some(pattern => boneMatches(name, pattern));
     // The dye goes on a whole masked layer, or on the bones that take one of their own (a wolf's collar).
     const dye = flags.mask || (flags.dyeBones || []).some(pattern => boneMatches(name, pattern)) ? tint : null;
     for (const [x, y, z, w, h, d, uv, extra = {}] of cubes) {
@@ -225,9 +228,20 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
         if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, bright: flags.bright === undefined ? 1 : flags.bright, behind: Boolean(flags.behind), bones: [...own, ...chainOf(i), ...upsideDown] });
         continue;
       }
+      // An inside-out cube (inside) lays its faces out from its origin, as the game does: where a size is negative its
+      // far corner comes first, so its up face is at the bottom. Its corners are sorted for the renderer, and the faces
+      // and spots on them flipped back on those axes.
+      // Its inflate goes from its origin too, as the game works out a cube's corners: on an axis where its size is
+      // negative, inflating it draws it in (the Eye endermite's pink jelly sits inside its dark one).
+      const flipped = inside ? [0, 1, 2].map(k => hi[k] < lo[k]) : [false, false, false];
+      for (const k of [0, 1, 2]) if (flipped[k]) [lo[k], hi[k]] = [hi[k] + 2 * g, lo[k] - 2 * g];
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
+          if (flipped[axis]) side = 1 - side;
+          if (flipped[0]) fx = 0.9999 - fx;
+          if (flipped[1]) fy = 0.9999 - fy;
+          if (flipped[2]) fz = 0.9999 - fz;
           let face = FACES[axis][side];
           if (mirror) {
             fx = 0.9999 - fx;
