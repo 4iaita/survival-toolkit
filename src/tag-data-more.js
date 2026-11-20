@@ -101,12 +101,12 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Fry", "Beamy"], kind: BABY },
   ],
   enderman: [
-    { names: ["Sunderman"], what: "The Sunderman look." },
-    { names: ["Cherry"], what: "The cherry grove look." },
-    { names: ["Sulfur"], what: "The sulfur look." },
-    { names: ["Dappled"], what: "The dappled look." },
-    { names: ["Halloween", "Magician"], what: "A Halloween costume." },
-    { names: ["Pale"], what: "The pale look." },
+    { names: ["Sunderman"], what: "Dressed in a dark plum suit buttoned down the front, its long coat tails hanging behind, with a purple cravat over a gray collar, gray cuffs and brown shoes." },
+    { names: ["Cherry"], what: "Pink cherry blossoms and green leaves twined round its forearms and its legs from the knees down.", biome: "cherry_grove", rare: "endermen in cherry groves" },
+    { names: ["Sulfur"], what: "Crusted with yellow sulfur that glows: a lump on top of its head, a patch on its chest, its hands and its feet. Its eyes glow yellow.", biome: "sulfur_caves", rare: "endermen in sulfur caves" },
+    { names: ["Dappled"], what: "A ruff of orange autumn leaves round its neck, drooping over its shoulders, and a few more hanging over its forehead.", biome: "dappled_forest", rare: "endermen in dappled forests" },
+    { names: ["Halloween", "Magician"], what: "A magician: a dark maroon top hat with a pink band, a high-collared maroon tailcoat over a gray waistcoat with a purple flower on it, white gloves, maroon trousers and dark red boots. Half of them, at random, wear a white mask over one side of the face, hiding that eye’s glow; the stage shows it without." },
+    { names: ["Pale"], what: "Three orange eyes, without the purple glow round them, and pale moss growing up its legs from its feet.", biome: "pale_garden", rare: "endermen in pale gardens" },
   ],
   endermite: [
     { names: ["Baby", "Mite", "Twitchy"], kind: BABY, rare: "1 in 200 endermites" },

@@ -79,8 +79,8 @@ const PACK_TAGS = {
   enderman: [
     { names: ["Baby", "Enderchild", "Endie"], kind: BABY, rare: "1 in 200 endermen" },
     { names: ["Green", "Beanie"], what: "Green eyes instead of purple.", rare: "1 in 200 endermen" },
-    { names: ["Nutcracker"], what: "A nutcracker soldier with a drum." },
-    { names: ["Snowy", "Frosty"], kind: SNOWY },
+    { names: ["Nutcracker"], what: "A nutcracker soldier: a tall black hat with gold bands and a red plume, a gray beard, a red coat with gold-fringed epaulettes and a white sash, green trousers and black boots, and a red, green and gold drum at its side." },
+    { names: ["Snowy", "Frosty"], kind: SNOWY, rare: "endermen in snowy biomes" },
   ],
   fox: [{ names: ["Baby", "Kit", "Foxie"], kind: BABY }],
   ghast: [{ names: ["Boo"], what: "Shrinks it to a little ghastling, drawn just as the pack draws its baby: a small white head with slitted, teary eyes and a tiny mouth over short tentacles." }],
