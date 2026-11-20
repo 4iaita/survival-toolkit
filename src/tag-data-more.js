@@ -195,8 +195,8 @@ const PACK_TAGS_MORE = {
     { names: ["Skeleton"], what: "A pig’s skeleton: a bony skull and ribcage on bare bone legs." },
   ],
   piglin: [
-    { names: ["Baby Butcher"], more: ["baby Butcher", "Baby butcher"], what: "A baby Butcher." },
-    { names: ["Halloween", "Butcher"], what: "A Halloween costume." },
+    { names: ["Baby Butcher"], more: ["baby Butcher", "Baby butcher"], what: "A baby piglin in the hog costume, its big head in a brown mask with a snout and pointed ears but no tusks, a dark band its white eyes look out of, and a brown suit with gold-buckled braces." },
+    { names: ["Halloween", "Butcher"], what: "Dresses it as a hog: a brown mask with a snout, two cream tusks, pointed ears and a dark band its white eyes look out of, and a brown suit banded darker on its arms and legs, with braces buckled in gold. A strap holds the mask on at the back." },
   ],
   piglin_brute: [
     { names: ["Baby", "Piglet", "Brutey"], kind: BABY },
