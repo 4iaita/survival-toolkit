@@ -6,7 +6,8 @@ Its plain look gets the pack's current model (it went by the old pack's bones; t
 nothing moved it): a shell whose base and lid have walls that fit together like battlements, with gaps in them, and a
 head inside. Its models, animations and controllers are its own. The game has no babies of it and the pack makes none
 (v.tocraa 0, and no baby names), so it has no baby look (port()'s baby=False). Its skin is picked by its color
-(q.variant: 0 to 15 dyed, 16 undyed, the stage's: GAME_ANSWERS in import_models.py), for both looks. Named Halloween or
+(q.variant: 0 to 15 dyed, in Bedrock's own order of the dyes, black first and white last; 16 undyed, as it starts),
+for both looks: its kinds (VARIANTS), undyed first. The Halloween look's pumpkin stays orange whatever its color; its candle and the glow inside take it. Named Halloween or
 Pumpkin (v.yjnlad) it's a pumpkin, drawn with a model of its own on an emissive material, so the faint texels inside its
 shell glow. Its entity (entity/dtu.json) is the only one for minecraft:shulker. Run import_additions.py first.
 
@@ -33,6 +34,17 @@ MOTIONS = [("open_shell", 1, "held"), ("move", 1), ("facing", 1)]
 # (1.6), and rises back the same way (0.7), each move easing in and out (smoothstep), over its standing open (keep: the
 # act takes the lid down from there). It shuts as often as it blinks, about every 5 seconds.
 MOVE, SHUT_FOR, TURN = 0.7, 1.6, -90
+
+# Its colors: undyed (as it spawns), then the dyes in the creative inventory's order, each with the q.variant the game
+# gives it (Bedrock's dye order).
+DYE_VARIANT = {"black": 0, "red": 1, "green": 2, "brown": 3, "blue": 4, "purple": 5, "cyan": 6, "light_gray": 7, "gray": 8,
+               "pink": 9, "lime": 10, "yellow": 11, "light_blue": 12, "magenta": 13, "orange": 14, "white": 15}
+VARIANTS = ["", "white", "light_gray", "gray", "black", "brown", "red", "orange", "yellow", "lime", "green", "cyan",
+            "light_blue", "blue", "purple", "magenta", "pink"]
+
+
+def answers(v):
+    return {"variant": float(DYE_VARIANT.get(VARIANTS[v], 16))}
 BLINK = {"every": [1.25, 3.75], "keep": True, "parts": [("blinking.1", 0, None, [["blink", True]])]}
 SHUT = {"every": [1.25, 3.75], "keep": True, "parts": [("shut_shell", 0, None, [])]}
 ACTS = [BLINK, SHUT]
@@ -76,4 +88,4 @@ def read_pack():
 im.read_pack = read_pack
 
 if __name__ == "__main__":
-    port("shulker", variants=[""], acts=ACTS, motions=MOTIONS, answers=lambda v: {"variant": 16.0}, remodel=["halloween"], baby=False)
+    port("shulker", variants=VARIANTS, acts=ACTS, motions=MOTIONS, answers=answers, remodel=["halloween"], baby=False)
