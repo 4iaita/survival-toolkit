@@ -291,6 +291,7 @@ RARE = {
     ("evoker", "baby"): "1 in 200 evokers", ("witch", "baby"): "1 in 200 witches", ("ravager", "baby"): "1 in 200 ravagers",
     ("witch", "cherry"): "witches in cherry groves",
     ("skeleton", "baby"): "1 in 200 skeletons", ("stray", "baby"): "1 in 200 strays", ("bogged", "baby"): "1 in 200 bogged",
+    ("wither_skeleton", "baby"): "1 in 200 wither skeletons",
     ("skeleton", "cherry"): "skeletons in cherry groves", ("skeleton", "sulfur"): "skeletons in sulfur caves",
     ("skeleton", "dappled"): "skeletons in dappled forests", ("skeleton", "pale"): "skeletons in pale gardens",
     ("zombie", "cherry"): "zombies in cherry groves", ("zombie", "sulfur"): "zombies in sulfur caves",
@@ -340,7 +341,8 @@ NIGHT = {("chicken", "halloween"), ("villager", "trick or treat"), ("chicken", "
          ("zombie_nautilus", "sea monster nautiling"), ("zombie_nautilus", "halloween"),
          ("zombie", "sulfur"), ("zombie", "pale"), ("skeleton", "sulfur"), ("skeleton", "pale"),
          ("stray", "baby"), ("stray", "halloween"), ("drowned", "halloween"), ("drowned", "baby gillman"),
-         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur"), ("pillager", "halloween"), ("evoker", "halloween"), ("phantom", "baby"), ("phantom", "halloween"), ("creaking", "dappled")}
+         ("bogged", "baby"), ("bogged", "halloween"), ("creeper", "sulfur"), ("pillager", "halloween"), ("evoker", "halloween"), ("phantom", "baby"), ("phantom", "halloween"), ("creaking", "dappled"),
+         ("wither_skeleton", "baby")}
 BIOME_LOOKS = {"cherry": "cherry grove", "dappled": "dappled", "pale": "pale", "sulfur": "sulfur", "blossom": "blossom", "poplar": "poplar"}
 
 

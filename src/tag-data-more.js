@@ -375,7 +375,7 @@ const PACK_TAGS_MORE = {
     { names: ["Baby", "Witherling", "Sooty"], kind: BABY },
   ],
   wither_skeleton: [
-    { names: ["Baby", "Skelly", "Boney"], kind: BABY },
+    { names: ["Baby", "Skelly", "Boney"], night: true, kind: BABY, rare: "1 in 200 wither skeletons" },
   ],
   wolf: [
     { names: ["Hellhound Pup", "Baby Hellhound"], more: ["hellhound Pup", "Hellhound pup", "baby Hellhound", "Baby hellhound"], what: "A hellhound pup: a little demon hound with spiky ears, a spiky tail and eyes that glow in the dark. Its colors follow the wolf’s variant: crimson on a pale wolf, gray on an ashen one, black, purple on a chestnut one, red on a rusty one, icy cyan on a snowy one, mossy green on a spotted one, bone white on a striped one and brown on a woods one, its eyes glowing orange, red, purple, cyan or lime green to match.", night: true },
