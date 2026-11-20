@@ -109,8 +109,8 @@ const PACK_TAGS_MORE = {
     { names: ["Pale"], what: "The pale look." },
   ],
   endermite: [
-    { names: ["Baby", "Mite", "Twitchy"], kind: BABY },
-    { names: ["Halloween", "Eye"], what: "A Halloween costume." },
+    { names: ["Baby", "Mite", "Twitchy"], kind: BABY, rare: "1 in 200 endermites" },
+    { names: ["Halloween", "Eye"], what: "A glowing pink box carried on four thin, bent dark purple legs over a flat dark purple body, whose underside has a dark frame round a pink square." },
   ],
   evoker: [
     { names: ["Baby", "Vindilet", "Grumpy"], kind: BABY, rare: "1 in 200 evokers" },
