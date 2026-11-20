@@ -254,6 +254,7 @@ WHAT = {
     ("villager", "dappled"): "Dressed for autumn: a dark red cap, a red coat whose sleeves fade to orange and yellow like turning leaves, green and yellow striped mittens, a ragged orange and yellow hem and green leggings, with its profession’s clothes over them.",
     ("piglin", "halloween"): "Dresses it as a hog: a brown mask with a snout, two cream tusks, pointed ears and a dark band its white eyes look out of, and a brown suit banded darker on its arms and legs, with braces buckled in gold. A strap holds the mask on at the back.",
     ("piglin", "baby butcher"): "A baby piglin in the hog costume, its big head in a brown mask with a snout and pointed ears but no tusks, a dark band its white eyes look out of, and a brown suit with gold-buckled braces.",
+    ("piglin_brute", "halloween"): "Dresses it as a butcher in a hog mask: a brown mask with a snout, two cream tusks, pointed ears and a dark band its white eyes look out of, a pale apron over a brown suit, and a whole ham slung on its back, wrapped in chains, its bone sticking out of the cut end.",
     ("zombie_villager", "cherry"): "Cherry blossoms on its head, a pink and white blossom-print shirt and torn dark wine-red trousers, with its profession’s clothes over them.",
 }
 # Looks that only show in one climate (the pack checks the mob's climate too): (mob, the lower-case name) -> that
@@ -299,6 +300,7 @@ RARE = {
     ("creaking", "baby"): "1 in 200 creakings", ("creaking", "dappled"): "creakings in dappled forests",
     ("creeper", "baby"): "1 in 200 creepers",
     ("blaze", "baby"): "1 in 200 blazes", ("ghast", "baby"): "1 in 200 ghasts",
+    ("piglin_brute", "baby"): "1 in 200 piglin brutes",
     ("creeper", "cherry"): "99 in 100 creepers in cherry groves",
     ("creeper", "blossom"): "1 in 100 creepers in cherry groves",
     ("creeper", "sulfur"): "creepers in sulfur caves",

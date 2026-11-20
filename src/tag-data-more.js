@@ -199,8 +199,8 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Butcher"], what: "Dresses it as a hog: a brown mask with a snout, two cream tusks, pointed ears and a dark band its white eyes look out of, and a brown suit banded darker on its arms and legs, with braces buckled in gold. A strap holds the mask on at the back." },
   ],
   piglin_brute: [
-    { names: ["Baby", "Piglet", "Brutey"], kind: BABY },
-    { names: ["Halloween", "Butcher"], what: "A Halloween costume." },
+    { names: ["Baby", "Piglet", "Brutey"], kind: BABY, rare: "1 in 200 piglin brutes" },
+    { names: ["Halloween", "Butcher"], what: "Dresses it as a butcher in a hog mask: a brown mask with a snout, two cream tusks, pointed ears and a dark band its white eyes look out of, a pale apron over a brown suit, and a whole ham slung on its back, wrapped in chains, its bone sticking out of the cut end." },
   ],
   pillager: [
     { names: ["Baby", "Pillaglet", "Grumpy"], kind: BABY, rare: "1 in 200 pillagers" },
