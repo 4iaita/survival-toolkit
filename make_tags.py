@@ -255,6 +255,8 @@ WHAT = {
     ("piglin", "halloween"): "Dresses it as a hog: a brown mask with a snout, two cream tusks, pointed ears and a dark band its white eyes look out of, and a brown suit banded darker on its arms and legs, with braces buckled in gold. A strap holds the mask on at the back.",
     ("piglin", "baby butcher"): "A baby piglin in the hog costume, its big head in a brown mask with a snout and pointed ears but no tusks, a dark band its white eyes look out of, and a brown suit with gold-buckled braces.",
     ("piglin_brute", "halloween"): "Dresses it as a butcher in a hog mask: a brown mask with a snout, two cream tusks, pointed ears and a dark band its white eyes look out of, a pale apron over a brown suit, and a whole ham slung on its back, wrapped in chains, its bone sticking out of the cut end.",
+    ("zombified_piglin", "halloween"): "The piglin’s hog costume, faded and rotting: a dull brown mask with a snout, one tusk left and one white eye looking out of its dark band, and worn brown overalls with gold buckles, its green-patched rotting skin showing at the sleeves and through the legs.",
+    ("zombified_piglin", "baby butcher"): "A baby zombified piglin in the faded hog costume: a dull brown mask with a snout and pointed ears, one white eye looking out of its dark band, and worn brown overalls, its rotting skin showing on its arms and feet.",
     ("zombie_villager", "cherry"): "Cherry blossoms on its head, a pink and white blossom-print shirt and torn dark wine-red trousers, with its profession’s clothes over them.",
 }
 # Looks that only show in one climate (the pack checks the mob's climate too): (mob, the lower-case name) -> that

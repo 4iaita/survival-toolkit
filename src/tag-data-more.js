@@ -397,8 +397,8 @@ const PACK_TAGS_MORE = {
     { names: ["Cherry"], what: "Cherry blossoms on its head, a pink and white blossom-print shirt and torn dark wine-red trousers, with its profession’s clothes over them.", biome: "cherry_grove", rare: "zombie villagers in cherry groves" },
   ],
   zombified_piglin: [
-    { names: ["Baby Butcher"], more: ["baby Butcher", "Baby butcher"], what: "A baby Butcher." },
-    { names: ["Halloween", "Butcher"], what: "A Halloween costume." },
+    { names: ["Baby Butcher"], more: ["baby Butcher", "Baby butcher"], what: "A baby zombified piglin in the faded hog costume: a dull brown mask with a snout and pointed ears, one white eye looking out of its dark band, and worn brown overalls, its rotting skin showing on its arms and feet." },
+    { names: ["Halloween", "Butcher"], what: "The piglin’s hog costume, faded and rotting: a dull brown mask with a snout, one tusk left and one white eye looking out of its dark band, and worn brown overalls with gold buckles, its green-patched rotting skin showing at the sleeves and through the legs." },
   ],
 };
 // New spellings for names a row has already: mob -> [{ after: the row's first name, names }].
