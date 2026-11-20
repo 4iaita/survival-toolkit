@@ -31,9 +31,9 @@ MOTIONS = [("open_shell", 1, "held"), ("move", 1), ("facing", 1)]
 # for 0.15 seconds, which the pack plays after 1.25 to 3.75 seconds, again and again, over the rest (keep). And now and
 # then it shuts, as the old stage had it: its lid comes down 7 pixels with a quarter turn (0.7 seconds), stays shut
 # (1.6), and rises back the same way (0.7), each move easing in and out (smoothstep), over its standing open (keep: the
-# act takes the lid down from there). It blinks three times as often as it shuts.
+# act takes the lid down from there). It shuts as often as it blinks, about every 5 seconds.
 MOVE, SHUT_FOR, TURN = 0.7, 1.6, -90
-BLINK = {"every": [1.25, 3.75], "keep": True, "weight": 3, "parts": [("blinking.1", 0, None, [["blink", True]])]}
+BLINK = {"every": [1.25, 3.75], "keep": True, "parts": [("blinking.1", 0, None, [["blink", True]])]}
 SHUT = {"every": [1.25, 3.75], "keep": True, "parts": [("shut_shell", 0, None, [])]}
 ACTS = [BLINK, SHUT]
 
