@@ -13,13 +13,14 @@ over its eyes) fade in over seconds (v.habcyx); the Halloween costume hides them
 and babies have none. Its entity is the only one for minecraft:piglin. Run import_additions.py first.
 """
 import import_additions as ia
-from import_port import im, port, put
+from import_parched import BOW_HAND, bow_model
+from import_port import copy_texture, im, port, put
 
 im.GLOW_STRENGTH = "habcyx"
 
 # It stands as a piglin with a golden sword does (q.variant 1): swaying, its head nodding and its ears flicking (the
 # pack's uvuvat, 1.6 seconds round), its arms eased a little out and one foot a little forward (hrllie, the pose the pack
-# eases into when it stands still, held). The stage shows nothing in its hands. Left out: the crossbow piglin's stance
+# eases into when it stands still, held), its golden sword in its hand (add_weapon, below). Left out: the crossbow piglin's stance
 # (q.variant 0: a slower sway, tytiby, with its arms held up and across as if carrying a crossbow, vdhjyz), its head
 # following what it looks at (nnxixp), its walks and runs (by move speed), fleeing, its crossbow drawn and fired, its
 # attacks, admiring gold (it holds a gold ingot up and looks it over, egezmj: the stage has no ingot to show), riding a
@@ -42,6 +43,41 @@ ACTS = [BLINK, *IDLES]
 SETS = {"baby": {"motions": [("lwvcsi", 1)], "acts": [BLINK]}}
 PLAYS = {"baby": "baby", "baby butcher": "baby"}
 REMODEL = ["baby butcher", "halloween"]
+
+
+# The game's sword piglins carry a golden sword. The pack's (its attachable, minecraft:golden_sword) is, with its 3D items
+# setting off as it starts, the game's sprite drawn as a texture mesh: here it's a cube for each pixel, as the
+# vindicator's axe (bow_model), in its right hand, on a copy of each look's skeleton (SWORD_LOOKS: the entity's
+# geometry key for each look that holds it), held as the game draws a piglin's sword (the wiki's renders): at right
+# angles to its hanging forearm, the blade out in front of the fist (HANG_TURN, the vindicator's), gripped at the foot
+# of its handle. The game's baby piglins hold nothing.
+SWORD = "textures/items/gold_sword"
+SWORD_GRIP = (4, 11)
+HANG_TURN = -45
+SWORD_LOOKS = {"": "default", "halloween": "eapnwa"}
+
+
+def add_weapon(mob, item, texture, grip, looks_of, turn=HANG_TURN, hands=None, entity=None):
+    """The weapon: a layer of its own, last, on a copy of each holding look's skeleton (looks_of: first name -> the
+    entity's geometry key; hands: first name -> where the grip is from the rightitem bone's pivot, as bow_model's)."""
+    ents, _rcs, geos, *_ = im.read_pack()
+    d = ents[f"minecraft:{entity or mob}"]
+    key = f"{ia.PREFIX}{mob}_{item}"
+    tex_key = f"{ia.PREFIX}piglin_{item}"
+    text = ia.MODELS_JS.read_text()
+    looks = ia.parse_section(text, "MOB_LOOKS")[mob]
+    for look in looks:
+        name = (look["names"] or [""])[0]
+        look["layers"] = [layer for layer in look["layers"] if not layer[0].startswith(key)]
+        if name not in looks_of:
+            continue
+        model_key = "_".join(filter(None, [key, name.replace(" ", "_")]))
+        model = bow_model(geos[d["geometry"][looks_of[name]]], texture, grip, turn, item, (hands or {}).get(name, BOW_HAND))
+        text = put(text, "MOB_MODELS", model_key, im.model(model))
+        # held: the stage frames the mob on its body, not its weapon (src/mobs.js).
+        look["layers"].append([model_key, [tex_key], [], {"held": 1}])
+    ia.MODELS_JS.write_text(put(text, "MOB_LOOKS", mob, looks))
+    copy_texture(texture, tex_key)
 
 
 def reuse(mob):
@@ -67,3 +103,5 @@ def reuse(mob):
 if __name__ == "__main__":
     port("piglin", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL, sets=SETS, plays=PLAYS,
          answers=lambda v: {"variant": 1.0})
+    if ia.WRITE:
+        add_weapon("piglin", "sword", SWORD, SWORD_GRIP, SWORD_LOOKS)

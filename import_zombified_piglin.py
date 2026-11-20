@@ -13,7 +13,7 @@ glowing eye) fades in, as the piglin's; its costumes and its babies have none. T
 it's angry (it only raises its arms at its target). Its entity is the only one for minecraft:zombie_pigman. Run
 import_piglin.py first.
 """
-from import_piglin import BLINK, IDLES, reuse
+from import_piglin import BLINK, IDLES, SWORD, SWORD_GRIP, add_weapon, reuse
 from import_port import ia, im, port
 
 im.GLOW_STRENGTH = "habcyx"
@@ -21,12 +21,16 @@ im.GLOW_STRENGTH = "habcyx"
 # Each zombified piglin takes one of four stances at random when it spawns (v.ngjrwv, 0 to 3), babies too: the stage
 # shows the second (fezakx, 3.27 seconds round, as the old stage's), swaying, leaning back a little with its head tipped
 # down and to one side, its one ear drooping and its arms hanging. Left out: the other three (other sways and leans),
-# its sword arm (the stage shows nothing in its hands), its arms raised at a target, its
+# the pack's tilt of its sword (SWORD_LOOKS, below), its arms raised at a target, its
 # head following what it looks at, its walks and runs, its attack, riding a strider or anything else, jumps, falls,
 # landing and deaths. Now and then it blinks and does one of the piglin's three idles (the same controllers).
 MOTIONS = [("ioknti", 1)]
 ACTS = [BLINK, *IDLES]
 REMODEL = ["baby butcher", "halloween"]
+
+# The game's zombified piglins all carry a golden sword, babies too: the piglin's, held as it holds it, on every look.
+# The pack tips the sword's bone 45 degrees more while it's held (gqkdgi), for its own placement: left out.
+SWORD_LOOKS = {"": "default", "baby": "umyynp", "baby butcher": "tjtltg", "halloween": "xsnumo"}
 
 
 def fix(d):
@@ -52,3 +56,4 @@ if __name__ == "__main__":
     port("zombified_piglin", variants=[""], acts=ACTS, motions=MOTIONS, remodel=REMODEL, fix=fix)
     if ia.WRITE:
         reuse("zombified_piglin")
+        add_weapon("zombified_piglin", "sword", SWORD, SWORD_GRIP, SWORD_LOOKS, entity="zombie_pigman")
