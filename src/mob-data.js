@@ -431,5 +431,5 @@ const MOBS = [
   { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
   { k: "zombified_piglin", n: "Zombified Piglin", bedrockName: "Zombie Pigman", g: "Nether", biome: "nether" }, { k: "wither", n: "Wither", g: "Nether", biome: "nether", stand: lift(8) },
   { k: "ender_dragon", n: "Ender Dragon", g: "End", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", g: "End", biome: "end", glowing: true },
-  { k: "endermite", n: "Endermite", g: "End", biome: "end" }, { k: "shulker", n: "Shulker", g: "End", biome: "end", stand: { ocbqbhz: { p: [0, 7, 0] } } },
+  { k: "endermite", n: "Endermite", g: "End", biome: "end" }, { k: "shulker", n: "Shulker", g: "End", biome: "end" },
 ];

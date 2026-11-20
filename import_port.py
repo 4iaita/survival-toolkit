@@ -115,7 +115,7 @@ def still(pose):
 
 def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)}, hidden=(), fix=None, named=(), remodel=(), own_motions=None, new_looks=(),
          sets=None, plays=None, climates=None, climate_acts=None, nested_poses=False, share=(), climate_motions=None, shows=None, fix_geos=None,
-         moods=None):
+         moods=None, baby=True):
     """variants: the mob's kinds by q.variant (the first is the plain one); acts and motions as import_models.py's
     STAGE_ACTS and its loops (keys are the new pack's); answers(v): what the game says for kind v; hidden: parts that
     only show while an act shows them (the panda's bamboo); fix(d): mends the entity before it's read (a texture the
@@ -142,7 +142,8 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     moods: mood -> {answers (what the game says in it, over answers(v)), motions, act, and collar or armor (1: its collar's
     color can be picked, it can wear MOB_ARMOR's)}: the mob's other moods (the wolf's angry and pet), each look again as it
     is in that mood (MOB_MOODS, in MOB_LOOKS' order), with its kinds' skins as the plain looks', and loops and acts of its
-    own, baked with what the game says there."""
+    own, baked with what the game says there.
+    baby: False for a mob with no baby look (the shulker, the dragon): its second look is a named one, not its baby's."""
     ents, rcs, geos, mats, anims, _p, _a = im.read_pack()
     for g in geos.values():
         ia.rename_geo(g)
@@ -199,24 +200,28 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
         return out
 
     base_layers, base_scale, _ = im.look(d, rcs, mats, anims, "", mood=answers(0))
-    baby_layers, baby_scale, baby_pose = im.look(d, rcs, mats, anims, "Baby", mood=answers(0))
-    if nested_poses:
-        baby_pose = still(baby_pose)
     adult = layers_out("", base_layers)
-    baby = layers_out("baby", baby_layers)
+    if baby:
+        baby_layers, baby_scale, baby_pose = im.look(d, rcs, mats, anims, "Baby", mood=answers(0))
+        if nested_poses:
+            baby_pose = still(baby_pose)
+        baby = layers_out("baby", baby_layers)
+    else:
+        baby_layers, baby = [], []
     looks = json.loads(json.dumps(current))
     have = {(l["names"] or [""])[0] for l in looks}
     looks += [{"names": list(names), "scale": 1.0, "layers": []} for names in new_looks if names[0] not in have]
     remodel = [*remodel, *(names[0] for names in new_looks)]
     # The baby look: the one named Baby (usually the second).
-    bi = next((i for i, l in enumerate(looks) if "Baby" in l["names"]), 1)
+    bi = next((i for i, l in enumerate(looks) if "Baby" in l["names"]), 1) if baby else None
     looks[0]["layers"] = adult
-    looks[bi]["layers"] = baby
-    looks[bi]["scale"] = round(baby_scale / base_scale, 3)
-    if baby_pose:
-        looks[bi]["pose"] = im.compact({ia.ren(b): p for b, p in baby_pose.items()})
-    else:
-        looks[bi].pop("pose", None)
+    if baby:
+        looks[bi]["layers"] = baby
+        looks[bi]["scale"] = round(baby_scale / base_scale, 3)
+        if baby_pose:
+            looks[bi]["pose"] = im.compact({ia.ren(b): p for b, p in baby_pose.items()})
+        else:
+            looks[bi].pop("pose", None)
 
     # The other kinds' skins, in place of the plain one's, layer by layer: new_<mob>_<kind>... beside new_<mob>...
     skins = {}
@@ -224,7 +229,7 @@ def port(mob, *, variants, acts, motions, answers=lambda v: {"variant": float(v)
     for v, kind in enumerate(variants):
         if not v:
             continue
-        for baby_look in (False, True):
+        for baby_look in (False, True) if baby else (False,):
             lay, _, _ = im.look(d, rcs, mats, anims, "Baby" if baby_look else "", mood=answers(v))
             for (_, texs, _, _), (_, own, _, _) in zip(plain[baby_look], lay):
                 for t, o in zip(texs, own):

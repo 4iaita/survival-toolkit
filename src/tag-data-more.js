@@ -227,7 +227,7 @@ const PACK_TAGS_MORE = {
     { names: ["Halloween", "Ghost"], what: "Dressed as a ghost: a tattered pale gray sheet over its head and body, with black eye holes and white eyes that glow in the dark.", night: true },
   ],
   shulker: [
-    { names: ["Halloween", "Pumpkin"], what: "A Halloween costume." },
+    { names: ["Halloween", "Pumpkin"], what: "A pumpkin: an orange pumpkin shell, glowing yellow inside, with a green stem and a curling vine on top, and a cream candle for a head with a black wick, its face peeking out between the shell’s halves." },
   ],
   silverfish: [
     { names: ["Baby", "Bug", "Wiggles"], kind: BABY, rare: "1 in 200 silverfish" },
