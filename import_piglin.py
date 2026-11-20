@@ -13,7 +13,7 @@ over its eyes) fade in over seconds (v.habcyx); the Halloween costume hides them
 and babies have none. Its entity is the only one for minecraft:piglin. Run import_additions.py first.
 """
 import import_additions as ia
-from import_parched import BOW_HAND, bow_model
+from import_parched import bow_model
 from import_port import copy_texture, im, port, put
 
 im.GLOW_STRENGTH = "habcyx"
@@ -49,17 +49,29 @@ REMODEL = ["baby butcher", "halloween"]
 # setting off as it starts, the game's sprite drawn as a texture mesh: here it's a cube for each pixel, as the
 # vindicator's axe (bow_model), in its right hand, on a copy of each look's skeleton (SWORD_LOOKS: the entity's
 # geometry key for each look that holds it), held as the game draws a piglin's sword (the wiki's renders): at right
-# angles to its hanging forearm, the blade out in front of the fist (HANG_TURN, the vindicator's), gripped at the foot
-# of its handle. The game's baby piglins hold nothing.
+# angles to its hanging forearm, the blade out in front of the fist (HANG_TURN, the vindicator's), its handle through
+# the middle of the fist (fist()): the guard just in front of it and the pommel just behind. The game's baby piglins
+# hold nothing.
 SWORD = "textures/items/gold_sword"
-SWORD_GRIP = (4, 11)
+SWORD_GRIP = (3, 12)
 HANG_TURN = -45
 SWORD_LOOKS = {"": "default", "halloween": "eapnwa"}
 
 
-def add_weapon(mob, item, texture, grip, looks_of, turn=HANG_TURN, hands=None, entity=None):
+def fist(skeleton):
+    """Where a held item's grip goes, from the rightitem bone's pivot (as bow_model's hand_at): the middle of the fist,
+    the bottom 4 pixels of the right arm's lowest cube. The pack puts rightitem at the bottom of the arm and towards its
+    back (and on the babies' thicker arms off to one side), so an item gripped there cut through the bottom of the hand."""
+    bones = {b["name"]: b for b in skeleton["bones"]}
+    cube = min(bones["rightarm"]["cubes"], key=lambda c: c["origin"][1])
+    (x, y, z), (w, _h, d) = cube["origin"], cube["size"]
+    pivot = bones["rightitem"]["pivot"]
+    return (x + w / 2 - pivot[0], y + 2 - pivot[1], z + d / 2 - pivot[2])
+
+
+def add_weapon(mob, item, texture, grip, looks_of, turn=HANG_TURN, entity=None):
     """The weapon: a layer of its own, last, on a copy of each holding look's skeleton (looks_of: first name -> the
-    entity's geometry key; hands: first name -> where the grip is from the rightitem bone's pivot, as bow_model's)."""
+    entity's geometry key), gripped in the middle of the fist."""
     ents, _rcs, geos, *_ = im.read_pack()
     d = ents[f"minecraft:{entity or mob}"]
     key = f"{ia.PREFIX}{mob}_{item}"
@@ -72,7 +84,8 @@ def add_weapon(mob, item, texture, grip, looks_of, turn=HANG_TURN, hands=None, e
         if name not in looks_of:
             continue
         model_key = "_".join(filter(None, [key, name.replace(" ", "_")]))
-        model = bow_model(geos[d["geometry"][looks_of[name]]], texture, grip, turn, item, (hands or {}).get(name, BOW_HAND))
+        skeleton = geos[d["geometry"][looks_of[name]]]
+        model = bow_model(skeleton, texture, grip, turn, item, fist(skeleton))
         text = put(text, "MOB_MODELS", model_key, im.model(model))
         # held: the stage frames the mob on its body, not its weapon (src/mobs.js).
         look["layers"].append([model_key, [tex_key], [], {"held": 1}])

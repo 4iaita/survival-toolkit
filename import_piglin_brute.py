@@ -26,7 +26,7 @@ REMODEL = ["halloween"]
 
 # The game's piglin brutes always carry a golden axe: the pack's sprite as cubes, held as the game draws it (the wiki's
 # renders) and as the vindicator's hangs: at right angles to its hanging forearm, its head out in front of the fist,
-# gripped near the foot of its handle; on every look, the pack's babies too.
+# gripped near the foot of its handle in the middle of the fist; on every look, the pack's babies too.
 AXE = "textures/items/gold_axe"
 AXE_GRIP = (4, 12)
 AXE_LOOKS = {"": "default", "baby": "jzlkpv", "halloween": "umygkl"}
