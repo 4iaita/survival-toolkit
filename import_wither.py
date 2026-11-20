@@ -10,11 +10,11 @@ named Baby, Witherling or Sooty is drawn with the pack's baby model, a smaller w
 texels of its eyes glow, and a glow layer of soft panels (oreville_auulis) lights its mouths; the baby has no glow
 layer. Its entity is the only one for minecraft:wither.
 
-Left out: its armor, which the game puts on below half health (q.is_shield_powered: the pack draws it with a shell of
-its own, a scrolling layer and glow panels, and its body darker), and its spawning (it swells and flashes blue for its
-first seconds, the soul sand and skull it's built from drawn round it).
+Below half health the game puts its armor on (q.is_shield_powered): the stage shows that as its mood (MOODS), as the
+pack draws it. Left out: its spawning (it swells and flashes blue for its first seconds, the soul sand and skull it's
+built from drawn round it).
 """
-from import_port import ia, im, port
+from import_port import ia, keep_rims, port, put
 
 # It hovers (the pack's xkttzn, 3.27 seconds round, as the old stage's): rocking and bobbing from side to side, its spine
 # and ribs swaying and its three heads nodding. The pack's loop also circles two markers round it (3al_2 and 3al_3, for
@@ -40,5 +40,37 @@ IDLES = [{"every": [1, 4], "keep": True, "ease": 0.12, "parts": [(key, 0, None, 
 BLINK = {"every": [1, 4], "keep": True, "weight": 4, "parts": [("hufdpi", 0, None, []), ("gizmmp", 0.6, None, []), ("abqfqr", 1.2, None, [])]}
 ACTS = [*IDLES, BLINK]
 
+# Armored, below half health: the pack draws its body in an armored skin (pxukfj, glowing pale cyan along its bones;
+# its mouths' glow too, wlqxdl), a thin glowing outline round it (a rim: kxkpjg, its parts again a little bigger on an
+# emissive material that only draws where the wither isn't; keep_rims), a shell a little bigger again whose texture
+# scrolls across it (lbsbts, drawn as a glow: MOOD_STAGE runs its scroll), dimmed by the pack's black overlay to a
+# quarter (its 0.625 to 0.875, which pulses; the stage keeps the middle, finish()), and big soft glow panels held
+# behind its heads and body and turned to the camera (8dgo1 to 8dgo4, which fade in over a second as the armor comes
+# on: drawn behind it, finish()). A baby keeps only its armored skin: the pack also gives it the adult's panels, sized
+# and placed for the adult, which glowed over the empty space where an adult's heads would be (left off, finish()).
+# It moves as it does without its armor.
+MOODS = {"armored": {"answers": {"is_shield_powered": 1.0}, "motions": MOTIONS, "act": ACTS}}
+SHELL_STRENGTH = 0.25
+
+
+def finish():
+    """The armor's scrolling shell at the strength the pack's overlay leaves it, its panels drawn behind it, and the
+    baby's (the adult's) left off."""
+    text = ia.MODELS_JS.read_text()
+    moods = ia.parse_section(text, "MOB_MOODS")["wither"]
+    for i, look in enumerate(moods["armored"]["looks"]):
+        if i == 1:
+            look["layers"] = [layer for layer in look["layers"] if not (len(layer) > 3 and layer[3].get("halo"))]
+        for layer in look["layers"]:
+            flags = layer[3] if len(layer) > 3 else {}
+            if flags.get("scroll"):
+                flags["bright"] = SHELL_STRENGTH
+            if flags.get("halo"):
+                flags["behind"] = 1
+    ia.MODELS_JS.write_text(put(text, "MOB_MOODS", "wither", moods))
+
 if __name__ == "__main__":
-    port("wither", variants=[""], acts=ACTS, motions=MOTIONS)
+    keep_rims()
+    port("wither", variants=[""], acts=ACTS, motions=MOTIONS, moods=MOODS)
+    if ia.WRITE:
+        finish()
