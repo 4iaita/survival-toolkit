@@ -10708,6 +10708,25 @@ $("mob-search").value = mobTab.query;
 fitClimate();
 renderMobs();
 
+// The Villager Trades tab now opens here: #trading (its tab's link, or an old bookmark) becomes the Mobs tab with the
+// villager picked and its Trades tab open. A villager picked from another mob starts on the job last seen on the
+// Villager Trades tab.
+function openVillagerTrades() {
+  if (location.hash !== "#trading") return;
+  if (mobTab.mob !== "villager") {
+    pickMob("villager", "");
+    pickVariant(trade.villager);
+  }
+  mobTab.section = "trade";
+  renderMobResult();
+  saveMobTab();
+  history.replaceState(null, "", "#mobs");
+  showView();
+  $("mob-result").scrollIntoView({ block: "start" });
+}
+window.addEventListener("hashchange", openVillagerTrades);
+openVillagerTrades();
+
 /* ---------- Armor stand props ---------- */
 const stand = { prop: "white_wool" };
 const STAND_KEY = "armor-stands-v1";
