@@ -1,6 +1,8 @@
 /* ---------- Mobs ---------- */
-// Mobs on the Mobs tab, in groups like the creative inventory's. k is the MOB_LOOKS key and the spawn egg
-// (egg_<k> in art/); bedrockName where Bedrock calls it something else; biome, the village biome its stage shows
+// Mobs on the Mobs tab. k is the MOB_LOOKS key and the spawn egg
+// (egg_<k> in art/); bedrockName where Bedrock calls it something else; dim, the dimension it lives in (nether or end; overworld if not
+// given); behavior, how it treats the player as the Minecraft Wiki classes it (neutral or aggressive, the wiki's hostile and
+// boss mobs; passive if not given); biome, the village biome its stage shows
 // (a BIOMES key, village, mushroom_fields, cave, mineshaft, mansion, trial_chamber, stronghold, deep_dark, nether, end_city, end_island, ocean, lush_pool, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
@@ -404,37 +406,42 @@ const GAME_BABIES = new Set(["armadillo", "axolotl", "bee", "camel", "cat", "chi
 // Mobs the game has no babies of that the pack makes babies of all the same, 1 in 5 of them (with its setting for
 // that): the stage can show them as babies too, in the pack's baby look.
 const PACK_BABIES = new Set(["cod", "frog", "parrot", "salmon", "tropicalfish"]);
-const MOB_GROUPS = ["Animals", "Water", "Village", "Monsters", "Nether", "End"];
+// The picker lists mobs A to Z, or by dimension: where each lives, dim on the mob (overworld if not given).
+const MOB_DIMS = [["overworld", "Overworld"], ["nether", "The Nether"], ["end", "The End"]];
+const mobDim = m => m.dim || "overworld";
+// Or by behavior: behavior on the mob (passive if not given).
+const MOB_BEHAVIORS = [["passive", "Passive"], ["neutral", "Neutral"], ["aggressive", "Aggressive"]];
+const mobBehavior = m => m.behavior || "passive";
 const MOBS = [
-  { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
-  { k: "camel", n: "Camel", g: "Animals", biome: "desert" }, { k: "cat", n: "Cat", g: "Animals" }, { k: "chicken", n: "Chicken", g: "Animals" },
-  { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals", biome: "taiga" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
-  { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals", biome: "savanna" },
-  { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
-  { k: "panda", n: "Panda", g: "Animals", biome: "jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals", biome: "jungle" }, { k: "pig", n: "Pig", g: "Animals" },
-  { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy", zoom: BEAR_ROOM }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
-  { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "taiga" },
-  { k: "axolotl", n: "Axolotl", g: "Water", biome: "lush_pool", swim: true }, { k: "cod", n: "Cod", g: "Water", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", g: "Water", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", g: "Water", biome: "flooded_cave", glowing: true, swim: true },
-  { k: "nautilus", n: "Nautilus", g: "Water", biome: "ocean", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "pufferfish", n: "Pufferfish", g: "Water", biome: "ocean", swim: true }, { k: "salmon", n: "Salmon", g: "Water", biome: "ocean", swim: true }, { k: "squid", n: "Squid", g: "Water", biome: "ocean", swim: true },
-  { k: "tadpole", n: "Tadpole", g: "Water", biome: "swamp_water", swim: true }, { k: "tropicalfish", n: "Tropical Fish", g: "Water", biome: "ocean", swim: true }, { k: "turtle", n: "Turtle", g: "Water", biome: "ocean", swim: true },
-  { k: "allay", n: "Allay", g: "Village", stand: lift(10) }, { k: "copper_golem", n: "Copper Golem", g: "Village" }, { k: "iron_golem", n: "Iron Golem", g: "Village", biome: "village" },
-  { k: "snow_golem", n: "Snow Golem", g: "Village", biome: "snowy" }, { k: "villager", n: "Villager", g: "Village", biome: "village" },
-  { k: "wandering_trader", n: "Wandering Trader", g: "Village" },
-  { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp_night" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "trial_chamber" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert_night" },
-  { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft" }, { k: "creaking", n: "Creaking", g: "Monsters", biome: "pale_garden_night" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
-  { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean_night", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
-  { k: "evoker", n: "Evoker", g: "Monsters", biome: "mansion" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
-  { k: "husk", n: "Husk", g: "Monsters", biome: "desert_night" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert_night" }, { k: "phantom", n: "Phantom", g: "Monsters", biome: "plains_night", stand: { body: { p: [0, 22, 0] } } },
-  { k: "pillager", n: "Pillager", g: "Monsters", biome: "village" }, { k: "ravager", n: "Ravager", g: "Monsters", biome: "village" },
-  { k: "silverfish", n: "Silverfish", g: "Monsters", biome: "stronghold" }, { k: "skeleton", n: "Skeleton", g: "Monsters", biome: "cave" },
-  { k: "skeleton_horse", n: "Skeleton Horse", g: "Monsters", biome: "plains_night" }, { k: "slime", n: "Slime", g: "Monsters", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", g: "Monsters", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", g: "Monsters", biome: "cave", stand: lift(1.7) },
-  { k: "stray", n: "Stray", g: "Monsters", biome: "snowy_night" }, { k: "vex", n: "Vex", g: "Monsters", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", g: "Monsters", biome: "mansion" }, { k: "warden", n: "Warden", g: "Monsters", biome: "deep_dark" }, { k: "witch", n: "Witch", g: "Monsters", biome: "swamp_night" },
-  { k: "zombie", n: "Zombie", g: "Monsters", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", g: "Monsters", biome: "plains_night" },
-  { k: "zombie_nautilus", n: "Zombie Nautilus", g: "Monsters", biome: "ocean_night", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", g: "Monsters", biome: "plains_night" },
-  { k: "blaze", n: "Blaze", g: "Nether", biome: "nether", stand: { root: { p: [0, 8, 0] } } }, { k: "ghast", n: "Ghast", g: "Nether", biome: "nether", stand: { root: { p: [0, 15, 0] } } }, { k: "happy_ghast", n: "Happy Ghast", g: "Nether", stand: { root: { p: [0, 64, 0] } }, zoom: HAPPY_GHAST_ZOOM }, { k: "hoglin", n: "Hoglin", g: "Nether", biome: "nether" },
-  { k: "magma_cube", n: "Magma Cube", g: "Nether", biome: "nether", zoom: 2.5 }, { k: "piglin", n: "Piglin", g: "Nether", biome: "nether" }, { k: "piglin_brute", n: "Piglin Brute", g: "Nether", biome: "nether" },
-  { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
-  { k: "zombified_piglin", n: "Zombified Piglin", bedrockName: "Zombie Pigman", g: "Nether", biome: "nether" }, { k: "wither", n: "Wither", g: "Nether", biome: "nether", stand: lift(8) },
-  { k: "ender_dragon", n: "Ender Dragon", g: "End", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", g: "End", biome: "end_city", glowing: true },
-  { k: "endermite", n: "Endermite", g: "End", biome: "end_city" }, { k: "shulker", n: "Shulker", g: "End", biome: "end_city" },
+  { k: "armadillo", n: "Armadillo", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", behavior: "neutral", stand: { body: { p: [0, 18, 0] } } },
+  { k: "camel", n: "Camel", biome: "desert" }, { k: "cat", n: "Cat" }, { k: "chicken", n: "Chicken" },
+  { k: "cow", n: "Cow" }, { k: "donkey", n: "Donkey" }, { k: "fox", n: "Fox", behavior: "neutral", biome: "taiga" }, { k: "frog", n: "Frog", biome: "swamp" },
+  { k: "goat", n: "Goat", behavior: "neutral", biome: "peaks" }, { k: "horse", n: "Horse" }, { k: "llama", n: "Llama", behavior: "neutral", biome: "savanna" },
+  { k: "mooshroom", n: "Mooshroom", biome: "mushroom_fields" }, { k: "mule", n: "Mule" }, { k: "ocelot", n: "Ocelot", biome: "jungle" },
+  { k: "panda", n: "Panda", behavior: "neutral", biome: "jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", biome: "jungle" }, { k: "pig", n: "Pig" },
+  { k: "polar_bear", n: "Polar Bear", behavior: "neutral", biome: "snowy", zoom: BEAR_ROOM }, { k: "rabbit", n: "Rabbit" }, { k: "sheep", n: "Sheep" },
+  { k: "sniffer", n: "Sniffer" }, { k: "trader_llama", n: "Trader Llama", behavior: "neutral" }, { k: "wolf", n: "Wolf", behavior: "neutral", biome: "taiga" },
+  { k: "axolotl", n: "Axolotl", biome: "lush_pool", swim: true }, { k: "cod", n: "Cod", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", behavior: "neutral", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", biome: "flooded_cave", glowing: true, swim: true },
+  { k: "nautilus", n: "Nautilus", behavior: "neutral", biome: "ocean", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "pufferfish", n: "Pufferfish", behavior: "neutral", biome: "ocean", swim: true }, { k: "salmon", n: "Salmon", biome: "ocean", swim: true }, { k: "squid", n: "Squid", biome: "ocean", swim: true },
+  { k: "tadpole", n: "Tadpole", biome: "swamp_water", swim: true }, { k: "tropicalfish", n: "Tropical Fish", biome: "ocean", swim: true }, { k: "turtle", n: "Turtle", biome: "ocean", swim: true },
+  { k: "allay", n: "Allay", stand: lift(10) }, { k: "copper_golem", n: "Copper Golem" }, { k: "iron_golem", n: "Iron Golem", behavior: "neutral", biome: "village" },
+  { k: "snow_golem", n: "Snow Golem", biome: "snowy" }, { k: "villager", n: "Villager", biome: "village" },
+  { k: "wandering_trader", n: "Wandering Trader" },
+  { k: "bogged", n: "Bogged", behavior: "aggressive", biome: "swamp_night" }, { k: "breeze", n: "Breeze", behavior: "aggressive", biome: "trial_chamber" }, { k: "camel_husk", n: "Camel Husk", biome: "desert_night" },
+  { k: "cave_spider", n: "Cave Spider", behavior: "neutral", biome: "mineshaft" }, { k: "creaking", n: "Creaking", behavior: "aggressive", biome: "pale_garden_night" }, { k: "creeper", n: "Creeper", behavior: "aggressive", biome: "cave", zoom: CREEPER_ROOM },
+  { k: "drowned", n: "Drowned", behavior: "neutral", biome: "ocean_night", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", behavior: "aggressive", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
+  { k: "evoker", n: "Evoker", behavior: "aggressive", biome: "mansion" }, { k: "guardian", n: "Guardian", behavior: "aggressive", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
+  { k: "husk", n: "Husk", behavior: "aggressive", biome: "desert_night" }, { k: "parched", n: "Parched", behavior: "aggressive", biome: "desert_night" }, { k: "phantom", n: "Phantom", behavior: "aggressive", biome: "plains_night", stand: { body: { p: [0, 22, 0] } } },
+  { k: "pillager", n: "Pillager", behavior: "aggressive", biome: "village" }, { k: "ravager", n: "Ravager", behavior: "aggressive", biome: "village" },
+  { k: "silverfish", n: "Silverfish", behavior: "aggressive", biome: "stronghold" }, { k: "skeleton", n: "Skeleton", behavior: "aggressive", biome: "cave" },
+  { k: "skeleton_horse", n: "Skeleton Horse", biome: "plains_night" }, { k: "slime", n: "Slime", behavior: "aggressive", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", behavior: "neutral", biome: "cave", stand: lift(1.7) },
+  { k: "stray", n: "Stray", behavior: "aggressive", biome: "snowy_night" }, { k: "vex", n: "Vex", behavior: "aggressive", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", behavior: "aggressive", biome: "mansion" }, { k: "warden", n: "Warden", behavior: "aggressive", biome: "deep_dark" }, { k: "witch", n: "Witch", behavior: "aggressive", biome: "swamp_night" },
+  { k: "zombie", n: "Zombie", behavior: "aggressive", biome: "cave" }, { k: "zombie_horse", n: "Zombie Horse", biome: "plains_night" },
+  { k: "zombie_nautilus", n: "Zombie Nautilus", behavior: "neutral", biome: "ocean_night", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "zombie_villager", n: "Zombie Villager", behavior: "aggressive", biome: "plains_night" },
+  { k: "blaze", n: "Blaze", behavior: "aggressive", dim: "nether", biome: "nether", stand: { root: { p: [0, 8, 0] } } }, { k: "ghast", n: "Ghast", behavior: "aggressive", dim: "nether", biome: "nether", stand: { root: { p: [0, 15, 0] } } }, { k: "happy_ghast", n: "Happy Ghast", stand: { root: { p: [0, 64, 0] } }, zoom: HAPPY_GHAST_ZOOM }, { k: "hoglin", n: "Hoglin", behavior: "aggressive", dim: "nether", biome: "nether" },
+  { k: "magma_cube", n: "Magma Cube", behavior: "aggressive", dim: "nether", biome: "nether", zoom: 2.5 }, { k: "piglin", n: "Piglin", behavior: "neutral", dim: "nether", biome: "nether" }, { k: "piglin_brute", n: "Piglin Brute", behavior: "aggressive", dim: "nether", biome: "nether" },
+  { k: "strider", n: "Strider", dim: "nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", behavior: "aggressive", dim: "nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", behavior: "aggressive", dim: "nether", biome: "nether" },
+  { k: "zombified_piglin", n: "Zombified Piglin", behavior: "neutral", bedrockName: "Zombie Pigman", dim: "nether", biome: "nether" }, { k: "wither", n: "Wither", behavior: "aggressive", dim: "nether", biome: "nether", stand: lift(8) },
+  { k: "ender_dragon", n: "Ender Dragon", behavior: "aggressive", dim: "end", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", behavior: "neutral", dim: "end", biome: "end_city", glowing: true },
+  { k: "endermite", n: "Endermite", behavior: "aggressive", dim: "end", biome: "end_city" }, { k: "shulker", n: "Shulker", behavior: "aggressive", dim: "end", biome: "end_city" },
 ];

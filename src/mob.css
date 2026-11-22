@@ -102,7 +102,8 @@ button.name-chip[aria-pressed="true"] { background: var(--btn-on); box-shadow: i
 .name-chip .src.game { background: var(--xp); }
 .name-chip.code { flex: none; white-space: nowrap; font: 800 15px/1 var(--font-body); letter-spacing: .08em; }
 
-/* Mob picker: spawn eggs in creative-inventory groups. */
+/* Mob picker: spawn eggs A to Z, or by dimension, as the order select says. */
+.mob-order { margin-bottom: 12px; }
 .mob-panel .cats { gap: 10px; }
 .mob-panel .cat-label { margin-bottom: 4px; }
 .mob-panel .slot-btn .ico { width: 30px; height: 30px; }

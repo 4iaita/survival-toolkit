@@ -1,9 +1,10 @@
 /* ---------- Mobs ---------- */
 // The picked mob and, for its name tags section, name: the picked name's first spelling, which stands for all of them; say: the spelling on the stage's plate.
-const mobTab = { mob: "rabbit", name: "", say: "", query: "" };
+const mobTab = { mob: "rabbit", name: "", say: "", query: "", order: "az" };
 const MOB_KEY = "mobs-v1";
 try { Object.assign(mobTab, JSON.parse(localStorage.getItem(MOB_KEY) || "{}")); } catch (_) {}
 if (!MOBS.some(m => m.k === mobTab.mob)) Object.assign(mobTab, { mob: "rabbit", name: "", say: "" });
+if (!["az", "dim", "behavior"].includes(mobTab.order)) mobTab.order = "az"; // the picker's order: A to Z, or by dimension or behavior
 const saveMobTab = () => { try { localStorage.setItem(MOB_KEY, JSON.stringify(mobTab)); } catch (_) {} };
 
 for (const m of MOBS) {
@@ -171,13 +172,21 @@ const nameChip = (t, say, pressed) => {
   return `<button type="button" class="name-chip" data-tag="${esc(t.names[0])}" data-say="${esc(say)}" aria-pressed="${pressed}"${why}><span class="src ${t.src}" aria-hidden="true"></span>${esc(say)}</button>`;
 };
 
+// The mob picker's spawn eggs, A to Z by the edition's names, or split by the dimension each mob lives in or by its
+// behavior (A to Z within each).
 function renderMobPicker() {
-  $("mob-picker").innerHTML = MOB_GROUPS.map(g => `
+  const slots = list => `<div class="slot-grid">${list.map(m =>
+    `<button type="button" class="slot slot-btn" id="mob-pick-${m.k}" data-mob="${m.k}" data-name="${esc(mobName(m))}" aria-label="${esc(mobName(m))}" aria-pressed="${m.k === mobTab.mob}">${iconImg(mobIcon(m))}</button>`).join("")}</div>`;
+  const sorted = [...MOBS].sort((a, b) => mobName(a).localeCompare(mobName(b)));
+  $("mob-order").value = mobTab.order;
+  const groups = { dim: [MOB_DIMS, mobDim], behavior: [MOB_BEHAVIORS, mobBehavior] }[mobTab.order];
+  $("mob-picker").innerHTML = groups
+    ? groups[0].map(([g, label]) => `
     <div>
-      <div class="cat-label">${g}</div>
-      <div class="slot-grid">${MOBS.filter(m => m.g === g).map(m =>
-        `<button type="button" class="slot slot-btn" id="mob-pick-${m.k}" data-mob="${m.k}" data-name="${esc(mobName(m))}" aria-label="${esc(mobName(m))}" aria-pressed="${m.k === mobTab.mob}">${iconImg(mobIcon(m))}</button>`).join("")}</div>
-    </div>`).join("");
+      <div class="cat-label">${label}</div>
+      ${slots(sorted.filter(m => groups[1](m) === g))}
+    </div>`).join("")
+    : slots(sorted);
   $("mob-name").textContent = mobName(mobOf(mobTab.mob));
 }
 
@@ -356,7 +365,7 @@ function renderMobResult() {
   $("mob-result").innerHTML = `
     <div class="res-top">
       <div class="res-title"><span class="slot">${iconImg(mobIcon(m))}</span>
-        <div><h2>${esc(mobName(m))}</h2><div class="res-sub">${esc(m.g)} · ${state.edition === "java" ? "Java" : "Bedrock"} Edition</div></div>
+        <div><h2>${esc(mobName(m))}</h2><div class="res-sub">${state.edition === "java" ? "Java" : "Bedrock"} Edition</div></div>
       </div>
     </div>
     ${tagSection(m)}`;
@@ -460,6 +469,11 @@ $("mob-picker").addEventListener("click", e => {
   if (!b || b.dataset.mob === mobTab.mob) return;
   pickMob(b.dataset.mob);
   refocus(`#mob-pick-${mobTab.mob}`);
+});
+$("mob-order").addEventListener("change", e => {
+  mobTab.order = e.target.value;
+  renderMobPicker();
+  saveMobTab();
 });
 $("mood-try").addEventListener("click", e => {
   const b = e.target.closest("button[data-mood]");
