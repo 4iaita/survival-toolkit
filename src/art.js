@@ -82,13 +82,15 @@ function potionArt(bottle, color) {
 // A box is [x0, y0, z0, x1, y1, z1], textured with art on the sides and top on the model's top face,
 // or { b: [x0, …], faces: [right, top, left] } for model textures, each face [art name, du, dv, turn]:
 // the texel offset that lines the face up with its corner of the texture, and turn swaps u and v on the top.
-function boxModel({ boxes, art: side, top }, size = 32) {
+// zoom draws the model bigger, about the icon's middle; shift moves it on screen, in model units (a small model, like the
+// dried ghast, that the game enlarges and raises in its inventory).
+function boxModel({ boxes, art: side, top, zoom = 1, shift = 0 }, size = 32) {
   const out = new Array(size * size).fill(null), k = size / 16;
   const plain = [[side], [top], [side]];
   const models = boxes.map(box => ({ b: box.b || box, plain: !box.b, faces: (box.faces || plain).map(([n, du = 0, dv = 0, turn]) => [art(n), du, dv, turn]) }));
   const texel = (tex, u, v) => tex && tex[(Math.min(15, Math.floor(v)) & 15) * 16 + (Math.min(15, Math.floor(u)) & 15)];
   for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    const a = 2 * ((x + 0.5) / k - 8), b = 4 * ((y + 0.5) / k - 8);
+    const a = 2 * (((x + 0.5) / k - 8) / zoom), b = 4 * (((y + 0.5) / k - 8) / zoom + shift);
     const p = [(a + b) / 2, 0, (b - a) / 2];
     const hits = [];
     for (const m of models) {

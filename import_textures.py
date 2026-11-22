@@ -221,6 +221,24 @@ FILES = {
     # The backdrops' lanterns and the village bell, drawn from parts of their block textures (backdrop.js, partsOf).
     "lantern_block": "blocks/lantern", "soul_lantern_block": "blocks/soul_lantern", "bell_body": "blocks/bell_side",
     "candle_lit": "blocks/candles/candle_lit",
+    # The Mobs tab's drops and breeding foods.
+    "glow_ink_sac": "items/dye_powder_glow", "shulker_shell": "items/shulker_shell", "nether_star": "items/nether_star", "dragon_egg": "blocks/dragon_egg", "totem_of_undying": "items/totem", "gold_nugget": "items/gold_nugget", "copper_ingot": "items/copper_ingot", "prismarine_shard": "items/prismarine_shard", "prismarine_crystals": "items/prismarine_crystals", "sponge": "blocks/sponge", "wet_sponge": "blocks/sponge_wet", "snowball": "items/snowball", "bamboo": "items/bamboo", "armadillo_scute": "items/armadillo_scute", "bone_meal": "items/dye_powder_white", "music_disc_cat": "items/record_cat", "goat_horn": "items/goat_horn", "egg": "items/egg", "glow_berries": "items/glow_berries", "wheat_seeds": "items/seeds_wheat", "golden_apple": "items/apple_golden", "hay_block_side": "blocks/hay_block_side", "hay_block_top": "blocks/hay_block_top", "tropical_fish_bucket": "items/bucket_tropical", "warped_fungus": "blocks/warped_fungus", "torchflower_seeds": "items/torchflower_seeds", "honeycomb": "items/honeycomb", "amethyst_shard": "items/amethyst_shard", "resin_clump": "items/resin_clump", "ominous_bottle": "items/ominous_bottle", "tide_armor_trim_smithing_template": "items/tide_armor_trim_smithing_template", "pufferfish_bucket": "items/bucket_pufferfish", "golden_dandelion": "blocks/golden_dandelion", "melon_seeds": "items/seeds_melon", "pumpkin_seeds": "items/seeds_pumpkin", "beetroot_seeds": "items/seeds_beetroot", "pitcher_pod": "items/pitcher_pod", "harness": "items/harness/harness_white", "milk_bucket": "items/bucket_milk",
+    # The piglin's barters.
+    "iron_nugget": "items/iron_nugget", "crying_obsidian": "blocks/crying_obsidian", "blackstone_top": "blocks/blackstone_top", "nether_brick_item": "items/netherbrick",
+    # The wandering trader's trades.
+    "fern_item": "blocks/fern_carried", "lily_pad_item": "blocks/carried_waterlily", "kelp_item": "items/kelp", "wildflowers_item": "items/wildflowers",
+    "baked_potato": "items/potato_baked", "blue_ice": "blocks/blue_ice", "sugar_cane": "items/reeds", "flower_tulip_pink": "blocks/flower_tulip_pink",
+    "flower_oxeye_daisy": "blocks/flower_oxeye_daisy", "flower_cornflower": "blocks/flower_cornflower", "flower_lily_of_the_valley": "blocks/flower_lily_of_the_valley", "sulfur_spike": "blocks/sulfur_spike_up_tip",
+    "vine_carried": "blocks/vine_carried", "pointed_dripstone": "blocks/pointed_dripstone_up_tip",
+    "rooted_dirt": "blocks/dirt_with_roots", "tall_dry_grass": "blocks/tall_dry_grass", "sea_pickle_item": "items/sea_pickle", "tube_coral_block": "blocks/coral_blue",
+    "brain_coral_block": "blocks/coral_pink", "bubble_coral_block": "blocks/coral_purple", "fire_coral_block": "blocks/coral_red", "horn_coral_block": "blocks/coral_yellow",
+    "log_acacia": "blocks/log_acacia", "log_acacia_top": "blocks/log_acacia_top", "log_birch_top": "blocks/log_birch_top", "log_cherry": "blocks/cherry_log_side",
+    "log_cherry_top": "blocks/cherry_log_top", "log_dark_oak_top": "blocks/log_big_oak_top", "log_jungle": "blocks/log_jungle", "log_jungle_top": "blocks/log_jungle_top",
+    "log_mangrove": "blocks/mangrove_log_side", "log_mangrove_top": "blocks/mangrove_log_top", "log_oak_top": "blocks/log_oak_top", "log_pale_oak": "blocks/pale_oak_log_side",
+    "log_pale_oak_top": "blocks/pale_oak_log_top", "log_spruce_top": "blocks/log_spruce_top", "log_poplar": "blocks/poplar_log_side", "log_poplar_top": "blocks/poplar_log_top",
+    "sapling_acacia": "blocks/sapling_acacia", "sapling_birch": "blocks/sapling_birch", "sapling_cherry": "blocks/cherry_sapling", "sapling_dark_oak": "blocks/sapling_roofed_oak",
+    "sapling_jungle": "blocks/sapling_jungle", "mangrove_propagule": "items/mangrove_propagule", "sapling_oak": "blocks/sapling_oak", "sapling_pale_oak": "blocks/pale_oak_sapling",
+    "sapling_spruce": "blocks/sapling_spruce", "sapling_poplar": "blocks/poplar_sapling", "iron_nautilus_armor": "items/nautilus_armor/iron_nautilus_armor", "bowl": "items/bowl", "iron_horse_armor": "items/iron_horse_armor",
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
 FIRST_FRAME = {"sculk", "fire"}
@@ -298,6 +316,83 @@ def import_villagers():
 # Pieces cut out of a bigger texture: art/ name -> (file in the pack, its box). The ender dragon's head, side on, for
 # the dragon head on an end ship's bow; its upper jaw's scales for the snout.
 CUTS = {"dragon_head_side": ("entity/dragon/dragon", (112, 46, 128, 62)), "dragon_snout_side": ("entity/dragon/dragon", (112, 64, 128, 80))}
+# The Mobs tab's heads, as drops: each skull texture's front, top and side, 8 pixels square, enlarged to 16 so the icon
+# draws them as a block.
+for head, file in {"creeper_head": "creeper", "skeleton_skull": "skeleton", "wither_skeleton_skull": "wither_skeleton", "zombie_head": "zombie"}.items():
+    CUTS[f"{head}_front"] = (f"entity/skulls/{file}", (8, 8, 16, 16))
+    CUTS[f"{head}_top"] = (f"entity/skulls/{file}", (8, 0, 16, 8))
+    CUTS[f"{head}_side"] = (f"entity/skulls/{file}", (0, 8, 8, 16))
+
+
+# The dried ghast, as the game's block model (models/block/dried_ghast.json) puts its textures on: a 10-pixel body and six
+# tentacles a pixel high. The Mobs tab draws it as the game's inventory does, from the north-west (front on the left, its
+# west side on the right), so only the up, north and west faces show. Each face's pixels are laid out here where
+# boxModel in src/art.js reads them, so the icon needs no offsets: up at (16 − x, 16 − z), north at (16 − x, 16 − y), west
+# at (z, 16 − y), the icon's x and z running the other way to the game's. The body and the tentacles get their own
+# textures, as their faces overlap. The pack's files are Bedrock's: front for north, left for west.
+DRIED_GHAST = "blocks/dried_ghast_state_1_"
+DRIED_GHAST_TEXTURES = {"north": "front", "west": "left", "top": "top", "tentacles": "tentacles"}
+# (from, to, {face: (uv, rotation, texture)}), only the faces the icon shows.
+DRIED_GHAST_BODY = [((3, 0, 3), (13, 10, 13), {"north": ((0, 0, 10, 10), 0, "north"), "west": ((0, 0, 10, 10), 0, "west"),
+                                               "up": ((0, 0, 10, 10), 180, "top")})]
+DRIED_GHAST_TENTACLES = [  # the ones in front first: where two faces share pixels, the first is the one seen
+    ((0, 0, 5), (3, 1, 7), {"north": ((1, 1.5, 2.5, 2), 0, "tentacles"), "west": ((2.5, 1.5, 3.5, 2), 0, "tentacles"), "up": ((2.5, 1.5, 1.5, 0), 90, "tentacles")}),
+    ((0, 0, 9), (3, 1, 11), {"north": ((1, 3.5, 2.5, 4), 0, "tentacles"), "west": ((2.5, 3.5, 3.5, 4), 0, "tentacles"), "up": ((2.5, 3.5, 1.5, 2), 90, "tentacles")}),
+    ((13, 0, 5), (16, 1, 7), {"north": ((2.5, 7.5, 1, 8), 0, "tentacles"), "west": ((1, 7.5, 0, 8), 0, "tentacles"), "up": ((2.5, 6, 1.5, 7.5), 90, "tentacles")}),
+    ((13, 0, 9), (16, 1, 11), {"north": ((2.5, 5.5, 1, 6), 0, "tentacles"), "west": ((1, 5.5, 0, 6), 0, "tentacles"), "up": ((2.5, 4, 1.5, 5.5), 90, "tentacles")}),
+    ((9, 0, 13), (11, 1, 16), {"north": ((6, 2.5, 5, 3), 0, "tentacles"), "west": ((10, 2.5, 8.5, 3), 0, "tentacles"), "up": ((6, 2.5, 7.5, 1.5), 90, "tentacles")}),
+    ((5, 0, 13), (7, 1, 16), {"north": ((6, 1, 5, 1.5), 0, "tentacles"), "west": ((10, 1, 8.5, 1.5), 0, "tentacles"), "up": ((6, 1, 7.5, 0), 90, "tentacles")}),
+]
+
+
+def dried_ghast_faces(elements, textures):
+    """The up, north and west faces of these model elements, each a 16×16 picture laid out as boxModel reads it."""
+    from PIL import Image
+    out = {face: Image.new("RGBA", (16, 16)) for face in ("up", "north", "west")}
+    for (fx, fy, fz), (tx, ty, tz), faces in elements:
+        for face, (uv, rotation, name) in faces.items():
+            tex = textures[name]
+            scale = tex.width / 16
+            if face == "up":  # seen from above: s along x, t along z
+                cells = [(x, z, (x + .5 - fx) / (tx - fx), (z + .5 - fz) / (tz - fz), (15 - x, 15 - z)) for x in range(fx, tx) for z in range(fz, tz)]
+            elif face == "north":  # seen from the north: s from east to west, t from top to bottom
+                cells = [(x, y, (tx - x - .5) / (tx - fx), (ty - y - .5) / (ty - fy), (15 - x, 15 - y)) for x in range(fx, tx) for y in range(fy, ty)]
+            else:  # west, seen from the west: s from north to south
+                cells = [(z, y, (z + .5 - fz) / (tz - fz), (ty - y - .5) / (ty - fy), (z, 15 - y)) for z in range(fz, tz) for y in range(fy, ty)]
+            for _, _, s, t, at in cells:
+                # The texture turned clockwise on the face: which of its points lands here.
+                s, t = {0: (s, t), 90: (t, 1 - s), 180: (1 - s, 1 - t), 270: (1 - t, s)}[rotation]
+                u, v = uv[0] + (uv[2] - uv[0]) * s, uv[1] + (uv[3] - uv[1]) * t
+                px = tex.getpixel((min(tex.width - 1, int(u * scale)), min(tex.height - 1, int(v * scale))))
+                if out[face].getpixel(at)[3] == 0:
+                    out[face].putpixel(at, px)
+    return out
+
+
+def import_dried_ghast(out):
+    from PIL import Image
+    textures = {}
+    for key, file in DRIED_GHAST_TEXTURES.items():
+        img = Image.open(pack / f"{DRIED_GHAST}{file}.png").convert("RGBA")
+        textures[key] = img.crop((0, 0, img.width, img.width))  # the front is frames of animation: the first
+    for part, elements in (("dried_ghast", DRIED_GHAST_BODY), ("dried_ghast_tentacles", DRIED_GHAST_TENTACLES)):
+        for face, img in dried_ghast_faces(elements, textures).items():
+            img.save(out / f"{part}_{face}.png")
+
+
+def import_item_pictures(out):
+    """Items the pack only has as sheets of model parts, put together from those parts for the Mobs tab's trade rows:
+    the small dripleaf (its leaf over its stem) and the shelf mushroom (its cap twice, stacked as it grows)."""
+    from PIL import Image
+    leaf = Image.open(pack / "blocks/small_dripleaf_top.png").convert("RGBA").crop((0, 0, 8, 9))
+    dripleaf = Image.open(pack / "blocks/small_dripleaf_stem_top.png").convert("RGBA")
+    dripleaf.alpha_composite(leaf, (4, 0))
+    dripleaf.save(out / "small_dripleaf_item.png")
+    cap = Image.open(pack / "blocks/shelf_mushroom_small.png").convert("RGBA").crop((0, 0, 12, 6))
+    shelf = Image.new("RGBA", (16, 16))
+    shelf.paste(cap, (4, 2))
+    shelf.paste(cap, (0, 8))
+    shelf.save(out / "shelf_mushroom_item.png")
 
 
 def import_cuts(out):
@@ -307,7 +402,10 @@ def import_cuts(out):
         if not src.exists():
             tga_to_png(pack / f"{file}.tga", out / f"_{name}.png")
             src = out / f"_{name}.png"
-        Image.open(src).convert("RGBA").crop(box).save(out / f"{name}.png")
+        img = Image.open(src).convert("RGBA").crop(box)
+        if img.width < 16:
+            img = img.resize((16, 16 * img.height // img.width), Image.NEAREST)
+        img.save(out / f"{name}.png")
         (out / f"_{name}.png").unlink(missing_ok=True)
 
 
@@ -331,6 +429,8 @@ def main():
     if missing:
         print("missing (the drawn icon is used instead):", ", ".join(missing))
     import_cuts(out)
+    import_dried_ghast(out)
+    import_item_pictures(out)
     import_villagers()
 
 

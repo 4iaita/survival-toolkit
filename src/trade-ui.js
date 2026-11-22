@@ -82,11 +82,11 @@ function kindsOf(it) {
 }
 const kindHit = (k, q) => Boolean(q) && k.name.toLowerCase().includes(q);
 // The kinds a slot steps through: the ones the search matches, if any; otherwise all of them, starting with
-// the kind the villager's biome gives.
-function cycleKinds(list, q) {
+// the kind the villager's biome gives (this tab's biome, or the one a caller such as the Mobs tab passes).
+function cycleKinds(list, q, biome = trade.biome) {
   const hits = list.filter(k => kindHit(k, q));
   if (hits.length) return hits;
-  const first = Math.max(0, list.findIndex(k => k.biomes && k.biomes.includes(trade.biome)));
+  const first = Math.max(0, list.findIndex(k => k.biomes && k.biomes.includes(biome)));
   return [...list.slice(first), ...list.slice(0, first)];
 }
 
@@ -100,12 +100,12 @@ function matches(t, q) {
 
 // An item's slot. For an item that comes in several kinds, the slot steps through them (data-cycle: their
 // icon keys); see the timer at the bottom.
-function itemSlot(it, q) {
+function itemSlot(it, q, biome = trade.biome) {
   const { key, glint } = tradeIcon(it.name);
   const count = /^\d+$/.test(it.count) && +it.count > 1 ? `<span class="count">${it.count}</span>` : "";
   const kinds = kindsOf(it);
   if (kinds && kinds.cycle) {
-    const keys = cycleKinds(kinds.list, q).map(k => tradeIcon(k.name).key);
+    const keys = cycleKinds(kinds.list, q, biome).map(k => tradeIcon(k.name).key);
     return `<span class="slot sm" data-cycle="${esc(keys.join("|"))}">${iconImg(keys[cycleStep % keys.length])}${count}</span>`;
   }
   return glint
@@ -114,9 +114,9 @@ function itemSlot(it, q) {
 }
 
 // One kind in a trade's list of kinds: its icon and name, the search's matches marked, and for boats the
-// biomes that use it, noting the one the picked villager comes from.
-function kindChip(k, q) {
-  const here = Boolean(k.biomes) && k.biomes.includes(trade.biome);
+// biomes that use it, noting the one the picked villager comes from (biome: as for cycleKinds).
+function kindChip(k, q, biome = trade.biome) {
+  const here = Boolean(k.biomes) && k.biomes.includes(biome);
   const detail = [k.detail, here && "this villager"].filter(Boolean).join(" · ");
   return `<span class="kind${kindHit(k, q) ? " hit" : ""}${here ? " here" : ""}">
     <span class="slot sm">${iconImg(k.icon || tradeIcon(k.name).key)}</span>
@@ -124,9 +124,10 @@ function kindChip(k, q) {
   </span>`;
 }
 
-// A trade. id names it (villager, level, place) so a list of its kinds stays open while the page redraws.
+// A trade. id names it (villager, level, place) so a list of its kinds stays open while the page redraws. biome: the
+// villager's, as for cycleKinds.
 const openKinds = new Set();
-function tradeRow(t, q, id) {
+function tradeRow(t, q, id, biome = trade.biome) {
   const { verb, html } = deal(t);
   const varying = [t.gives, ...t.wants].find(it => kindsOf(it));
   const kinds = varying ? kindsOf(varying) : null, open = Boolean(kinds) && openKinds.has(id);
@@ -135,11 +136,11 @@ function tradeRow(t, q, id) {
   const noteText = t.note ? esc(t.note[0].toUpperCase() + t.note.slice(1)) : kinds && !kinds.cycle ? "Random enchantments" : "";
   const note = noteText || more ? `<span class="sub">${noteText}${more}</span>` : "";
   const list = kinds ? `<div class="kinds" id="kinds-${id}"${open ? "" : " hidden"}>
-    ${kinds.note ? `<p class="kinds-note">${esc(kinds.note)}</p>` : ""}${kinds.list.map(k => kindChip(k, q)).join("")}
+    ${kinds.note ? `<p class="kinds-note">${esc(kinds.note)}</p>` : ""}${kinds.list.map(k => kindChip(k, q, biome)).join("")}
   </div>` : "";
   return `
   <li class="trade${matches(t, q) ? " hit" : ""}">
-    <div class="trade-slots">${t.wants.map(it => itemSlot(it, q)).join('<span class="op">+</span>')}${iconImg("ui:arrow")}${itemSlot(t.gives, q)}</div>
+    <div class="trade-slots">${t.wants.map(it => itemSlot(it, q, biome)).join('<span class="op">+</span>')}${iconImg("ui:arrow")}${itemSlot(t.gives, q, biome)}</div>
     <div class="trade-text"><span class="pill ${verb === "Sell" ? "earn" : "buy"}">${verb}</span>${html}${note}</div>
     ${list}
   </li>`;

@@ -116,6 +116,70 @@ button.name-chip[aria-pressed="true"] { background: var(--btn-on); box-shadow: i
 .mob-section-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
 .mob-section-head h3 { margin: 0; font: 600 20px/1.1 var(--font-pixel); color: var(--ink); display: flex; align-items: center; gap: 8px; }
 .mob-section-head h3 .ico { width: 24px; height: 24px; }
+/* The section tabs, under the mob's name. */
+.mob-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 18px 0; }
+.mob-tab {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 400 15px/1 var(--font-pixel); color: var(--white); text-shadow: 2px 2px 0 var(--shadow);
+  background: var(--btn); border: 2px solid var(--edge); border-radius: 0;
+  box-shadow: inset 2px 2px 0 var(--btn-hi), inset -2px -3px 0 var(--btn-lo);
+  padding: 6px 11px 8px; cursor: pointer;
+}
+.mob-tab:hover { border-color: var(--white); }
+.mob-tab[aria-selected="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -3px 0 var(--btn-on-lo); }
+.mob-tab .ico { width: 20px; height: 20px; }
+.mob-section .mob-section-head { margin-bottom: 10px; }
+/* Overview: four numbers in a row, then the facts. */
+.mob-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.mob-stat {
+  display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; min-width: 0;
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.stat-label { font: 600 13px/1 var(--font-pixel); color: var(--ink-soft); }
+.stat-value { font: 600 22px/1.05 var(--font-pixel); color: var(--ink); }
+.mob-stat.text .stat-value { font: 700 13.5px/1.35 var(--font-body); }
+.mob-stat .sub { font-size: 12.5px; font-weight: 500; color: var(--ink-soft); }
+.fact-list { margin: 12px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.fact-row {
+  display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr); gap: 4px 14px; padding: 8px 10px;
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.fact-row dt { font: 600 15px/1.3 var(--font-pixel); color: var(--ink); }
+.fact-row dd { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.4; }
+/* Breeding foods and drops: an item's slot, its name and how many. */
+.mob-section .cat-label { margin: 0 0 6px; }
+.mob-section .fact-list { margin-top: 10px; }
+.mob-lead { margin: 10px 0 0; font-size: 14px; font-weight: 600; line-height: 1.45; }
+.item-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15em, 1fr)); gap: 6px; }
+.item-row {
+  display: flex; align-items: center; gap: 10px; padding: 5px 10px 5px 5px; min-width: 0;
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.item-row .slot.sm { width: 36px; height: 36px; }
+.item-row .slot .ico { width: 24px; height: 24px; }
+/* The shimmer matches the smaller icon (it's made for 32px ones). */
+.item-row .glint::after { width: 24px; height: 24px; margin: -12px 0 0 -12px; -webkit-mask-size: 24px 24px; mask-size: 24px 24px; }
+.item-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.3; }
+.item-name .sub { display: block; font-weight: 500; font-size: 12.5px; color: var(--ink-soft); }
+.item-count { flex: none; font: 600 18px/1 var(--font-pixel); color: var(--ink); }
+.item-chance { flex: none; min-width: 3.4em; text-align: right; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+.mob-section .trade-label { margin-top: 12px; }
+.job-picker { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.job-chip .ico { width: 18px; height: 18px; }
+.job-site { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 14px; font-weight: 600; line-height: 1.4; }
+.job-site b { font-weight: 800; }
+.pool-name { margin: 0; font: 600 17px/1.1 var(--font-pixel); color: var(--ink); }
+.fact-points { margin: 0; padding-left: 18px; }
+.fact-points li + li { margin-top: 4px; }
+.xp-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 10px; font: 600 15px/1 var(--font-pixel);
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi); }
+.xp-row b { margin-left: auto; font-weight: 600; font-size: 18px; color: var(--xp-shadow); }
+.xp-orb { width: 14px; height: 14px; background: var(--xp); box-shadow: 0 0 0 2px var(--xp-shadow), inset -3px -3px 0 #4fb30f; }
+.mob-section > .tag-note { margin-top: 10px; }
+@media (max-width: 640px) {
+  .mob-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fact-row { grid-template-columns: minmax(0, 1fr); }
+}
 /* Its name tags: the game's first, then the pack's. */
 .tag-group { margin-top: 12px; }
 .tag-group-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
@@ -139,6 +203,9 @@ button.name-chip[aria-pressed="true"] { background: var(--btn-on); box-shadow: i
 }
 
 /* Search hits: the mob's egg, then the name and what it does. */
+.search-hit[aria-current="true"] { background: var(--picked); }
+.tag-rules { margin-top: 14px; }
+.tag-rules ul { font-size: 14px; }
 .search-hit .slot.sm { width: 36px; height: 36px; }
 .search-hit .slot.sm .ico { width: 26px; height: 26px; }
 .search-hit .name-chip { font-size: 13px; padding: 2px 6px 4px; }

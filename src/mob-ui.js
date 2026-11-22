@@ -1,10 +1,20 @@
 /* ---------- Mobs ---------- */
 // The picked mob and, for its name tags section, name: the picked name's first spelling, which stands for all of them; say: the spelling on the stage's plate.
-const mobTab = { mob: "rabbit", name: "", say: "", query: "", order: "az" };
+// section: which of the mob's sections shows (MOB_SECTIONS).
+const mobTab = { mob: "rabbit", name: "", say: "", query: "", order: "az", section: "about" };
 const MOB_KEY = "mobs-v1";
 try { Object.assign(mobTab, JSON.parse(localStorage.getItem(MOB_KEY) || "{}")); } catch (_) {}
 if (!MOBS.some(m => m.k === mobTab.mob)) Object.assign(mobTab, { mob: "rabbit", name: "", say: "" });
 if (!["az", "dim", "behavior"].includes(mobTab.order)) mobTab.order = "az"; // the picker's order: A to Z, or by dimension or behavior
+// The picked mob's sections, each a tab: [key, title, icon]. Taming, Riding and Trades only show for mobs that have them.
+const MOB_SECTIONS = [["about", "Overview", "ui:mob"], ["tame", "Taming", "drop:Lead"], ["ride", "Riding", "drop:Saddle"],
+  ["breed", "Breeding", "drop:Wheat"], ["trade", "Trades", "drop:Gold Ingot"], ["drops", "Drops", "drop:Bone"], ["tags", "Name tags", "ui:name_tag"]];
+// The sections that only some mobs have, and where each says who has it.
+const SOME_MOBS = { tame: MOB_TAMING, ride: MOB_RIDING, trade: MOB_TRADES };
+const mobSections = k => MOB_SECTIONS.filter(([s]) => !SOME_MOBS[s] || SOME_MOBS[s][k]);
+// The section showing: the one picked, or the overview for a mob without it (picking a mob that has it shows it again).
+const shownSection = k => (mobSections(k).some(([s]) => s === mobTab.section) ? mobTab.section : "about");
+if (!MOB_SECTIONS.some(([k]) => k === mobTab.section)) mobTab.section = "about";
 const saveMobTab = () => { try { localStorage.setItem(MOB_KEY, JSON.stringify(mobTab)); } catch (_) {} };
 
 for (const m of MOBS) {
@@ -342,12 +352,28 @@ function tagRow(t) {
   </li>`;
 }
 
+// How name tags work, under a mob's names: the game's rules, then the pack's on Bedrock. Whether it's open is kept
+// across re-renders (picking a name redraws the section).
+const TAG_RULES = [
+  ["", "Craft a name tag from paper and an iron, gold or copper nugget, or find one in dungeon and mineshaft chests, while fishing, or for sale from a wandering trader."],
+  ["", "Rename it in an anvil, which costs 1 level, then use it on the mob. The tag is used up, and a named mob no longer despawns (wandering traders still do)."],
+  ["", "The game’s own names are case sensitive: Toast works, toast doesn’t."],
+  ["bedrock", "Actions &amp; Stuff takes its names with a capital first letter or all in lower case."],
+  ["bedrock", "Actions &amp; Stuff is a resource pack, so its names only change looks. A mob that looks like a baby is still grown up, with a grown mob’s health, size and drops."],
+  ["bedrock", "The pack also gives some looks to a few mobs at random. It picks again each time the mob loads, so name it to keep the look."],
+  ["bedrock", "The pack’s names here are from Actions &amp; Stuff 1.9, read from the pack itself."],
+];
+let tagRulesOpen = false;
+const tagRules = () => `<details class="rules tag-rules"${tagRulesOpen ? " open" : ""}>
+    <summary>How name tags work</summary>
+    <ul>${TAG_RULES.filter(([ed]) => !ed || ed === state.edition).map(([, text]) => `<li>${text}</li>`).join("")}</ul>
+  </details>`;
+
 // A mob's name tags section: every name that does something to it, the game's first, then the pack's.
 function tagSection(m) {
   const list = tagsFor(m.k), game = list.filter(t => t.src === "game"), pack = list.filter(t => t.src === "pack");
   const count = packOn() ? list.length : game.length;
-  return `<section class="mob-section" aria-labelledby="tag-section-title">
-    <div class="mob-section-head"><h3 id="tag-section-title">${iconImg("ui:name_tag")}Name tags</h3><span class="lvl-note">${count} name${count === 1 ? "" : "s"} that do${count === 1 ? "es" : ""} something</span></div>
+  return `<div class="mob-section-head"><h3 id="tag-section-title">${iconImg("ui:name_tag")}Name tags</h3><span class="lvl-note">${count} name${count === 1 ? "" : "s"} that do${count === 1 ? "es" : ""} something</span></div>
     <section class="tag-group">
       <div class="tag-group-head"><h4><span class="src game" aria-hidden="true"></span>In the game</h4><span class="lvl-note">No packs needed</span></div>
       <ul class="tag-list">${game.map(tagRow).join("")}</ul>
@@ -356,55 +382,219 @@ function tagSection(m) {
       <div class="tag-group-head"><h4><span class="src" aria-hidden="true"></span>With Actions &amp; Stuff</h4><span class="lvl-note">Resource pack</span></div>
       ${pack.length ? `<ul class="tag-list">${pack.map(tagRow).join("")}</ul>` : `<p class="tag-note">The pack has no names for this mob.</p>`}
     </section>` : ""}
-  </section>`;
+    ${tagRules()}`;
 }
 
-// The picked mob's page: its title, then a section for each thing to know about it.
+// A mob's facts for the edition picked: Bedrock's own where it differs.
+const mobInfo = k => ({ ...MOB_INFO[k], ...(state.edition === "bedrock" && MOB_INFO[k].bedrock) });
+const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+const sectionHead = (id, icon, title, note = "") =>
+  `<div class="mob-section-head"><h3 id="${id}">${iconImg(icon)}${title}</h3>${note ? `<span class="lvl-note">${note}</span>` : ""}</div>`;
+// An item with its picture: a slot, or an empty one for something without a texture (a mob's head).
+// A drop that differs each time (INFO_CYCLES) shows its examples in turn; the slot's title names the one showing.
+function infoSlot(name) {
+  if (INFO_GLINT.has(name) && infoIcon(name)) {
+    const key = infoIcon(name);
+    return `<span class="slot sm glint" style="--m:url('${icon(key)}')">${iconImg(key)}</span>`;
+  }
+  const cycle = (INFO_CYCLES[name] || []).filter(infoIcon);
+  if (cycle.length) {
+    return `<span class="slot sm" title="For example: ${esc(cycle[0])}" data-examples="${esc(cycle.join("|"))}" data-at="0">${iconImg(infoIcon(cycle[0]))}</span>`;
+  }
+  return `<span class="slot sm">${infoIcon(name) ? iconImg(infoIcon(name)) : ""}</span>`;
+}
+
+// Overview: health, attack, behavior and home, then where it spawns, taming and what's special.
+function aboutSection(m) {
+  const info = mobInfo(m.k);
+  const hearts = typeof info.hp === "number" ? `${info.hp / 2} ${info.hp === 2 ? "heart" : "hearts"}` : "";
+  const attack = info.attack === undefined ? "None"
+    : typeof info.attack === "number" ? `${info.attack}`
+    : typeof info.attack === "object" ? `${info.attack.normal}` : esc(info.attack);
+  const attackSub = info.attack && typeof info.attack === "object" ? `Easy ${info.attack.easy} · Hard ${info.attack.hard}` : info.attack === undefined ? "Never hurts you" : "";
+  const stat = (label, value, sub, cls = "") => `<div class="mob-stat${cls}"><span class="stat-label">${label}</span><span class="stat-value">${value}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</div>`;
+  const behavior = MOB_BEHAVIORS.find(([k]) => k === mobBehavior(m))[1];
+  // Every dimension it's found in (its own, if MOB_DIMENSIONS doesn't say more), and where.
+  const where = MOB_DIMENSIONS[m.k] || {}, dimNote = where.note;
+  const dims = (where.dims || [mobDim(m)]).map(d => MOB_DIMS.find(([k]) => k === d)[1]);
+  const typedAttack = typeof info.attack === "string";
+  const row = (label, text) => (text ? `<div class="fact-row"><dt>${label}</dt><dd>${esc(text)}</dd></div>` : "");
+  return `${sectionHead("mob-section-title", "ui:mob", "Overview")}
+    <div class="mob-stats">
+      ${stat("Health", typeof info.hp === "number" ? `${info.hp}` : esc(info.hp), hearts, typeof info.hp === "number" ? "" : " text")}
+      ${stat("Attack", attack, attackSub || (typeof info.attack === "object" ? "On Normal" : ""), typedAttack ? " text" : "")}
+      ${stat("Behavior", behavior, { passive: "Never attacks", neutral: "Attacks when provoked", aggressive: "Attacks on sight" }[mobBehavior(m)])}
+      ${stat(dims.length > 1 ? "Dimensions" : "Dimension", dims.join(", "), "", dims.length > 1 ? " text" : "")}
+    </div>
+    <dl class="fact-list">
+      ${row("Spawns", info.spawn)}
+      ${row("Dimensions", dimNote && `${dimNote}.`)}
+      ${row("Good to know", info.about)}
+    </dl>`;
+}
+
+// A list of items with their pictures, under a label when it has one.
+const itemList = (items, label) => `${label ? `<div class="cat-label">${esc(label)}</div>` : ""}
+  <ul class="item-list">${items.map(f => `<li class="item-row">${infoSlot(f)}<span class="item-name">${esc(f)}</span></li>`).join("")}</ul>`;
+
+// Taming: what tames it (or helps), how, and what a tamed one does.
+function tameSection(m) {
+  const t = MOB_TAMING[m.k], byRiding = t.label === BY_RIDING;
+  const note = !t.items ? "Tamed already" : byRiding ? "Tamed by riding it" : `Tamed with ${plural(t.items.length, "item")}`;
+  return `${sectionHead("mob-section-title", "drop:Lead", "Taming", note)}
+    ${t.items ? itemList(t.items, t.label) : ""}
+    <dl class="fact-list">
+      <div class="fact-row"><dt>How</dt><dd>${esc(t.how)}</dd></div>
+      ${t.after ? `<div class="fact-row"><dt>Once tamed</dt><dd>${esc(t.after)}</dd></div>` : ""}
+    </dl>`;
+}
+
+// Riding: what it takes to ride and steer it, and how it rides.
+function rideSection(m) {
+  const r = MOB_RIDING[m.k];
+  return `${sectionHead("mob-section-title", "drop:Saddle", "Riding", r.needs ? `Needs ${r.needs.map(n => n.toLowerCase()).join(" and ")}` : "Nothing needed")}
+    ${r.needs ? itemList(r.needs) : ""}
+    <p class="mob-lead">${esc(r.how)}</p>`;
+}
+
+// A job site block with its picture.
+const jobSite = (site, text) => `<div class="job-site"><span class="slot sm">${ICONS[`site:${site}`] ? iconImg(`site:${site}`) : ""}</span><span>${text}</span></div>`;
+
+// The villager's trades: the picked profession's, level by level, drawn as on the Villager Trades tab, under its job
+// site block. The kind its village gives (a boat's wood) is marked by the biome picked on the stage.
+function jobTradeSection(m) {
+  const job = (variantInfo() || {}).k, v = VILLAGERS.find(x => x.k === job);
+  const how = tradeHow(MOB_TRADES[m.k]);
+  // A button for each job (the stage's Variant buttons, with each one's job site block).
+  const jobs = `<div class="job-picker" role="group" aria-label="Job">${MOB_VARIANTS[m.k].map(x => {
+    const site = (VILLAGERS.find(w => w.k === x.k) || {}).site;
+    return `<button type="button" class="name-chip job-chip" data-job="${x.k}" aria-pressed="${x.k === job}"${site ? ` title="Job site: ${esc(site)}"` : ""}>${site && ICONS[`site:${site}`] ? iconImg(`site:${site}`) : ""}${esc(x.n)}</button>`;
+  }).join("")}</div>`;
+  const biome = { snow: "snowy" }[rowKind(rowsOf(m.k)[0]).k] || rowKind(rowsOf(m.k)[0]).k;
+  if (!v) {
+    const why = job === "nitwit" ? "A nitwit never takes a job, so it never trades."
+      : "An unemployed villager doesn't trade until it takes a job: put a job site block near it.";
+    return `${sectionHead("mob-section-title", "ui:emerald", "Trades", "No trades")}
+      ${jobs}
+      <p class="mob-lead">${why} Pick a job above to see its trades.</p>
+      ${how}`;
+  }
+  const all = v.trades.flat(), earn = all.filter(isEarn).length;
+  const offers = list => list.length === 1 ? "One trade" : list.length === 2 ? "Offers both"
+    : state.edition === "java" ? `Offers 2 of these ${list.length} at random` : `Offers some of these ${list.length} at random`;
+  return `${sectionHead("mob-section-title", "ui:emerald", "Trades", `${esc(villagerName(v))} · ${plural(all.length, "trade")}, ${earn} paying emeralds`)}
+    ${jobs}
+    ${jobSite(v.site, `Job site: <b>${esc(v.site)}</b>. An unemployed villager that claims one becomes ${article(villagerName(v))} ${esc(villagerName(v))}.`)}
+    <p class="mob-lead">${esc(v.tip)}</p>
+    ${v.trades.map((list, i) => `
+      <section class="lvl">
+        <div class="lvl-head">${levelBadge(i, "h4")}<span class="lvl-note">${offers(list)}</span></div>
+        <ul class="trades">${list.map((t, j) => tradeRow(t, "", `mob-${v.k}-${i}-${j}`, biome)).join("")}</ul>
+      </section>`).join("")}
+    ${how}`;
+}
+
+// The "How it works" row under a mob's trades.
+const tradeHow = t => `<dl class="fact-list"><div class="fact-row"><dt>How it works</dt><dd><ul class="fact-points">${t.how.map(h => `<li>${esc(h)}</li>`).join("")}</ul></dd></div></dl>`;
+
+// The wandering trader's trades: each pool it picks from, its trades drawn as on the Villager Trades tab.
+function poolTradeSection(m) {
+  // A trade of any wood (or color, tree, coral) is that many trades to pick from.
+  const count = list => list.reduce((sum, x) => sum + (EACH_KIND.has(x.gives.name) ? KINDS[x.gives.name].list.length : 1), 0);
+  const t = MOB_TRADES[m.k], pools = t.pools.map(pool => ({ ...pool, list: pool.trades.map(parseTrade) }));
+  pools.forEach(pool => { pool.count = count(pool.list); });
+  const offers = pools.reduce((sum, pool) => sum + pool.picks, 0), all = pools.reduce((sum, pool) => sum + pool.count, 0);
+  return `${sectionHead("mob-section-title", t.icon, "Trades", `${offers} offers, picked from ${all} trades`)}
+    ${pools.map((pool, i) => `
+      <section class="lvl">
+        <div class="lvl-head"><h4 class="pool-name">${esc(pool.n)}</h4><span class="lvl-note">Offers ${pool.picks} of these ${pool.count} at random</span></div>
+        <ul class="trades">${pool.list.map((x, j) => tradeRow(x, "", `mob-${m.k}-${i}-${j}`)).join("")}</ul>
+      </section>`).join("")}
+    ${tradeHow(t)}`;
+}
+
+// Trades: what to give it, then everything it can give back, most likely first, with each one's chance.
+function tradeSection(m) {
+  if (MOB_TRADES[m.k].byJob) return jobTradeSection(m);
+  if (MOB_TRADES[m.k].pools) return poolTradeSection(m);
+  const t = MOB_TRADES[m.k], table = t.table.filter(([, , , , ed]) => !ed || ed === state.edition);
+  const total = table.reduce((sum, [, , w]) => sum + w, 0);
+  const pct = w => { const v = (100 * w) / total; return `${v < 10 ? v.toFixed(1) : Math.round(v)}%`; };
+  return `${sectionHead("mob-section-title", t.icon, "Trades", `Barters ${plural(table.length, "item")} for a ${t.gives.toLowerCase()}`)}
+    ${itemList([t.gives], "Give it")}
+    <div class="cat-label trade-label">Get one of these</div>
+    <ul class="item-list">${[...table].sort((a, b) => b[2] - a[2]).map(([item, count, w, note]) => `<li class="item-row">${infoSlot(item)}
+      <span class="item-name">${esc(item)}${note ? `<span class="sub">${esc(note)}</span>` : ""}</span>
+      <span class="item-count">${esc(count)}</span><span class="item-chance">${pct(w)}</span></li>`).join("")}</ul>
+    <dl class="fact-list"><div class="fact-row"><dt>How it works</dt><dd><ul class="fact-points">${t.how.map(h => `<li>${esc(h)}</li>`).join("")}</ul></dd></div></dl>`;
+}
+
+// Breeding: what to feed it, or how more of it come about when it can't be bred.
+function breedSection(m) {
+  const { breed } = mobInfo(m.k);
+  if (!breed.food) {
+    return `${sectionHead("mob-section-title", "drop:Wheat", "Breeding", "Can't be bred")}
+      <p class="mob-lead">${esc(breed.no)}</p>`;
+  }
+  const fed = m.k !== "villager";
+  return `${sectionHead("mob-section-title", "drop:Wheat", "Breeding", `Bred with ${plural(breed.food.length, "item")}`)}
+    ${itemList(breed.food)}
+    ${breed.how ? `<p class="mob-lead">${esc(breed.how)}</p>` : ""}
+    ${fed ? `<p class="tag-note">Feed two grown ones and they make a baby. They can breed again after 5 minutes, and a baby grows up in 20, sooner if you feed it.</p>` : ""}`;
+}
+
+// Drops: every item, how many and when, then the experience.
+function dropsSection(m) {
+  const { drops, xp } = mobInfo(m.k);
+  return `${sectionHead("mob-section-title", "drop:Bone", "Drops", drops.length ? plural(drops.length, "item") : "No items")}
+    ${drops.length ? `<ul class="item-list">${drops.map(([item, count, when]) => `<li class="item-row">${infoSlot(item)}
+      <span class="item-name">${esc(item)}${when ? `<span class="sub">${esc(when)}</span>` : ""}</span>
+      <span class="item-count">${esc(count)}</span></li>`).join("")}</ul>` : `<p class="mob-lead">It drops no items.</p>`}
+    <div class="xp-row"><span class="xp-orb" aria-hidden="true"></span><span>Experience</span><b>${esc(xp)}</b></div>
+    ${drops.length ? `<p class="tag-note">Looting raises most counts by one a level.${GAME_BABIES.has(m.k) && mobBehavior(m) !== "aggressive" ? " Babies drop nothing." : ""}</p>` : ""}`;
+}
+
+// The picked mob's page: its title, a tab for each section, and the section picked.
 function renderMobResult() {
-  const m = mobOf(mobTab.mob);
+  const m = mobOf(mobTab.mob), on = shownSection(m.k);
+  const body = { about: aboutSection, tame: tameSection, ride: rideSection, breed: breedSection, trade: tradeSection, drops: dropsSection, tags: tagSection }[on](m);
   $("mob-result").innerHTML = `
     <div class="res-top">
       <div class="res-title"><span class="slot">${iconImg(mobIcon(m))}</span>
         <div><h2>${esc(mobName(m))}</h2><div class="res-sub">${state.edition === "java" ? "Java" : "Bedrock"} Edition</div></div>
       </div>
     </div>
-    ${tagSection(m)}`;
+    <div class="mob-tabs" role="tablist" aria-label="${esc(mobName(m))}">
+      ${mobSections(m.k).map(([k, title, ico]) => [k, title, k === "trade" ? MOB_TRADES[m.k].icon : ico]).map(([k, title, ico]) => `<button type="button" class="mob-tab" role="tab" id="mob-tab-${k}" data-section="${k}"
+        aria-selected="${k === on}" aria-controls="mob-section" tabindex="${k === on ? 0 : -1}">${iconImg(ico)}${title}</button>`).join("")}
+    </div>
+    <section class="mob-section" id="mob-section" role="tabpanel" aria-labelledby="mob-tab-${on}">${body}</section>`;
 }
 
-// Search: names (any spelling) and mobs, across every mob.
-function renderTagSearch() {
-  const q = mobTab.query.trim().toLowerCase(), box = $("tag-results");
+// Search: mobs by name, either edition's (Zombie Pigman finds the zombified piglin), each with how it behaves and where.
+function renderMobSearch() {
+  const q = mobTab.query.trim().toLowerCase(), box = $("mob-results");
   if (!q) {
-    const pick = packOn() ? ["Toast", "jeb_", "Dinnerbone", "Goldie", "Elf", "Snowy", "Baby"] : ["Dinnerbone", "Grumm", "jeb_", "Toast", "Johnny"];
-    box.innerHTML = `<p class="choice-hint">Matches from every mob show here as you type. Or try one of these:</p>
-      <div class="suggest">${pick.map(s => `<button type="button" class="mc-btn sm" data-suggest="${s}">${s}</button>`).join("")}</div>`;
+    box.innerHTML = `<p class="choice-hint">Type part of a mob’s name, then pick it from the list.</p>`;
     return;
   }
-  const hits = [];
-  for (const m of MOBS) {
-    const mobHit = mobName(m).toLowerCase().includes(q);
-    for (const t of tagsFor(m.k)) {
-      if (t.src === "pack" && !packOn()) continue;
-      if (t.any && !mobHit && hits.some(h => h.t.any)) continue;
-      if (mobHit || [...t.names, ...(t.more || [])].some(n => n.toLowerCase().includes(q))) hits.push({ m, t, anyMob: t.any && !mobHit });
-    }
-  }
+  const hits = MOBS.filter(m => [m.n, m.bedrockName].some(n => n && n.toLowerCase().includes(q)))
+    .sort((a, b) => mobName(a).localeCompare(mobName(b)));
+  const label = (list, k) => list.find(([x]) => x === k)[1];
   box.innerHTML = hits.length
-    ? hits.slice(0, 30).map(({ m, t, anyMob }) => `
-      <button type="button" class="search-hit" data-mob="${anyMob ? mobTab.mob : m.k}" data-tag="${esc(t.names[0])}">
+    ? hits.map(m => `
+      <button type="button" class="search-hit" data-mob="${m.k}"${m.k === mobTab.mob ? ' aria-current="true"' : ""}>
         <span class="slot sm">${iconImg(mobIcon(m))}</span>
-        <span><span class="who"><span class="name-chip"><span class="src ${t.src}" aria-hidden="true"></span>${esc(t.names[0])}</span>${anyMob ? "Any mob" : esc(mobName(m))}</span><span class="deal">${esc(t.what)}</span></span>
-      </button>`).join("") + (hits.length > 30 ? `<p class="choice-hint">And ${hits.length - 30} more. Type more of the name to narrow it down.</p>` : "")
-    : `<p class="choice-hint">No mob reacts to a name like “${esc(mobTab.query.trim())}”.</p>`;
+        <span><span class="who">${esc(mobName(m))}</span><span class="deal">${label(MOB_BEHAVIORS, mobBehavior(m))} · ${label(MOB_DIMS, mobDim(m))}</span></span>
+      </button>`).join("")
+    : `<p class="choice-hint">No mob is called anything like “${esc(mobTab.query.trim())}”.</p>`;
 }
 
 // Text that only fits one edition: the pack is Bedrock's, so Java leaves it out.
 function renderEditionText() {
   $("mob-intro").textContent = packOn()
-    ? "Every mob and boss you can meet in survival. Pick one to see it up close and try name tags on it: a few names do something in the game itself, and many more change how it looks with the Actions & Stuff resource pack."
-    : "Every mob and boss you can meet in survival. Pick one to see it up close and try name tags on it: a few names do something special.";
-  $("tag-search").placeholder = packOn() ? "Toast, Elf, Snowy, Wolf…" : "Dinnerbone, Toast, Sheep…";
-  for (const li of document.querySelectorAll("#view-mobs [data-ed]")) li.hidden = li.dataset.ed !== state.edition;
+    ? "Every mob and boss you can meet in survival. Pick one to see it up close, read where it spawns, how to breed it and what it drops, and try name tags on it: a few names do something in the game itself, and many more change how it looks with the Actions & Stuff resource pack."
+    : "Every mob and boss you can meet in survival. Pick one to see it up close, read where it spawns, how to breed it and what it drops, and try name tags on it: a few names do something special.";
 }
 
 function renderMobs() {
@@ -421,7 +611,7 @@ function renderMobs() {
   renderMoods();
   renderTry();
   renderMobResult();
-  renderTagSearch();
+  renderMobSearch();
   showOnStage();
   saveMobTab();
 }
@@ -450,6 +640,7 @@ function pickMob(k, name) {
   }
   mobTab.mob = k;
   mobTab.name = mobTab.say = name || "";
+  if (name) mobTab.section = "tags";
   fitClimate();
   renderMobs();
 }
@@ -493,10 +684,11 @@ $("age-try").addEventListener("click", e => {
   showOnStage();
   refocus(`#age-try button[data-baby="${b.dataset.baby}"]`);
 });
-$("variant-try").addEventListener("click", e => {
-  const b = e.target.closest("button[data-variant]");
-  if (!b || b.dataset.variant === (variantInfo() || {}).k) return;
-  mobVariant = b.dataset.variant;
+// Pick a variant: from the stage's Variant buttons, or (a villager's job) the Trades tab's job buttons, which stay in
+// step as both redraw.
+function pickVariant(k) {
+  if (k === (variantInfo() || {}).k) return false;
+  mobVariant = k;
   // A name that doesn't show on this variant goes.
   if (currentTag() && !fitsVariant(currentTag())) mobTab.name = mobTab.say = "";
   mobView.turnBack();
@@ -505,7 +697,11 @@ $("variant-try").addEventListener("click", e => {
   renderMobResult();
   showOnStage();
   saveMobTab();
-  refocus(`#variant-try button[data-variant="${mobVariant}"]`);
+  return true;
+}
+$("variant-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-variant]");
+  if (b && pickVariant(b.dataset.variant)) refocus(`#variant-try button[data-variant="${mobVariant}"]`);
 });
 $("kind-rows").addEventListener("click", e => {
   const b = e.target.closest("button[data-row]");
@@ -513,6 +709,7 @@ $("kind-rows").addEventListener("click", e => {
   if (!row || b.dataset.kind === rowKind(row).k) return;
   mobRows = { ...mobRows, [row.k]: b.dataset.kind };
   renderRows();
+  renderMobResult();
   showOnStage();
   refocus(`#kind-rows button[data-row="${row.k}"][data-kind="${b.dataset.kind}"]`);
 });
@@ -607,20 +804,61 @@ for (const id of ["tag-try", "mob-result"]) $(id).addEventListener("click", e =>
   pickTag(b.dataset.tag, b.dataset.say);
   refocus(`#${id} button[data-say="${CSS.escape(b.dataset.say || "")}"][data-tag="${CSS.escape(b.dataset.tag)}"]`);
 });
-$("tag-results").addEventListener("click", e => {
-  const s = e.target.closest("button[data-suggest]");
-  if (s) {
-    $("tag-search").value = s.dataset.suggest;
-    mobTab.query = s.dataset.suggest;
-    renderTagSearch();
-    saveMobTab();
-    return;
-  }
-  const b = e.target.closest("button[data-mob]");
-  if (b) pickMob(b.dataset.mob, b.dataset.tag);
+// The section tabs: a click picks one; the arrow keys, Home and End move along them.
+const pickSection = k => {
+  mobTab.section = k;
+  renderMobResult();
+  saveMobTab();
+  refocus(`#mob-tab-${k}`);
+};
+$("mob-result").addEventListener("click", e => {
+  const b = e.target.closest("button[data-section]");
+  if (b) pickSection(b.dataset.section);
+  const job = e.target.closest("button[data-job]");
+  if (job && pickVariant(job.dataset.job)) refocus(`#mob-result button[data-job="${mobVariant}"]`);
+  const more = e.target.closest("button[data-kinds]");
+  if (!more) return;
+  const id = more.dataset.kinds, open = !openKinds.has(id);
+  if (open) openKinds.add(id);
+  else openKinds.delete(id);
+  more.setAttribute("aria-expanded", open);
+  $(`kinds-${id}`).hidden = !open;
 });
-$("tag-search").addEventListener("input", e => { mobTab.query = e.target.value; renderTagSearch(); saveMobTab(); });
+$("mob-result").addEventListener("keydown", e => {
+  if (!e.target.closest("[role=tab]")) return;
+  const list = mobSections(mobTab.mob), i = list.findIndex(([k]) => k === shownSection(mobTab.mob)), n = list.length;
+  const to = { ArrowRight: i + 1, ArrowLeft: i - 1 + n, Home: 0, End: n - 1 }[e.key];
+  if (to === undefined) return;
+  e.preventDefault();
+  pickSection(list[to % n][0]);
+});
+$("mob-results").addEventListener("click", e => {
+  const b = e.target.closest("button[data-mob]");
+  if (b) pickMob(b.dataset.mob, "");
+});
+$("mob-search").addEventListener("input", e => { mobTab.query = e.target.value; renderMobSearch(); saveMobTab(); });
+// The name tag rules remember being opened (toggle doesn't bubble, so it's caught on the way down).
+$("mob-result").addEventListener("toggle", e => { if (e.target.matches(".tag-rules")) tagRulesOpen = e.target.open; }, true);
 $("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderMobs(); });
+
+// Cycling drop slots step to their next example every second and a half, unless the reader asks for less motion
+// (then they keep the first). So do the villager's trade slots of items that come in several kinds (data-cycle: their
+// icon keys, as on the Villager Trades tab).
+let mobCycleStep = 0;
+setInterval(() => {
+  if (calmMotion() || document.hidden || $("view-mobs").hidden) return;
+  mobCycleStep++;
+  for (const slot of document.querySelectorAll("#mob-result [data-cycle]")) {
+    const keys = slot.dataset.cycle.split("|");
+    slot.querySelector("img").src = icon(keys[mobCycleStep % keys.length]);
+  }
+  for (const slot of document.querySelectorAll("#mob-result [data-examples]")) {
+    const list = slot.dataset.examples.split("|"), at = (Number(slot.dataset.at) + 1) % list.length;
+    slot.dataset.at = at;
+    slot.title = `For example: ${list[at]}`;
+    slot.querySelector("img").src = icon(infoIcon(list[at]));
+  }
+}, 1500);
 
 // The jeb_ sheep's wool fades through the dye colors and scrolling textures (a name's or a mood's) run while they're on the stage, unless
 // the reader asks for less motion.
@@ -637,6 +875,6 @@ setInterval(() => {
   mobView.redraw();
 }, 160);
 
-$("tag-search").value = mobTab.query;
+$("mob-search").value = mobTab.query;
 fitClimate();
 renderMobs();
