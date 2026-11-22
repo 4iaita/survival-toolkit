@@ -328,12 +328,57 @@ function renderArmor() {
   $("armor-glint-try").innerHTML = chip("armor-glint", "", "Not enchanted", !mobArmor.glint) + chip("armor-glint", "on", "Enchanted", mobArmor.glint);
 }
 
+// The stage's name tag picker groups the names into sections, each a dropdown of its names. A name's section, by
+// these rules in turn: the game's own; a baby look; the mob's own sections (TAG_GROUP_MOB, matched on the first
+// spelling); hiding what it wears; a biome's look; Halloween (Halloween among its spellings, or a word of one: the
+// Baby Gremlin with the Gremlin); Christmas; a rare look some spawn with; else a costume.
+const TAG_GROUP_ORDER = ["Game", "Baby", "Biomes", "Rare", "Halloween", "Christmas", "Movie", "Queens", "Birds", "Bugs",
+  "Sports", "Billiards", "Toys", "Floaties", "Costumes", "Size", "Gear"];
+const BIOME_LOOKS = new Set(["Snowy", "Cherry", "Blossom", "Dappled", "Poplar", "Sulfur", "Pale"]);
+const XMAS_WORDS = new Set(["Festive", "Elf", "Reindeer", "Rudolph", "Snowman", "Krampus", "Claus", "Zanta", "Nutcracker", "Spruce"]);
+const TAG_GROUP_MOB = {
+  bee: [[/Moth|Firefly/, "Bugs"], [/^(Queen|Qween)$/, "Queens"]],
+  chicken: [[/^(Chicken Jockey|Lava Chicken)$/, "Movie"], [/^(Turkey|Rooster|Duck|Peep)$/, "Birds"]],
+  parrot: [[/./, "Birds"]],
+  sulfur_cube: [[/Billiards/, "Billiards"], [/Floaty/, "Floaties"], [/^§/, "Size"], [/Beach|Plastic|Die|Bomb|Cheese/, "Toys"], [/./, "Sports"]],
+};
+// How a name shows in its section: by a spelling other than the section's (Gremlin, not Halloween, in Halloween).
+const groupSay = (t, g) => t.names.find(n => n !== g && n !== "Halloween" && n !== "Festive") || t.names[0];
+const tagWords = t => t.names.flatMap(n => n.split(" "));
+function tagGroup(t, k) {
+  if (t.src === "game") return "Game";
+  if (t.kind === BABY) return "Baby";
+  const own = (TAG_GROUP_MOB[k] || []).find(([re]) => re.test(t.names[0]));
+  if (own) return own[1];
+  if (t.hides) return "Gear";
+  if (t.kind === SNOWY || BIOME_LOOKS.has(t.names[0])) return "Biomes";
+  const spooky = new Set(tagsFor(k).filter(x => x.names.includes("Halloween")).flatMap(tagWords).filter(w => w !== "Halloween" && w !== "Baby"));
+  if (t.names.includes("Halloween") || t.names[0] === "Trick Or Treat" || tagWords(t).some(w => spooky.has(w))) return "Halloween";
+  if (tagWords(t).some(w => XMAS_WORDS.has(w))) return "Christmas";
+  if (t.rare) return "Rare";
+  return "Costumes";
+}
+// Which section's dropdown is open, if any.
+let tagGroupOpen = "";
 function renderTry() {
-  const t = currentTag();
+  const t = currentTag(), groups = new Map();
+  for (const x of shownTags(mobTab.mob)) {
+    const g = tagGroup(x, mobTab.mob);
+    groups.set(g, [...(groups.get(g) || []), x]);
+  }
+  const order = [...groups.keys()].sort((a, b) => TAG_GROUP_ORDER.indexOf(a) - TAG_GROUP_ORDER.indexOf(b));
+  if (!groups.has(tagGroupOpen)) tagGroupOpen = "";
+  const picked = t && tagGroup(t, mobTab.mob), plate = t && (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]);
+  const say = t && (plate === picked ? groupSay(t, picked) : plate);
   $("tag-try").innerHTML = `<button type="button" class="name-chip none" data-tag="" data-say="" aria-pressed="${!t}">No name</button>` +
-    // Every name offers every spelling, the game's (Dinnerbone and Grumm) and the pack's (Baby, Pup and Dylan).
-    shownTags(mobTab.mob).flatMap(x => x.names.map(n =>
-      nameChip(x, n, t === x || (Boolean(t) && t.names[0] === x.names[0] && (t.names.includes(mobTab.say) ? mobTab.say : t.names[0]) === n)))).join("");
+    order.map(g => `<button type="button" class="name-chip tag-group-btn${g === picked ? " picked" : ""}" data-tag-group="${g}" aria-expanded="${g === tagGroupOpen}"${g === tagGroupOpen ? ` aria-controls="tag-try-panel"` : ""}>` +
+      `<span class="src${g === "Game" ? " game" : ""}" aria-hidden="true"></span>${g}${g === picked ? `<span class="pick">${esc(say)}</span>` : ""}<span class="caret" aria-hidden="true"></span></button>`).join("") +
+    // The open section's names, each by one spelling (the Name tags section below lists every spelling), the picked
+    // one by the spelling on the plate.
+    (tagGroupOpen ? `<div class="tag-group-panel" id="tag-try-panel" role="group" aria-label="${tagGroupOpen} names">${groups.get(tagGroupOpen).map(x => {
+      const on = Boolean(t) && t.names[0] === x.names[0];
+      return nameChip(x, on ? plate : groupSay(x, tagGroupOpen), on);
+    }).join("")}</div>` : "");
 }
 
 // One name's row: every spelling, what it does and anything it needs.
@@ -636,6 +681,7 @@ function pickMob(k, name) {
     mobTints = {};
     mobWool = "white";
     mobBaby = false;
+    tagGroupOpen = ""; // a new mob starts on No name, its name sections closed
     mobView.turnBack();
   }
   mobTab.mob = k;
@@ -803,6 +849,19 @@ for (const id of ["tag-try", "mob-result"]) $(id).addEventListener("click", e =>
   if (!b || b.disabled) return;
   pickTag(b.dataset.tag, b.dataset.say);
   refocus(`#${id} button[data-say="${CSS.escape(b.dataset.say || "")}"][data-tag="${CSS.escape(b.dataset.tag)}"]`);
+});
+// A name tag section's button opens its dropdown, closing any other; again, or Escape, closes it.
+const toggleTagGroup = g => {
+  tagGroupOpen = tagGroupOpen === g ? "" : g;
+  renderTry();
+  refocus(`#tag-try button[data-tag-group="${CSS.escape(g)}"]`);
+};
+$("tag-try").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tag-group]");
+  if (b) toggleTagGroup(b.dataset.tagGroup);
+});
+$("tag-try").addEventListener("keydown", e => {
+  if (e.key === "Escape" && tagGroupOpen) toggleTagGroup(tagGroupOpen);
 });
 // The section tabs: a click picks one; the arrow keys, Home and End move along them.
 const pickSection = k => {

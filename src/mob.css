@@ -100,6 +100,15 @@ button.name-chip[aria-pressed="true"] { background: var(--btn-on); box-shadow: i
 .name-chip.none { color: #cfcfcf; font-style: italic; }
 .name-chip .src { width: 8px; height: 8px; flex: none; background: var(--pack); box-shadow: 0 0 0 1px #000; }
 .name-chip .src.game { background: var(--xp); }
+/* The stage's name tag picker: a button for each section of names, opening a panel of them under the row. The
+   section holding the picked name shows it. */
+.tag-group-btn .pick { color: var(--xp); }
+.tag-group-btn .pick::before { content: "·"; color: #cfcfcf; margin-right: 6px; }
+.tag-group-btn.picked { border-color: var(--btn-on-hi); }
+.tag-group-btn .caret { width: 0; height: 0; border: 5px solid transparent; border-top-color: currentColor; border-bottom: 0; margin-top: 2px; }
+.tag-group-btn[aria-expanded="true"] { background: #101010; border-color: var(--white); }
+.tag-group-btn[aria-expanded="true"] .caret { border-top: 0; border-bottom: 5px solid currentColor; margin-top: 0; }
+.tag-group-panel { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; background: rgba(0, 0, 0, .35); border: 2px solid #101010; max-height: 240px; overflow-y: auto; }
 .name-chip.code { flex: none; white-space: nowrap; font: 800 15px/1 var(--font-body); letter-spacing: .08em; }
 
 /* Mob picker: spawn eggs A to Z, or by dimension, as the order select says. */
