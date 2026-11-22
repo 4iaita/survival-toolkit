@@ -1,7 +1,7 @@
 /* ---------- Mobs ---------- */
 // Mobs on the Mobs tab, in groups like the creative inventory's. k is the MOB_LOOKS key and the spawn egg
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; biome, the village biome its stage shows
-// (a BIOMES key, village, forest, bamboo_jungle, mushroom_fields, mangrove_swamp, cave, mineshaft, mansion, trial_chamber, stronghold, deep_dark, nether, end, end_island, ocean, lush, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, village, mushroom_fields, cave, mineshaft, mansion, trial_chamber, stronghold, deep_dark, nether, end_city, end_island, ocean, lush_pool, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -122,14 +122,14 @@ const MOB_VARIANTS = {
     .map((v, i) => ({ ...v, where: "1 in 4 trader llamas", ...(i ? { skins: traderLlamaSkins(v.k) } : {}) })),
   wolf: [
     { k: "pale", n: "Pale", where: "Taiga", biome: "taiga" },
-    { k: "ashen", n: "Ashen", where: "Snowy Taiga", biome: "snowy_taiga" },
-    { k: "black", n: "Black", where: "Old Growth Pine Taiga", biome: "pine_taiga" },
-    { k: "chestnut", n: "Chestnut", where: "Old Growth Spruce Taiga", biome: "spruce_taiga" },
-    { k: "rusty", n: "Rusty", where: "Sparse Jungle", biome: "sparse_jungle" },
-    { k: "snowy", n: "Snowy", where: "Grove", biome: "grove" },
-    { k: "spotted", n: "Spotted", where: "Savanna Plateau", biome: "savanna_plateau" },
+    { k: "ashen", n: "Ashen", where: "Snowy Taiga", biome: "taiga" },
+    { k: "black", n: "Black", where: "Old Growth Pine Taiga", biome: "taiga" },
+    { k: "chestnut", n: "Chestnut", where: "Old Growth Spruce Taiga", biome: "taiga" },
+    { k: "rusty", n: "Rusty", where: "Sparse Jungle", biome: "jungle" },
+    { k: "snowy", n: "Snowy", where: "Grove", biome: "snowy" },
+    { k: "spotted", n: "Spotted", where: "Savanna Plateau", biome: "savanna" },
     { k: "striped", n: "Striped", where: "Wooded Badlands", biome: "badlands" },
-    { k: "woods", n: "Woods", where: "Forest", biome: "forest" },
+    { k: "woods", n: "Woods", where: "Forest", biome: "plains" },
   ].map((v, i) => (i ? { ...v, skins: wolfSkins(v.k) } : v)),
   // The panda's seven kinds (the pack's q.variant 0 to 6) share its model and differ in skin, the baby's too; where: what sets
   // each apart in the game (they're traits, not places, so every one shows in the bamboo jungle).
@@ -176,7 +176,7 @@ const MOB_VARIANTS = {
   // foxes in snowy biomes snow foxes. The Raccoon and Jimothy looks keep their own skins.
   fox: [
     { k: "red", n: "Red", where: "Taiga", biome: "taiga" },
-    { k: "snow", n: "Snow", where: "Snowy Taiga and Grove", biome: "snowy_taiga", skins: { new_fox: "new_fox_snow", new_fox_baby: "new_fox_snow_baby" } },
+    { k: "snow", n: "Snow", where: "Snowy Taiga and Grove", biome: "taiga", skins: { new_fox: "new_fox_snow", new_fox_baby: "new_fox_snow_baby" } },
   ],
   // The rabbit's six coats (the pack's q.variant 0 to 5) share its model and differ in skin, the baby's and the Cherry
   // look's too: the game gives rabbits in deserts the gold coat, in snowy biomes the white or black-and-white one, and
@@ -195,7 +195,7 @@ const MOB_VARIANTS = {
   frog: [
     { k: "temperate", n: "Temperate", where: "Swamps", biome: "swamp" },
     { k: "cold", n: "Cold", where: "Grown from tadpoles in cold biomes", biome: "snowy" },
-    { k: "warm", n: "Warm", where: "Mangrove swamps", biome: "mangrove_swamp" },
+    { k: "warm", n: "Warm", where: "Mangrove swamps", biome: "jungle" },
   ].map((v, i) => (i ? { ...v, skins: Object.fromEntries(["", "_baby", "_baby_imp", "_halloween"].map(s => [`new_frog${s}_1`, `new_frog_${v.k}${s}_1`])) } : v)),
   // The parrot's five colors (the pack's q.variant 0 to 4) share its model and differ in skin, the baby look's too. The
   // game gives a parrot one at random, all five equally likely, in jungles. The Crow, Blue Jay, Cardinal, Robin and
@@ -409,19 +409,19 @@ const MOBS = [
   { k: "armadillo", n: "Armadillo", g: "Animals", biome: "savanna", stand: { body: { p: [0, 1, 0] } } }, { k: "bat", n: "Bat", g: "Animals", biome: "cave", stand: lift(15) }, { k: "bee", n: "Bee", g: "Animals", stand: { body: { p: [0, 18, 0] } } },
   { k: "camel", n: "Camel", g: "Animals", biome: "desert" }, { k: "cat", n: "Cat", g: "Animals" }, { k: "chicken", n: "Chicken", g: "Animals" },
   { k: "cow", n: "Cow", g: "Animals" }, { k: "donkey", n: "Donkey", g: "Animals" }, { k: "fox", n: "Fox", g: "Animals", biome: "taiga" }, { k: "frog", n: "Frog", g: "Animals", biome: "swamp" },
-  { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals", biome: "savanna_plateau" },
+  { k: "goat", n: "Goat", g: "Animals", biome: "peaks" }, { k: "horse", n: "Horse", g: "Animals" }, { k: "llama", n: "Llama", g: "Animals", biome: "savanna" },
   { k: "mooshroom", n: "Mooshroom", g: "Animals", biome: "mushroom_fields" }, { k: "mule", n: "Mule", g: "Animals" }, { k: "ocelot", n: "Ocelot", g: "Animals", biome: "jungle" },
-  { k: "panda", n: "Panda", g: "Animals", biome: "bamboo_jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals", biome: "jungle" }, { k: "pig", n: "Pig", g: "Animals" },
+  { k: "panda", n: "Panda", g: "Animals", biome: "jungle", zoom: PANDA_ROOM }, { k: "parrot", n: "Parrot", g: "Animals", biome: "jungle" }, { k: "pig", n: "Pig", g: "Animals" },
   { k: "polar_bear", n: "Polar Bear", g: "Animals", biome: "snowy", zoom: BEAR_ROOM }, { k: "rabbit", n: "Rabbit", g: "Animals" }, { k: "sheep", n: "Sheep", g: "Animals" },
   { k: "sniffer", n: "Sniffer", g: "Animals" }, { k: "trader_llama", n: "Trader Llama", g: "Animals" }, { k: "wolf", n: "Wolf", g: "Animals", biome: "taiga" },
-  { k: "axolotl", n: "Axolotl", g: "Water", biome: "lush", swim: true }, { k: "cod", n: "Cod", g: "Water", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", g: "Water", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", g: "Water", biome: "flooded_cave", glowing: true, swim: true },
+  { k: "axolotl", n: "Axolotl", g: "Water", biome: "lush_pool", swim: true }, { k: "cod", n: "Cod", g: "Water", biome: "ocean", swim: true }, { k: "dolphin", n: "Dolphin", g: "Water", biome: "ocean", swim: true }, { k: "glow_squid", n: "Glow Squid", g: "Water", biome: "flooded_cave", glowing: true, swim: true },
   { k: "nautilus", n: "Nautilus", g: "Water", biome: "ocean", stand: TURNED_ROUND, swim: true, zoom: NAUTILUS_ZOOM }, { k: "pufferfish", n: "Pufferfish", g: "Water", biome: "ocean", swim: true }, { k: "salmon", n: "Salmon", g: "Water", biome: "ocean", swim: true }, { k: "squid", n: "Squid", g: "Water", biome: "ocean", swim: true },
   { k: "tadpole", n: "Tadpole", g: "Water", biome: "swamp_water", swim: true }, { k: "tropicalfish", n: "Tropical Fish", g: "Water", biome: "ocean", swim: true }, { k: "turtle", n: "Turtle", g: "Water", biome: "ocean", swim: true },
   { k: "allay", n: "Allay", g: "Village", stand: lift(10) }, { k: "copper_golem", n: "Copper Golem", g: "Village" }, { k: "iron_golem", n: "Iron Golem", g: "Village", biome: "village" },
   { k: "snow_golem", n: "Snow Golem", g: "Village", biome: "snowy" }, { k: "villager", n: "Villager", g: "Village", biome: "village" },
   { k: "wandering_trader", n: "Wandering Trader", g: "Village" },
   { k: "bogged", n: "Bogged", g: "Monsters", biome: "swamp_night" }, { k: "breeze", n: "Breeze", g: "Monsters", biome: "trial_chamber" }, { k: "camel_husk", n: "Camel Husk", g: "Monsters", biome: "desert_night" },
-  { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft", stand: lift(1.7) }, { k: "creaking", n: "Creaking", g: "Monsters", biome: "pale_garden_night" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
+  { k: "cave_spider", n: "Cave Spider", g: "Monsters", biome: "mineshaft" }, { k: "creaking", n: "Creaking", g: "Monsters", biome: "pale_garden_night" }, { k: "creeper", n: "Creeper", g: "Monsters", biome: "cave", zoom: CREEPER_ROOM },
   { k: "drowned", n: "Drowned", g: "Monsters", biome: "ocean_night", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
   { k: "evoker", n: "Evoker", g: "Monsters", biome: "mansion" }, { k: "guardian", n: "Guardian", g: "Monsters", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
   { k: "husk", n: "Husk", g: "Monsters", biome: "desert_night" }, { k: "parched", n: "Parched", g: "Monsters", biome: "desert_night" }, { k: "phantom", n: "Phantom", g: "Monsters", biome: "plains_night", stand: { body: { p: [0, 22, 0] } } },
@@ -435,6 +435,6 @@ const MOBS = [
   { k: "magma_cube", n: "Magma Cube", g: "Nether", biome: "nether", zoom: 2.5 }, { k: "piglin", n: "Piglin", g: "Nether", biome: "nether" }, { k: "piglin_brute", n: "Piglin Brute", g: "Nether", biome: "nether" },
   { k: "strider", n: "Strider", g: "Nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", g: "Nether", biome: "nether", glowing: true }, { k: "zoglin", n: "Zoglin", g: "Nether", biome: "nether" },
   { k: "zombified_piglin", n: "Zombified Piglin", bedrockName: "Zombie Pigman", g: "Nether", biome: "nether" }, { k: "wither", n: "Wither", g: "Nether", biome: "nether", stand: lift(8) },
-  { k: "ender_dragon", n: "Ender Dragon", g: "End", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", g: "End", biome: "end", glowing: true },
-  { k: "endermite", n: "Endermite", g: "End", biome: "end" }, { k: "shulker", n: "Shulker", g: "End", biome: "end" },
+  { k: "ender_dragon", n: "Ender Dragon", g: "End", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", g: "End", biome: "end_city", glowing: true },
+  { k: "endermite", n: "Endermite", g: "End", biome: "end_city" }, { k: "shulker", n: "Shulker", g: "End", biome: "end_city" },
 ];

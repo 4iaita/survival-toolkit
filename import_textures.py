@@ -126,7 +126,8 @@ FILES = {
     # The nether backdrop.
     "deepslate": "blocks/deepslate/deepslate", "glow_lichen": "blocks/glow_lichen",
     "moss_block": "blocks/moss_block", "clay": "blocks/clay", "big_dripleaf_top": "blocks/big_dripleaf_top", "big_dripleaf_stem": "blocks/big_dripleaf_stem",
-    "small_dripleaf_side": "blocks/small_dripleaf_side", "azalea_side": "blocks/azalea_side", "flowering_azalea_side": "blocks/flowering_azalea_side",
+    "small_dripleaf_side": "blocks/small_dripleaf_side", "big_dripleaf_side2": "blocks/big_dripleaf_side2", "small_dripleaf_top": "blocks/small_dripleaf_top",
+    "small_dripleaf_stem_top": "blocks/small_dripleaf_stem_top", "small_dripleaf_stem_bottom": "blocks/small_dripleaf_stem_bottom", "azalea_side": "blocks/azalea_side", "flowering_azalea_side": "blocks/flowering_azalea_side",
     "azalea_leaves": "blocks/azalea_leaves_opaque", "azalea_leaves_flowers": "blocks/azalea_leaves_flowers_opaque", "cave_vines_body": "blocks/cave_vines_body",
     "cave_vines_berries": "blocks/cave_vines_body_berries", "cave_vines_tip": "blocks/cave_vines_head_berries",
     "kelp": "blocks/kelp_a", "kelp_top": "blocks/kelp_top", "kelp_bulb": "blocks/kelp_top_bulb", "seagrass": "blocks/seagrass",
@@ -137,7 +138,7 @@ FILES = {
     "coral_plant_red": "blocks/coral_plant_red", "coral_plant_yellow": "blocks/coral_plant_yellow", "coral_plant_pink": "blocks/coral_plant_pink",
     "coral_plant_blue": "blocks/coral_plant_blue", "coral_fan_red": "blocks/coral_fan_red", "coral_fan_yellow": "blocks/coral_fan_yellow",
     "coral_fan_pink": "blocks/coral_fan_pink", "coral_fan_blue": "blocks/coral_fan_blue",
-    "end_stone": "blocks/end_stone", "end_bricks": "blocks/end_bricks", "purpur_block": "blocks/purpur_block", "purpur_pillar": "blocks/purpur_pillar",
+    "end_stone": "blocks/end_stone", "end_bricks": "blocks/end_bricks", "purpur_block": "blocks/purpur_block", "purpur_pillar": "blocks/purpur_pillar", "end_rod": "blocks/end_rod", "magenta_glass": "blocks/glass_magenta",
     "chorus_plant": "blocks/chorus_plant", "chorus_flower": "blocks/chorus_flower",
     "end_sky": "environment/end_sky", "torch": "blocks/torch_on", "iron_bars": "blocks/iron_bars",
     "leaves_birch": "blocks/leaves_birch", "log_birch": "blocks/log_birch", "mushroom_red": "blocks/mushroom_red", "mushroom_brown": "blocks/mushroom_brown",
@@ -176,13 +177,14 @@ FILES = {
     "pale_oak_leaves": "blocks/pale_oak_leaves", "pale_oak_log": "blocks/pale_oak_log_side", "pale_moss_block": "blocks/pale_moss_block",
     "pale_hanging_moss": "blocks/pale_hanging_moss_middle", "pale_hanging_moss_tip": "blocks/pale_hanging_moss_tip",
     "pale_moss_carpet_side": "blocks/pale_moss_carpet_side_base", "eyeblossom": "blocks/eyeblossom_dormant",
-    "eyeblossom_open": "blocks/eyeblossom_blooming", "creaking_heart": "blocks/creaking_heart_side_dormant",
+    "eyeblossom_open": "blocks/eyeblossom_blooming", "eyeblossom_eyes": "blocks/eyeblossom_eyes_blooming", "creaking_heart": "blocks/creaking_heart_side_dormant",
     "wildflowers": "blocks/wildflowers", "firefly_bush": "blocks/firefly_bush", "bush": "blocks/bush", "leaf_litter": "blocks/leaf_litter",
     "short_dry_grass": "blocks/short_dry_grass",
     "sulfur": "blocks/sulfur", "potent_sulfur": "blocks/potent_sulfur", "calcite": "blocks/calcite", "emerald_ore": "blocks/emerald_ore",
     "sulfur_spike_up_tip": "blocks/sulfur_spike_up_tip", "sulfur_spike_up_frustum": "blocks/sulfur_spike_up_frustum",
     "sulfur_spike_down_frustum": "blocks/sulfur_spike_down_frustum", "sulfur_spike_down_middle": "blocks/sulfur_spike_down_middle",
-    "sulfur_spike_down_tip": "blocks/sulfur_spike_down_tip",
+    "sulfur_spike_down_tip": "blocks/sulfur_spike_down_tip", "cinnabar": "blocks/cinnabar", "sulfur_spike_up_base": "blocks/sulfur_spike_up_base",
+    "sulfur_spike_up_middle": "blocks/sulfur_spike_up_middle", "sulfur_spike_down_base": "blocks/sulfur_spike_down_base",
     # The mineshaft: its rails, chests and the deepslate deep down.
     "rail": "blocks/rail_normal", "chest_front": "blocks/chest_front",
     # The silverfish's stronghold: stone bricks, cracked and mossy, an iron door, and the portal room's frames.
@@ -197,16 +199,31 @@ FILES = {
     "chiseled_copper": "blocks/chiseled_copper", "oxidized_chiseled_copper": "blocks/oxidized_chiseled_copper",
     "copper_bulb_lit": "blocks/copper_bulb_lit", "oxidized_copper_bulb_lit": "blocks/oxidized_copper_bulb_lit",
     "trial_spawner": "blocks/trial_spawner_side_active", "vault": "blocks/vault_front_on",
+    # The trial chamber's oxidized copper, its copper doors, a dispenser in its wall and its decorated pots.
+    "oxidized_copper": "blocks/oxidized_copper", "oxidized_copper_door_top": "blocks/oxidized_copper_door_top",
+    "oxidized_copper_door_bottom": "blocks/oxidized_copper_door_bottom", "dispenser_front_horizontal": "blocks/dispenser_front_horizontal",
+    "decorated_pot_side": "blocks/decorated_pot_side",
+    # The deep dark's ancient city: polished basalt for its pillars.
+    "polished_basalt_side": "blocks/polished_basalt_side",
+    # The woodland mansion's potted flowers.
+    # The stronghold's end portal frames: an eye of ender set in one.
+    "endframe_eye": "blocks/endframe_eye",
+    "flower_pot": "blocks/flower_pot", "flower_allium": "blocks/flower_allium", "flower_tulip_red": "blocks/flower_tulip_red",
+    # The plains' wildflowers (azure bluets, white and orange tulips); the swamp's blue orchids and sugar cane; the nether's fire.
+    "fire": "blocks/fire_0", "flower_blue_orchid": "blocks/flower_blue_orchid", "reeds": "blocks/reeds", "flower_houstonia": "blocks/flower_houstonia", "flower_tulip_white": "blocks/flower_tulip_white", "flower_tulip_orange": "blocks/flower_tulip_orange",
     # The warden's deep dark: sculk and its sensors, shriekers and catalysts, an ancient city's deepslate and the
     # reinforced deepslate of its portal frame, soul lanterns and candles.
     "sculk": "blocks/sculk", "sculk_catalyst": "blocks/sculk_catalyst_side", "sculk_sensor": "blocks/sculk_sensor_side",
     "sculk_shrieker": "blocks/sculk_shrieker_side", "deepslate_bricks": "blocks/deepslate/deepslate_bricks",
     "cracked_deepslate_bricks": "blocks/deepslate/cracked_deepslate_bricks", "chiseled_deepslate": "blocks/deepslate/chiseled_deepslate",
     "polished_deepslate": "blocks/deepslate/polished_deepslate", "reinforced_deepslate": "blocks/reinforced_deepslate_side",
-    "soul_lantern": "items/soul_lantern", "candle_lit": "blocks/candles/candle_lit",
+    "soul_lantern": "items/soul_lantern", 
+    # The backdrops' lanterns and the village bell, drawn from parts of their block textures (backdrop.js, partsOf).
+    "lantern_block": "blocks/lantern", "soul_lantern_block": "blocks/soul_lantern", "bell_body": "blocks/bell_side",
+    "candle_lit": "blocks/candles/candle_lit",
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
-FIRST_FRAME = {"sculk"}
+FIRST_FRAME = {"sculk", "fire"}
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"
@@ -278,6 +295,22 @@ def import_villagers():
         print("missing villager skins:", ", ".join(missing))
 
 
+# Pieces cut out of a bigger texture: art/ name -> (file in the pack, its box). The ender dragon's head, side on, for
+# the dragon head on an end ship's bow; its upper jaw's scales for the snout.
+CUTS = {"dragon_head_side": ("entity/dragon/dragon", (112, 46, 128, 62)), "dragon_snout_side": ("entity/dragon/dragon", (112, 64, 128, 80))}
+
+
+def import_cuts(out):
+    from PIL import Image
+    for name, (file, box) in CUTS.items():
+        src = pack / f"{file}.png"
+        if not src.exists():
+            tga_to_png(pack / f"{file}.tga", out / f"_{name}.png")
+            src = out / f"_{name}.png"
+        Image.open(src).convert("RGBA").crop(box).save(out / f"{name}.png")
+        (out / f"_{name}.png").unlink(missing_ok=True)
+
+
 def main():
     out = root / "art"
     out.mkdir(exist_ok=True)
@@ -297,6 +330,7 @@ def main():
     print(f"art/: {len(FILES) - len(missing)} textures from {pack}")
     if missing:
         print("missing (the drawn icon is used instead):", ", ".join(missing))
+    import_cuts(out)
     import_villagers()
 
 

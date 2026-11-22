@@ -28,25 +28,15 @@ const BIOME_TINTS = {
   savanna: { foliage: "#aea42a", grass: "#bfb755" },
   snowy: { foliage: "#60a17b", grass: "#80b497" },
   taiga: { foliage: "#68a464", grass: "#86b783" },
-  forest: { foliage: "#59ae30", grass: "#79c05a" },
   jungle: { foliage: "#30bb0b", grass: "#59c93c" },
   swamp: { foliage: "#6a7039", grass: "#6a7039", water: "#617b64" },
   // The wolf variants' wild biomes on the Mobs tab.
-  snowy_taiga: { foliage: "#60a17b", grass: "#80b497" },
-  grove: { foliage: "#60a17b", grass: "#80b497" },
-  pine_taiga: { foliage: "#68a55f", grass: "#86b87f" },
-  spruce_taiga: { foliage: "#68a464", grass: "#86b783" },
-  sparse_jungle: { foliage: "#2bbb0f", grass: "#64c73f" },
-  savanna_plateau: { foliage: "#aea42a", grass: "#bfb755" },
   badlands: { foliage: "#9e814d", grass: "#90814d" },
   // The goat's jagged peaks.
   peaks: { foliage: "#60a17b", grass: "#80b497" },
-  // The warm frog's mangrove swamp.
-  mangrove_swamp: { foliage: "#8db127", grass: "#6a7039", water: "#3a7a6a" },
   // The tadpole's swamp water.
   swamp_water: { foliage: "#6a7039", grass: "#6a7039", water: "#617b64" },
   // The panda's and the mooshroom's.
-  bamboo_jungle: { foliage: "#30bb0b", grass: "#59c93c" },
   mushroom_fields: { foliage: "#2bbb0f", grass: "#55c93f" },
   // The biomes some name tags' looks come from.
   cherry_grove: { foliage: "#b6db61", grass: "#b6db61" },

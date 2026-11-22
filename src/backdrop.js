@@ -5,25 +5,22 @@
  * biome's tint the way the game colors them, and in snowy biomes everything wears a layer of snow.
  * The village, for the Mobs tab's iron golem and villager, is the middle of a plains village: its well, bell and lamp
  * post between houses, more roofs on the hills.
- * The forest, for the Mobs tab, is no village either: oaks and birches, with flowers and mushrooms underneath.
- * So is the mineshaft: a dark corridor of fence-post supports under plank beams, rails, a chest minecart, cobwebs and a
- * webbed-in spawner.
+ * So is the mineshaft: a cave full of cobwebs, a mineshaft's corridor cut across its far wall, its supports, torches,
+ * rails and a chest minecart.
  * The cave and the nether, for the Mobs tab, aren't village biomes: a dark rock wall full of ore instead
- * of hills, a ceiling with stalactites or weeping vines, and lanterns or lava for light. Nor is the End: end stone
- * hills under the pack's End sky, with crystal-topped obsidian pillars, end city towers and chorus plants; and the
- * dragon's own island, a ring of great crystal-topped pillars round the unlit exit portal. And the ocean is seen from
+ * of hills, a ceiling with stalactites or weeping vines, and lanterns or lava for light. Nor is the End: an end city
+ * under the pack's End sky, its base floor close by, chorus trees beyond, far off a tower with a bridge out to an end
+ * ship; and the dragon's own island, a ring of crystal-topped obsidian pillars. And the ocean is seen from
  * underwater: sand hills and a far monument, kelp and coral nearby, sunlight slanting down from the surface, bubbles.
- * The lush cave is flooded too: a mossy wall and a ceiling hung with glow berries, dripleaves and azaleas below.
+ * So is a lush cave's pool, the axolotl's: under the water of one of its clay-lined pools, its clay bottom rising to mossy
+ * banks, big dripleaves growing up through the water and small ones on the bottom, the glow berries above the surface
+ * lighting it warm.
  * So is the deep cave the glow squid swims in: dark rock streaked with glow lichen, lit only by that and sea pickles.
  * And the tadpole's swamp water: murky green under lily pads floating on the surface, dim sunlight slanting down onto a
  * mud and clay bottom with seagrass.
- * The wolves' wild biomes, for the Mobs tab, have no villages either: the snowy taiga and the grove under snowy peaks,
- * the old growth taigas' giant spruces and pines over mossy boulders, a sparse jungle, a savanna plateau's high steps
- * and the wooded badlands' banded terracotta mesas with oaks on top. The panda's bamboo jungle has none either: thick
- * bamboo under jungle trees. Nor do the mooshroom's mushroom fields: huge mushrooms on mycelium.
- * So do the goat's jagged peaks: bare stone mountains, snow above the snow line, crags, ice and powder snow.
- * And the warm frog's mangrove swamp: mud and still water under mangroves standing on arching roots, propagules hanging
- * from their leaves.
+ * The striped wolf's wooded badlands, for the Mobs tab, have no villages either: banded terracotta mesas with oaks on
+ * top. Nor do the mooshroom's mushroom fields: huge mushrooms on mycelium. Nor do the goat's jagged peaks: stone
+ * mountains under snow, bare on their steep faces.
  * And the inside of a woodland mansion, the vex's (evokers summon it, and they live in the mansions): a hall of dark oak
  * walls between dark oak log pillars under a beamed ceiling, a birch band along them, windows onto the dark forest
  * outside, bookshelves, a chest and a door, lit by torches on the pillars.
@@ -37,7 +34,8 @@
  * the witch's), the desert (the husk's, the parched's and the camel husk's), the snowy village (the stray's) and the
  * ocean (the drowned's and the zombie nautilus's, seen from underwater: dim moonlight from a dark surface).
  * The biomes some name tags' looks come from have backdrops too: the cherry grove's pink trees on a mountain meadow, the
- * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' yellow rock.
+ * pale garden's moss-hung pale oaks, the dappled forest's orange, red and gold trees, and the sulfur caves' layers of
+ * yellow sulfur and red cinnabar in a green fog, sulfur spikes and an acid-green pool.
  */
 // Spruce leaves keep one color everywhere; other tints come from BIOME_TINTS.
 const SPRUCE_TINT = "#619961";
@@ -48,9 +46,38 @@ const SPRUCE_TINT = "#619961";
 const blockTex = (name, tint, more = {}) => ({ layers: [[name, tint]], ...more });
 const blockFill = color => ({ fill: color });
 const plantTex = (name, tint) => blockTex(name, tint, { cap: false });
+// A lantern standing on the block below, seen from the side, from its block texture as the game's model cuts it up: the
+// body, the cap on it and the handle over that.
+const lanternTex = name => ({ parts: [[name, [0, 2, 6, 9], [5, 9]], [name, [1, 0, 5, 2], [6, 7]], [name, [11, 1, 14, 3], [6.5, 5]]], cap: false });
+// A lit candle standing on the block below, from its block texture as the game's model cuts it up: its body, the cap on
+// it and the wick, with a small flame drawn over the wick (the game's is a particle, not in the texture).
+const CANDLE = { parts: [["candle_lit", [0, 8, 2, 14], [7, 10]], ["candle_lit", [0, 6, 2, 8], [7, 8]], ["candle_lit", [0, 5, 1, 6], [8, 7]]],
+  // The flame, a pixel wide and three tall over the wick: orange at its tip, pale yellow at its heart.
+  rects: [[8, 4, 9, 5, "#ff9d2e"], [8, 5, 9, 7, "#ffe9a0"]], cap: false };
+// Sea pickles, two in a cluster, from their block texture as the game's model cuts it up: each one's side, a frond on top.
+const SEA_PICKLE = { parts: [["sea_pickle", [0, 10, 4, 16], [3, 10]], ["sea_pickle", [1, 0, 3, 5], [4, 5]],
+  ["sea_pickle", [4, 9, 8, 16], [9, 9]], ["sea_pickle", [13, 0, 15, 5], [10, 4]]], cap: false };
+// A bell hanging from the beam above on a short iron bar, from its block texture: the body and the wider rim under it.
+const BELL = { parts: [["bell_body", [1, 0, 7, 7], [5, 3]], ["bell_body", [0, 7, 8, 9], [4, 10]]], rects: [[7, 0, 9, 3, "#3c3c3c"]], cap: false };
 // Leaves; inside a crown their gaps show more leaves (backing, a darker shade of the tint), not the sky.
 const leavesTex = (name, tint) => blockTex(name, tint, { backing: `rgb(${hex(tint).map(v => Math.round(v * 0.42)).join(",")})` });
-const DOORWAY = blockFill("#21170f");
+// A doorway into a structure: the block it's cut into, darkened, the dim inside seen through it, with depth: its sides
+// in shadow, deepest on the left, and under its top edge.
+const DOORWAY_SIDES = [[0, 0, 3, 16, "rgba(0, 0, 0, .5)"], [3, 0, 5, 16, "rgba(0, 0, 0, .25)"], [13, 0, 16, 16, "rgba(0, 0, 0, .3)"],
+  [11, 0, 13, 16, "rgba(0, 0, 0, .12)"]];
+const DOORWAY_TOP = [[0, 0, 16, 3, "rgba(0, 0, 0, .55)"], [0, 3, 16, 5, "rgba(0, 0, 0, .25)"]];
+const doorway = name => blockTex(name, "#5a5a5a", { shade: DOORWAY_SIDES, lintel: DOORWAY_TOP });
+// An opening two or more blocks wide: its left block shaded only on its left side, its right block only on its right
+// (side: "left" or "right"), so no shadow runs down its middle.
+const doorwaySide = (name, side) => blockTex(name, "#5a5a5a", { shade: DOORWAY_SIDES.filter(([x0]) => (side === "left" ? x0 < 8 : x0 >= 8)), lintel: DOORWAY_TOP });
+// The dim inside of a building, seen through its windows' glass and its doors' panes, not the world behind it. A
+// house's is its back wall: its own planks, a shade darker, as a lit room seen through glass.
+const INSIDE = "#2e241b", HOUSE_INSIDE = "#e3d3c0";
+// The room's depth, seen through a window: the back wall darker under the ceiling and along the near side, the light
+// falling on it from the far side.
+const ROOM_SHADE = [[0, 0, 16, 3, "rgba(40, 24, 10, .62)"], [0, 3, 16, 5, "rgba(40, 24, 10, .32)"], [0, 5, 3, 16, "rgba(40, 24, 10, .5)"],
+  [3, 5, 5, 16, "rgba(40, 24, 10, .24)"], [0, 13, 16, 16, "rgba(40, 24, 10, .25)"]];
+const room = (wall, front) => ({ layers: [[wall, HOUSE_INSIDE], [front]], shade: ROOM_SHADE });
 
 // A prop: rows of blocks, top row first, each letter a block from its legend and "." empty.
 const prop = (rows, legend) => ({ rows, legend });
@@ -62,16 +89,6 @@ const oakTree = t => prop([
   "..T..",
   "..T..",
 ], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak") });
-// A birch: taller and slimmer than an oak, its leaves a paler green whatever the biome, as in the game.
-const birchTree = () => prop([
-  ".LLL.",
-  "LLLLL",
-  "LLLLL",
-  ".LLL.",
-  "..T..",
-  "..T..",
-  "..T..",
-], { L: leavesTex("leaves_birch", "#80a755"), T: blockTex("log_birch") });
 const tallOak = t => prop([
   ".LLLL.",
   "LLLLLL",
@@ -103,6 +120,30 @@ const acaciaTree = t => prop([
   "...T...",
   "...T...",
 ], { L: leavesTex("leaves_acacia", t.foliage), T: blockTex("acacia_log") });
+// More acacia shapes, as the game grows them, so the savanna isn't all one tree: a forked one, its trunk splitting into
+// two branches, each under a flat crown of its own at a different height; and a tall one, its trunk leaning one way
+// then straight up.
+const ACACIA = t => ({ L: leavesTex("leaves_acacia", t.foliage), T: blockTex("acacia_log") });
+const forkedAcacia = t => prop([
+  ".LLL......",
+  "LLLLL.LLL.",
+  "..T..LLLLL",
+  "..T....T..",
+  "...T..T...",
+  "....TT....",
+  "....T.....",
+], ACACIA(t));
+const tallAcacia = t => prop([
+  "..LLL..",
+  "LLLLLLL",
+  "....T..",
+  "...T...",
+  "..T....",
+  "..T....",
+  "..T....",
+], ACACIA(t));
+// A prop seen from the other side: its rows mirrored (an acacia whose trunk bends the other way).
+const mirrored = ({ rows, legend }) => prop(rows.map(row => [...row].reverse().join("")), legend);
 // A small jungle tree for the far canopy; tall ones lift their crowns above the rest.
 const jungleTree = (t, trunk = 3) => prop([
   ".LLL.",
@@ -128,56 +169,26 @@ const giantJungleTree = t => prop([
   ".....TT.....",
   ".....TT.....",
 ], { L: leavesTex("leaves_jungle", t.foliage), T: blockTex("jungle_log"), V: plantTex("vine", t.foliage) });
-// A jungle bush: oak leaves round a stub of jungle log.
-const jungleBush = t => prop([
-  ".L.",
-  "LTL",
-], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("jungle_log") });
 // Bamboo: a thin stalk (the middle strip of its texture) under a tuft of leaves.
 const bamboo = height => prop(["B", "B", ...Array(height - 2).fill("S")], {
   S: { layers: [["bamboo_stem", null, [6, 9]]], cap: false },
   B: { layers: [["bamboo_stem", null, [6, 9]], ["bamboo_leaf"]], cap: false },
 });
-// A bamboo jungle's stalk: big leaves at the top, small ones on the two segments below; and a shoot coming up.
-const BAMBOO_STEM = ["bamboo_stem", null, [6, 9]];
-const bambooStalk = height => prop(["B", "B", "s", "s", ...Array(height - 4).fill("S")], {
-  S: { layers: [BAMBOO_STEM], cap: false },
-  s: { layers: [BAMBOO_STEM, ["bamboo_small_leaf"]], cap: false },
-  B: { layers: [BAMBOO_STEM, ["bamboo_leaf"]], cap: false },
-});
-// A clump of stalks side by side from left, one per height.
-const bambooClump = (left, heights) => heights.map((h, i) => [bambooStalk(h), left + i]);
+// Tall grass, two blocks high.
+const tallGrass = t => prop(["T", "B"], { T: plantTex("tall_grass_top", t.grass), B: plantTex("tall_grass_bottom", t.grass) });
 const largeFern = t => prop(["F", "f"], { F: plantTex("large_fern_top", t.grass), f: plantTex("large_fern_bottom", t.grass) });
+// A swamp oak as the game grows them: a wide, flat crown on a short trunk, vines hanging long from its edges; and a small
+// one for the far hills.
 const swampOak = t => prop([
-  ".LLLLL.",
-  "LLLLLLL",
-  "LLLLLLL",
-  "V..T..V",
-  "V..T..V",
-  "...T...",
-], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak"), V: plantTex("vine", t.foliage) });
-
-// A mangrove, standing on arching roots (muddy where they meet the mud), propagules hanging under its leaves.
-const mangroveTree = t => prop([
-  "..LLLLL..",
   ".LLLLLLL.",
   "LLLLLLLLL",
-  ".LLLTLLL.",
-  ".p..T..p.",
+  "LLLLTLLLL",
+  "V.V.T.V.V",
+  "V...T...V",
+  "....T...V",
   "....T....",
-  "...RTR...",
-  "..R.R.R..",
-  ".M..M..M.",
-], { L: leavesTex("mangrove_leaves", t.foliage), T: blockTex("mangrove_log"), R: blockTex("mangrove_roots"), M: blockTex("muddy_mangrove_roots"),
-  p: plantTex("mangrove_propagule_hanging") });
-// A small one, for the far hills.
-const smallMangrove = t => prop([
-  ".LLL.",
-  "LLLLL",
-  ".pTp.",
-  ".RTR.",
-  "R.R.R",
-], { L: leavesTex("mangrove_leaves", t.foliage), T: blockTex("mangrove_log"), R: blockTex("mangrove_roots"), p: plantTex("mangrove_propagule_hanging") });
+], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak"), V: plantTex("vine", t.foliage) });
+const smallSwampOak = t => prop([".LLL.", "LLLLL", "V.T.V", "..T.."], { L: leavesTex("leaves_oak", t.foliage), T: blockTex("log_oak"), V: plantTex("vine", t.foliage) });
 
 // The mushroom fields' huge mushrooms, as the game grows them: a red one's domed cap hangs down round its stem, a brown
 // one's is a flat, wide plate.
@@ -190,7 +201,8 @@ const plant = (name, tint, height = 1) => prop(Array(height).fill("P"), { P: pla
 const block = (name, rows = ["B"]) => prop(rows, { B: blockTex(name) });
 
 // A village house: roof, walls with windows and a door, framed by logs on a foundation.
-const house = ({ roof, wall, frame, base, door, window = blockTex("glass") }) => prop([
+// A window lit at night (LIT_WINDOW) lights its door's panes too.
+const house = ({ roof, wall, frame, base, door, window = room(wall, "glass") }) => prop([
   "..RRR..",
   ".RRRRR.",
   "RRRRRRR",
@@ -199,7 +211,8 @@ const house = ({ roof, wall, frame, base, door, window = blockTex("glass") }) =>
   "BBBBBBB",
 ], {
   R: blockTex(roof), W: blockTex(wall), F: blockTex(frame), B: blockTex(base), G: window,
-  D: blockTex(`door_${door}_upper`), d: blockTex(`door_${door}_lower`),
+  ...Object.fromEntries([["D", "upper"], ["d", "lower"]].map(([k, half]) => [k, window.under
+    ? blockTex(`door_${door}_${half}`, null, { under: window.under }) : { ...room(wall, `door_${door}_${half}`), shade: half === "upper" ? ROOM_SHADE.slice(0, 4) : ROOM_SHADE.slice(2) }])),
 });
 const desertHouse = prop([
   "XSSSSSX",
@@ -207,40 +220,49 @@ const desertHouse = prop([
   "SHSSSHS",
   "SSSHSSS",
   "SSSHSSS",
-], { S: blockTex("smooth_sandstone"), X: blockTex("chiseled_sandstone"), O: blockTex("orange_terracotta"), H: DOORWAY });
-// A bay of a woodland mansion's hall, seen from inside: a dark oak log pillar on its left under the dark oak beams of
-// the ceiling, a birch band along the wall, a window onto the dark forest outside, and at its foot what stands there
-// (rows, three, each the bay's width less the pillar). torch: one on the pillar.
+], { S: blockTex("smooth_sandstone"), X: blockTex("chiseled_sandstone"), O: blockTex("orange_terracotta"), H: doorway("smooth_sandstone") });
+// A woodland mansion's hall, seen from inside, as the game builds them: walls of birch planks between pillars of dark oak
+// logs, under a dark oak ceiling and beam, a dark oak rail along them and a cobblestone base; tall glass windows onto the
+// dark forest outside; torches on the pillars; and along the wall bookshelves, a dark oak door, a chest and potted
+// flowers.
 // The window: the dark forest's leaves outside, through the glass.
 const MANSION_WINDOW = { layers: [["leaves_oak", "#3d6b2c"], ["glass"]], under: "#1d2b18" };
-const mansionBay = (floor, torch = false) => prop([
-  "PPPPPPP",
-  "LBBBBBB",
-  "L......",
-  `L${torch ? "T" : "."}.WW..`,
-  "L..WW..",
-  "L..WW..",
-  "L..WW..",
-  "L......",
-  ...floor.map(row => `L${row}`),
-], {
-  P: blockTex("planks_dark_oak"), L: blockTex("log_dark_oak"), B: blockTex("planks_birch"), W: MANSION_WINDOW, T: plantTex("torch"),
-  K: blockTex("bookshelf"), C: { layers: [["chest_front"]] }, D: blockTex("door_dark_oak_upper"), d: blockTex("door_dark_oak_lower"),
-});
-const mansionPillar = prop(["P", ...Array(10).fill("L")], { P: blockTex("planks_dark_oak"), L: blockTex("log_dark_oak") });
-const pyramid = prop([
-  "....S....",
-  "...SOS...",
-  "..SSSSS..",
-  ".SSSOSSS.",
-  "SSSSSSSSS",
-], { S: blockTex("smooth_sandstone"), O: blockTex("orange_terracotta") });
+// A flower in a pot, from their textures as the game cuts them up: the pot's side, the flower standing in it.
+const potted = flower => ({ parts: [[flower, [0, 0, 16, 16], [0, -4]], ["flower_pot", [5, 10, 11, 16], [5, 10]]], cap: false });
+const MANSION = {
+  P: blockTex("planks_dark_oak"), L: blockTex("log_dark_oak"), B: blockTex("planks_birch"), W: MANSION_WINDOW, C: blockTex("cobblestone"),
+  // A torch on a pillar.
+  t: { layers: [["log_dark_oak"], ["torch"]] }, T: plantTex("torch"),
+  K: blockTex("bookshelf"), H: { layers: [["chest_front"]] }, F: blockTex("planks_dark_oak"),
+  D: blockTex("door_dark_oak_upper", null, { under: INSIDE }), d: blockTex("door_dark_oak_lower", null, { under: INSIDE }),
+  a: potted("flower_allium"), r: potted("flower_tulip_red"),
+};
+const mansion = rows => prop(rows, MANSION);
+// The hall's wall, nine blocks to a bay, floor to ceiling.
+const MANSION_WALL = [
+  "PPPPPPPPP",
+  "LPPPPPPPP",
+  "LBBBBBBBB",
+  "LBBBWWBBB",
+  "tBBBWWBBB",
+  "LBBBWWBBB",
+  "LBBBWWBBB",
+  "LBBBWWBBB",
+  "LBBBBBBBB",
+  "LPPPPPPPP",
+  "LBBBBBBBB",
+  "LBBBBBBBB",
+  "LBBBBBBBB",
+  "LBBBBBBBB",
+  "LBBBBBBBB",
+  "CCCCCCCCC",
+];
 const igloo = prop([
   "..SSS..",
   ".SSSSS.",
   "SSSSSSS",
   "SSSHSSS",
-], { S: blockTex("snow"), H: DOORWAY });
+], { S: blockTex("snow"), H: doorway("snow") });
 // A jungle temple in three tiers of mossy cobblestone and stone bricks, overgrown with leaves and vines.
 const jungleTemple = t => prop([
   "...LXL...",
@@ -252,31 +274,72 @@ const jungleTemple = t => prop([
   "MSMMHMMSM",
 ], {
   M: blockTex("mossy_cobblestone"), C: blockTex("cobblestone"), S: blockTex("mossy_stone_bricks"), X: blockTex("chiseled_stone_bricks"),
-  H: DOORWAY, L: leavesTex("leaves_jungle", t.foliage), V: plantTex("vine", t.foliage),
+  H: doorway("mossy_cobblestone"), L: leavesTex("leaves_jungle", t.foliage), V: plantTex("vine", t.foliage),
 });
+// The witch's hut: spruce walls under a dark oak roof, up on oak log stilts, its doorway opening onto a small balcony
+// (a spruce slab, B) railed with an oak fence post (F).
 const witchHut = prop([
-  "RRRRRRR",
-  ".PPPPP.",
-  ".PHPPP.",
-  ".PPPPP.",
-  ".T...T.",
-  ".T...T.",
-], { R: blockTex("planks_dark_oak"), P: blockTex("planks_spruce"), H: DOORWAY, T: blockTex("log_oak") });
+  ".RRRRRRR",
+  "..PPPPP.",
+  "F.PHPPP.",
+  "BBPPPPP.",
+  "..T...T.",
+  "..T...T.",
+], { R: blockTex("planks_dark_oak"), P: blockTex("planks_spruce"), H: doorway("planks_spruce"), T: blockTex("log_oak"),
+  B: blockTex("planks_spruce", null, { rows: [0, 8] }), F: { layers: [["oak_planks", null, [6, 10]]], cap: false } });
+// The swamp's ground, a block high at the same distance as its water: grass (G) with pools of gray-green water (~) cut
+// into it, and what grows on it (rows over it): lily pads on the water (l), blue orchids (o), sugar cane (c), a firefly
+// bush (f), short grass (g), brown and red mushrooms (b, r).
+const swampGround = (t, rows) => prop(rows, { "~": blockTex("water", t.water), G: grassyTop(t), l: blockTex("lily_pad", null, { squash: [12, 16], cap: false }),
+  o: plantTex("flower_blue_orchid"), c: plantTex("reeds", t.grass), f: plantTex("firefly_bush"), g: plantTex("short_grass", t.grass),
+  b: plantTex("mushroom_brown"), r: plantTex("mushroom_red") });
+// A prop lifted a block, to stand on the swamp's ground.
+const lifted = ({ rows, legend }) => prop([...rows, ".".repeat(rows[0].length)], legend);
 const wheatFarm = prop([
   "wwwww",
   "fffff",
 ], { w: plantTex("wheat_crop"), f: blockTex("dirt") });
+// Its lily pads lie flat on the water, seen edge on: the whole pad squashed into a thin strip, as the swamp water's
+// are seen from below (drawSurface).
 const pond = t => prop([
   ".l...l.l.",
   "~~~~~~~~~",
-], { "~": blockTex("water", t.water), l: blockTex("lily_pad", null, { rows: [11, 16], cap: false }) });
+], { "~": blockTex("water", t.water), l: blockTex("lily_pad", null, { squash: [12, 16], cap: false }) });
 
 // Each biome's scene: hills (top and fill blocks, height in blocks, trees at fractions of the width) and
 // nearer props at offsets in blocks from the middle.
 const grassyTop = t => ({ layers: [["dirt"], ["grass_side_overlay", t.grass]] });
 const oreMound = (ore, rows) => prop(rows, { R: blockTex("stone"), T: blockTex("tuff"), O: blockTex(ore) });
+// A tunnel leading off from a cave: a stepped opening in the rock, its stone darker the further in, black at its heart,
+// a seam of coal in its side in the same shade.
+const caveTunnel = prop([
+  "..aaa..",
+  ".aabaa.",
+  "aabcbaa",
+  "abcccoa",
+  "abcccba",
+], { a: blockTex("stone", "#6b6b6b"), b: blockTex("stone", "#363636"), o: blockTex("coal_ore", "#363636"), c: blockFill("#0b0b0d") });
 const stalagmite = prop(["t", "f", "D"], { t: plantTex("dripstone_up_tip"), f: plantTex("dripstone_up_frustum"), D: blockTex("dripstone_block") });
-const netherMound = (rows) => prop(rows, { N: blockTex("netherrack"), C: blockTex("crimson_nylium"), M: blockTex("magma"), G: blockTex("glowstone"), Q: blockTex("quartz_ore") });
+// The nether wastes: netherrack (N) with blobs of magma (M), blackstone (B), nether quartz (Q) and nether gold ore (O) in it,
+// fire burning on it (F), soul sand (S) and gravel (g) at the lava's shore, lava (L), mushrooms (b, r).
+const netherMound = rows => prop(rows, { N: blockTex("netherrack"), M: blockTex("magma"), B: blockTex("blackstone"), Q: blockTex("quartz_ore"),
+  O: blockTex("nether_gold_ore"), F: plantTex("fire"), S: blockTex("soul_sand"), g: blockTex("gravel"), L: blockTex("lava"),
+  b: plantTex("mushroom_brown"), r: plantTex("mushroom_red") });
+// A nether fortress's bridge far off over the lava sea, the blaze's home: a walkway of nether bricks railed with nether brick
+// fences, on arches between pillars that go down into the lava.
+const fortressBridge = prop([
+  "f.f.f.f.f.f.f.f.f.f.f.f.f.f.f.f.f.",
+  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "bbb....bbbb....bbbb....bbbb....bbb",
+  "cc......cc......cc......cc......cc",
+  "dd......dd......dd......dd......dd",
+  "ee......ee......ee......ee......ee",
+  "ff......ff......ff......ff......ff",
+  "gg......gg......gg......gg......gg",
+  "hh......hh......hh......hh......hh",
+  "ii......ii......ii......ii......ii",
+  "jj......jj......jj......jj......jj",
+], { f: { layers: [["nether_brick", null, [5, 11]]] }, ...Object.fromEntries([..."abcdefghij"].map(k => [k, blockTex("nether_brick")])) });
 const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava") });
 const monument = prop([
   "......PPPP......",
@@ -294,14 +357,24 @@ const tallSeagrass = prop(["T", "B"], { T: plantTex("tall_seagrass_top"), B: pla
 // A coral reef's clump: blocks of one color with plants and fans of it, or of another, growing on top.
 const reef = (a, b, rows) => prop(rows, {
   A: blockTex(`coral_${a}`), B: blockTex(`coral_${b}`), p: plantTex(`coral_plant_${a}`), q: plantTex(`coral_plant_${b}`),
-  f: plantTex(`coral_fan_${a}`), g: plantTex(`coral_fan_${b}`), s: plantTex("sea_pickle"),
+  f: plantTex(`coral_fan_${a}`), g: plantTex(`coral_fan_${b}`), s: SEA_PICKLE,
 });
 // Rock with glow lichen growing over it.
 const lichen = rock => ({ layers: [[rock], ["glow_lichen"]] });
 const lichenMound = rows => prop(rows, { R: blockTex("stone"), D: blockTex("deepslate"), L: lichen("stone"), K: lichen("deepslate") });
-const dripleaf = height => prop(["L", ...Array(height - 1).fill("S")], { L: plantTex("big_dripleaf_top"), S: plantTex("big_dripleaf_stem") });
-const azaleaBush = prop([".AF.", "AFAA", "AAFA"], { A: blockTex("azalea_leaves"), F: blockTex("azalea_leaves_flowers") });
-const mossMound = rows => prop(rows, { M: blockTex("moss_block"), C: blockTex("clay") });
+// A big dripleaf, how many blocks tall, seen from the side as the game's model draws it: its stem, and on top its leaf,
+// a broad plate seen a little from below (its top texture squeezed into three rows), the curve of its underside under
+// that (the leaf's side texture), on the stem's last bit.
+const dripleaf = height => prop(["L", ...Array(height - 1).fill("S")], {
+  L: { parts: [["big_dripleaf_top", [0, 0, 16, 16], [0, 1, 16, 3]], ["big_dripleaf_side2", [0, 1, 16, 4], [0, 4]], ["big_dripleaf_stem", [0, 7, 16, 16], [0, 7]]], cap: false },
+  S: plantTex("big_dripleaf_stem") });
+// A small dripleaf, two blocks tall: its stem, and its three leaves at the top, each a flat plate seen edge on (its leaf,
+// the top texture's corner, squeezed into two rows), one at the tip and one out to each side.
+const smallDripleaf = prop(["T", "B"], {
+  T: { layers: [["small_dripleaf_stem_top"]], parts: [["small_dripleaf_top", [0, 0, 8, 8], [1, 3, 7, 2]], ["small_dripleaf_top", [0, 0, 8, 8], [8, 6, 7, 2]], ["small_dripleaf_top", [0, 0, 8, 8], [4, 0, 8, 2]]], cap: false },
+  B: plantTex("small_dripleaf_stem_bottom") });
+// A lush pool's bank: clay (C) with moss (M) over it.
+const poolBank = rows => prop(rows, { M: blockTex("moss_block"), C: blockTex("clay") });
 // An obsidian pillar, how many blocks tall and wide, capped with bedrock and holding an end crystal (crystal, how high
 // it sits); caged, with iron bars round the crystal.
 const obsidianPillar = (height, width = 1, caged = false) => {
@@ -310,62 +383,188 @@ const obsidianPillar = (height, width = 1, caged = false) => {
   return { ...prop([...top, ...Array(height).fill("O".repeat(width))],
     { B: blockTex("bedrock"), O: blockTex("obsidian"), I: plantTex("iron_bars") }), crystal: height + 1 };
 };
-// The exit portal before the dragon falls: an empty bedrock bowl round a pillar with torches, side on.
-const exitPortal = prop(["....B....", "...TBT...", "....B....", "B...B...B", "BBBBBBBBB"], { B: blockTex("bedrock"), T: plantTex("torch") });
-const endTower = prop(["..E..", ".PPP.", "PPPPP", ".IGI.", ".IEI.", "PPPPP", ".IGI.", ".IEI.", ".IEI.", ".EEE."],
-  { P: blockTex("purpur_block"), I: blockTex("purpur_pillar"), E: blockTex("end_bricks"), G: DOORWAY });
-const farTower = prop(["..E..", ".PPP.", "PPPPP", ".IGI.", ".IEI.", "PPPPP", ".IGI.", ".IEI.", ".IEI.", "PPPPP", ".IGI.", ".IEI.", ".IEI.", ".EEE."],
-  { P: blockTex("purpur_block"), I: blockTex("purpur_pillar"), E: blockTex("end_bricks"), G: DOORWAY });
-const chorus = prop(["F...", "C.F.", "C.C.", "CCC.", ".C.F", ".CCC", ".C.."], { C: plantTex("chorus_plant"), F: plantTex("chorus_flower") });
-const smallChorus = prop(["F.", "CF", "CC", "C."], { C: plantTex("chorus_plant"), F: plantTex("chorus_flower") });
-// A mineshaft's support: two posts under a beam, webs thick in its top corners, a torch on one post (torch, -1 left or 1 right).
-const mineSupport = (width, height, torch = 0) => {
-  const inside = width - 2, line = (left, right) => `L${left}${".".repeat(inside - left.length - right.length)}${right}L`;
-  const rows = ["W".repeat(Math.ceil(inside / 3)), "W"];
-  return prop(["P".repeat(width), ...Array.from({ length: height }, (_, i) => {
-    if (i < 2) return line(rows[i], rows[i]);
-    if (i === 3 && torch) return torch < 0 ? line("T", "") : line("", "T");
-    return line("", "");
-  })], { P: blockTex("oak_planks"), L: blockTex("log_oak"), W: plantTex("cobweb"), T: plantTex("torch") });
+// An end city, side on, as the game builds its pieces: purpur blocks (P), shaded where a tower's face is set back (Q),
+// purpur pillars (I) at the corners, walls of end stone bricks (E) with gaps in them (D one block wide, X and Y the left and right of a wider one), their sides and tops
+// in shadow, roofs and
+// ledges jutting out in purpur stairs (h, their lower half), end rods (R) standing on the roofs, magenta glass (G) in
+// the ship's windows, and the city's banners (B, b), magenta with a black chevron; on the ship's bow the ender dragon's
+// head (K, J, k, j).
+const END_CITY = {
+  P: blockTex("purpur_block"), Q: blockTex("purpur_block", "#a998b4"), I: blockTex("purpur_pillar"), E: blockTex("end_bricks"),
+  h: blockTex("purpur_block", null, { rows: [8, 16] }), D: doorway("end_bricks"), X: doorwaySide("end_bricks", "left"), Y: doorwaySide("end_bricks", "right"), G: { layers: [["magenta_glass"]], under: "#2a1534" },
+  R: { parts: [["end_rod", [0, 0, 2, 15], [7, 1]], ["end_rod", [2, 2, 6, 3], [6, 15]]], cap: false },
+  B: { rects: [[4, 0, 12, 16, "#b23aa9"], [4, 10, 6, 12, "#1d1a20"], [10, 10, 12, 12, "#1d1a20"], [6, 12, 10, 14, "#1d1a20"]], cap: false },
+  b: { rects: [[4, 0, 12, 12, "#b23aa9"], [4, 2, 6, 4, "#1d1a20"], [10, 2, 12, 4, "#1d1a20"], [6, 4, 10, 6, "#1d1a20"]], cap: false },
+  // The head two blocks by two, side on, cut from the dragon's own skin: the top of its head with the ridges on it and
+  // its glowing purple eye (K), under it the rest of its head (J); its snout in front, the nostril near the tip (k), and
+  // the lower jaw (j).
+  K: { parts: [["dragon_head_side", [0, 0, 16, 13], [0, 3]]], rects: [[3, 0, 5, 3, "#2b2530"], [9, 0, 11, 3, "#2b2530"], [8, 8, 13, 11, "#d65cf5"], [13, 8, 15, 11, "#f0b8ff"]], cap: false },
+  J: { layers: [["dragon_head_side"]], cap: false },
+  k: { parts: [["dragon_snout_side", [0, 0, 16, 8], [0, 8]]], rects: [[12, 9, 14, 11, "#0b090d"]], cap: false },
+  j: { parts: [["dragon_snout_side", [0, 8, 16, 14], [0, 0]]], cap: false },
 };
-const spawnerCage = block("mob_spawner");
-// A mineshaft as the game builds it: every few blocks a support of two oak fence posts under an oak plank beam, a torch
-// on some, cobwebs strung in their corners; rails along the floor, a chest minecart standing on them, and a spawner
-// netted round with webs, where cave spiders come from.
+// A tower's shaft, plain purpur, rows tall: its corners stand out and its middle is set back, a block jutting from it now
+// and then.
+const shaftRows = (rows, bumps = []) => Array.from({ length: rows }, (_, r) => (bumps.includes(r) ? "PPQPQPP" : "PPQQQPP"));
+// The city's base floor close by, its tower rising out of it: a purpur floor jutting out under walls of end stone bricks
+// between purpur pillars, with gaps in them high up and the doorway between; the base roof over them, its rim at the
+// ends, end rods on it; out of the middle the tower's shaft, up out of sight.
+const endCityBase = prop([
+  ...shaftRows(8, [3]).map(row => `...${row}...`),
+  "R..PPQQQPP..R",
+  "PP.PPQQQPP.PP",
+  "hPPPPPPPPPPPh",
+  ".IEXYEEEXYEI.",
+  ".IEXYEEEXYEI.",
+  ".IEXYEEEXYEI.",
+  ".IEEEEDEEEEI.",
+  ".IEEEEDEEEEI.",
+  "hPPPPPPPPPPPh",
+], END_CITY);
+// Far off, a whole city on its island: its base floor, a tower's shaft rising from it to the tower's top room, walls of
+// purpur with bands of end stone bricks, banners hanging from under it and its great roof jutting out; from the shaft a
+// bridge, its deck between low walls on a support, out to the end ship hanging in the void, its stern to the city: the
+// stern castle with its windows, its hull, the mast and crow's nest, and the dragon head on its bow.
+const END_SHIP = [
+    "........IIIII.........",
+    "........I.I.I.........",
+    "........IIIII.........",
+    "..........I...........",
+    "..........I...........",
+    "..........I...........",
+    "..........I.........Kk",
+    "PPPPP.....I........PJj",
+    "PGPGP.....I.......PP..",
+    "PPPPPPPPPPPPPPPPPPP...",
+    ".PPGPPPPPPPPPPPPPP....",
+    "..PPPPPPPPPPPPPPP.....",
+    "....PPPPPPPPPPPP......",
+];
+const farEndCity = (() => {
+  const w = 41, tower = [
+    "hPPPPPPPPPPPPPh",
+    ".hPPPPPPPPPPPh.",
+    "..IPPPPPPPPPI..",
+    "..IPEEEPEEEPI..",
+    "..IPEEEPEEEPI..",
+    "..IPPPPPPPPPI..",
+    ".hPPPPPPPPPPPh.",
+    ".B.B.PPQPP.B.B.",
+    ".b.b.PPQPP.b.b.",
+    ...Array.from({ length: 10 }, (_, r) => (r === 4 ? ".....PQPQP....." : ".....PQQQP.....")),
+    "..PPPPPPPPPPP..",
+    "..hPPPPPPPPPh..",
+    "..IEXYEEEXYEI..",
+    "..IEXYEEEXYEI..",
+    "..IEEEEDEEEEI..",
+    "..IEEEEDEEEEI..",
+    "..hPPPPPPPPPh..",
+  ];
+  const rows = tower.map(row => row + ".".repeat(w - row.length));
+  const put = (piece, left, bottom) => piece.forEach((line, r) => {
+    const y = rows.length - bottom - piece.length + r;
+    rows[y] = [...rows[y]].map((ch, c) => (c >= left && c < left + line.length && line[c - left] !== "." ? line[c - left] : ch)).join("");
+  });
+  put(["PPPPP", "PPPPP", "..I..", "..I..", "..I.."], 10, 10);
+  put(END_SHIP, 15, 11);
+  return prop(rows, END_CITY);
+})();
+// Grown chorus trees, each its own shape: a stem branching out and up, flowers on the tips. Their stems stand in the
+// bottom row.
+const CHORUS = { C: plantTex("chorus_plant"), F: plantTex("chorus_flower") };
+const chorusTrees = [
+  ["..F...", "F.C.F.", "C.C.C.", "CCCCC.", "..C..F", "..CCCC", "F.C...", "CCC...", "..C...", "..C..."],
+  [".F..F", ".C..C", "FCCCC", "C.C..", "CCC.F", "..CCC", "..C..", "..C.."],
+  ["...F...", "F..C..F", "C..C..C", "CCCCCCC", "...C...", "F..C...", "CCCC...", "...C...", "...C...", "...C...", "...C..."],
+  ["F.F", "CCC", ".C.", ".CF", ".C.", "FC.", "CC.", ".C."],
+].map(rows => prop(rows, CHORUS));
+// An oak fence post: a narrow strip of oak planks up the middle of the block.
 const FENCE = { layers: [["oak_planks", null, [6, 10]]] };
 // The heart of a plains village: its well (cobblestone round the water, oak posts holding up a cobblestone roof), the
 // meeting point's bell hanging from an oak frame, a lamp post (a lantern on an oak fence post), a composter and a barrel by
 // a house, and a smaller house for the far hills.
 const villageWell = prop(["CCCC", "F..F", "F..F", "CCCC"], { C: blockTex("cobblestone"), F: FENCE });
-const bellFrame = prop(["PPP", "FbF", "F.F"], { P: blockTex("oak_planks"), F: FENCE, b: plantTex("bell") });
-const lampPost = prop(["L", "F", "F", "F"], { L: plantTex("lantern"), F: FENCE });
+const bellFrame = prop(["PPP", "FbF", "F.F"], { P: blockTex("oak_planks"), F: FENCE, b: BELL });
+const lampPost = prop(["L", "F", "F", "F"], { L: lanternTex("lantern_block"), F: FENCE });
 const smallHouse = ({ roof, wall, frame, base }) => prop([".RRR.", "RRRRR", "FWGWF", "FWWWF", "BBBBB"], {
-  R: blockTex(roof), W: blockTex(wall), F: blockTex(frame), B: blockTex(base), G: blockTex("glass") });
+  R: blockTex(roof), W: blockTex(wall), F: blockTex(frame), B: blockTex(base), G: room(wall, "glass") });
 const PLAINS_HOUSE = { roof: "planks_dark_oak", wall: "oak_planks", frame: "log_oak", base: "cobblestone", door: "oak" };
-// webs: how many rows down the top corners are strung with cobwebs (the top row that many blocks in from each post).
-const mineFrame = (width, height, { torch = 0, webs = 0 } = {}) => {
-  const inside = width - 2, row = (left, right) => `F${left}${".".repeat(inside - left.length - right.length)}${right}F`;
-  return prop(["P".repeat(width), ...Array.from({ length: height }, (_, i) => {
-    const web = "W".repeat(Math.max(0, Math.min(webs - i, Math.floor(inside / 2))));
-    if (i === 2 && torch) return torch < 0 ? row("T", web) : row(web, "T");
-    return row(web, web);
-  })], { P: blockTex("oak_planks"), F: FENCE, W: plantTex("cobweb"), T: plantTex("torch") });
-};
 // Rails seen from the side: the iron rail on its sleepers.
 const RAIL = { rects: [[0, 13, 4, 16, "#4f3a24"], [8, 13, 12, 16, "#4f3a24"], [0, 11, 16, 13, "#7d7d7d"], [0, 11, 16, 12, "#b0b0b0"]], cap: false };
 const rails = length => prop(["R".repeat(length)], { R: RAIL });
-// A chest minecart: the chest's lid and latch showing over the cart's iron sides, wheels on the rail.
-const chestMinecart = prop(["CC", "MM"], {
+// A chest minecart, one block long: the whole chest, lid and latch, riding on the cart's iron sides, wheels on the rail.
+const chestMinecart = prop(["C", "M"], {
   C: { layers: [["chest_front"]], rows: [1, 16], cap: false },
   M: { rects: [[0, 0, 16, 9, "#5e5e5e"], [0, 0, 16, 2, "#8a8a8a"], [0, 7, 16, 9, "#3c3c3c"], [2, 9, 6, 13, "#262626"], [10, 9, 14, 13, "#262626"], ...RAIL.rects], cap: false },
 });
-const webbedSpawner = prop(["WWW", "WSW"], { S: blockTex("mob_spawner"), W: plantTex("cobweb") });
+// A mineshaft corridor cut through the far wall of a cave, seen from the side, three blocks high, rows top first; drawn
+// as two props in the same place. Its back wall (mineBack): the cave's own stone (a, b, d), andesite (A, B, D) and
+// gravel (g), darkened, in a shadow that fades smoothly from under the roof to the floor, and side corridors going back
+// into the rock (archDepth). What's in it (mineCorridor): every four blocks a support seen end on, an oak plank
+// beam (P) on oak fence posts (F); torches (t) beside some, cobwebs (W) strung under the roof by the beams, a rail line
+// (R) along its floor, broken here and there, a chest minecart (C over M) standing on it; at each side corridor's
+// mouth, its support face on and further back, so dimmer (beam Q, posts f, posts behind the rail g).
+const MINE_ROCK = { a: "stone", b: "stone", d: "stone", A: "andesite", B: "andesite", D: "andesite", g: "gravel" };
+// The shadow over one row of it (0 at the top), in two-texel strips: deepest under the roof, gone by the floor.
+const mineShade = row => Array.from({ length: 8 }, (_, i) => {
+  const y = row * 16 + i * 2 + 1, alpha = 0.6 * Math.pow(1 - y / 48, 1.4);
+  return [0, i * 2, 16, i * 2 + 2, `rgba(6, 5, 4, ${alpha.toFixed(3)})`];
+});
+// A side corridor seen down its length through the mouth of a support (arches: the left column of each, three wide):
+// inside the posts and under the beam, rings of shadow, each smaller and darker, closing in toward its far end, and
+// a dim support further back framing the second ring. In texels, over the whole prop; returns each block's share.
+const archDepth = (left, rows) => {
+  const x0 = left * 16 + 10, x1 = (left + 2) * 16 + 6, y0 = 16, y1 = rows * 16, boxes = [];
+  for (let i = 1; i <= 4; i++) boxes.push([x0 + 3 * i, y0 + 2 * i, x1 - 3 * i, y1 - 2 * i, "rgba(6, 5, 4, .3)"]);
+  const [fx0, fy0, fx1, fy1] = [x0 + 6, y0 + 4, x1 - 6, y1 - 4], wood = "rgba(64, 46, 28, .85)";
+  boxes.push([fx0, fy0, fx0 + 2, fy1, wood], [fx1 - 2, fy0, fx1, fy1, wood], [fx0, fy0, fx1, fy0 + 2, wood]);
+  // Each block's share of the boxes, in its own texels.
+  return (r, c) => boxes.flatMap(([bx0, by0, bx1, by1, color]) => {
+    const cx0 = Math.max(bx0, c * 16), cx1 = Math.min(bx1, c * 16 + 16), cy0 = Math.max(by0, r * 16), cy1 = Math.min(by1, r * 16 + 16);
+    return cx0 < cx1 && cy0 < cy1 ? [[cx0 - c * 16, cy0 - r * 16, cx1 - c * 16, cy1 - r * 16, color]] : [];
+  });
+};
+// Each letter in each row gets its own block, its texture under that row's shadow (and, in a side corridor's mouth,
+// that block's own one: archDepth).
+const mineBack = (rows, arches = []) => {
+  const depth = arches.map(left => archDepth(left, rows.length));
+  let next = 0x100;
+  const legend = {}, keys = {}, out = rows.map((row, r) => [...row].map((ch, c) => {
+    const rects = depth.flatMap(share => share(r, c));
+    const id = rects.length ? `${r},${c}` : `${ch}${r}`;
+    if (!keys[id]) {
+      keys[id] = String.fromCharCode(next++);
+      legend[keys[id]] = blockTex(MINE_ROCK[ch], "#a0a0a0", { shade: [...mineShade(r), ...rects] });
+    }
+    return keys[id];
+  }).join(""));
+  return prop(out, legend);
+};
+const FAR_FENCE = { layers: [["oak_planks", "#7a7a7a", [6, 10]]] };
+const MINE_BITS = { P: blockTex("oak_planks"), F: FENCE, t: plantTex("torch"), W: plantTex("cobweb"), R: RAIL, C: chestMinecart.legend.C, M: chestMinecart.legend.M,
+  Q: blockTex("oak_planks", "#7a7a7a"), f: FAR_FENCE, g: { ...FAR_FENCE, rects: RAIL.rects } };
+const mineCorridor = rows => prop(rows, MINE_BITS);
 // The cherry grove: cherry trees, their pink crowns hanging down at the edges, over a meadow high in the mountains.
 const CHERRY = { L: blockTex("cherry_leaves", null, { backing: "#a3607f" }), T: blockTex("cherry_log") };
 const cherryTree = (trunk = 3) => prop(["..LLLLL..", ".LLLLLLL.", "LLLLLLLLL", "LLLLTLLLL", "L.L.T.L.L", ...Array(trunk).fill("....T....")], CHERRY);
 const smallCherry = () => prop([".LLL.", "LLLLL", "L.T.L", "..T.."], CHERRY);
+// More cherry shapes, so the grove isn't all one tree: a narrow, tall one; a forked one, its trunk splitting into two
+// crowns of different heights, as the game's cherries branch; and far ones, tall and medium.
+const tallCherry = (trunk = 4) => prop(["..LLL..", ".LLLLL.", "LLLLLLL", "LLLLLLL", "LLLTLLL", ".L.T.L.", ...Array(trunk).fill("...T...")], CHERRY);
+const forkedCherry = (trunk = 2) => prop([
+  ".LLLLL...LLLL.",
+  "LLLLLLL.LLLLLL",
+  "LLLLLLL.LLLLLL",
+  "L.LTL.L.L.TL.L",
+  "...T......T...",
+  "....T....T....",
+  ".....T..T.....",
+  "......TT......",
+  ...Array(trunk).fill("......T.......")], CHERRY);
+const tallFarCherry = () => prop([".LLL.", "LLLLL", "LLLLL", "L.T.L", "..T..", "..T..", "..T..", "..T.."], CHERRY);
+const midCherry = () => prop(["..LLL..", ".LLLLL.", "LLLLLLL", "L.LTL.L", "...T...", "...T..."], CHERRY);
 // The pale garden: pale oaks (dark oaks' shape: a two-wide trunk under a broad crown) hung with pale moss, one with a
-// creaking heart in its trunk; pale moss underfoot and eyeblossoms, shut by day.
+// creaking heart in its trunk; pale moss underfoot and eyeblossoms, shut by day and open at night.
 const PALE = { L: blockTex("pale_oak_leaves", null, { backing: "#4a504b" }), T: blockTex("pale_oak_log"), H: blockTex("creaking_heart"),
   M: plantTex("pale_hanging_moss"), m: plantTex("pale_hanging_moss_tip") };
 const paleOak = (trunk = 3, heart = false) => prop([".LLLLLL.", "LLLLLLLL", "LLLLLLLL", "LMLTTLML", "M.TT..m.", "m.TT....",
@@ -375,82 +574,165 @@ const paleMound = rows => prop(rows, { M: blockTex("pale_moss_block"), D: blockT
 // The dappled forest: oaks and birches turned orange, red and gold, as the pack's dappled looks are.
 const DAPPLED = { orange: "#d2701d", red: "#b8381c", gold: "#d8ae2c" };
 const autumnBirch = () => prop([".LLL.", "LLLLL", "LLLLL", ".LLL.", "..T..", "..T..", "..T.."], { L: leavesTex("leaves_birch", DAPPLED.gold), T: blockTex("log_birch") });
-// The sulfur caves: tuff and sulfur, seamed with potent sulfur and calcite, sulfur spikes hanging and rising.
-const sulfurMound = rows => prop(rows, { S: blockTex("sulfur"), P: blockTex("potent_sulfur"), T: blockTex("tuff"), C: blockTex("calcite") });
-const sulfurSpike = (tall = 1) => prop(["t", ...Array(tall).fill("f"), "S"], { t: plantTex("sulfur_spike_up_tip"), f: plantTex("sulfur_spike_up_frustum"), S: blockTex("sulfur") });
-// A giant spruce of the old growth spruce taiga: a two-wide trunk under a broad cone, rising out of the top of the stage.
-const giantSpruce = () => prop([
-  "...LL...",
-  "..LLLL..",
-  "...LL...",
-  "..LLLL..",
-  ".LLLLLL.",
-  "..LTTL..",
-  ".LLLLLL.",
-  "LLLLLLLL",
-  "..LTTL..",
-  "LLLLLLLL",
-  "LLLLLLLL",
-  "...TT...",
-  "...TT...",
-  "...TT...",
-  "...TT...",
-], { L: leavesTex("leaves_spruce", SPRUCE_TINT), T: blockTex("log_spruce") });
-// A giant pine of the old growth pine taiga: a tall bare two-wide trunk with a small crown at the very top.
-const giantPine = () => prop([
-  "..LL..",
-  ".LLLL.",
-  "LLLLLL",
-  ".LTTL.",
-  "LLTTLL",
-  "..TT..",
-  "..TT..",
-  "..TT..",
-  "..TT..",
-  "..TT..",
-  "..TT..",
-  "..TT..",
-  "..TT..",
-], { L: leavesTex("leaves_spruce", SPRUCE_TINT), T: blockTex("log_spruce") });
-// A small spruce for the far hills, where the full one would stand too tall.
-const smallSpruce = () => prop(["..L..", ".LLL.", "LLLLL", ".LLL.", "LLLLL", "..T.."], { L: leavesTex("leaves_spruce", SPRUCE_TINT), T: blockTex("log_spruce") });
-// The old growth taigas' mossy cobblestone boulders.
-const boulder = rows => prop(rows, { M: blockTex("mossy_cobblestone"), C: blockTex("cobblestone") });
-const tallGrass = t => prop(["T", "B"], { T: plantTex("tall_grass_top", t.grass), B: plantTex("tall_grass_bottom", t.grass) });
-// A badlands mesa's bands of terracotta, top down; and a small mound of them nearby.
+// The sulfur caves: sulfur (S) and cinnabar (C) with deepslate (D) between them.
+const sulfurMound = rows => prop(rows, { S: blockTex("sulfur"), C: blockTex("cinnabar"), D: blockTex("deepslate") });
+// A sulfur spike, how many blocks tall, as the game stacks one like dripstone: its base, middles, the frustum and the
+// tip; standing on a block of sulfur (they only grow on sulfur) unless on: false (in a cluster, the block is drawn apart).
+const sulfurSpike = (tall, on = true) => prop(["t", ...(tall > 1 ? ["f"] : []), ...Array(Math.max(0, tall - 3)).fill("m"), ...(tall > 2 ? ["b"] : []), ...(on ? ["S"] : [])], {
+  t: plantTex("sulfur_spike_up_tip"), f: plantTex("sulfur_spike_up_frustum"), m: plantTex("sulfur_spike_up_middle"), b: plantTex("sulfur_spike_up_base"), S: blockTex("sulfur") });
+// A patch of sulfur spikes as the game grows them, side by side on a sulfur mound, each its own height (heights, one
+// per column; 0 for none). base: the mound's rows under them, top first.
+const spikePatch = (heights, base) => {
+  const top = Math.max(...heights);
+  // The piece at level k (1 the lowest) of a spike h blocks tall: its tip, the frustum under it, its base, middles between.
+  const piece = (h, k) => (k === h ? "t" : k === h - 1 ? "f" : k === 1 && h > 2 ? "b" : "m");
+  const rows = Array.from({ length: top }, (_, r) => heights.map(h => (h >= top - r ? piece(h, top - r) : ".")).join(""));
+  return prop([...rows, ...base], { S: blockTex("sulfur"), C: blockTex("cinnabar"), D: blockTex("deepslate"),
+    t: plantTex("sulfur_spike_up_tip"), f: plantTex("sulfur_spike_up_frustum"), m: plantTex("sulfur_spike_up_middle"), b: plantTex("sulfur_spike_up_base") });
+};
+// A sulfur pool, as the game makes them: acid-green water (~) in a basin of sulfur (S), potent sulfur (P) on its floor
+// giving off its noxious gas (w, bubbles on it), white bubbles rising out of the water over it (g).
+const SULFUR_WATER = "#34bf89";
+const GAS = { rects: [[3, 9, 5, 11, "rgba(240, 250, 235, .85)"], [10, 4, 12, 6, "rgba(240, 250, 235, .8)"], [6, 1, 7, 2, "rgba(240, 250, 235, .7)"], [13, 12, 14, 13, "rgba(240, 250, 235, .6)"]], cap: false };
+const sulfurPool = rows => prop(rows, {
+  S: blockTex("sulfur"), C: blockTex("cinnabar"), P: blockTex("potent_sulfur"), g: GAS,
+  "~": { layers: [["water", SULFUR_WATER]], rows: [2, 16], cap: false },
+  w: { layers: [["potent_sulfur"]], rects: GAS.rects, cap: false } });
+// A badlands mesa's bands of terracotta, top down.
 const TERRACOTTA_BANDS = ["terracotta", "orange_terracotta", "terracotta", "yellow_terracotta", "brown_terracotta", "terracotta",
   "white_terracotta", "orange_terracotta", "light_gray_terracotta", "red_terracotta", "terracotta", "orange_terracotta"].map(n => blockTex(n));
-const mesa = rows => prop(rows, { T: blockTex("terracotta"), O: blockTex("orange_terracotta"), Y: blockTex("yellow_terracotta"), R: blockTex("red_sand") });
-const snowDrift = rows => prop(rows, { S: blockTex("snow"), P: blockTex("powder_snow"), R: blockTex("stone") });
-// A crag on a mountainside: stone, andesite, calcite and gravel, an emerald showing in one, packed ice in another.
-const crag = rows => prop(rows, { S: blockTex("stone"), A: blockTex("andesite"), C: blockTex("calcite"), G: blockTex("gravel"), E: blockTex("emerald_ore"), I: blockTex("packed_ice") });
-// A trial chamber, the breeze's: tuff brick walls and pillars of polished and chiseled tuff, copper bulbs lit on them,
-// copper grates, trial spawners and vaults on cut copper steps, weathered and oxidized here and there.
+// A wooded badlands mesa nearby, heights: each column's height in blocks, left to right. Its bands of terracotta run level
+// (counted up from the floor, the far hills' bands in the same order), tops of grass and coarse dirt on its high columns,
+// bare terracotta on the low steps.
+const MESA_TOP = 8;
+const bandedMesa = (t, heights) => {
+  const tall = Math.max(...heights), letters = "abcdefghijklmnopqrstuvwxyz", legend = { G: grassyTop(t), C: blockTex("coarse_dirt") };
+  TERRACOTTA_BANDS.forEach((spec, i) => (legend[letters[i]] = spec));
+  const band = k => letters[(((MESA_TOP - k) % TERRACOTTA_BANDS.length) + TERRACOTTA_BANDS.length) % TERRACOTTA_BANDS.length];
+  return prop(Array.from({ length: tall }, (_, r) => heights.map((h, c) => {
+    const k = tall - 1 - r;
+    if (k >= h) return ".";
+    return k === h - 1 && h >= MESA_TOP ? (c % 3 === 1 ? "C" : "G") : band(k);
+  }).join("")), legend);
+};
+// A mountainside's stone (S), andesite here and there (A), coal (C), iron (I) and an emerald (E) showing, under a layer of
+// snow blocks (N).
+const crag = rows => prop(rows, { S: blockTex("stone"), A: blockTex("andesite"), C: blockTex("coal_ore"), I: blockTex("iron_ore"), E: blockTex("emerald_ore"), N: blockTex("snow") });
+// A trial chamber, the breeze's, as the game builds them: rooms of tuff bricks, with polished tuff and chiseled tuff in
+// bands and pillars, trimmed with waxed copper gone teal (oxidized) and some still orange, lit by copper bulbs in the
+// walls; copper grate walkways on ledges overhead, dispensers in the walls, oxidized copper doors, and on the floor
+// trial spawners on pedestals, vaults and decorated pots.
+// A copper grate is see-through: the wall behind it, in its shadow.
+const grate = name => ({ layers: [["tuff_bricks", "#6e6e6e"], [name]] });
 const TRIAL = {
   T: blockTex("tuff_bricks"), P: blockTex("polished_tuff"), X: blockTex("chiseled_tuff"), K: blockTex("chiseled_tuff_bricks"),
   B: blockTex("copper_bulb_lit"), b: blockTex("oxidized_copper_bulb_lit"), C: blockTex("cut_copper"), W: blockTex("weathered_cut_copper"),
-  O: blockTex("oxidized_cut_copper"), G: plantTex("copper_grate"), g: plantTex("oxidized_copper_grate"), w: plantTex("weathered_copper_grate"),
+  O: blockTex("oxidized_copper"), o: blockTex("oxidized_cut_copper"), G: grate("copper_grate"), g: grate("oxidized_copper_grate"),
   H: blockTex("chiseled_copper"), h: blockTex("oxidized_chiseled_copper"), S: blockTex("trial_spawner"), V: blockTex("vault"),
+  D: blockTex("oxidized_copper_door_top", null, { under: INSIDE }), d: blockTex("oxidized_copper_door_bottom", null, { under: INSIDE }),
+  N: blockTex("dispenser_front_horizontal"),
+  // A decorated pot: its body, a little narrower than a block, and its neck.
+  Q: { parts: [["decorated_pot_side", [1, 3, 15, 16], [1, 3]]], rects: [[4, 1, 12, 3, "#7e3c24"], [5, 0, 11, 1, "#9a4f2e"]], cap: false },
 };
-const trialPillar = bulb => prop(["K", "P", "P", bulb, "P", "P", "P", "X"], TRIAL);
 const trial = rows => prop(rows, TRIAL);
-// A stronghold's portal room, the silverfish's: stone brick walls, cracked and mossy, an iron door, a barred window,
-// torches, and the end portal's frames on their stepped platform with the silverfish spawner on the steps.
+// The chamber's back wall, ten blocks to a bay, floor to ceiling: a polished tuff ceiling on a beam of oxidized cut
+// copper; tuff brick walls between polished tuff pillars capped with chiseled tuff bricks, a copper bulb lit in each,
+// and a panel of chiseled tuff; a walkway of oxidized copper grates on a copper ledge across it; below that, more
+// bulbs and dispensers in the wall, a band of chiseled tuff and a polished tuff baseboard.
+const TRIAL_WALL = [
+  "PPPPPPPPPP",
+  "oooooooooo",
+  "KTTTTTTTTT",
+  "PTTTTTTTTT",
+  "BTTXXXXTTT",
+  "PTTTTTTTTT",
+  "PTTTTTTTTT",
+  "Kggggggggg",
+  "Hooooooooo",
+  "PTTTTTTTTT",
+  "PTTTTNTTTT",
+  "bTTTTTTTTT",
+  "PTTTTTTTTT",
+  "PTTTTTTTTT",
+  "KXXXXXXXXX",
+  "PPPPPPPPPP",
+];
+// A stronghold's portal room, the silverfish's, as the game builds it: walls of stone bricks, plain, mossy and cracked,
+// with rows of iron bars set in them, and an iron-bar grate for its entrance; stone brick stairs up to a platform with
+// the ring of end portal frames on it (an eye of ender in one) over lava, the silverfish spawner on the stairs, and lava
+// in the floor. No torches: the lava is its only light.
+// A stone brick stair seen side on, rising to the right (or the left): a half block, and a quarter on it at the back.
+const brickStair = right => ({ parts: [["stone_bricks", [0, 8, 16, 16], [0, 8]], ["stone_bricks", right ? [8, 0, 16, 8] : [0, 0, 8, 8], right ? [8, 0] : [0, 0]]], cap: false });
+// An opening in the wall with iron bars across it, the dark beyond.
+const BARS = { layers: [["iron_bars"]], under: "#0b0b0e" };
 const STRONGHOLD = {
   S: blockTex("stone_bricks"), M: blockTex("mossy_stone_bricks"), C: blockTex("cracked_stone_bricks"), X: blockTex("chiseled_stone_bricks"),
-  D: blockTex("door_iron_upper"), d: blockTex("door_iron_lower"), I: plantTex("iron_bars"), T: plantTex("torch"), W: plantTex("cobweb"),
-  F: blockTex("end_portal_frame"), Z: blockTex("mob_spawner"), K: blockTex("bookshelf"),
+  I: BARS, F: plantTex("end_portal_frame"),
+  // A frame with an eye of ender in it: the eye's side over the frame's top.
+  E: { parts: [["end_portal_frame", [0, 3, 16, 16], [0, 3]], ["endframe_eye", [4, 0, 12, 3], [4, 0]]], cap: false },
+  Z: blockTex("mob_spawner"), a: brickStair(true), b: brickStair(false),
+  // Lava in the floor, a shallow pool, and its stone brick rim.
+  L: blockTex("lava", null, { rows: [8, 16], cap: false, glow: true }), l: blockTex("stone_bricks", null, { rows: [8, 16], cap: false }),
 };
+// The entrance: an iron-bar grate in the wall, shaded as dark as the wall it's in (far from the lava's light).
+const strongholdEntrance = prop(["SXS", "SIS", "SIS"], { S: blockTex("stone_bricks", "#7c7c80"), X: blockTex("chiseled_stone_bricks", "#7c7c80"), I: BARS });
+// The portal room's wall, twelve blocks to a stretch, floor to ceiling: stone bricks, a row of iron bars in it.
+const STRONGHOLD_WALL = [
+  "SSMSSCSSSMSS",
+  "SCSSMSSSCSSM",
+  "MSSSSSMSSSSS",
+  "SSCSSSSSMSCS",
+  "SSSMSSCSSSSS",
+  "SMSSSCSSSMSS",
+  "SIISSIISSIIS",
+  "SIISSIISSIIS",
+  "MSSSCSSMSSSC",
+  "SSCSSSMSSCSS",
+  "SMSSSSSSSSMS",
+  "SSSCSMSSSSSS",
+  "CSSSSSSCSMSS",
+  "SSMSSSSSSSSC",
+  "SSSSCSSMSSSS",
+  "SCSSSSSSSCSS",
+];
+// The portal's platform, fifteen blocks wide: its frames on top, stairs up both sides, the spawner on the stairs in
+// front, lava in the floor either side.
+const portalPlatform = [
+  ".....FFEFF.....",
+  "....aSMSCSb....",
+  "...aSCSSSMSb...",
+  "lLaSSSSZSSSSbLl",
+];
 const stronghold = rows => prop(rows, STRONGHOLD);
-// The deep dark, the warden's: an ancient city's deepslate brick pillars, cracked and chiseled, and the reinforced
-// deepslate frame of its portal, overgrown with sculk, sculk sensors and shriekers on it, a catalyst, and soul lanterns
-// and candles for light.
+// The deep dark, the warden's, at the heart of an ancient city as the game builds them: the city's portal, an empty frame
+// of reinforced deepslate set in a great structure of deepslate bricks and tiles that rises in horns at its corners,
+// overgrown with sculk, on steps of polished deepslate; pillars of polished basalt and chiseled deepslate; soul lanterns
+// on them and on blocks of chiseled deepslate; and on the floor sculk, sensors, shriekers and a candle. All of it in a cave of
+// deepslate and sculk, dark but for the soul lanterns.
 const DEEP_DARK = {
   D: blockTex("deepslate_bricks"), C: blockTex("cracked_deepslate_bricks"), X: blockTex("chiseled_deepslate"), P: blockTex("polished_deepslate"),
   T: blockTex("deepslate_tiles"), R: blockTex("reinforced_deepslate"), K: blockTex("sculk"), A: blockTex("sculk_catalyst"),
-  S: plantTex("sculk_sensor"), H: plantTex("sculk_shrieker"), L: plantTex("soul_lantern"), c: plantTex("candle_lit"),
+  B: blockTex("polished_basalt_side"), S: plantTex("sculk_sensor"), H: plantTex("sculk_shrieker"), L: lanternTex("soul_lantern_block"),
+  c: CANDLE,
 };
 const deepDark = rows => prop(rows, DEEP_DARK);
+// The city's portal, seventeen blocks wide.
+const ancientPortal = deepDark([
+  "T...............T",
+  "TT.............TK",
+  "KTT...........TTD",
+  "DDTTTTTKTTTTTTTDD",
+  "DDDRRRRRRRRRRRDDK",
+  "DDCR.........RDDD",
+  "DXDR.........RDXD",
+  "KDDR.........RCDD",
+  "DDDR.........RDDD",
+  "DDKR.........RDDD",
+  "PPPRRRRRRRRRRRPPP",
+  "PPPPPPPPPPPPPPPPP",
+]);
+// A pillar of polished basalt between chiseled deepslate, a soul lantern on top.
+const basaltPillar = deepDark(["L", "X", "B", "B", "B", "B", "B", "X"]);
 // A plains window lit from inside, for the night.
 const LIT_WINDOW = { layers: [["glass"]], under: "#e9b65a" };
 const BACKDROPS = {
@@ -459,20 +741,25 @@ const BACKDROPS = {
     water: { wash: "rgba(16, 70, 140, .12)" },
     wall: { rock: ["deepslate", "deepslate", "stone", "deepslate", "tuff"], ores: [lichen("deepslate"), lichen("deepslate"), lichen("stone"), "lapis_ore", "diamond_ore", "copper_ore"] },
     ceiling: { rock: ["deepslate", "stone", "deepslate", "tuff"], drip: ["dripstone_down_frustum", "dripstone_down_middle", "dripstone_down_tip"] },
-    near: [[lichenMound(["..K.", ".KDR", "KDDL"]), -22], [stalagmite, -17], [lichenMound(["L.", "DK"]), -14], [plant("sea_pickle"), -11], [stalagmite, -9], [lichenMound([".K", "LD"]), -7],
-      [plant("sea_pickle"), 5], [lichenMound(["K.", "DL"]), 7], [stalagmite, 10], [lichenMound([".L.", "KDK"]), 12], [plant("sea_pickle"), 15], [stalagmite, 17], [lichenMound(["..KL", ".LDD", "KDDK"]), 19]],
+    near: [[lichenMound(["..K.", ".KDR", "KDDL"]), -22], [stalagmite, -17], [lichenMound(["L.", "DK"]), -14], [prop(["P"], { P: SEA_PICKLE }), -11], [stalagmite, -9], [lichenMound([".K", "LD"]), -7],
+      [prop(["P"], { P: SEA_PICKLE }), 5], [lichenMound(["K.", "DL"]), 7], [stalagmite, 10], [lichenMound([".L.", "KDK"]), 12], [prop(["P"], { P: SEA_PICKLE }), 15], [stalagmite, 17], [lichenMound(["..KL", ".LDD", "KDDK"]), 19]],
     // Glow lichen and sea pickles cast a cold light through the water.
     lights: [-20, -13, -7, 8, 13, 20], lightColor: "90, 210, 255",
   }),
-  lush: () => ({
-    mist: { far: 0.8, near: 0.04 },
-    water: { wash: "rgba(30, 130, 140, .1)" },
-    // Glow berries light the water under the ceiling.
-    lights: [[-15, 11], [-9, 11.5], [-2, 11], [6, 11.5], [13, 11]],
-    wall: { rock: ["stone", "moss_block", "moss_block", "stone", "mossy_cobblestone"], ores: ["moss_block", "clay", "clay", "mossy_cobblestone", "coal_ore"] },
-    ceiling: { rock: ["moss_block", "moss_block", "stone", "mossy_cobblestone"], drip: ["cave_vines_body", "cave_vines_berries", "cave_vines_tip"] },
-    near: [[mossMound(["..M.", ".MMM", "MMCM"]), -23], [dripleaf(6), -18], [azaleaBush, -14], [dripleaf(5), -10], [dripleaf(3), -8], [plant("small_dripleaf_side"), -6],
-      [mossMound(["M.", "MC"]), -5], [plant("small_dripleaf_side"), 5], [mossMound([".M", "CM"]), 6], [dripleaf(4), 8], [azaleaBush, 10], [plant("flowering_azalea_side"), 14], [dripleaf(6), 16], [mossMound(["..MM", ".MMM", "MCMM"]), 20]],
+  // Under the water of a lush cave's pool, the axolotl's (they spawn in its water, over clay), as the game builds them:
+  // a shallow pool lined with clay in the cave's moss floor, its far side rising to mossy banks; big dripleaves growing up
+  // through the water from the clay and small ones on the bottom; the cave's glow berries hanging above the surface light
+  // the water warm from above.
+  lush_pool: () => ({
+    mist: { far: 0.62, near: 0.2 },
+    water: { sun: true, shafts: 0.22, surface: "#4a7fbf", wash: "rgba(24, 110, 120, .1)" },
+    hills: { top: [blockTex("moss_block"), blockTex("moss_block"), blockTex("clay")], fill: blockTex("clay"), ores: [["stone", "moss_block", "clay"], 0.1], base: 2, rise: 6 },
+    near: [[poolBank(["MMM..", "CCMM.", "CCCMM", "CCCCC"]), -24], [dripleaf(6), -19], [poolBank(["MM..", "CMM.", "CCCM"]), -17], [dripleaf(7), -12], [smallDripleaf, -10],
+      [dripleaf(4), -8], [smallDripleaf, -6], [smallDripleaf, 5], [dripleaf(5), 7], [smallDripleaf, 9], [dripleaf(8), 11], [poolBank(["..MM", ".MMC", "MCCC"]), 13],
+      [dripleaf(6), 18], [poolBank(["..MMM", ".MMCC", "MMCCC", "CCCCC"]), 20]],
+    // The glow berries above the surface.
+    lights: [[-14, 16], [-5, 16.5], [4, 16], [13, 16.5]], lightColor: "255, 196, 110", lightSize: 5, lightStrength: 0.3,
+    seed: 23,
   }),
   // The tadpole's swamp water, seen from under a pond's lily pads: the swamp's murky green water (its tint) over mud.
   swamp_water: t => ({
@@ -491,190 +778,211 @@ const BACKDROPS = {
     hills: { top: blockTex("sand"), fill: blockTex("sand"), base: 2, rise: 4, landmarks: [[monument, 0.56]] },
     near: [[kelp(9), -24], [bulbKelp(12), -23], [reef("red", "yellow", [".pf.", "pABq", "AABB"]), -20], [kelp(11), -17], [bulbKelp(8), -16],
       [tallSeagrass, -14], [reef("pink", "blue", ["g..", "Bq.", "BAf"]), -12], [plant("seagrass"), -9], [bulbKelp(6), -8], [plant("seagrass"), -5],
-      [plant("sea_pickle"), -3], [plant("seagrass"), 4], [reef("yellow", "pink", [".q", "fB"]), 6], [tallSeagrass, 9], [bulbKelp(7), 11], [kelp(10), 12],
+      [prop(["P"], { P: SEA_PICKLE }), -3], [plant("seagrass"), 4], [reef("yellow", "pink", [".q", "fB"]), 6], [tallSeagrass, 9], [bulbKelp(7), 11], [kelp(10), 12],
       [reef("blue", "red", ["p.g.", "AABq", "AABB"]), 14], [bulbKelp(13), 18], [kelp(9), 19], [reef("red", "pink", ["fq", "AB"]), 21], [kelp(11), 24]],
   }),
-  end: () => ({
-    mist: { far: 0.6, near: 0.1 },
+  // An end city, the enderman's, endermite's and shulker's, on one of the outer islands as the game builds them: the
+  // city's base floor close by, its tower rising out of sight; chorus trees on the flat end stone beyond; further off on
+  // the left, more of the city, a tower with a bridge out to the end ship hanging in the void; under the End's sky.
+  end_city: () => ({
+    mist: { far: 0.5, near: 0.08 },
     // A pale violet glow low in the middle, so that the dark mobs that live here stand out against it.
     sky: { texture: "end_sky", tint: "#1e1634", glow: "150, 105, 215" },
-    hills: { top: blockTex("end_stone"), fill: blockTex("end_stone"), base: 1, rise: 3,
-      landmarks: [[obsidianPillar(13), 0.07], [farTower, 0.2], [obsidianPillar(19), 0.34], [obsidianPillar(10), 0.47], [obsidianPillar(16), 0.63], [farTower, 0.75], [obsidianPillar(21), 0.92]] },
-    crystals: true,
-    near: [[endTower, -21], [chorus, -13], [smallChorus, -8], [block("end_stone", [".B", "BB"]), -6], [smallChorus, 7], [chorus, 11], [block("end_stone", ["..B", ".BB", "BBB"]), 15], [endTower, 18]],
-    // Chorus flowers give off a faint violet light.
-    lights: [[-13, 6], [11, 6]], lightColor: "120, 70, 180",
+    hills: { top: blockTex("end_stone"), fill: blockTex("end_stone"), base: 1, rise: 0,
+      trees: [[chorusTrees[0], 0.37], [chorusTrees[2], 0.64]] },
+    distant: [[farEndCity, 0.01, 1]],
+    near: [[endCityBase, 9]],
+    // The end rods on the tower's roof give off a pale light.
+    lights: [[9, 8.5], [21, 8.5]], lightColor: "235, 215, 255", lightSize: 3, lightStrength: 0.3,
   }),
+  // The dragon's arena, the middle of the End's main island: a ring of obsidian pillars round it, wider the taller they
+  // are, bedrock on top and an end crystal on each, two of the shortest caged in iron bars. Two close by at the sides, the
+  // far side of the ring across the island behind.
   end_island: () => ({
-    mist: { far: 0.55, near: 0.08 },
+    mist: { far: 0.5, near: 0.06 },
     sky: { texture: "end_sky", tint: "#1e1634", glow: "170, 95, 205" },
     hills: { top: blockTex("end_stone"), fill: blockTex("end_stone"), base: 1, rise: 2,
-      landmarks: [[0.03, 15], [0.13, 22], [0.25, 18], [0.36, 25], [0.47, 16], [0.56, 24], [0.68, 19], [0.79, 26], [0.9, 17], [0.97, 21]].map(([at, height]) => [obsidianPillar(height), at]) },
+      landmarks: [[obsidianPillar(14, 3, true), 0.2], [obsidianPillar(21, 3), 0.33], [obsidianPillar(27, 5), 0.47], [obsidianPillar(17, 3), 0.62], [obsidianPillar(24, 5), 0.74]] },
     crystals: true,
-    near: [[obsidianPillar(9, 3), -23], [obsidianPillar(6, 3, true), -17], [obsidianPillar(8, 3), -10], [exitPortal, -4.5], [block("end_stone", [".B", "BB"]), 5], [obsidianPillar(7, 3, true), 7], [obsidianPillar(10, 3), 14], [obsidianPillar(6, 3), 20]],
+    near: [[obsidianPillar(12, 3, true), -15], [obsidianPillar(30, 5), 11]],
   }),
+  // The nether wastes, as the game builds them: a vast cavern of netherrack, glowstone hanging from its ceiling in blobs; far
+  // off, netherrack cliffs either side of a lava sea, a nether fortress's bridge across it on pillars (the blaze's home);
+  // nearer, netherrack with quartz, gold ore, magma and blackstone in it, fires burning on it, mushrooms, and a lavafall
+  // pouring into the lava at a shore of soul sand and gravel.
   nether: () => ({
-    mist: { far: 0.5, near: 0.12 },
-    wall: { rock: ["netherrack", "netherrack", "netherrack", "blackstone"], ores: ["quartz_ore", "quartz_ore", "nether_gold_ore", "glowstone"] },
-    ceiling: { rock: ["netherrack", "netherrack", "blackstone", "glowstone"], drip: ["weeping_vines_base", "weeping_vines_base", "weeping_vines"] },
-    near: [[lavafall, -18], [netherMound(["..C.", ".CNC", "CMNQ"]), -23], [plant("crimson_roots"), -8], [plant("crimson_fungus"), -6],
-      [plant("crimson_fungus"), 6], [netherMound(["G.", "CC"]), 8], [lavafall, 14], [netherMound(["..CC", ".CNN", "CQMN"]), 16], [plant("crimson_roots"), 11]],
-    lights: [-18, 14],
+    mist: { far: 0.32, near: 0.08 },
+    hills: { top: blockTex("netherrack"), fill: blockTex("netherrack"), base: 2, rise: 0, liquid: [2, blockTex("lava"), [blockTex("magma"), 0.3]],
+      ores: [["quartz_ore", "nether_gold_ore", "magma", "blackstone", "blackstone"], 0.05],
+      // The cliffs either side come up to the bridge's walkway, so it spans the sea from one to the other.
+      profile: [[0.1, 17], [0.17, 15], [0.24, 12], [0.785, 2], [0.85, 12], [0.92, 16], [1, 19]],
+      landmarks: [[fortressBridge, 0.24]] },
+    ceiling: { rock: ["netherrack", "netherrack", "netherrack", "blackstone"], drip: [], hang: 0,
+      // Two blobs of glowstone, one each side, each its own shape.
+      blobs: [[-12, ["GGGG", "GGG.", ".GG.", "..G."], "glowstone"], [8, ["GGG", "GGG", "GG.", ".G.", ".G."], "glowstone"]] },
+    near: [[netherMound(["..F.", ".QNF", "NNMO", "NBNN"]), -16], [plant("fire"), -9], [plant("mushroom_brown"), -6],
+      [plant("mushroom_red"), 4], [netherMound(["F.", "NO"]), 7], [netherMound([".....", "SgLLL"]), 11], [lavafall, 14]],
+    lights: [[-14, 3.5], [-9, 0.5], [8, 1.5], [14, 6], [13, 0.5]], lightSize: 4,
   }),
-  // A mineshaft corridor, as dark as the game's: a support every few blocks, rails down the middle with a chest minecart
-  // on them, and webs thickest round the spawner, where the cave spiders come from.
+  // A cave a mineshaft runs through, the cave spider's: the cave's rock wall, its ceiling with dripstone and nearby
+  // stalagmites, ore and cobwebs (the spiders' work); in the far wall, the mineshaft's corridor cut right across, lit
+  // by its torches, its supports every four blocks, cobwebs, rails and a chest minecart.
   mineshaft: () => ({
-    mist: { far: 0.8, near: 0.22 },
-    wall: { rock: ["stone", "stone", "andesite", "stone", "gravel", "stone", "tuff"], ores: ["coal_ore", "coal_ore", "coal_ore", "iron_ore", "andesite", "gravel"] },
-    ceiling: { rock: ["stone", "andesite", "stone", "gravel", "stone"], drip: ["cobweb"], low: 12, shade: 0.45 },
-    near: [[mineFrame(5, 10, { webs: 3 }), -28], [mineFrame(5, 10, { torch: 1, webs: 1 }), -20], [webbedSpawner, -15], [block("cobweb", ["B.", "BB"]), -17],
-      [mineFrame(5, 10, { webs: 3 }), -11], [rails(64), -32], [plant("cobweb"), -5], [plant("cobweb"), 4],
-      [mineFrame(5, 10, { torch: -1, webs: 2 }), 7], [chestMinecart, 13], [mineFrame(5, 10, { webs: 3 }), 16], [block("cobweb", [".B", "BB"]), 21],
-      [mineFrame(5, 10, { torch: 1, webs: 1 }), 24]],
-    // Only the torches light it, and the spawner's flames faintly.
-    lights: [[-16.5, 7.5], [7.5, 7.5], [27.5, 7.5], [-14, 0.6]],
+    mist: { far: 0.5, near: 0.3 },
+    wall: { rock: ["stone", "stone", "stone", "andesite", "tuff"], ores: ["coal_ore", "coal_ore", "iron_ore", "copper_ore", "andesite", "gravel"],
+      props: [[mineBack([
+        "aaaaaaaAaAaaaaaaaaaaaaaaaaaaAAaaAaaA",
+        "BbbBBbbbbbbbbBBbbBbbbbbbbbbbbbBbbbbB",
+        "dDdddgdddDDddDdddddddDdgDdDgdddddddD",
+      ], [12, 28]), -18, 6], [mineCorridor([
+        "...P..WP...PQQQPW..P...PW..PQQQP...P",
+        "...F..tF..CFf.fF...F..tF..tFf.fF...F",
+        "RRRFRRRFRRMFg.fFRRRFRRRFRR.FgRgFR.RF",
+      ]), -18, 6]] },
+    ceiling: { rock: ["stone", "andesite", "stone", "cobblestone"], drip: ["dripstone_down_frustum", "dripstone_down_middle", "dripstone_down_tip"] },
+    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"]), -22], [stalagmite, -17], [plant("cobweb"), -15], [oreMound("coal_ore", [".R", "OR"]), -12], [plant("cobweb"), -10],
+      [plant("cobweb"), 7], [stalagmite, 9], [oreMound("coal_ore", [".T.", "ROR"]), 11], [plant("cobweb"), 14], [oreMound("copper_ore", ["..R", ".RO", "TRR"]), 17]],
+    // The corridor's torches.
+    lights: [[-12, 7.5], [4, 7.5], [8, 7.5]], lightSize: 4, lightStrength: 0.3,
   }),
   cave: () => ({
     mist: { far: 0.62, near: 0.3 },
     wall: { rock: ["stone", "stone", "stone", "andesite", "tuff"], ores: ["coal_ore", "coal_ore", "iron_ore", "copper_ore", "redstone_ore", "gold_ore", "lapis_ore", "diamond_ore"] },
     ceiling: { rock: ["stone", "andesite", "stone", "cobblestone"], drip: ["dripstone_down_frustum", "dripstone_down_middle", "dripstone_down_tip"] },
-    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"]), -21], [plant("lantern"), -15], [stalagmite, -12], [oreMound("coal_ore", ["O.", "RR"]), -9],
-      [stalagmite, 8], [oreMound("gold_ore", [".T.", "ROR"]), 10], [plant("lantern"), 14], [oreMound("diamond_ore", ["..RR", ".ROR", "TRRR"]), 17]],
-    lights: [-15, 14],
+    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"]), -21], [caveTunnel, -14], [prop(["L"], { L: lanternTex("lantern_block") }), -15],
+      [stalagmite, 8], [oreMound("gold_ore", [".T.", "ROR"]), 10], [oreMound("diamond_ore", ["..RR", ".ROR", "TRRR"]), 17]],
+    lights: [-15],
   }),
-  // The wolves' wild biomes, each the one its variant spawns in.
-  snowy_taiga: t => ({
-    hills: { top: blockTex("snowy_grass_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [0.03, 0.12, 0.22, 0.34, 0.47, 0.58, 0.7, 0.81, 0.93].map(at => [spruceTree(), at]) },
-    near: [[spruceTree(), -23], [spruceTree(), -17], [plant("fern", t.grass), -13], [spruceTree(), -11], [plant("berry_bush"), -7], [largeFern(t), -5],
-      [plant("fern", t.grass), 4], [spruceTree(), 6], [plant("berry_bush"), 11], [spruceTree(), 13], [largeFern(t), 17], [spruceTree(), 19]],
-    snowy: true, seed: 21,
-  }),
-  // Snowy peaks behind; a snowy spruce wood with drifts of powder snow on the slope below them.
-  grove: () => ({
-    hills: { top: blockTex("snow"), fill: blockTex("stone"), base: 6, rise: 9, trees: [0.05, 0.19, 0.4, 0.66, 0.88].map(at => [smallSpruce(), at]) },
-    near: [[spruceTree(), -24], [snowDrift(["..S", "SPP"]), -19], [spruceTree(), -16], [spruceTree(), -10], [snowDrift(["S.", "PS"]), -6],
-      [snowDrift([".S", "SP"]), 5], [spruceTree(), 8], [snowDrift(["..SR", "SPPS"]), 13], [spruceTree(), 18]],
-    snowy: true, seed: 23,
-  }),
-  // The goat's jagged peaks: bare stone mountains (streaked with andesite and calcite) rising to sharp points behind,
-  // snow above the snow line, and nearer
-  // by crags of stone, andesite and calcite (an emerald in one), packed ice and drifts of powder snow, with no trees.
+  // The goat's jagged peaks, as the game builds them: mountains of stone under one layer of snow blocks, rising to sharp,
+  // jagged points behind, stone and its ores showing on their steep faces; nearer, the mountain's stepped flanks either
+  // side, snow on each step, coal, iron and an emerald in the stone; no trees, nothing growing, a clear cold sky.
   peaks: () => ({
-    mist: { far: 0.22, near: 0.1 },
-    hills: { top: blockTex("stone"), fill: blockTex("stone"), bands: ["stone", "stone", "andesite", "stone", "stone", "stone", "calcite", "stone", "andesite"].map(b => blockTex(b)), snow: blockTex("snow"), snowline: 17, base: 2, rise: 2,
-      peaks: [[0.02, 16, 1.6], [0.2, 24, 1.3], [0.42, 14, 1.8], [0.62, 21, 1.4], [0.83, 26, 1.2], [1.02, 15, 1.7]] },
-    near: [[crag(["...S..", "..SAS.", ".SSCSA", "SASSES"]), -15], [snowDrift(["..S", "SPP"]), -10], [crag(["I", "I"]), -7],
-      [snowDrift(["S.", "PS"]), -5], [crag(["C.", "SA"]), 4], [snowDrift([".S", "SP"]), 6], [crag(["..I", ".II"]), 8], [crag(["..SA.", ".ASSS", "SSCAS"]), 11]],
+    mist: { far: 0.4, near: 0.06 },
+    hills: { top: blockTex("snow"), fill: blockTex("stone"), snowDepth: 5, jag: 3, base: 3, rise: 2,
+      ores: [["coal_ore", "coal_ore", "iron_ore", "andesite", "andesite", "emerald_ore"], 0.035],
+      peaks: [[0.02, 20, 1.7], [0.15, 25, 1.8], [0.3, 30, 2], [0.52, 19, 1.7], [0.63, 15, 1.9], [0.74, 27, 1.5], [0.98, 21, 1.6]] },
+    near: [[crag([
+      "NN.......",
+      "SSNN.....",
+      "SCSS.....",
+      "ASSSN....",
+      "SASCSN...",
+      "SEASSS...",
+      "SASASAN..",
+      "ASISSSS..",
+      "SSSSICSN.",
+      "SSSAAASSN",
+    ]), -19], [crag([
+      ".......NN",
+      ".......SS",
+      "......NAS",
+      ".....NASI",
+      ".....ASSA",
+      "...NNSCSS",
+      "...ASASSS",
+      "..NSSSACS",
+      ".NSISSSSS",
+      "NSSSASSAS",
+    ]), 10]],
     snowy: true, seed: 41,
   }),
-  pine_taiga: t => ({
-    hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 3, trees: [0.02, 0.1, 0.18, 0.27, 0.36, 0.45, 0.55, 0.64, 0.73, 0.82, 0.91].map(at => [smallSpruce(), at]) },
-    near: [[giantPine(), -24], [boulder([".M.", "MCM"]), -18], [giantPine(), -14], [plant("fern", t.grass), -10], [largeFern(t), -7], [plant("mushroom_brown"), -4],
-      [plant("dead_bush"), 3], [largeFern(t), 5], [giantPine(), 8], [plant("fern", t.grass), 13], [boulder(["M.", "MM"]), 15], [giantPine(), 19]],
-    seed: 25,
-  }),
-  spruce_taiga: t => ({
-    hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [0.03, 0.15, 0.27, 0.39, 0.51, 0.63, 0.75, 0.87].map(at => [spruceTree(), at]) },
-    near: [[giantSpruce(), -25], [boulder(["..M.", ".MMC", "MCMM"]), -17], [largeFern(t), -13], [giantSpruce(), -11], [plant("berry_bush"), -5],
-      [plant("fern", t.grass), 4], [plant("berry_bush"), 6], [giantSpruce(), 8], [boulder([".M", "MC"]), 16], [largeFern(t), 18], [spruceTree(), 21]],
-    seed: 27,
-  }),
-  // Jungle trees standing apart in open grass, with bushes and melons between them.
-  sparse_jungle: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [[jungleTree(t, 4), 0.08], [jungleTree(t, 3), 0.3], [jungleTree(t, 5), 0.55], [jungleTree(t, 3), 0.84]] },
-    near: [[jungleTree(t, 6), -21], [jungleBush(t), -15], [plant("short_grass", t.grass), -12], [block("melon_side"), -9], [largeFern(t), -6],
-      [plant("short_grass", t.grass), 4], [jungleBush(t), 6], [jungleTree(t, 5), 11], [tallGrass(t), 17], [jungleBush(t), 19], [plant("short_grass", t.grass), 22]],
-    seed: 29,
-  }),
-  // High on the plateau: its stepped edge falls away behind, acacias dot the top.
-  savanna_plateau: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("coarse_dirt"), base: 6, rise: 6, steps: 3, trees: [[acaciaTree(t), 0.1], [acaciaTree(t), 0.42], [acaciaTree(t), 0.78]] },
-    near: [[acaciaTree(t), -21], [tallGrass(t), -14], [plant("short_grass", t.grass), -11], [plant("short_grass", t.grass), -7], [tallGrass(t), -5],
-      [plant("short_grass", t.grass), 4], [tallGrass(t), 6], [acaciaTree(t), 10], [plant("short_grass", t.grass), 18], [tallGrass(t), 21]],
-    seed: 31,
-  }),
-  // Banded terracotta mesas behind, oaks on their grassy tops; red sand, dead bushes and a cactus below.
+  // The wooded badlands, the striped wolf's: flat-topped mesas of level terracotta bands behind, small oaks on their grass
+  // and coarse dirt tops, the lower mesas bare; nearer, a mesa's stepped cliffs either side, and red sand between them with
+  // dead bushes and a cactus.
   badlands: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("terracotta"), bands: TERRACOTTA_BANDS, base: 6, rise: 8, steps: 3, trees: [[oakTree(t), 0.14], [oakTree(t), 0.5], [oakTree(t), 0.83]] },
-    near: [[mesa(["..TT", ".OOT", "YYOO", "RRRR"]), -24], [oakTree(t), -17], [plant("dead_bush"), -12], [plant("cactus_side", null, 2), -9], [mesa(["R.", "RR"]), -6],
-      [plant("dead_bush"), 4], [mesa([".R", "RR"]), 6], [oakTree(t), 10], [plant("dead_bush"), 15], [mesa(["..T.", ".TOO", "OYYT", "RRRR"]), 19]],
+    hills: { top: [grassyTop(t), grassyTop(t), blockTex("coarse_dirt")], fill: blockTex("terracotta"), bands: TERRACOTTA_BANDS, base: 6, rise: 9, bareBelow: 12,
+      profile: [[0.2, 15], [0.26, 13], [0.33, 8], [0.42, 6], [0.46, 9], [0.56, 12], [0.6, 9], [0.7, 7], [0.75, 13], [1, 16]],
+      trees: [[oakTree(t), 0.15], [oakTree(t), 0.48], [oakTree(t), 0.8], [oakTree(t), 0.91]] },
+    near: [[bandedMesa(t, [10, 10, 10, 10, 7, 7, 4, 2]), -18], [plant("dead_bush"), -9], [plant("cactus_side", null, 2), -6],
+      [plant("dead_bush"), 5], [plant("dead_bush"), 8], [bandedMesa(t, [2, 4, 4, 7, 7, 10, 10]), 10]],
     seed: 33,
   }),
   plains: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[oakTree(t), 0.06], [oakTree(t), 0.3], [oakTree(t), 0.55], [oakTree(t), 0.86]] },
+    // Low, gently rolling hills, as flat as plains are, oaks dotted on them.
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 2, trees: [[oakTree(t), 0.5], [oakTree(t), 0.7]] },
+    // Grass and the plains' wildflowers round the house and between the oaks: dandelions, poppies, oxeye daisies,
+    // azure bluets, cornflowers and tulips.
     near: [[house({ roof: "planks_dark_oak", wall: "oak_planks", frame: "log_oak", base: "cobblestone", door: "oak" }), -14],
-      [oakTree(t), -7], [plant("poppy"), -1], [wheatFarm, 2], [oakTree(t), 10], [block("hay_side", [".B", "BB"]), 8], [plant("dandelion"), 13]],
+      [oakTree(t), -7], [plant("short_grass", t.grass), -2], [plant("poppy"), -1], [plant("short_grass", t.grass), 1], [tallGrass(t), 2],
+      [plant("oxeye_daisy"), 3], [plant("short_grass", t.grass), 4], [plant("flower_houstonia"), 5], [tallGrass(t), 6], [plant("dandelion"), 7],
+      [plant("short_grass", t.grass), 8], [oakTree(t), 10], [plant("cornflower"), 9], [plant("flower_tulip_white"), 13], [plant("short_grass", t.grass), 14],
+      [plant("flower_tulip_orange"), 15]],
   }),
   // The middle of a plains village, the iron golem's and the villager's: houses either side, the well, the bell and a lamp
   // post, a farm and hay bales, with more roofs on the far hills.
   village: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [[oakTree(t), 0.05], [oakTree(t), 0.48], [oakTree(t), 0.93]],
-      landmarks: [[smallHouse(PLAINS_HOUSE), 0.2], [smallHouse(PLAINS_HOUSE), 0.33], [smallHouse(PLAINS_HOUSE), 0.66], [smallHouse(PLAINS_HOUSE), 0.8]] },
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [[oakTree(t), 0.432], [oakTree(t), 0.93]],
+      landmarks: [[smallHouse(PLAINS_HOUSE), 0.33], [smallHouse(PLAINS_HOUSE), 0.66], [smallHouse(PLAINS_HOUSE), 0.8]] },
     near: [[house(PLAINS_HOUSE), -14], [lampPost, -7], [plant("poppy"), -5], [villageWell, 2], [bellFrame, 7], [block("composter_side"), 10],
       [block("hay_side", [".B", "BB"]), 11], [wheatFarm, 13]],
     seed: 9,
   }),
   desert: () => ({
-    hills: { top: blockTex("sand"), fill: blockTex("sand"), base: 2, rise: 4, landmarks: [[pyramid, 0.72]] },
-    near: [[desertHouse, -15], [plant("cactus_side", null, 3), -6], [plant("dead_bush"), -3], [plant("cactus_side", null, 2), 4],
-      [plant("dead_bush"), 9], [block("smooth_sandstone", ["XSX", "SSS"]), 11]],
+    hills: { top: blockTex("sand"), fill: blockTex("sand"), base: 2, rise: 4 },
+    near: [[desertHouse, -15], [plant("cactus_side", null, 3), -6], [plant("dead_bush"), -3],
+      [plant("dead_bush"), 9], [plant("cactus_side", null, 2), 14]],
   }),
   savanna: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("coarse_dirt"), base: 3, rise: 5, steps: 2, trees: [[acaciaTree(t), 0.16], [acaciaTree(t), 0.62]] },
+    hills: { top: grassyTop(t), fill: blockTex("coarse_dirt"), base: 3, rise: 5, steps: 2, trees: [[mirrored(acaciaTree(t)), 0.5]] },
+    // Acacias of different shapes: a tall one by the house, a forked one the other side.
     near: [[house({ roof: "orange_terracotta", wall: "planks_acacia", frame: "acacia_log", base: "yellow_terracotta", door: "acacia" }), -15],
-      [acaciaTree(t), -8], [plant("short_grass", t.grass), 0], [plant("short_grass", t.grass), 3], [acaciaTree(t), 8]],
+      [tallAcacia(t), -8], [plant("short_grass", t.grass), 0], [plant("short_grass", t.grass), 3], [forkedAcacia(t), 4]],
   }),
   snowy: () => ({
     hills: { top: blockTex("snowy_grass_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[spruceTree(), 0.08], [spruceTree(), 0.3], [spruceTree(), 0.58], [spruceTree(), 0.9]] },
-    near: [[igloo, -14], [spruceTree(), -7], [block("packed_ice", [".B", "BB"]), 2], [spruceTree(), 7], [spruceTree(), 12]],
+    near: [[igloo, -14], [spruceTree(), -7], [spruceTree(), 7], [spruceTree(), 12]],
   }),
   // Inside a woodland mansion, the vex's: a hall of bays between log pillars, bookshelves along the wall, a chest, a
   // door, and torches on the pillars for light.
   mansion: () => ({
-    mist: { far: 0.55, near: 0.12 },
-    wall: { rock: ["planks_dark_oak"], ores: ["planks_dark_oak"] },
-    near: [[mansionBay(["KKKKKK", "KKKKKK", "KKKKKK"]), -24], [mansionBay(["......", "...D..", "...d.."], true), -17],
-      [mansionBay(["......", "......", "..C..."]), -10], [mansionBay(["......", "......", "......"], true), -3],
-      [mansionBay(["KKKKKK", "KKKKKK", "KKKKKK"]), 4], [mansionBay(["......", "......", "...C.."], true), 11], [mansionBay(["KKKKKK", "KKKKKK", "KKKKKK"]), 18],
-      [mansionPillar, 25]],
-    lights: [[-16, 7.5], [-2, 7.5], [12, 7.5]],
+    mist: { far: 0.12, near: 0.04 },
+    wall: { pattern: MANSION_WALL, legend: MANSION, dim: "rgba(22, 12, 4, .45)" },
+    nearDim: "rgba(22, 12, 4, .3)",
+    // Bookshelves with a potted allium on them, a dark oak door, a chest, and a red tulip on a dark oak table.
+    near: [[mansion([".a.", "KKK", "KKK"]), -12], [mansion(["PPP", "PDP", "PdP"]), -8],
+      [mansion(["H"]), 6], [mansion(["r", "F"]), 8], [mansion(["a.", "KK", "KK", "KK"]), 10]],
+    // The torches on the pillars, nine blocks apart.
+    lights: [-13, -4, 5, 14].map(at => [at, 11.5]),
   }),
   // A trial chamber, the breeze's (it only spawns from their trial spawners): pillars with copper bulbs, grates,
   // spawners and vaults, under a tuff brick ceiling, lit by the bulbs.
   trial_chamber: () => ({
-    mist: { far: 0.5, near: 0.12 },
-    wall: { rock: ["tuff_bricks", "tuff_bricks", "polished_tuff", "tuff_bricks", "chiseled_tuff_bricks"], ores: ["chiseled_tuff", "chiseled_tuff", "polished_tuff"] },
-    ceiling: { rock: ["tuff_bricks", "polished_tuff", "tuff_bricks", "chiseled_tuff_bricks"], drip: [], shade: 0.25 },
-    near: [[trialPillar("B"), -26], [trial(["gw", "wg", "gg"]), -24], [trial([".S.", "WOW"]), -19], [trialPillar("b"), -14],
-      [trial(["V", "C"]), -10], [trial(["HCh"]), -7], [trial(["S"]), 5], [trial(["OO.", "WOW"]), 7],
-      [trialPillar("B"), 11], [trial(["V", "O"]), 14], [trial(["Gg", "gG", "GG"]), 17], [trial(["..S", "CWO"]), 20], [trialPillar("b"), 25]],
-    lights: [[-26, 4.5], [-14, 4.5], [11, 4.5], [25, 4.5]],
+    mist: { far: 0.2, near: 0.06 },
+    wall: { pattern: TRIAL_WALL, legend: TRIAL, dim: "rgba(20, 13, 8, .42)" },
+    nearDim: "rgba(20, 13, 8, .32)",
+    // An oxidized copper double door in a copper frame; a trial spawner on a pedestal and a vault by it; decorated
+    // pots; and a second spawner on a taller pedestal.
+    near: [[trial(["KhhK", "PDDP", "PddP"]), -15], [trial([".S.", "oHo", "PPP"]), -10], [trial(["V"]), -6],
+      [trial(["QQ"]), 4], [trial(["S", "h", "X", "P"]), 8], [trial(["Q"]), 11], [trial(["oVo"]), 13]],
+    // Warm light round the wall's bulbs, five blocks apart, high and low.
+    lights: [-15, -5, 5, 15].flatMap(at => [[at, 11.5], [at, 4.5]]),
     lightColor: "255, 196, 128",
   }),
-  // A stronghold's portal room, the silverfish's: the end portal's frames on their steps, the room's silverfish spawner,
-  // an iron door, a barred window, bookshelves from the library next door, cobwebs, and torches for light.
+  // A stronghold's portal room, the silverfish's: its stone brick wall with a row of iron bars, the entrance grate, and the
+  // portal's platform with the spawner on its stairs and lava at its foot, the lava its only light.
   stronghold: () => ({
-    mist: { far: 0.55, near: 0.14 },
-    wall: { rock: ["stone_bricks", "stone_bricks", "mossy_stone_bricks", "stone_bricks", "cracked_stone_bricks"], ores: ["cracked_stone_bricks", "mossy_stone_bricks", "chiseled_stone_bricks"] },
-    ceiling: { rock: ["stone_bricks", "mossy_stone_bricks", "cracked_stone_bricks", "stone_bricks"], drip: [], shade: 0.3 },
-    near: [[stronghold(["SXS", "SDS", "SdS"]), -25], [stronghold(["T", ".", "."]), -21], [stronghold(["SSSS", "SIIS", "SIIS", "SCSS", "MSSC"]), -19],
-      [stronghold(["KK", "KK"]), -14], [stronghold(["W.", "WW"]), -11], [stronghold(["T", ".", "."]), -8],
-      [stronghold(["..FFF..", ".SMSCS.", "SSCSSMS"]), -4], [stronghold(["Z.", "SS"]), 4], [stronghold(["T", ".", "."]), 8],
-      [stronghold(["SSSS", "SIIS", "SIIS", "SSMS", "CSSS"]), 11], [stronghold(["KK", "KK", "KK"]), 16], [stronghold(["T", ".", "."]), 20],
-      [stronghold(["SXS", "SDS", "SdS"]), 23]],
-    lights: [[-21, 2.5], [-8, 2.5], [8, 2.5], [20, 2.5]],
+    mist: { far: 0.15, near: 0.04 },
+    wall: { pattern: STRONGHOLD_WALL, legend: STRONGHOLD, dim: "rgba(8, 8, 12, .55)" },
+    nearDim: "rgba(8, 8, 12, .12)",
+    // The portal on its platform between two entrances, iron-bar grates in the wall either side, all of it even about
+    // the middle (the platform, an odd fifteen blocks wide, half a block off the grid so it's centered like the wall's
+    // windows).
+    near: [[strongholdEntrance, -15], [stronghold(portalPlatform), -7.5], [strongholdEntrance, 12]],
+    // Only the lava gives light.
+    lights: [[-6.5, 0.3], [5.5, 0.3]],
+    lightColor: "255, 140, 50", lightSize: 2.5, lightStrength: 0.3,
   }),
   // The deep dark, the warden's (it comes out of the ground there, summoned by shriekers): an ancient city's pillars and
   // the frame of its portal in the deepslate, sculk spread over it all, lit by soul lanterns.
   deep_dark: () => ({
-    mist: { far: 0.55, near: 0.14 },
-    wall: { rock: ["deepslate", "deepslate", "sculk", "deepslate_tiles", "deepslate"], ores: ["sculk", "deepslate_tiles"] },
-    ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate_tiles"], drip: [], shade: 0.2 },
-    near: [[deepDark(["L", "X", "D", "C", "D", "D", "X"]), -25], [deepDark(["S.", "KK"]), -21], [deepDark(["A"]), -17],
-      [deepDark(["H", "K"]), -14], [deepDark(["L", "X", "D", "D", "C", "D", "X"]), -11], [deepDark(["c", "P"]), -7],
-      [deepDark(["XRRRRRX", "R.....R", "R.....R", "R.....R", "R.....R", "TTTTTTT"]), 5], [deepDark(["L", "X", "C", "D", "D", "D", "X"]), 13],
-      [deepDark(["H.", "KK", "KC"]), 16], [deepDark(["c", "P"]), 20], [deepDark(["L", "X", "D", "D", "D", "C", "X"]), 24]],
-    lights: [[-25, 6.5], [-11, 6.5], [13, 6.5], [24, 6.5]],
+    mist: { far: 0.3, near: 0.05 },
+    wall: { rock: ["deepslate", "deepslate", "deepslate", "sculk", "deepslate", "deepslate_tiles"], ores: ["sculk", "sculk", "sculk_catalyst"], alone: ["sculk_catalyst"], dim: "rgba(4, 8, 10, .55)" },
+    ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate"], drip: [], shade: 0.55 },
+    nearDim: "rgba(4, 8, 10, .3)",
+    near: [[basaltPillar, -15], [deepDark(["L", "X"]), -13], [deepDark(["H", "K"]), -11], [deepDark(["KK"]), -10],
+      [ancientPortal, -8], [deepDark(["c", "X"]), 10], [deepDark(["S", "K"]), 12], [deepDark(["L", "X"]), 13], [basaltPillar, 15]],
+    // Soul lanterns' cold light: on the pillars, and hanging.
+    lights: [[-15, 7.5], [-13, 1.5], [13, 1.5], [15, 7.5]],
     lightColor: "110, 215, 230",
   }),
   // The plains at night, the phantom's (it comes out over any biome at night) and the night's undead: the plains'
@@ -684,13 +992,6 @@ const BACKDROPS = {
     return { ...scene, night: NIGHTS.default.night,
       near: [[house({ ...PLAINS_HOUSE, window: LIT_WINDOW }), -14], ...scene.near.slice(1)], lights: [[-13, 2.5], [-9, 2.5]], lightColor: "255, 190, 100" };
   },
-  forest: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [
-      [oakTree(t), 0.01], [birchTree(), 0.08], [oakTree(t), 0.15], [oakTree(t), 0.22], [birchTree(), 0.29], [oakTree(t), 0.36], [birchTree(), 0.43], [oakTree(t), 0.5],
-      [oakTree(t), 0.57], [birchTree(), 0.64], [oakTree(t), 0.71], [oakTree(t), 0.78], [birchTree(), 0.85], [oakTree(t), 0.92]] },
-    near: [[tallOak(t), -24], [birchTree(), -18], [plant("fern", t.grass), -19], [oakTree(t), -14], [plant("short_grass", t.grass), -13], [plant("mushroom_brown"), -10], [plant("short_grass", t.grass), -9], [birchTree(), -8], [plant("oxeye_daisy"), -5],
-      [plant("short_grass", t.grass), -3], [plant("poppy"), 3], [plant("short_grass", t.grass), 5], [plant("fern", t.grass), 6], [birchTree(), 7], [plant("mushroom_red"), 12], [oakTree(t), 13], [plant("short_grass", t.grass), 18], [birchTree(), 19], [plant("dandelion"), 18], [tallOak(t), 23]],
-  }),
   taiga: t => ({
     hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [0.04, 0.16, 0.3, 0.45, 0.6, 0.74, 0.88].map(at => [spruceTree(), at]) },
     near: [[house({ roof: "cobblestone", wall: "planks_spruce", frame: "log_spruce", base: "mossy_cobblestone", door: "spruce" }), -14],
@@ -702,30 +1003,15 @@ const BACKDROPS = {
       top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 2,
       trees: Array.from({ length: 16 }, (_, i) => [jungleTree(t, [5, 3, 7, 4][i % 4]), i / 15 - 0.03]),
     },
-    near: [[giantJungleTree(t), -20], [giantJungleTree(t), 3], [jungleTemple(t), -14], [jungleBush(t), -5], [largeFern(t), -1],
-      [jungleBush(t), 2], [block("melon_side"), 6], [bamboo(7), 11], [bamboo(9), 12], [largeFern(t), 13], [bamboo(6), 14]],
-  }),
-  // The panda's bamboo jungle: bamboo stands thick on the hills behind, a few jungle trees rising out of it. Nearer,
-  // tall stalks crowd in from both sides under a giant jungle tree, with shoots, ferns and a melon at their feet, round
-  // a clearing for the mob.
-  bamboo_jungle: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 2, trees: [
-      ...Array.from({ length: 24 }, (_, i) => [jungleBush(t), i / 23 - 0.01]),
-      ...Array.from({ length: 72 }, (_, i) => [bambooStalk([10, 13, 8, 12, 9, 14, 11, 7, 12][i % 9]), i / 71]),
-      [jungleTree(t, 7), 0.16], [jungleTree(t, 9), 0.47], [jungleTree(t, 8), 0.8]] },
-    near: [[giantJungleTree(t), -27], ...bambooClump(-22, [12, 16, 11, 15, 13]), [jungleBush(t), -18], ...bambooClump(-16, [14, 12, 15]),
-      [largeFern(t), -13], [plant("bamboo_sapling"), -12], ...bambooClump(-11, [10, 13]), [plant("fern", t.grass), -9], ...bambooClump(-8, [8]),
-      [plant("bamboo_sapling"), -7], [plant("short_grass", t.grass), -5], [plant("bamboo_sapling"), 4], [plant("fern", t.grass), 5],
-      ...bambooClump(6, [9]), [plant("bamboo_sapling"), 7], ...bambooClump(8, [11, 13]), [block("melon_side"), 10], ...bambooClump(11, [14, 12, 15]),
-      [largeFern(t), 14], ...bambooClump(15, [13, 16, 12]), [jungleBush(t), 18], ...bambooClump(20, [15, 12, 16, 14, 13])],
-    seed: 35,
+    near: [[giantJungleTree(t), -20], [giantJungleTree(t), 3], [jungleTemple(t), -14], [largeFern(t), -1],
+      [block("melon_side"), 6], [bamboo(7), 11], [bamboo(9), 12], [largeFern(t), 13], [bamboo(6), 14]],
   }),
   // The mooshroom's mushroom fields: mycelium hills with no trees at all, only huge red and brown mushrooms, and small
   // ones underneath.
   mushroom_fields: () => ({
     hills: { top: blockTex("mycelium_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [
-      [hugeRedMushroom(2), 0.04], [hugeBrownMushroom(3), 0.17], [hugeRedMushroom(1), 0.33], [hugeBrownMushroom(4), 0.5],
-      [hugeRedMushroom(3), 0.64], [hugeBrownMushroom(2), 0.78], [hugeRedMushroom(2), 0.91]] },
+      [hugeBrownMushroom(3), 0.17], [hugeRedMushroom(1), 0.33], [hugeBrownMushroom(4), 0.5],
+      [hugeRedMushroom(3), 0.64], [hugeBrownMushroom(2), 0.78]] },
     near: [[hugeBrownMushroom(6), -26], [hugeRedMushroom(4), -17], [plant("mushroom_red"), -12], [plant("mushroom_brown"), -10],
       [plant("mushroom_brown"), -6], [plant("mushroom_red"), 5], [plant("mushroom_brown"), 8], [hugeRedMushroom(5), 10],
       [plant("mushroom_red"), 16], [hugeBrownMushroom(5), 18]],
@@ -733,21 +1019,29 @@ const BACKDROPS = {
   }),
   // The cherry grove: a meadow high in the mountains, cherry trees on the slopes behind and nearer by, saplings and grass.
   cherry_grove: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 4, rise: 6, trees: [0.03, 0.15, 0.28, 0.41, 0.55, 0.69, 0.82, 0.94].map(at => [smallCherry(), at]) },
-    near: [[cherryTree(4), -26], [plant("short_grass", t.grass), -17], [cherryTree(3), -16], [plant("cherry_sapling"), -9], [plant("short_grass", t.grass), -7],
-      [plant("short_grass", t.grass), 4], [plant("cherry_sapling"), 6], [cherryTree(5), 9], [plant("short_grass", t.grass), 19], [cherryTree(3), 20]],
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 4, rise: 6, trees: [[smallCherry(), 0.41], [tallFarCherry(), 0.55], [midCherry(), 0.65]] },
+    near: [[tallCherry(5), -26], [plant("short_grass", t.grass), -17], [forkedCherry(2), -18], [plant("cherry_sapling"), -9], [plant("short_grass", t.grass), -7],
+      [plant("short_grass", t.grass), 4], [plant("cherry_sapling"), 6], [cherryTree(3), 9], [plant("short_grass", t.grass), 19], [tallCherry(3), 18]],
     seed: 39,
   }),
-  // The pale garden: pale oaks thick on the hills, hung with pale moss; pale moss underfoot, eyeblossoms shut by day,
-  // and a creaking heart in one trunk.
-  pale_garden: () => ({
-    mist: { far: 0.5, near: 0.16 },
-    hills: { top: blockTex("pale_moss_block"), fill: blockTex("pale_moss_block"), base: 3, rise: 3, trees: Array.from({ length: 22 }, (_, i) => [smallPaleOak(), i / 21 - 0.02]) },
-    near: [[paleOak(4), -28], [paleOak(5), -22], [plant("eyeblossom"), -19], [paleOak(3, true), -16], [smallPaleOak(), -10], [paleMound(["M.", "MM"]), -11],
-      [plant("pale_moss_carpet_side"), -7], [plant("eyeblossom"), -5], [plant("eyeblossom"), 5], [plant("pale_moss_carpet_side"), 7], [smallPaleOak(), 7],
-      [paleOak(5), 11], [plant("eyeblossom"), 18], [paleMound([".M", "MD"]), 19], [paleOak(3), 21], [paleOak(4), 26]],
-    seed: 41,
-  }),
+  // The pale garden: pale oaks thick on the hills, hung with pale moss; pale moss underfoot, eyeblossoms shut by day
+  // (open at night: blossom), and a creaking heart in one trunk.
+  pale_garden: (t, open = false) => {
+    const blossom = () => plant(open ? "eyeblossom_open" : "eyeblossom");
+    const blossoms = [-19, 12, 18];
+    return {
+      mist: { far: 0.5, near: 0.16 },
+      hills: { top: blockTex("pale_moss_block"), fill: blockTex("pale_moss_block"), base: 3, rise: 3, trees: Array.from({ length: 22 }, (_, i) => [smallPaleOak(), i / 21 - 0.02]) },
+      near: [[paleOak(4), -28], [paleOak(5), -22], [blossom(), blossoms[0]], [paleOak(3, true), -16], [smallPaleOak(), -10], [paleMound(["M.", "MM"]), -11],
+        [plant("pale_moss_carpet_side"), -7], [blossom(), blossoms[1]], [plant("pale_moss_carpet_side"), 7], [smallPaleOak(), 7],
+        [paleOak(5), 11], [blossom(), blossoms[2]], [paleMound([".M", "MD"]), 19], [paleOak(3), 21], [paleOak(4), 26]],
+      seed: 41,
+      // Open, their orange eyes glow over the night's shade.
+      glows: open ? blossoms.map(at => [plant("eyeblossom_eyes"), at]) : [],
+    };
+  },
+  // The pale garden at night, the creaking's: the same garden darkened under stars and the moon, its eyeblossoms open.
+  pale_garden_night: t => ({ ...BACKDROPS.pale_garden(t, true), night: NIGHTS.default.night }),
   // The dappled forest: oaks gone orange and red and birches gone gold, bushes and firefly bushes beneath.
   dappled_forest: t => ({
     mist: { far: 0.3, near: 0.08 },
@@ -758,24 +1052,39 @@ const BACKDROPS = {
       [autumnBirch(), 8], [plant("firefly_bush"), 13], [tallOak({ foliage: DAPPLED.red }), 15], [oakTree({ foliage: DAPPLED.orange }), 21]],
     seed: 43,
   }),
-  // The sulfur caves: tuff and yellow sulfur seamed with potent sulfur and calcite, sulfur spikes hanging from the ceiling
-  // and rising from the floor.
+  // The sulfur caves, as the game builds them: rock in layers of yellow sulfur and red cinnabar, about as much of each,
+  // with seams of deepslate and stone between and a few ores; sulfur spikes hanging from the ceiling and growing in
+  // patches on the sulfur floor; a sulfur pool, its acid-green water over potent sulfur bubbling with gas; all in the
+  // biome's green fog.
   sulfur_caves: () => ({
-    mist: { far: 0.7, near: 0.22 },
-    wall: { rock: ["tuff", "tuff", "tuff", "sulfur", "tuff", "tuff"], ores: ["potent_sulfur", "sulfur", "sulfur", "calcite"] },
-    ceiling: { rock: ["tuff", "sulfur", "tuff", "calcite"], drip: ["sulfur_spike_down_frustum", "sulfur_spike_down_middle", "sulfur_spike_down_tip"] },
-    near: [[sulfurMound(["..S.", ".SPS", "TSSC"]), -24], [sulfurSpike(2), -18], [sulfurMound(["P.", "SS"]), -15], [sulfurSpike(), -11], [sulfurSpike(), -7],
-      [sulfurSpike(), 6], [sulfurMound([".S", "PS"]), 9], [sulfurSpike(2), 13], [sulfurMound(["..SC", ".PSS", "STSP"]), 17], [sulfurSpike(), 22]],
-    lights: [-23, -15, 9, 18], lightColor: "255, 214, 80",
+    mist: { far: 0.42, near: 0.14 },
+    wall: { strata: ["sulfur", "sulfur", "sulfur", "deepslate", "cinnabar", "cinnabar", "cinnabar", "stone", "sulfur", "sulfur", "cinnabar", "cinnabar", "deepslate"],
+      ores: ["coal_ore", "iron_ore", "redstone_ore", "gold_ore", lichen("deepslate")], oreRate: 90, dim: "rgba(12, 16, 4, .3)" },
+    ceiling: { rock: ["sulfur", "sulfur", "cinnabar", "deepslate"], drip: ["sulfur_spike_down_base", "sulfur_spike_down_middle", "sulfur_spike_down_frustum", "sulfur_spike_down_tip"], hang: 0.3 },
+    near: [[sulfurMound(["..CC", ".SCC", "SSDC"]), -24], [spikePatch([2, 4, 0, 3], ["SSSS"]), -20], [sulfurMound(["S", "S"]), -16], [sulfurPool(["..g.g.", "S~~~~S", "SPwPPS"]), -15],
+      [spikePatch([1, 3, 2], ["SSS"]), -9], [sulfurSpike(1), 5], [spikePatch([2, 5, 3], ["SSS"]), 6], [sulfurPool(["..g..", "S~~~S", "SPwPS"]), 9],
+      [spikePatch([3, 1, 4], ["SSS"]), 14], [sulfurMound(["C..", "CS.", "DSS"]), 17], [sulfurMound(["..C", "CCC"]), 20]],
   }),
-  mangrove_swamp: t => ({
-    hills: { top: blockTex("mud"), fill: blockTex("mud"), base: 2, rise: 1, trees: [0.06, 0.24, 0.43, 0.62, 0.8, 0.95].map(at => [smallMangrove(t), at]) },
-    near: [[mangroveTree(t), -21], [pond(t), -12], [mangroveTree(t), -6], [plant("lily_pad"), 2], [mangroveTree(t), 5], [pond(t), 13], [mangroveTree(t), 19]],
-    seed: 27,
-  }),
+  // The swamp, the witch's and the black cat's, as the game builds it: flat and low, flooded in pools of gray-green water
+  // with lily pads; the witch's hut up on its stilts over one; swamp oaks hung with vines, small ones on the flat land
+  // behind; blue orchids (only swamps grow them), mushrooms, a firefly bush and sugar cane on the shore.
+  // The swamp, the witch's and the black cat's, as the game builds it: flat and low, flooded in pools of gray-green water
+  // with lily pads between grassy banks; the witch's hut on its stilts over one, sugar cane on the shore beside it;
+  // swamp oaks hung with vines, small ones on the flat land behind; blue orchids (only swamps grow them), mushrooms and a
+  // firefly bush.
+  // The swamp, the witch's and the black cat's, as the game builds it: flat and low, its ground a block high with pools of
+  // gray-green water and lily pads in it; the witch's hut on its stilts in one, sugar cane on the shore beside it; a swamp
+  // oak hung with vines and a small one; blue orchids (only swamps grow them), mushrooms and a
+  // firefly bush.
   swamp: t => ({
-    hills: { top: grassyTop(t), fill: blockTex("mud"), base: 2, rise: 1, trees: [[swampOak(t), 0.2], [swampOak(t), 0.5], [swampOak(t), 0.82]] },
-    near: [[witchHut, -14], [swampOak(t), -7], [swampOak(t), 2], [pond(t), 8], [plant("short_grass", t.grass), -2]],
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 0 },
+    // A small swamp oak on the left, at the same scale as everything else on the ground; the hut over the middle of its pool.
+    near: [[lifted(smallSwampOak(t)), -16], [swampGround(t, [
+      ".............c..................",
+      ".............c..................",
+      "...o...l..l..cofg.b..r...o.l..l.",
+      "GGGG~~~~~~~~~GGGGGGGGGGGGG~~~~~G",
+    ]), -16], [witchHut, -12], [lifted(swampOak(t)), 3]],
   }),
 };
 
@@ -798,6 +1107,12 @@ function textureCanvas(name, tint) {
 }
 
 // Draw one block at (left, top), size pixels square; rows: [first, last) texel rows only.
+function shadeBlock(ctx, rects, left, top, size) {
+  for (const [x0, y0, x1, y1, color] of rects || []) {
+    ctx.fillStyle = color;
+    ctx.fillRect(left + (x0 / 16) * size, top + (y0 / 16) * size, ((x1 - x0) / 16) * size, ((y1 - y0) / 16) * size);
+  }
+}
 function drawBlock(ctx, spec, left, top, size) {
   if (spec.fill) {
     ctx.fillStyle = spec.fill;
@@ -810,9 +1125,21 @@ function drawBlock(ctx, spec, left, top, size) {
     ctx.fillStyle = spec.under;
     ctx.fillRect(left, top, size, size);
   }
-  for (const [name, tint, [x0, x1] = [0, 16]] of spec.layers || []) {
+  (spec.layers || []).forEach(([name, tint, [x0, x1] = [0, 16]], i) => {
     const tex = textureCanvas(name, tint);
-    if (tex) ctx.drawImage(tex, x0, from, x1 - x0, to - from, left + (x0 / 16) * size, top + (from / 16) * size, ((x1 - x0) / 16) * size, ((to - from) / 16) * size);
+    // squash: the whole texture drawn into those rows (a lily pad lying flat, seen edge on).
+    if (tex && spec.squash) ctx.drawImage(tex, x0, 0, x1 - x0, 16, left + (x0 / 16) * size, top + (spec.squash[0] / 16) * size, ((x1 - x0) / 16) * size, ((spec.squash[1] - spec.squash[0]) / 16) * size);
+    else if (tex) ctx.drawImage(tex, x0, from, x1 - x0, to - from, left + (x0 / 16) * size, top + (from / 16) * size, ((x1 - x0) / 16) * size, ((to - from) / 16) * size);
+    // shade: see-through boxes over the first layer, under the rest, in texels (the shadows of a room's back wall, seen
+    // through a window's glass; a doorway's sides).
+    if (i === 0) shadeBlock(ctx, spec.shade, left, top, size);
+  });
+  // parts: pieces of a texture, each [name, [x0, y0, x1, y1] in the texture, [x, y] where it goes in the block], in
+  // texels (a lantern's body, cap and handle, cut from its block texture).
+  // [x, y, w, h]: drawn that size instead, squeezed (a small dripleaf's leaf, seen edge on).
+  for (const [name, [x0, y0, x1, y1], [x, y, w = x1 - x0, h = y1 - y0]] of spec.parts || []) {
+    const tex = textureCanvas(name);
+    if (tex) ctx.drawImage(tex, x0, y0, x1 - x0, y1 - y0, Math.round(left + (x / 16) * size), Math.round(top + (y / 16) * size), (w / 16) * size, (h / 16) * size);
   }
   // Flat-colored boxes over the layers, in texels: [x0, y0, x1, y1, color] (a rail seen from the side, a minecart).
   for (const [x0, y0, x1, y1, color] of spec.rects || []) {
@@ -839,6 +1166,8 @@ function drawProp(ctx, { rows, legend }, left, bottom, size, snowy) {
       ctx.fillRect(x, y, size, size);
     }
     drawBlock(ctx, spec, x, y, size);
+    // lintel: shadows only on the top block of an opening (one that the same opening doesn't go on above).
+    if (spec.lintel && legend[(rows[r - 1] || "")[c]] !== spec) shadeBlock(ctx, spec.lintel, x, y, size);
     if (snowy && spec.cap !== false && !legend[(rows[r - 1] || "")[c]]) drawSnowCap(ctx, x, y, size);
   }));
 }
@@ -853,29 +1182,73 @@ function hillHeights(hills, seed, cols) {
   const random = rng(seed), phase = [random() * 6, random() * 6], rough = Array.from({ length: 256 }, () => Math.floor(random() * 3) - 1);
   const wave = c => (0.6 * Math.sin(c * 0.29 + phase[0]) + 0.4 * Math.sin(c * 0.71 + phase[1]) + 1) / 2;
   return c => {
+    // profile: a skyline drawn by hand, not by the waves: [up to this fraction of the width, height in blocks], in order.
+    if (hills.profile) return (hills.profile.find(([until]) => c / cols < until) || hills.profile[hills.profile.length - 1])[1];
     let h = hills.base + hills.rise * wave(c);
     for (const [at, tall, fall] of hills.peaks || []) {
       const from = Math.abs(c - at * cols);
-      h = Math.max(h, tall - from * fall + (from > 0.5 ? rough[c & 255] : 0));
+      // jag: how many columns wide each of those bumps is (1 if not given); wider ones make steps, not one-block spikes.
+      h = Math.max(h, tall - from * fall + (from > 0.5 ? rough[Math.floor(c / (hills.jag || 1)) & 255] : 0));
     }
     return hills.steps ? Math.round(h / hills.steps) * hills.steps : Math.round(h);
   };
 }
 function hillSpots(hills, width, horizon, size, seed) {
   const heightAt = hillHeights(hills, seed, width / size);
-  return [...(hills.trees || []), ...(hills.landmarks || [])].map(([p, at]) => {
-    const c = Math.round((at * width) / size), w = p.rows[0].length;
-    return [p, c * size, horizon - Math.min(...Array.from({ length: w }, (_, i) => heightAt(c + i))) * size];
+  // A landmark (a far house) stands on the lowest ground under it (drawHills levels the rest to it). A tree stands on top
+  // of the highest ground under its trunk (its bottom row), never in it, its crown over lower ground either side; given
+  // on, on the ground under that column of it.
+  const tree = new Set(hills.trees || []);
+  return [...(hills.trees || []), ...(hills.landmarks || [])].map(entry => {
+    const [p, at, { on } = {}] = entry, c = Math.round((at * width) / size), w = p.rows[0].length;
+    const under = on !== undefined ? [on] : tree.has(entry) ? [...p.rows[p.rows.length - 1]].flatMap((ch, i) => (p.legend[ch] ? [i] : [])) : null;
+    const ground = under ? Math.max(...under.map(i => heightAt(c + i))) : Math.min(...Array.from({ length: w }, (_, i) => heightAt(c + i)));
+    return [p, c * size, horizon - ground * size];
   });
 }
 function drawHills(ctx, hills, width, horizon, size, snowy, seed) {
-  const heightAt = hillHeights(hills, seed, width / size), cols = Math.ceil(width / size) + 1;
+  const hillAt = hillHeights(hills, seed, width / size), cols = Math.ceil(width / size) + 1;
+  // The ground under a landmark (a far house) is leveled to where it stands, grass on top under it, not a higher column's
+  // dirt showing below its base.
+  const level = {};
+  for (const [p, at] of hills.landmarks || []) {
+    const c = Math.round((at * width) / size), w = p.rows[0].length;
+    const h = Math.min(...Array.from({ length: w }, (_, i) => hillAt(c + i)));
+    for (let i = 0; i < w; i++) level[c + i] = h;
+  }
+  const heightAt = c => level[c] ?? hillAt(c);
   for (let c = 0; c < cols; c++) {
     const h = heightAt(c);
     // Bands (a mesa's) run level across the hills, counted down from the highest top. Above the snow line (a mountain's)
     // they're all snow.
     const top = hills.base + hills.rise;
-    for (let k = 0; k < h; k++) drawBlock(ctx, hills.snowline && k >= hills.snowline + (c % 3 === 0 ? 1 : 0) ? hills.snow : k === h - 1 ? hills.top : hills.bands ? hills.bands[(((top - k) % hills.bands.length) + hills.bands.length) % hills.bands.length] : hills.fill, c * size, horizon - (k + 1) * size, size);
+    // top: one block, or several mixed along the tops (a wooded badlands' grass and coarse dirt), the same every time;
+    // bareBelow: tops lower than that many blocks are bare, no top block, just their band (the badlands' low mesas).
+    const cap = Array.isArray(hills.top) ? hills.top[((c * 7919) >> 3) % hills.top.length] : hills.top;
+    const band = k => (hills.bands ? hills.bands[(((top - k) % hills.bands.length) + hills.bands.length) % hills.bands.length] : hills.fill);
+    // snowDepth: how deep the top (snow) lies where the slope is gentle, thinning to one block where it's steep (a
+    // mountain's steep faces show their stone); the slope taken over five columns, and the stone under the snow kept
+    // to the lowest ground nearby, so its edge runs smooth, no lone column of stone sticking up into the snow.
+    const slope = Math.abs(heightAt(c - 2) - heightAt(c + 2)) / 4;
+    const deep = hills.snowDepth ? Math.max(1, Math.round(hills.snowDepth - 2.5 * Math.max(0, slope - 0.5))) : 1;
+    const stoneTop = hills.snowDepth ? Math.min(h - 1, Math.min(...[-2, -1, 0, 1, 2].map(d => heightAt(c + d))) - deep) : h - deep;
+    // ores: blocks of ore here and there in the fill ([names], how often), where it shows (a mountain's exposed ores).
+    const fill = k => {
+      if (hills.ores && hills.ores[0].length) {
+        const hash = Math.abs(Math.sin(c * 12.9898 + k * 78.233) * 43758.5453) % 1;
+        if (hash < hills.ores[1]) return blockTex(hills.ores[0][Math.floor((hash / hills.ores[1]) * hills.ores[0].length)]);
+      }
+      return band(k);
+    };
+    // liquid: [level, block, under]: columns no higher than level have that on top (the nether's lava sea); under,
+    // [block, how often]: that block now and then in the bed right under it (magma under the lava).
+    if (hills.liquid && h <= hills.liquid[0]) {
+      const [, , [bed, often] = []] = hills.liquid, onBed = (Math.abs(Math.sin(c * 91.7 + 3.1) * 43758.5453) % 1) < (often || 0);
+      for (let k = 0; k < h - 1; k++) drawBlock(ctx, onBed && k === h - 2 ? bed : fill(k), c * size, horizon - (k + 1) * size, size);
+      drawBlock(ctx, hills.liquid[1], c * size, horizon - h * size, size);
+      continue;
+    }
+    for (let k = 0; k < h; k++) drawBlock(ctx, hills.snowline && k >= hills.snowline + (c % 3 === 0 ? 1 : 0) ? hills.snow : k >= stoneTop && !(h < hills.bareBelow) ? cap : fill(k), c * size, horizon - (k + 1) * size, size);
     if (snowy && hills.top.cap !== false) drawSnowCap(ctx, c * size, horizon - h * size, size);
   }
   for (const [p, left, ground] of hillSpots(hills, width, horizon, size, seed)) drawProp(ctx, p, left, ground, size, snowy);
@@ -965,37 +1338,80 @@ function drawBubbles(ctx, width, height, size, seed) {
 }
 
 // A rock wall filling the canvas, with drifts of other rock and ore here and there in small clusters.
-function drawWall(ctx, { rock, ores }, width, height, size, seed) {
+// A wall built to a plan, not of random rock: pattern, rows of blocks top first, each letter a block from legend,
+// repeated across, its last row standing on the floor (horizon) and its first row carried up to the top.
+// dim: a color washed over it all (a dim room, its far wall in shadow).
+function drawPatternWall(ctx, { pattern, legend, dim }, width, horizon, size) {
+  const w = pattern[0].length, cols = Math.ceil(width / size) + 2, mid = Math.floor(width / 2 / size);
+  for (let k = 0; horizon - k * size > -size; k++) {
+    const row = pattern[Math.max(0, pattern.length - 1 - k)], y = horizon - (k + 1) * size;
+    for (let c = -1; c < cols; c++) {
+      const spec = legend[row[(((c - mid + Math.floor(w / 2)) % w) + w) % w]];
+      if (spec) drawBlock(ctx, spec, c * size + (width / 2 - mid * size), y, size);
+    }
+  }
+  if (dim) {
+    ctx.globalCompositeOperation = "source-atop";
+    ctx.fillStyle = dim;
+    ctx.fillRect(0, 0, width, horizon);
+    ctx.globalCompositeOperation = "source-over";
+  }
+}
+// alone: ores that come one block at a time, never in a pair (the deep dark's sculk catalysts).
+// strata: rock in level layers instead (top first, repeated down), each a block or two higher or lower across the wall
+// as the layers wave (the sulfur caves' sulfur and cinnabar). oreRate: one block of ore in that many (34 if not given).
+function drawWall(ctx, { rock, strata, ores, dim, alone = [], oreRate = 34 }, width, height, size, seed) {
   const random = rng(seed), cols = Math.ceil(width / size), rows = Math.ceil(height / size), ore = {};
-  for (let i = Math.round((cols * rows) / 34); i > 0; i--) {
+  for (let i = Math.round((cols * rows) / oreRate); i > 0; i--) {
     const c = Math.floor(random() * cols), r = Math.floor(random() * rows), name = ores[Math.floor(random() * ores.length)];
     ore[`${c},${r}`] = name;
-    if (random() < 0.6) ore[`${c + (random() < 0.5 ? 1 : 0)},${r + 1}`] = name;
+    if (random() < 0.6) {
+      const below = `${c + (random() < 0.5 ? 1 : 0)},${r + 1}`;
+      if (!alone.includes(name)) ore[below] = name;
+    }
   }
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
     const drift = (Math.sin(c * 0.37 + r * 0.21) + Math.sin(r * 0.53 - c * 0.13) + 2) / 4;
-    const name = ore[`${c},${r}`] || rock[Math.min(rock.length - 1, Math.floor(drift * rock.length))];
+    const wave = Math.round(1.2 * Math.sin(c * 0.21 + 1) + 0.8 * Math.sin(c * 0.57));
+    const name = ore[`${c},${r}`] || (strata ? strata[(((r + wave) % strata.length) + strata.length) % strata.length] : rock[Math.min(rock.length - 1, Math.floor(drift * rock.length))]);
     drawBlock(ctx, typeof name === "string" ? blockTex(name) : name, c * size, r * size, size);
+  }
+  // dim: a color washed over it all (a cave hardly lit).
+  if (dim) {
+    ctx.globalCompositeOperation = "source-atop";
+    ctx.fillStyle = dim;
+    ctx.fillRect(0, 0, width, height);
+    ctx.globalCompositeOperation = "source-over";
   }
 }
 
 // The ceiling: rock hanging from the top edge to an uneven depth, with stalactites under it. low: how many blocks above
-// the floor it comes down to (a mineshaft's tunnel, its roof resting on the supports' beams), not just its top rows;
+// the floor it comes down to, not just its top rows;
 // shade: how much darker it is.
-function drawCeiling(ctx, { rock, drip, low, shade = 0 }, width, size, seed, horizon) {
-  const random = rng(seed), roof = low ? Math.max(0, Math.floor(horizon / size - low)) : 0;
+// hang: how often a column has something hanging from it (.24 if not given). blobs: shapes hung from it in chosen
+// places instead, [at (blocks from the middle), rows top first, block]: each column of the shape hangs from the rock
+// right above it (the nether's glowstone).
+function drawCeiling(ctx, { rock, drip, low, shade = 0, hang: often = 0.24, blobs = [] }, width, size, seed, horizon) {
+  const random = rng(seed), roof = low ? Math.max(0, Math.floor(horizon / size - low)) : 0, depths = [];
   for (let c = 0; c < Math.ceil(width / size); c++) {
     const depth = roof + 1 + Math.round(2 * ((Math.sin(c * 0.43 + seed) + Math.sin(c * 0.97) + 2) / 4)) - (low ? 1 : 0);
+    depths[c] = depth;
     for (let k = 0; k < depth; k++) drawBlock(ctx, blockTex(rock[Math.floor(random() * rock.length)]), c * size, k * size, size);
     // shade: how much darker the rock is (a mineshaft's roof, out of the torchlight).
     if (shade) {
       ctx.fillStyle = `rgba(0, 0, 0, ${shade})`;
       ctx.fillRect(c * size, 0, size, depth * size);
     }
-    if (random() < 0.24) {
+    if (random() < often) {
       const hang = random() < 0.4 ? drip : drip.slice(-2);
       hang.forEach((name, k) => drawBlock(ctx, blockTex(name), c * size, (depth + k) * size, size));
     }
+  }
+  for (const [at, rows, name] of blobs) {
+    const left = Math.round(width / 2 / size + at);
+    rows.forEach((row, r) => [...row].forEach((ch, j) => {
+      if (ch !== "." && depths[left + j] !== undefined) drawBlock(ctx, blockTex(name), (left + j) * size, (depths[left + j] + r) * size, size);
+    }));
   }
 }
 
@@ -1074,17 +1490,42 @@ function backdropView(canvas) {
       ctx.drawImage(cv, 0, 0);
     };
     if (scene.sky) drawSky(ctx, scene.sky, canvas.width, canvas.height, 2 * NEAR * dpr, 13);
-    layer(lc => (scene.wall ? drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7)
+    // distant: things further off than the far hills, at half their size and deeper in the haze, [prop, across (0 to 1),
+    // how many of their blocks up] (the end ship hanging in the void).
+    if (scene.distant) layer(lc => scene.distant.forEach(([p, at, up]) => drawProp(lc, p, at * canvas.width, horizon - up * (FAR / 2) * dpr, (FAR / 2) * dpr, false)), mist.distant ?? 0.68);
+    layer(lc => (scene.wall ? (scene.wall.pattern ? drawPatternWall(lc, scene.wall, canvas.width, horizon, NEAR * dpr) : drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7),
+      // props: things in the wall itself, [prop, left edge, how many blocks up its bottom is] (the mineshaft's corridor).
+      (scene.wall.props || []).forEach(([p, at, up]) => drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon - up * NEAR * dpr, NEAR * dpr, false)))
       : drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, seed)), mist.far);
     if (scene.crystals) drawCrystals(ctx, crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, seed), FAR * dpr), FAR * dpr);
     if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11, scene.water.shafts);
     layer(lc => {
       if (scene.ceiling) drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5, horizon);
       for (const [p, at] of scene.near) drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
+      // nearDim: the room's dimness on what stands in it too (a little less than on its far wall), so blocks of the
+      // wall's own stone in front of it don't stand out lighter.
+      if (scene.nearDim) {
+        lc.globalCompositeOperation = "source-atop";
+        lc.fillStyle = scene.nearDim;
+        lc.fillRect(0, 0, canvas.width, canvas.height);
+        lc.globalCompositeOperation = "source-over";
+      }
     }, mist.near);
     if (scene.crystals) drawCrystals(ctx, crystalsOf(scene.near.map(([p, at]) => [p, canvas.width / 2 + at * NEAR * dpr, horizon]), NEAR * dpr), NEAR * dpr);
     // At night everything drawn so far is darkened and turned blue, and stars and the moon come out behind it.
     if (scene.night) drawNight(ctx, scene.night, canvas.width, horizon, NEAR * dpr, 17);
+    // What glows in the dark (an open eyeblossom's eyes): drawn again over the night's shade, in a soft glow of its own.
+    for (const [p, at] of scene.glows || []) {
+      const left = canvas.width / 2 + at * NEAR * dpr, x = left + 0.5 * NEAR * dpr, y = horizon - 0.75 * NEAR * dpr, r = 1.2 * NEAR * dpr;
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+      glow.addColorStop(0, "rgba(255, 150, 40, .45)");
+      glow.addColorStop(1, "rgba(255, 150, 40, 0)");
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+      ctx.globalCompositeOperation = "source-over";
+      drawProp(ctx, p, left, horizon, NEAR * dpr, snowy);
+    }
     if (scene.water) {
       if (scene.water.sun) drawSurface(ctx, canvas.width, NEAR * dpr, scene.water.surface, scene.water.pads);
       if (scene.water.wash) {
@@ -1096,10 +1537,11 @@ function backdropView(canvas) {
     // Warm light round each lantern, up that many blocks if it isn't on the ground.
     for (const light of scene.lights || []) {
       const [at, up = 0.6] = [].concat(light);
-      const x = canvas.width / 2 + (at + 0.5) * NEAR * dpr, y = horizon - up * NEAR * dpr, r = 6 * NEAR * dpr;
+      // lightSize: how many blocks a light reaches (6 if not given); lightStrength: how bright at its heart (.34).
+      const x = canvas.width / 2 + (at + 0.5) * NEAR * dpr, y = horizon - up * NEAR * dpr, r = (scene.lightSize || 6) * NEAR * dpr;
       const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
       const color = scene.lightColor || "255, 176, 84";
-      glow.addColorStop(0, `rgba(${color}, .34)`);
+      glow.addColorStop(0, `rgba(${color}, ${scene.lightStrength ?? 0.34})`);
       glow.addColorStop(1, `rgba(${color}, 0)`);
       ctx.globalCompositeOperation = "lighter";
       ctx.fillStyle = glow;

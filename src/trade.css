@@ -18,11 +18,13 @@
 .stage[data-biome="jungle"] { --sky: #5c9ce2; --haze: #c4e6c6; }
 .stage[data-biome="swamp"] { --sky: #5f7d97; --haze: #b1bd9f; }
 /* The jungle's giant crowns leave open sky only from 128px left of the middle to 48px right of it, and
-   clouds behind leaves would speckle through their gaps, so its clouds keep to that gap, high enough to
-   stay clear of the villager's name tag. */
+   clouds behind leaves would speckle through their gaps: the left cloud is moved into that gap, drifting
+   only as far as it allows, and the right one stays where it is everywhere else (8% + 236px from the
+   left, measured against the stage's width as a container). */
+.stage[data-biome="jungle"] { container-type: inline-size; }
 .stage[data-biome="jungle"]::before {
-  left: calc(50% - 104px); top: 14px;
-  box-shadow: 20px -8px 0 rgba(255, 255, 255, .78), 64px 10px 0 rgba(255, 255, 255, .62);
+  left: calc(50% - 124px);
+  box-shadow: 20px -8px 0 rgba(255, 255, 255, .78), calc(360px - 42cqw) 20px 0 rgba(255, 255, 255, .62), calc(386px - 42cqw) 12px 0 rgba(255, 255, 255, .62);
 }
 /* Flat blocky clouds, and the ground: the biome's top texture, darker toward the front. */
 .stage::before {
@@ -39,7 +41,7 @@
   .stage::before { animation: clouds 45s linear infinite alternate; }
   .stage[data-biome="jungle"]::before { animation: clouds-in-gap 26s linear infinite alternate; }
   @keyframes clouds { to { transform: translateX(70px); } }
-  @keyframes clouds-in-gap { to { transform: translateX(40px); } }
+  @keyframes clouds-in-gap { to { transform: translateX(18px); } }
 }
 /* The biome's countryside behind the scene (under the ground strip), then the scene itself. */
 .stage-backdrop, .stage-light, .stage-scene {

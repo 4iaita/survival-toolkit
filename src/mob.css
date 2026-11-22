@@ -4,13 +4,10 @@
 :root { --pack: #ff8bd8; }
 /* The mob's stage (the villager panel's layout), with the names to try under it and the mob picker beside it. */
 .mob-panel .stage { height: 300px; }
-/* The forest: a soft sky, hazy green where the far trees meet it. */
-.stage[data-biome="forest"] { --sky: #6fa3dc; --haze: #cfe6c6; }
 /* In the cave there's no sky to see: a dark haze over the far rock and no clouds. */
 .stage[data-biome="cave"] { --sky: #0b0b10; --haze: #0d0d13; }
-/* The mineshaft: dark rock, with a dim gravel floor. */
-.stage[data-biome="mineshaft"] { --sky: #0b0b10; --haze: #100d0a; }
-.stage[data-biome="mineshaft"]::after { filter: brightness(.5); }
+/* The mineshaft's cave: as dark as the cave, no clouds. */
+.stage[data-biome="mineshaft"] { --sky: #0b0b10; --haze: #0d0d13; }
 .stage[data-biome="mineshaft"]::before { display: none; }
 /* Inside a woodland mansion: no sky, a dim haze over the far wall, and a dark oak floor in the torchlight. */
 .stage[data-biome="mansion"] { --sky: #120c08; --haze: #1a120b; }
@@ -26,8 +23,8 @@
 .stage[data-biome="stronghold"]::before { display: none; }
 /* The deep dark: no sky, a cold blue-gray haze over the deepslate (kept light enough for the near-black Bacteria to
    stand out),, and an ancient city's deepslate tile floor lit by soul lanterns. */
-.stage[data-biome="deep_dark"] { --sky: #16262e; --haze: #3a5c66; }
-.stage[data-biome="deep_dark"]::after { filter: brightness(.95); }
+.stage[data-biome="deep_dark"] { --sky: #060a0c; --haze: #0c1418; }
+.stage[data-biome="deep_dark"]::after { filter: brightness(.55); }
 .stage[data-biome="deep_dark"]::before { display: none; }
 /* A biome at night (the plains'): a deep blue sky, lighter toward the horizon, dim clouds, and the grass in the dark (not black:
    the mob still has to be seen against it). */
@@ -48,43 +45,35 @@
 /* The pale garden's, where the creaking stands: its gray mist gone a cold blue-gray. */
 .stage[data-biome="pale_garden_night"] { --sky: #0e1424; --haze: #46505e; }
 .stage[data-biome="pale_garden_night"]::after { filter: brightness(.6) saturate(.7); }
-.stage[data-biome="nether"] { --sky: #1c0605; --haze: #3a0f08; }
+.stage[data-biome="nether"] { --sky: #1c0605; --haze: #6e2010; }
 /* The biomes some name tags' looks come from: the cherry grove's clear mountain sky, the pale garden's gray mist, the
-   dappled forest's soft autumn haze, the sulfur caves' dark yellow murk. */
+   dappled forest's soft autumn haze, the sulfur caves' murky green fog. */
 .stage[data-biome="cherry_grove"] { --sky: #78a8e8; --haze: #f3d7e4; }
 .stage[data-biome="pale_garden"] { --sky: #a9aeab; --haze: #d9dcd7; }
 .stage[data-biome="pale_garden"]::before { opacity: .35; }
 .stage[data-biome="dappled_forest"] { --sky: #7fa6d6; --haze: #ecd2ad; }
-.stage[data-biome="sulfur_caves"] { --sky: #120f06; --haze: #231b08; }
+.stage[data-biome="sulfur_caves"] { --sky: #141a07; --haze: #3a4a14; }
 .stage[data-biome="sulfur_caves"]::before { display: none; }
-.stage[data-biome="sulfur_caves"]::after { filter: brightness(.7); }
+.stage[data-biome="sulfur_caves"]::after { filter: brightness(.62); }
 /* The End: a dark violet void, and end stone in the dim light it gets there. */
-.stage[data-biome="end"], .stage[data-biome="end_island"] { --sky: #120c20; --haze: #2a2140; }
-.stage[data-biome="end"]::after, .stage[data-biome="end_island"]::after { filter: brightness(.72) saturate(.8); }
+.stage[data-biome="end_city"], .stage[data-biome="end_island"] { --sky: #120c20; --haze: #2a2140; }
+.stage[data-biome="end_city"]::after, .stage[data-biome="end_island"]::after { filter: brightness(.72) saturate(.8); }
 /* Underwater: bright near the surface, deep blue below, and the sand on the sea floor in shade. */
 .stage[data-biome="ocean"] { --sky: #3a9ad8; --haze: #0f5487; }
 .stage[data-biome="ocean"]::after { filter: brightness(.7) saturate(.7); }
-/* The flooded lush cave: dim green-blue water over mossy rock and a moss floor. */
-.stage[data-biome="lush"] { --sky: #0a2528; --haze: #0d3336; }
-.stage[data-biome="lush"]::after { filter: brightness(.85); }
+/* Under a lush cave's pool: blue-green water over a clay bottom. */
+.stage[data-biome="lush_pool"] { --sky: #123a47; --haze: #1c5058; }
+.stage[data-biome="lush_pool"]::after { filter: brightness(.68) saturate(.8); }
 /* The glow squid's flooded cave: nearly black water over dark rock and gravel. */
 .stage[data-biome="flooded_cave"] { --sky: #02060f; --haze: #04121f; }
 .stage[data-biome="flooded_cave"]::after { filter: brightness(.45) saturate(.7); }
 /* The tadpole's swamp water: murky green, lighter toward the lily pads overhead, over a dim mud bottom. */
 .stage[data-biome="swamp_water"] { --sky: #5d7a4c; --haze: #2a3c22; }
-.stage[data-biome="swamp_water"]::after { filter: brightness(.6) saturate(.8); }
-.stage[data-biome="swamp_water"]::before, .stage[data-biome="cave"]::before, .stage[data-biome="nether"]::before, .stage[data-biome="end"]::before, .stage[data-biome="end_island"]::before, .stage[data-biome="ocean"]::before, .stage[data-biome="lush"]::before, .stage[data-biome="flooded_cave"]::before { display: none; }
-/* The wolves' wild biomes: snowy forests in a white haze, the old growth taigas' cool green-gray, the badlands' warm dust. */
-.stage[data-biome="snowy_taiga"] { --sky: #9db6e4; --haze: #eef3fb; }
-.stage[data-biome="grove"] { --sky: #a8bfe8; --haze: #f2f6fc; }
+.stage[data-biome="swamp_water"]::after { filter: brightness(.68) saturate(.8); }
+.stage[data-biome="swamp_water"]::before, .stage[data-biome="cave"]::before, .stage[data-biome="nether"]::before, .stage[data-biome="end_city"]::before, .stage[data-biome="end_island"]::before, .stage[data-biome="ocean"]::before, .stage[data-biome="lush_pool"]::before, .stage[data-biome="flooded_cave"]::before { display: none; }
+/* The goat's jagged peaks in a cold white haze; the striped wolf's wooded badlands in warm dust. */
 .stage[data-biome="peaks"] { --sky: #8db3ec; --haze: #eef3fb; }
-.stage[data-biome="pine_taiga"] { --sky: #6a8ec2; --haze: #bfd0d8; }
-.stage[data-biome="spruce_taiga"] { --sky: #6c90c6; --haze: #c6d6df; }
-.stage[data-biome="sparse_jungle"] { --sky: #5c9ce2; --haze: #c9e8c4; }
-.stage[data-biome="savanna_plateau"] { --sky: #79a9e6; --haze: #f0d29c; }
 .stage[data-biome="badlands"] { --sky: #87b3ea; --haze: #f1c9a2; }
-/* The warm frog's mangrove swamp: a muggy gray-green sky, like the swamp's. */
-.stage[data-biome="mangrove_swamp"] { --sky: #648aa0; --haze: #b6c4a0; }
 .try-bar { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
 .try-bar .cat-label { margin: 0; }
 .try-bar[hidden] + .try-bar { margin-top: 12px; }
