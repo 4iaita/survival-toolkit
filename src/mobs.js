@@ -333,14 +333,17 @@ async function lookBoxes(look, { flip = false, tint = null, clock = null, night 
     modelBoxes(MOB_MODELS[model], layers[i], [...rules, ...showParts, ...showing], { size, pose, flip: flip ? height / 2 : null, flags, tint, clock, dim: night ? NIGHT_DIM : 1, glintAt: performance.now() / 1000 }));
   return Object.assign(parts.filter(p => !p.soft), { soft: parts.filter(p => p.soft) });
 }
-// Boxes moved down or up to stand on the ground: props hang from an armor stand's hand in their models.
-function landed(boxes) {
-  if (!boxes || !boxes.length) return boxes;
-  const drop = [{ pivot: [0, 0, 0], angles: [0, 0, 0], move: [0, GROUND - boxesBounds(boxes)[1][1], 0] }];
-  return boxes.map(m => ({ ...m, bones: [...(m.bones || []), ...drop] }));
+// Boxes moved down or up to stand on the ground: props hang from an armor stand's hand in their models. drop: how far, for
+// a prop that's animating (as far as it would at rest, so that it can jump).
+const landing = boxes => [{ pivot: [0, 0, 0], angles: [0, 0, 0], move: [0, GROUND - boxesBounds(boxes)[1][1], 0] }];
+function landed(boxes, drop = boxes && boxes.length ? landing(boxes) : null) {
+  if (!boxes || !drop) return boxes;
+  const moved = m => ({ ...m, bones: [...(m.bones || []), ...drop] });
+  return Object.assign(boxes.map(moved), { soft: (boxes.soft || []).map(moved) });
 }
-// A mob's looks (MOB_LOOKS key), or a prop's one look ("prop:" and its item, a PROP_LOOKS key).
-const looksOf = key => (key.startsWith("prop:") ? [PROP_LOOKS[key.slice(5)]].filter(Boolean) : MOB_LOOKS[key] || []);
+// A mob's looks (MOB_LOOKS key), or a prop's one look and its variants ("prop:" and its item, a PROP_LOOKS key).
+const propLooks = look => (look ? [look, ...(look.variants || []).map(v => ({ ...look, ...v }))] : []);
+const looksOf = key => (key.startsWith("prop:") ? propLooks(PROP_LOOKS[key.slice(5)]) : MOB_LOOKS[key] || []);
 
 // A prop drawn on its own, size pixels square, as a PNG data URL, or null without its textures.
 async function propPicture(item, size) {
@@ -446,6 +449,35 @@ function sleepZs(age) {
   return out;
 }
 
+// The light a scene's glowing texels (EMITS) spread round them, as a canvas to add over it: just those texels, the rest
+// black and in front of them where it is, blurred by shrinking and growing them back, and mostly left off the texels
+// themselves, which would wash out. spread: how far, in pixels.
+function bloomOf(boxes, scene, spread) {
+  const lit = boxes.map(m => ({ ...m, color: (...spot) => {
+    const color = m.color(...spot), emits = Math.floor(color / EMITS);
+    return color < 0 ? -1 : emits > 0 ? color : 0;
+  } }));
+  const px = renderScene(lit, scene);
+  for (let i = 0; i < px.length; i += 4) if (!px[i] && !px[i + 1] && !px[i + 2]) px[i + 3] = 0;
+  const canvasOf = (width, height) => Object.assign(document.createElement("canvas"), { width, height });
+  const sharp = canvasOf(scene.width, scene.height);
+  sharp.getContext("2d").putImageData(new ImageData(px, scene.width, scene.height), 0, 0);
+  let from = sharp;
+  for (let step = spread; step > 1; step /= 2) {
+    const to = canvasOf(Math.max(1, Math.round(from.width / 2)), Math.max(1, Math.round(from.height / 2))), ctx = to.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(from, 0, 0, to.width, to.height);
+    from = to;
+  }
+  const out = canvasOf(scene.width, scene.height), ctx = out.getContext("2d");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(from, 0, 0, out.width, out.height);
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.globalAlpha = BLOOM_OFF;
+  ctx.drawImage(sharp, 0, 0);
+  return out;
+}
+
 // The part of a box that shows, as its [lo, hi] corners, sampling each face's texture so that see-through parts (a
 // fin's empty plane) don't count; or null if none of it does.
 function visiblePart(m) {
@@ -485,6 +517,8 @@ function overShell(px, shell) {
 // it lands on the canvas as it moves, from this side, however it's turned. zoom draws a mob that many times the size
 // that would fit, to scale with a bigger one.
 const MOB_MAX_SCALE = 8, MOB_FEET_UP = 26, MOB_TAG_ROOM = 44, MOB_MARGIN = 28, SWIM_MARGIN = 12, MOTION_FPS = 20, SLOW_FRAME_MS = 30, SLOW_FRAMES = 5, ACT_FADE = 0.25;
+// How far a prop's glow spreads, how strong it is, and how much of it is left off the glowing texels.
+const BLOOM_SPREAD = 12, BLOOM = 0.9, BLOOM_OFF = 0.85;
 // How many moments of an animation to look at for how far it reaches.
 const MOTION_SAMPLES = 12;
 // yaw: how it's turned to start with, and after a reset (turnBack).
@@ -503,7 +537,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     return light.getContext("2d");
   };
   let boxes = null, rest = null, fit = null, zoomed = 1, swims = false, yaw = startYaw, frame = 0, dragX = null, wanted = "";
-  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
+  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
   const draw = () => {
     frame = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -549,6 +583,15 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const shells = placed.filter(m => m.shell);
     if (shells.length) overShell(px, renderScene(shells, scene));
     ctx.putImageData(new ImageData(px, canvas.width, canvas.height), 0, 0);
+    // A prop whose texels glow lights up what's round them.
+    if (blooms) {
+      const halo = bloomOf(placed, scene, BLOOM_SPREAD * dpr);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = BLOOM;
+      ctx.drawImage(halo, 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+    }
     // Soft glows add their light over the rest, smooth and always facing the camera.
     for (const { soft, span, tall, at, bones, facing, bright, behind } of boxes.soft || []) {
       // A glow behind the mob adds its light to the backdrop, under the mob; the rest adds it on top.
@@ -606,6 +649,12 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     // Time for its act? The first comes sooner, so it isn't missed.
     const between = () => acts[0].every[0] + Math.random() * (acts[0].every[1] - acts[0].every[0]);
     if (acts && !nextAct) nextAct = now + (between() * 1000) / 2;
+    // A prop's entrance comes first.
+    if (intro) {
+      act = intro;
+      actStart = now;
+      intro = null;
+    }
     if (acts && !actStart && now >= nextAct) {
       actStart = now;
       let roll = Math.random() * acts.reduce((sum, a) => sum + (a.weight || 1), 0);
@@ -616,12 +665,16 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       actStart = 0;
       nextAct = now + between() * 1000;
     }
-    const acting = Boolean(actStart), usual = acting && !act.keep ? Math.min(1, Math.max(0, 1 - into / ACT_FADE, (into - act.length + ACT_FADE) / ACT_FADE)) : 1;
+    const acting = Boolean(actStart);
+    // Nothing moves between the acts of something with no loops (a prop): it's already drawn.
+    if (!acting && !motion.length && rested) return;
+    const usual = acting && !act.keep ? Math.min(1, Math.max(0, 1 - into / ACT_FADE, (into - act.length + ACT_FADE) / ACT_FADE)) : 1;
     const moving = motionPose(motion, now / 1000, usual), showing = acting ? actPose(moving, act, into) : [];
     effects = acting ? actEffects(act, into) : [];
     const key = wanted, next = await rebuild(moving, showing);
     if (key !== wanted || !next) return;
     boxes = next;
+    rested = !acting;
     const started = performance.now();
     draw();
     slowFrames = performance.now() - started > SLOW_FRAME_MS ? slowFrames + 1 : 0;
@@ -650,7 +703,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
   const fits = {};
   return {
     // Show a mob (or prop, see looksOf) in one of its looks; resolves once it's drawn, or false if it can't be.
-    async show(mob, lookIndex = 0, { plays = null, flip = false, tint = null, clock = null, night = false, glowing = false, stand = null, swim = false, zoom = 1, mood = null, armor = null, sized = null, climate = null, skins = null, overlays = null, shown = [], carpet = null, dyes = null, extra = {} } = {}) {
+    async show(mob, lookIndex = 0, { plays = null, flip = false, tint = null, clock = null, night = false, glowing = false, stand = null, swim = false, zoom = 1, mood = null, armor = null, sized = null, climate = null, skins = null, overlays = null, shown = [], carpet = null, dyes = null, extra = {}, squish = false } = {}) {
       // A mood (MOB_MOODS) has looks and animations of its own, in place of the mob's usual ones; so can a size (MOB_SIZES); a climate (MOB_CLIMATES) has the few looks that differ there (their layers, over the usual look), and maybe loops and acts of its own.
       const mooded = (mood && MOB_MOODS[mob] && MOB_MOODS[mob][mood]) || null, ofSize = (sized && MOB_SIZES[mob] && MOB_SIZES[mob][sized] && MOB_SIZES[mob][sized].looks) || null;
       const climated = (climate && MOB_CLIMATES[mob] && MOB_CLIMATES[mob][climate]) || null, ofClimate = (climated && climated.looks) || null;
@@ -665,16 +718,18 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // another of the mob's sets (plays: a chick's, in MOB_MOTIONS and MOB_ACTS as "<mob>:<set>"); so can what it wears
       // (plays, a sheared snow golem's).
       const setKey = plays || look.plays ? `${mob}:${plays || look.plays}` : null;
-      const ownLoops = look.motions || (setKey && MOB_MOTIONS[setKey]) || (mooded ? mooded.motions : (climated && climated.motions) || MOB_MOTIONS[mob] || null);
+      // A prop's are its kind's (look.anim, PROP_ACTS): an entrance when it's picked, and acts.
+      const kind = (look.anim && PROP_ACTS[look.anim]) || null;
+      const ownLoops = kind ? [] : look.motions || (setKey && MOB_MOTIONS[setKey]) || (mooded ? mooded.motions : (climated && climated.motions) || MOB_MOTIONS[mob] || null);
       // What it wears can have loops of its own, played over the mob's (a harness's wings beating).
       const kinds = armor && MOB_ARMOR[armor.kind] && MOB_ARMOR[armor.kind].kinds, wornLoops = (kinds && kinds[armor.type] && kinds[armor.type].motions) || null;
       const loops = wornLoops ? [...(ownLoops || []), ...wornLoops] : ownLoops;
-      const nextAct_ = look.motions ? null : setKey ? MOB_ACTS[setKey] || null : mooded ? mooded.act : (climated && climated.act) || MOB_ACTS[mob] || null;
+      const nextAct_ = kind ? kind.acts : look.motions ? null : setKey ? MOB_ACTS[setKey] || null : mooded ? mooded.act : (climated && climated.act) || MOB_ACTS[mob] || null;
       // A look's boxes as it starts, and the space it moves through as it animates: its bounds and, for a swimmer, the
       // corners of what shows of its boxes at each moment (spots).
       const reachOf = async (shape, options) => {
-        const longest = loops ? Math.max(...loops.map(l => l.length)) : 0;
-        const moments = loops ? Array.from({ length: MOTION_SAMPLES }, (_, i) => motionPose(loops, (i / MOTION_SAMPLES) * longest)) : [null];
+        const moves = Boolean(loops && loops.length), longest = moves ? Math.max(...loops.map(l => l.length)) : 0;
+        const moments = moves ? Array.from({ length: MOTION_SAMPLES }, (_, i) => motionPose(loops, (i / MOTION_SAMPLES) * longest)) : [null];
         const all = [];
         for (const moving of moments) all.push(ground(await lookBoxes(shape, { ...options, moving })));
         if (!all[0] || !all[0].length) return { boxes: all[0], bounds: null };
@@ -695,11 +750,17 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       const f = fits[mob];
       const options = { flip, tint, clock, night, glowing, stand, armor, skins, overlays, carpet, dyes, extra, showParts: shown, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
       const reach = f ? await reachOf(look, options) : { boxes: null, bounds: null }, next = reach.boxes;
+      // A prop lands by how it stands at rest.
+      const raw = kind ? await lookBoxes(look, options) : null, drop = raw && raw.length ? landing(raw) : null;
       if (wanted !== key) return false;
+      const before = boxes;
       boxes = next;
       rest = reach.bounds && Object.assign(reach.bounds, { spots: reach.spots });
       swims = swim;
-      rebuild = (moving, showing) => lookBoxes(look, { ...options, moving, showing });
+      rebuild = async (moving, showing) => {
+        const made = await lookBoxes(look, { ...options, moving, showing });
+        return drop ? landed(made, drop) : made;
+      };
       // No acts, or an empty list of them (a mob that only has its loops), is none.
       const nextActs = nextAct_ && [].concat(nextAct_).length ? [].concat(nextAct_) : null;
       const sameActs = acts === nextActs || (acts && nextActs && acts.length === nextActs.length && acts.every((a, i) => a === nextActs[i]));
@@ -709,6 +770,16 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         actStart = nextAct = 0;
       }
       motion = next && loops;
+      blooms = Boolean(kind && look.layers.some(([, , , flags]) => flags && flags.lit));
+      rested = false;
+      intro = null;
+      if (kind && !calmMotion()) {
+        // Its entrance starts from nothing, so it isn't drawn before that. (A prop changing variants squishes, or turns
+        // inside out, instead: until that starts it's drawn as it was.)
+        intro = squish ? (kind.turns ? kind.turns[lookIndex] : kind.acts[0]) : kind.spawn;
+        boxes = squish ? before : null;
+        actStart = nextAct = 0;
+      }
       coarse = false;
       slowFrames = 0;
       if (motion && !playing) {

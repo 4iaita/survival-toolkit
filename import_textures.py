@@ -202,7 +202,7 @@ FILES = {
     "fire": "blocks/fire_0", "flower_blue_orchid": "blocks/flower_blue_orchid", "reeds": "blocks/reeds", "flower_houstonia": "blocks/flower_houstonia", "flower_tulip_white": "blocks/flower_tulip_white", "flower_tulip_orange": "blocks/flower_tulip_orange",
     # The warden's deep dark: sculk and its sensors, shriekers and catalysts, an ancient city's deepslate and the
     # reinforced deepslate of its portal frame, soul lanterns and candles.
-    "sculk": "blocks/sculk", "sculk_catalyst": "blocks/sculk_catalyst_side", "sculk_sensor": "blocks/sculk_sensor_side",
+    "sculk": "blocks/sculk", "sculk_vein": "blocks/carried/sculk_vein_carried", "sculk_catalyst": "blocks/sculk_catalyst_side", "sculk_sensor": "blocks/sculk_sensor_side",
     "sculk_shrieker": "blocks/sculk_shrieker_side", "deepslate_bricks": "blocks/deepslate/deepslate_bricks",
     "cracked_deepslate_bricks": "blocks/deepslate/cracked_deepslate_bricks", "chiseled_deepslate": "blocks/deepslate/chiseled_deepslate",
     "polished_deepslate": "blocks/deepslate/polished_deepslate", "reinforced_deepslate": "blocks/reinforced_deepslate_side",

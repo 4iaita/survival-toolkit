@@ -4,15 +4,15 @@
 const PROP_GROUPS = [
   { n: "Plushies", what: "Wool turns into a plushie, a different one for each color.", items: [
     { k: "white_wool", n: "White Wool", what: "A sheep plushie." }, { k: "silver_wool", n: "Light Gray Wool", what: "A chicken plushie." },
-    { k: "gray_wool", n: "Gray Wool", what: "A skeleton plushie." }, { k: "black_wool", n: "Black Wool", what: "A spider plushie." },
+    { k: "gray_wool", n: "Gray Wool", what: "A skeleton plushie." }, { k: "black_wool", n: "Black Wool", what: "A spider plushie. Its eyes glow." },
     { k: "brown_wool", n: "Brown Wool", what: "A cow plushie." }, { k: "red_wool", n: "Red Wool", what: "A mooshroom plushie." },
     { k: "orange_wool", n: "Orange Wool", what: "A frog plushie." }, { k: "yellow_wool", n: "Yellow Wool", what: "A bee plushie." },
     { k: "lime_wool", n: "Lime Wool", what: "A player plushie in a frog hat." }, { k: "green_wool", n: "Green Wool", what: "A creeper plushie." },
     { k: "cyan_wool", n: "Cyan Wool", what: "A zombie plushie." }, { k: "light_blue_wool", n: "Light Blue Wool", what: "A pufferfish plushie." },
-    { k: "blue_wool", n: "Blue Wool", what: "A player plushie." }, { k: "purple_wool", n: "Purple Wool", what: "An enderman plushie." },
+    { k: "blue_wool", n: "Blue Wool", what: "A reversible squid plushie. The glow squid glows." }, { k: "purple_wool", n: "Purple Wool", what: "An enderman plushie. Its eyes glow." },
     { k: "magenta_wool", n: "Magenta Wool", what: "An axolotl plushie." }, { k: "pink_wool", n: "Pink Wool", what: "A pig plushie." },
-    { k: "rabbit_foot", n: "Rabbit’s Foot", what: "A bunny plushie." }, { k: "dragon_breath", n: "Dragon’s Breath", what: "An ender dragon plushie." },
-    { k: "sculk_vein", n: "Sculk Vein", what: "A warden plushie." }, { k: "dried_ghast", n: "Dried Ghast", what: "A ghastling sitting on a dried ghast." },
+    { k: "rabbit_foot", n: "Rabbit’s Foot", what: "A bunny plushie." }, { k: "dragon_breath", n: "Dragon’s Breath", what: "An ender dragon plushie. Its eyes glow." },
+    { k: "sculk_vein", n: "Sculk Vein", what: "A warden plushie. Its horns glow." }, { k: "dried_ghast", n: "Dried Ghast", what: "A reversible ghast plushie." },
   ] },
   { n: "Couches", what: "Carpet turns into a couch in its color.", items: ["White", "Light Gray", "Gray", "Black", "Brown", "Red", "Orange", "Yellow", "Lime", "Green", "Cyan", "Light Blue", "Blue", "Purple", "Magenta", "Pink"]
     .map(c => ({ k: `${c.toLowerCase().replace(" ", "_")}_carpet`, n: `${c} Carpet`, what: `A ${c.toLowerCase()} couch.` })) },
@@ -59,3 +59,18 @@ const PROP_GROUPS = [
     { k: "carrot", n: "Carrot", what: "A bunch of carrots." }, { k: "pufferfish", n: "Pufferfish", what: "Fishing rods in a stand." },
   ] },
 ];
+// The items' own icons, for the line under the stage: the same drawing the rest of the site uses (a section's are added
+// once its props have been checked against the pack).
+const PROP_ICONS = {
+  ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c === "light_gray" ? "silver" : c}_wool`, C_(`${c}_wool`, `${c}_wool`)])),
+  rabbit_foot: L("rabbit_foot"), dragon_breath: L("dragon_breath"), sculk_vein: L("sculk_vein"), dried_ghast: DRIED_GHAST,
+};
+for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
+// The versions an item's prop comes in (PROP_LOOKS' look and its variants, in order), one for each of the stand's poses in turn.
+const CLIMATE_KINDS = ["Temperate", "Cold", "Warm"];
+const PROP_VARIANTS = {
+  blue_wool: ["Squid", "Glow Squid"], dried_ghast: ["Happy Ghast", "Dried Ghast"],
+  silver_wool: CLIMATE_KINDS, black_wool: ["Spider", "Cave Spider"], brown_wool: CLIMATE_KINDS, red_wool: ["Red", "Brown"], orange_wool: CLIMATE_KINDS,
+  magenta_wool: ["Lucy", "Blue", "Wild", "Cyan", "Gold"], pink_wool: CLIMATE_KINDS,
+  rabbit_foot: ["Brown", "Black", "Gold", "White", "Black and White", "Killer Bunny"],
+};

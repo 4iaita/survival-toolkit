@@ -1,7 +1,7 @@
-# Survival Toolkit: working on the Mobs tab
+# Survival Toolkit: working on the Mobs and Armor Stands tabs
 
-Most of this is about the stage backgrounds; the rest of the tab is at the end ("The Mobs tab's controls and facts", "Finding
-what's unused").
+Most of this is about the Mobs tab's stage backgrounds; the rest of that tab is at the end ("The Mobs tab's controls and facts",
+"Finding what's unused"). For the Armor Stands tab, read "Armor Stands, section by section".
 
 The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
@@ -164,3 +164,38 @@ wrapped in a Proxy that records reads (serve it from `tools/backdrops/out`, and 
 and icon, every villager and every mob section; for mob textures and models, walk the evaluated data tables instead. Unused
 JS names: TypeScript's `noUnusedLocals` over the scripts in `build.py`'s order. Compare every background and icon with the
 committed page afterwards. When removing a texture, take it out of `FILES` in `import_textures.py` too.
+
+## Armor Stands, section by section
+
+The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
+Plushies (2026-11-24). Left, in page order: Couches, Presents, Christmas, Halloween, Around the house, Outdoors
+and Tents. For each section: every texture must be one from `../textures`, animations and light glow
+are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
+result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
+
+How to do a section (as `import_plushies.py` does):
+
+1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
+   `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
+   `scripts.animate` are on, and the pack's `animation_controllers` for what those play. The old pack's names are all gone.
+2. Old props draw the old pack's sheet (`art/mobs/prop_black_bundle.png`, not in the textures folder). The new pack has most
+   props on one sheet, `textures/oreville/ans/dpg`, already in as `new_prop_bamboo`. Compare models and UVs too: many moved. When the
+   last prop has left an old texture, delete it.
+3. Read the pre_animation line with `v.jxykui`: `Math.mod(v.rczxgr, n)` means n versions, one for each of the stand's poses
+   (`rczxgr` is the pose), picked from the render controller's arrays. They go in `PROP_LOOKS`' `variants` (each what differs:
+   `layers`, `pose`) and their names in `PROP_VARIANTS`. The keys are scrambled; name them by looking at them.
+   `v.pihgwp` is the stand being hit or its pose changing.
+4. A prop's `anim` names its kind in `PROP_ACTS`: `spawn` (played when it's picked), `acts` (now and then) and `turns` (how it
+   changes into each variant, else it plays its first act). `spawn` in the pack can be a plain animation with keyframes, not a
+   controller's. Bake with `im.baked_act`. Conditional on-the-stand poses (`PROP_LOOKS`' `pose`) must not be baked in twice.
+5. Glow: materials that come down to `entity_emissive*` give a layer `lit`. The stage stays by day (the user had the night stage
+   removed) and the glowing texels light what's round them (`bloomOf` in `src/mobs.js`), for props with an `anim` so far.
+   Check the sheet's MER (`dpi`, green channel) for texels that glow.
+6. Item icons: `PROP_ICONS` in `src/prop-data.js`, one entry per item, shown only for the items listed there. Check each one against the folder
+   pixel by pixel, and copy a missing one through `import_textures.py` (`FILES`). An item that isn't drawn as a block in the game
+   (carpet) needs its own drawing: `ART_TRADES` draws carpets as whole wool blocks.
+7. Draw every prop large (`propPicture`) and check its description against what it really is: two plushies were described wrong.
+   Draw frames of its animations, and check phone width and the console.
+
+Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
+asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.
