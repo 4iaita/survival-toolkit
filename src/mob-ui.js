@@ -939,6 +939,9 @@ renderMobs();
 // Villager Trades tab.
 function openVillagerTrades() {
   if (location.hash !== "#trading") return;
+  // The Mobs tab shows first: hidden, its stage has no size, and its background wouldn't be redrawn for the villager.
+  history.replaceState(null, "", "#mobs");
+  showView();
   if (mobTab.mob !== "villager") {
     pickMob("villager", "");
     pickVariant(trade.villager);
@@ -946,8 +949,6 @@ function openVillagerTrades() {
   mobTab.section = "trade";
   renderMobResult();
   saveMobTab();
-  history.replaceState(null, "", "#mobs");
-  showView();
   $("mob-result").scrollIntoView({ block: "start" });
 }
 window.addEventListener("hashchange", openVillagerTrades);
