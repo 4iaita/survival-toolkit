@@ -1,6 +1,6 @@
 /* ---------- Armor stand props ---------- */
 // Armor stand props (Actions & Stuff): an armor stand named §§ shows the item in its hand as a decoration.
-// k is the item's id (PROP_LOOKS key), n its name, what the decoration it becomes; worn, if the stand wears it instead of holding it; icons, where more than one item becomes the
+// k is the item's id (PROP_LOOKS key), n its name, what the decoration it becomes; worn, if the stand wears it instead of holding it; yaw, how it's turned to start with, if not as they all are; icons, where more than one item becomes the
 // same one, all their ids (the line under the stage shows each).
 const PROP_GROUPS = [
   { n: "Plushies", what: "Wool turns into a plushie, a different one for each color.", items: [
@@ -8,7 +8,7 @@ const PROP_GROUPS = [
     { k: "gray_wool", n: "Gray Wool", what: "A skeleton plushie." }, { k: "black_wool", n: "Black Wool", what: "A spider plushie. Its eyes glow." },
     { k: "brown_wool", n: "Brown Wool", what: "A cow plushie." }, { k: "red_wool", n: "Red Wool", what: "A mooshroom plushie." },
     { k: "orange_wool", n: "Orange Wool", what: "A frog plushie." }, { k: "yellow_wool", n: "Yellow Wool", what: "A bee plushie." },
-    { k: "lime_wool", n: "Lime Wool", what: "A player plushie in a frog hat." }, { k: "green_wool", n: "Green Wool", what: "A creeper plushie." },
+    { k: "lime_wool", n: "Lime Wool", what: "A plushie of Rana, a girl in a frog hat." }, { k: "green_wool", n: "Green Wool", what: "A creeper plushie." },
     { k: "cyan_wool", n: "Cyan Wool", what: "A zombie plushie." }, { k: "light_blue_wool", n: "Light Blue Wool", what: "A pufferfish plushie." },
     { k: "blue_wool", n: "Blue Wool", what: "A reversible squid plushie. The glow squid glows." }, { k: "purple_wool", n: "Purple Wool", what: "An enderman plushie. Its eyes glow." },
     { k: "magenta_wool", n: "Magenta Wool", what: "An axolotl plushie." }, { k: "pink_wool", n: "Pink Wool", what: "A pig plushie." },
@@ -39,7 +39,7 @@ const PROP_GROUPS = [
     { k: "mangrove_boat", n: "Mangrove Boat", what: "A red and gold sleigh with a sack of presents." },
     { k: "cocoa_beans", n: "Cocoa Beans", what: "A gingerbread house. Punch the stand three times to knock, and a gingerbread man steps out and waves. Its windows light up at night." }, { k: "cookie", n: "Cookie", what: "A jar of cookies." },
     { k: "twisting_vines", n: "Twisting Vines", what: "A green candy cane." }, { k: "weeping_vines", n: "Weeping Vines", what: "A red candy cane." },
-    { k: "sweet_berries", n: "Sweet Berries", what: "A potted holly bush with a red bow." },
+    { k: "sweet_berries", n: "Sweet Berries", what: "A potted holly bush with a red bow." }, { k: "white_candle", n: "White Candle", what: "Three festive candles with holly round them. Their flames glow." },
     { k: "snow", n: "Snow Block", what: "A snowman with a broom." }, { k: "snowball", n: "Snowball", what: "A small snow globe with a snowman inside. Punch the stand to shake it." },
     { k: "snow_layer", n: "Snow", what: "A layer of snow that drapes over the block under it." }, { k: "diamond_shovel", n: "Diamond Shovel", what: "A shovel stuck in a pile of snow." },
     { k: "brick_block", n: "Bricks", what: "A brick chimney. Smoke rises from it." },
@@ -58,7 +58,6 @@ const PROP_GROUPS = [
     { k: "cartography_table", n: "Cartography Table", what: "A desk globe. Punch the stand to spin it." }, { k: "lava_bucket", n: "Lava Bucket", what: "A lava lamp. It glows." },
     { k: "soul_lantern", n: "Soul Lantern", what: "A gothic street lamp with a soul flame in it. The flame glows." },
     { k: "red_candle", n: "Red Candle", what: "A candelabra with a skull on it and three red candles. Its flames and the skull’s eyes glow." },
-    { k: "white_candle", n: "White Candle", what: "Three festive candles with holly round them. Their flames glow." },
     { k: "rail", n: "Rail", what: "A toy train that goes round its track with a villager, a creeper and a zombie on board. The signal glows." },
     { k: "feather", n: "Feather", what: "A pillow fort with a teddy bear inside. Its string lights glow." },
     { k: "carrot_on_a_stick", n: "Carrot on a Stick", what: "A llama piñata hanging from a rope. Punch the stand to whack it." },

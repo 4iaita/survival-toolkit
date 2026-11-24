@@ -196,7 +196,7 @@ How to do a section (as `import_outdoors.py`, `import_house.py`, `import_christm
 7. Draw every prop large (`propPicture`) and check its description against what it really is: two plushies were described wrong,
    and the carpets weren't couches at all. The pack names every prop itself, with what it does: `texts/en_US.lang`, the lines with
    `orevilleANSFeatures.prop` (from about 769: what's 45 degrees, cycling, interactive, static). Go by it (the Lime Wool
-   plushie is Rana there; the page still says a player in a frog hat).
+   plushie is Rana there).
    Draw frames of its animations, and check phone width and the console.
 
 More facts the first two sections found:
@@ -210,7 +210,7 @@ More facts the first two sections found:
   `spawn` when its variant is picked. A prop lower than `PROP_FLAT` lies flat: no shadow, its slot picture drawn from higher up.
 - Order the variants as the user wants, not as the pack does: the carpets start with the rug, the pack's second.
 - `boxModel`'s `shift` raises an icon (positive is up). The Villager Trades tab still draws carpets as whole wool blocks; changing
-  that was offered, not asked for.
+  that was offered, and the user chose to leave it.
 
 What Presents found:
 
@@ -221,7 +221,7 @@ What Presents found:
   mostly black. `im.look` doesn't say so for props; give the layer `opaqueBones` (the sack's inside).
 - `lit` is for the whole layer, so check each bone's texels: glowing ones are alpha 1 and lit in the MER. A whole face at alpha
   192 with nothing in the MER (orange's box) is left unlit, or all of it blooms. Texels lit in the MER but alpha 255 with a plain
-  material (the creaking toy's eyes, the coins) only glow with Vibrant Visuals; offered, and left off.
+  material (the creaking toy's eyes, the coins) only glow with Vibrant Visuals: offered twice, and the user chose to leave them.
 - A hidden bone's children aren't hidden with it: rules go by name, so list every bone under it. `["*", true]` as an act's
   `show` shows everything again.
 - One act can be shared by props whose animation is the same, with all their bones in it: bones a model lacks are ignored.
@@ -249,8 +249,7 @@ What Christmas found:
 - `renderScene` is slow on props that fill the stage: while they move they're drawn at 1× (`coarse`), at rest always sharp. Time
   them warm, in a real Chrome at scale 2 (the globes run at 20 frames a second).
 - After touching the renderer, hash every prop picture and a frame of every mob on the new page and the committed one, and compare.
-- Offered, not asked for: hanging the piñata and the wreath
-  off the ground as the pack has them (they're landed, like every prop).
+- Props are landed, even what the pack hangs off the ground (the piñatas, the wreath, the stockings): the user chose to keep it so.
 
 What Halloween found:
 
@@ -274,7 +273,7 @@ What Halloween found:
   (`import_models.py`). A particle with a locator the model lacks comes from the stand's feet. `Math.random` in a size or an acceleration
   is taken again every frame. Follow the attachable's `particle_effects` (a name it lacks plays nothing: the Christmas tree's).
   A look's `reach` makes room for what rises (the chimney's smoke, which made it smaller).
-- The jack-in-the-box is framed for the creeper at full stretch (`reach`), so it's small when shut: offered to change, not asked for.
+- The jack-in-the-box is framed for the creeper at full stretch (`reach`), so it's small when shut: the user chose to leave it, and the chimney as small as it is for its smoke.
 
 What Around the house found:
 
@@ -302,8 +301,8 @@ What Around the house found:
 - BSD sed has no \b (use perl), and all the scripts share one scope: a new top-level name can clash (`CANDLE`). Check the whole page loads.
 - The importers rewrite `particle_z.png` and `prop_lava_bucket.png` with the same pixels: `git checkout` them before committing.
 - The user had the strider piñata moved from Christmas to Around the house, beside the llama (its importer is still `import_christmas.py`). The
-  White Candle (the pack's "Festive candle") was offered to Christmas, and an "unlit" for the Orange Candle (no flame in the pack); neither asked for.
-- The fireplace jumps partly off the stage as it lands: framing it for that would make it a quarter smaller, left as it is.
+  White Candle (the pack's "Festive candle") went to Christmas (its importer is still `import_house.py`).
+- The fireplace jumps partly off the stage as it lands: framing it for that would make it a quarter smaller, and the user chose to leave it.
 
 What Outdoors found:
 
@@ -319,12 +318,12 @@ What Outdoors found:
 - Array indexes wrap (the windmill's two models for eight poses). Two of a prop's poses can be the same (the sticks': left out).
 - A model picked by `anim_time` may only differ in how its texels glow (the brown mushroom's flash): compare the uvs' alpha, not the shapes.
 - `evenBloom` (a look): the halo as strong as each texel glows, blurred finely, the same wherever it falls. The old one (`bloomOf` without it) is blotchy
-  for small spots, and full strength for half lit ones. Use it for new props; moving the approved ones to it was offered, not asked for.
+  for small spots, and full strength for half lit ones. Use it for new props. The approved ones look nearly the same either way (compared, but not the presents' toys): only the lava lamp was moved to it.
 - `picks` (a look): bones one of which shows, picked at random as it's shown (what the enderman balloon holds). `sunk` can be negative: how far over
   the ground something that turns must be for its corners to clear it. A particle's `add` is light, `buried` is hidden by the ground.
 - Particles that only come at night (the fireflies) or in water (the water wheel's splashes): the first are shown, with the night in the description;
-  the second only described. The item icons for oak, spruce, jungle, acacia and dark oak boats on the Villager Trades tab are older than the
-  textures folder's (Outdoors has its own, `boat_spruce`): offered, not asked for.
+  the second only described.
+- An item's `yaw` (`src/prop-data.js`) is how its prop is turned to start with: the doorway faces the reader, so its room shows.
 
 What Tents found:
 

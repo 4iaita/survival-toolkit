@@ -66,9 +66,9 @@ $("props").addEventListener("click", e => {
   const b = e.target.closest("button[data-prop]");
   if (!b || b.dataset.prop === stand.prop) return;
   stand.prop = b.dataset.prop;
-  // Another prop starts as it comes: its first variant, facing the way they all start (as another mob does).
+  // Another prop starts as it comes: its first variant, facing the way they all start (as another mob does), or its own (yaw).
   propVariant = propRow = 0;
-  propView.turnBack();
+  propView.turnBack(propOf(stand.prop).yaw);
   for (const x of $("props").querySelectorAll("button[data-prop]")) x.setAttribute("aria-pressed", x.dataset.prop === stand.prop);
   showProp();
   saveStand();
@@ -90,4 +90,5 @@ $("prop-row-try").addEventListener("click", e => {
 window.addEventListener("hashchange", drawPropPictures);
 $("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderProps(); });
 
+propView.turnBack(propOf(stand.prop).yaw);
 renderProps();

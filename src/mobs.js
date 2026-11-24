@@ -587,7 +587,7 @@ const PROP_FLAT = 2, PROP_BELOW = 4;
 const BLOOM_SPREAD = 12, BLOOM = 0.9, BLOOM_OFF = 0.85, EVEN_BLOOM = 1.5;
 // How many moments of an animation to look at for how far it reaches.
 const MOTION_SAMPLES = 12;
-// yaw: how it's turned to start with, and after a reset (turnBack).
+// yaw: how it's turned to start with, and after a reset (turnBack, which can be given another).
 function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) {
   const ctx = canvas.getContext("2d"), sceneCtx = ctx;
   // Soft glows behind the mob (behind) go on a canvas of their own under the scene, added to the backdrop beneath it
@@ -979,8 +979,8 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     },
     redraw,
     // Turn it back to how it started (the next mob drawn shows that way).
-    turnBack() {
-      yaw = startYaw;
+    turnBack(to = startYaw) {
+      yaw = to;
       redraw();
     },
   };
