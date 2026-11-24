@@ -232,7 +232,7 @@ const potted = flower => ({ parts: [[flower, [0, 0, 16, 16], [0, -4]], ["flower_
 const MANSION = {
   P: blockTex("planks_dark_oak"), L: blockTex("log_dark_oak"), B: blockTex("planks_birch"), W: MANSION_WINDOW, C: blockTex("cobblestone"),
   // A torch on a pillar.
-  t: { layers: [["log_dark_oak"], ["torch"]] }, T: plantTex("torch"),
+  t: { layers: [["log_dark_oak"], ["torch"]] },
   K: blockTex("bookshelf"), H: { layers: [["chest_front"]] }, F: blockTex("planks_dark_oak"),
   D: blockTex("door_dark_oak_upper", null, { under: INSIDE }), d: blockTex("door_dark_oak_lower", null, { under: INSIDE }),
   a: potted("flower_allium"), r: potted("flower_tulip_red"),
@@ -299,12 +299,6 @@ const wheatFarm = prop([
   "wwwww",
   "fffff",
 ], { w: plantTex("wheat_crop"), f: blockTex("dirt") });
-// Its lily pads lie flat on the water, seen edge on: the whole pad squashed into a thin strip, as the swamp water's
-// are seen from below (drawSurface).
-const pond = t => prop([
-  ".l...l.l.",
-  "~~~~~~~~~",
-], { "~": blockTex("water", t.water), l: blockTex("lily_pad", null, { squash: [12, 16], cap: false }) });
 
 // Each biome's scene: hills (top and fill blocks, height in blocks, trees at fractions of the width) and
 // nearer props at offsets in blocks from the middle.
@@ -321,10 +315,9 @@ const caveTunnel = prop([
 ], { a: blockTex("stone", "#6b6b6b"), b: blockTex("stone", "#363636"), o: blockTex("coal_ore", "#363636"), c: blockFill("#0b0b0d") });
 const stalagmite = prop(["t", "f", "D"], { t: plantTex("dripstone_up_tip"), f: plantTex("dripstone_up_frustum"), D: blockTex("dripstone_block") });
 // The nether wastes: netherrack (N) with blobs of magma (M), blackstone (B), nether quartz (Q) and nether gold ore (O) in it,
-// fire burning on it (F), soul sand (S) and gravel (g) at the lava's shore, lava (L), mushrooms (b, r).
+// fire burning on it (F), soul sand (S) and gravel (g) at the lava's shore, lava (L).
 const netherMound = rows => prop(rows, { N: blockTex("netherrack"), M: blockTex("magma"), B: blockTex("blackstone"), Q: blockTex("quartz_ore"),
-  O: blockTex("nether_gold_ore"), F: plantTex("fire"), S: blockTex("soul_sand"), g: blockTex("gravel"), L: blockTex("lava"),
-  b: plantTex("mushroom_brown"), r: plantTex("mushroom_red") });
+  O: blockTex("nether_gold_ore"), F: plantTex("fire"), S: blockTex("soul_sand"), g: blockTex("gravel"), L: blockTex("lava") });
 // A nether fortress's bridge far off over the lava sea, the blaze's home: a walkway of nether bricks railed with nether brick
 // fences, on arches between pillars that go down into the lava.
 const fortressBridge = prop([
@@ -357,7 +350,7 @@ const tallSeagrass = prop(["T", "B"], { T: plantTex("tall_seagrass_top"), B: pla
 // A coral reef's clump: blocks of one color with plants and fans of it, or of another, growing on top.
 const reef = (a, b, rows) => prop(rows, {
   A: blockTex(`coral_${a}`), B: blockTex(`coral_${b}`), p: plantTex(`coral_plant_${a}`), q: plantTex(`coral_plant_${b}`),
-  f: plantTex(`coral_fan_${a}`), g: plantTex(`coral_fan_${b}`), s: SEA_PICKLE,
+  f: plantTex(`coral_fan_${a}`), g: plantTex(`coral_fan_${b}`),
 });
 // Rock with glow lichen growing over it.
 const lichen = rock => ({ layers: [[rock], ["glow_lichen"]] });
@@ -491,7 +484,6 @@ const smallHouse = ({ roof, wall, frame, base }) => prop([".RRR.", "RRRRR", "FWG
 const PLAINS_HOUSE = { roof: "planks_dark_oak", wall: "oak_planks", frame: "log_oak", base: "cobblestone", door: "oak" };
 // Rails seen from the side: the iron rail on its sleepers.
 const RAIL = { rects: [[0, 13, 4, 16, "#4f3a24"], [8, 13, 12, 16, "#4f3a24"], [0, 11, 16, 13, "#7d7d7d"], [0, 11, 16, 12, "#b0b0b0"]], cap: false };
-const rails = length => prop(["R".repeat(length)], { R: RAIL });
 // A chest minecart, one block long: the whole chest, lid and latch, riding on the cart's iron sides, wheels on the rail.
 const chestMinecart = prop(["C", "M"], {
   C: { layers: [["chest_front"]], rows: [1, 16], cap: false },
@@ -626,8 +618,8 @@ const crag = rows => prop(rows, { S: blockTex("stone"), A: blockTex("andesite"),
 const grate = name => ({ layers: [["tuff_bricks", "#6e6e6e"], [name]] });
 const TRIAL = {
   T: blockTex("tuff_bricks"), P: blockTex("polished_tuff"), X: blockTex("chiseled_tuff"), K: blockTex("chiseled_tuff_bricks"),
-  B: blockTex("copper_bulb_lit"), b: blockTex("oxidized_copper_bulb_lit"), C: blockTex("cut_copper"), W: blockTex("weathered_cut_copper"),
-  O: blockTex("oxidized_copper"), o: blockTex("oxidized_cut_copper"), G: grate("copper_grate"), g: grate("oxidized_copper_grate"),
+  B: blockTex("copper_bulb_lit"), b: blockTex("oxidized_copper_bulb_lit"),
+  o: blockTex("oxidized_cut_copper"), g: grate("oxidized_copper_grate"),
   H: blockTex("chiseled_copper"), h: blockTex("oxidized_chiseled_copper"), S: blockTex("trial_spawner"), V: blockTex("vault"),
   D: blockTex("oxidized_copper_door_top", null, { under: INSIDE }), d: blockTex("oxidized_copper_door_bottom", null, { under: INSIDE }),
   N: blockTex("dispenser_front_horizontal"),
@@ -666,7 +658,7 @@ const brickStair = right => ({ parts: [["stone_bricks", [0, 8, 16, 16], [0, 8]],
 // An opening in the wall with iron bars across it, the dark beyond.
 const BARS = { layers: [["iron_bars"]], under: "#0b0b0e" };
 const STRONGHOLD = {
-  S: blockTex("stone_bricks"), M: blockTex("mossy_stone_bricks"), C: blockTex("cracked_stone_bricks"), X: blockTex("chiseled_stone_bricks"),
+  S: blockTex("stone_bricks"), M: blockTex("mossy_stone_bricks"), C: blockTex("cracked_stone_bricks"),
   I: BARS, F: plantTex("end_portal_frame"),
   // A frame with an eye of ender in it: the eye's side over the frame's top.
   E: { parts: [["end_portal_frame", [0, 3, 16, 16], [0, 3]], ["endframe_eye", [4, 0, 12, 3], [4, 0]]], cap: false },
@@ -711,7 +703,7 @@ const stronghold = rows => prop(rows, STRONGHOLD);
 // deepslate and sculk, dark but for the soul lanterns.
 const DEEP_DARK = {
   D: blockTex("deepslate_bricks"), C: blockTex("cracked_deepslate_bricks"), X: blockTex("chiseled_deepslate"), P: blockTex("polished_deepslate"),
-  T: blockTex("deepslate_tiles"), R: blockTex("reinforced_deepslate"), K: blockTex("sculk"), A: blockTex("sculk_catalyst"),
+  T: blockTex("deepslate_tiles"), R: blockTex("reinforced_deepslate"), K: blockTex("sculk"),
   B: blockTex("polished_basalt_side"), S: plantTex("sculk_sensor"), H: plantTex("sculk_shrieker"), L: lanternTex("soul_lantern_block"),
   c: CANDLE,
 };

@@ -4,11 +4,14 @@
 
 Its looks all get the pack's current models (the plain, baby and queen ones went by the old pack's bones; the firefly
 had the new model but nothing moved it), and it gets the pack's moths, which the page didn't have. Its kinds are the
-skins the pack gives an angry bee, with and without nectar (a calm one with nectar has the plain skin; its pollen is a
-layer of its own the stage leaves out). Run import_additions.py first. It prints the skins to put in MOB_VARIANTS
+skins the pack gives an angry bee, with and without nectar (a calm one with nectar has the plain skin). A bee with nectar
+is covered in pollen too, layers of their own (pollen(), drawn by MOB_ROWS' nectar row). Run import_additions.py first. It prints the skins to put in MOB_VARIANTS
 (src/mob-data.js).
 """
-from import_port import port
+import import_additions as ia
+from import_port import copy_texture, port, put
+
+im = ia.im
 
 VARIANTS = ["calm", "nectar", "angry", "angry_nectar"]  # nectar + 2 * angry
 
@@ -33,5 +36,29 @@ ACTS = [NECTAR, BLINK, STING]
 _SPELL = lambda c: [f"{c} moth", f"{c.title()} Moth", f"{c.title()} moth", f"{c} Moth"]
 MOTHS = [_SPELL("black") + ["moth", "Moth"], _SPELL("brown"), _SPELL("green"), _SPELL("pink")]
 
+# The pollen specks a bee with nectar is covered in: the model they go over -> the pack's geometry and texture for them
+# (the entity's own keys), and the name the texture gets here. A baby's are left out: the pack draws them inside its body.
+POLLEN = {
+    "new_bee": ("vcfgth", "vcfgth", "new_bee_pollen"),
+    "new_bee_qween": ("pvdzny", "vcfgth", "new_bee_pollen"), "new_bee_firefly": ("txstfc", "txstfc", "new_bee_firefly_pollen"),
+    "new_bee_black_moth": ("vbgpbp", "vbgpbp", "new_bee_black_moth_pollen"),
+}
+
+
+def pollen():
+    ents, _rcs, geos, *_ = im.read_pack()
+    d = ents["minecraft:bee"]
+    text = ia.MODELS_JS.read_text()
+    for model, (geo, texture, name) in POLLEN.items():
+        g = geos[d["geometry"][geo]]
+        ia.rename_geo(g)
+        text = put(text, "MOB_MODELS", f"{model}_pollen", im.model(g))
+        if ia.WRITE:
+            copy_texture(d["textures"][texture], name)
+    if ia.WRITE:
+        ia.MODELS_JS.write_text(text)
+
+
 if __name__ == "__main__":
     port("bee", variants=VARIANTS, acts=ACTS, motions=MOTIONS, answers=answers, remodel=["qween", "queen", "firefly"], new_looks=MOTHS)
+    pollen()

@@ -369,10 +369,6 @@ def describe(mob, names):
     return f"The {title(main)} look."
 
 
-def article(word):
-    return "an" if word[:1] in "aeiou" else "a"
-
-
 def js(v):
     return json.dumps(v, ensure_ascii=False)
 

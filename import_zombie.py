@@ -10,7 +10,7 @@ has none of the husk's day and night eyes: only Brian's eyes glow (and 1 in 200 
 game has babies of it, and the pack makes none by itself. Run import_additions.py first.
 """
 from import_husk import IDLES, MOTIONS
-from import_port import ia, im, port
+from import_port import im, port
 
 # Brian's glow panels fade in over 3 seconds (v.habcyx), as the husk's.
 im.GLOW_STRENGTH = "habcyx"

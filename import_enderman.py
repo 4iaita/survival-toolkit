@@ -31,7 +31,7 @@ opening, l66l9, and the pack's scary_face and ermejm), and the block it carries 
 """
 import json
 
-from import_port import ia, im, port
+from import_port import im, port
 
 im.GLOW_STRENGTH = "habcyx"
 

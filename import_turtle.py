@@ -6,7 +6,7 @@ Its looks all get the pack's current models (the plain and baby ones went by the
 the new model but nothing moved it). The stage shows it in the ocean, as the pack's in-water state has it. It has no
 kinds and no names but its baby's and its Halloween one's. Run import_additions.py first.
 """
-from import_port import ia, port, put
+from import_port import port
 
 # In the water it floats, rocking and bobbing, its head and flippers swaying (the pack's float), and strokes slowly with
 # its flippers (the pack's swim, which plays as it moves, at half strength, as the stage had it before). The pack's

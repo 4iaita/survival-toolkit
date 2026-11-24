@@ -89,7 +89,6 @@ def main():
         rename_geo(g)
     text = MODELS_JS.read_text()
     current = parse_section(text, "MOB_LOOKS")
-    current_models = parse_section(text, "MOB_MODELS")
     lower = lambda names: {n.lower() for n in names}
 
     geo_keys, tex_keys = {}, {}

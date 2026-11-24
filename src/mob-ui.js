@@ -56,10 +56,6 @@ let mobMood = startMood(mobTab.mob), mobCollar = DEFAULT_COLLAR, mobSize = start
 // gives it a look of its own. Grown to start with, like the mood.
 let mobBaby = false;
 const babyLook = k => (GAME_BABIES.has(k) || PACK_BABIES.has(k) ? (MOB_LOOKS[k] || []).findIndex((l, i) => i && l.names.some(n => n.toLowerCase() === "baby")) : -1);
-const isBaby = () => {
-  const t = currentTag();
-  return (mobBaby && babyLook(mobTab.mob) > 0 && !(t && t.look)) || Boolean(t && t.names[0].toLowerCase() === "baby");
-};
 // Its variant, for a mob that comes in several (MOB_VARIANTS): the first to start with, like the mood.
 let mobVariant = "";
 // Its saddle, for a mob that can wear one (MOB_SADDLES), and its wool, for one that has some (MOB_WOOL): no saddle, and
@@ -144,7 +140,7 @@ function showOnStage() {
   const armor = armored ? { kind: m.k, type: mobArmor.type, dye: armorDye || null, crack: mobArmor.crack || null, glint: mobArmor.glint } : null;
   const marks = marksInfo(), armorName = armored && MOB_ARMOR[m.k].kinds ? `${ARMOR_NAMES[m.k][mobArmor.type].toLowerCase()} ` : "";
   collarTint.color = hex(DYES[mobCollar]);
-  mobView.show(m.k, look, { plays: MOB_WOOL[m.k] && mobShorn && !babyShown(m.k, look) ? MOB_WOOL[m.k].shornPlays || null : null, flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: (t && t.moving) || moodStage().moving ? mobClock : null, night: false, glowing: m.glowing || night || Boolean(moodStage().glowing), stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: pickedSkins(m.k), overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k) }).then(ok => {
+  mobView.show(m.k, look, { plays: MOB_WOOL[m.k] && mobShorn && !babyShown(m.k, look) ? MOB_WOOL[m.k].shornPlays || null : null, flip: Boolean(t && t.flip), tint: collared ? collarTint : wool, clock: (t && t.moving) || moodStage().moving ? mobClock : null, night: false, glowing: m.glowing || night || Boolean(moodStage().glowing), stand: m.stand, swim: m.swim, zoom: (m.zoom || 1) * (MOB_SIZES[m.k] ? MOB_SIZES[m.k][mobSize].zoom : 1), sized: MOB_SIZES[m.k] ? mobSize : null, mood: mobMood === "calm" ? null : mobMood, armor, climate: (variant && variant.climate) || null, skins: pickedSkins(m.k), overlays: (marks && marks.over) || null, shown: shownParts(m.k, look), carpet: carpetWorn(m.k, look), dyes: tintsOf(m.k), extra: Object.assign({}, ...rowKinds(m.k).map(x => x.layers)) }).then(ok => {
     if (ok !== false) tagEl.hidden = !t;
   });
   $("mob-art").setAttribute("aria-label", `${article(look && look === babyLook(m.k) && !t ? "baby" : wearWords(m.k, look)[0] || (variant && variant.say !== "" ? variant.say || variant.n : mobName(m)))} ${look && look === babyLook(m.k) && !t ? "baby " : ""}${wearWords(m.k, look).map(w => `${w} `).join("")}${variant && variant.say !== "" ? `${variant.say || variant.n.toLowerCase()} ` : ""}${mobName(m)}${rowKinds(m.k).map(x => `, ${x.say || x.n.toLowerCase()}`).join("")}${marks && marks.over ? ` with ${marks.n.toLowerCase()} markings` : ""}${MOB_TINTS[m.k] ? ` (${MOB_TINTS[m.k].map((r, i) => `${r.n.toLowerCase()} ${tintsOf(m.k)[i]}`).join(", ")})` : ""}${MOB_SIZES[m.k] ? `, ${mobSize},` : ""}${t ? ` named ${t.names.includes(mobTab.say) ? mobTab.say : t.names[0]}` : " with no name"}${mobMood === "calm" ? "" : `, ${MOOD_NAMES[mobMood].toLowerCase()}`}${collared ? ` with a ${mobCollar} collar` : ""}${armored ? (ARMOR_LABELS[m.k] ? `, wearing ${article(armorName)} ${armorName}${ARMOR_LABELS[m.k].toLowerCase()}` : `, in ${mobArmor.glint ? "enchanted " : ""}${armorDye ? `${armorDye} ` : ""}${armorName}armor`) : ""}${MOB_CHESTS[m.k] && mobChest && !babyShown(m.k, look) ? ", carrying a chest" : ""}${carpetWorn(m.k, look) ? `, wearing ${article(mobCarpet)} ${mobCarpet} carpet` : ""}. Drag or use the arrow keys to turn it.`);
@@ -211,11 +207,12 @@ function renderAge() {
 function renderVariants() {
   const variants = MOB_VARIANTS[mobTab.mob], v = variantInfo();
   $("variant-bar").hidden = !variants;
-  $("variant-label").textContent = v ? `Variant: ${v.n}${v.where ? ` · ${v.where}` : ""}` : "Variant";
+  const label = VARIANT_LABELS[mobTab.mob] || "Variant";
+  $("variant-label").textContent = v ? `${label}: ${v.n}${v.where ? ` · ${v.where}` : ""}` : label;
   // A variant with a swatch (a color: the shulker's dyes) is a button in that color, as a dye's is.
   $("variant-try").innerHTML = variants ? variants.map(x => x.swatch
     ? `<button type="button" class="collar-swatch" data-variant="${x.k}" style="background:${x.swatch}" title="${esc(x.n)}" aria-label="${esc(x.n)}" aria-pressed="${x === v}"></button>`
-    : `<button type="button" class="name-chip" data-variant="${x.k}" title="${esc(x.where)}" aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
+    : `<button type="button" class="name-chip" data-variant="${x.k}"${x.where ? ` title="${esc(x.where)}"` : ""} aria-pressed="${x === v}">${x.n}</button>`).join("") : "";
 }
 
 // A row of buttons for each of its other rows (MOB_ROWS), and what the picked kind is and where it's found.
@@ -459,9 +456,8 @@ function aboutSection(m) {
   const attackSub = info.attack && typeof info.attack === "object" ? `Easy ${info.attack.easy} · Hard ${info.attack.hard}` : info.attack === undefined ? "Never hurts you" : "";
   const stat = (label, value, sub, cls = "") => `<div class="mob-stat${cls}"><span class="stat-label">${label}</span><span class="stat-value">${value}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</div>`;
   const behavior = MOB_BEHAVIORS.find(([k]) => k === mobBehavior(m))[1];
-  // Every dimension it's found in (its own, if MOB_DIMENSIONS doesn't say more), and where.
-  const where = MOB_DIMENSIONS[m.k] || {}, dimNote = where.note;
-  const dims = (where.dims || [mobDim(m)]).map(d => MOB_DIMS.find(([k]) => k === d)[1]);
+  // Every dimension it's found in (its own, if MOB_DIMENSIONS doesn't say more).
+  const dims = (MOB_DIMENSIONS[m.k] || [mobDim(m)]).map(d => MOB_DIMS.find(([k]) => k === d)[1]);
   const typedAttack = typeof info.attack === "string";
   const row = (label, text) => (text ? `<div class="fact-row"><dt>${label}</dt><dd>${esc(text)}</dd></div>` : "");
   return `${sectionHead("mob-section-title", "ui:mob", "Overview")}
@@ -469,11 +465,10 @@ function aboutSection(m) {
       ${stat("Health", typeof info.hp === "number" ? `${info.hp}` : esc(info.hp), hearts, typeof info.hp === "number" ? "" : " text")}
       ${stat("Attack", attack, attackSub || (typeof info.attack === "object" ? "On Normal" : ""), typedAttack ? " text" : "")}
       ${stat("Behavior", behavior, { passive: "Never attacks", neutral: "Attacks when provoked", aggressive: "Attacks on sight" }[mobBehavior(m)])}
-      ${stat(dims.length > 1 ? "Dimensions" : "Dimension", dims.join(", "), "", dims.length > 1 ? " text" : "")}
+      ${stat(dims.length > 1 ? "Dimensions" : "Dimension", dims.length > 1 ? dims.map(d => `<span class="dim">${d}</span>`).join("") : dims[0], "", dims.length > 1 ? " text" : "")}
     </div>
     <dl class="fact-list">
       ${row("Spawns", info.spawn)}
-      ${row("Dimensions", dimNote && `${dimNote}.`)}
       ${row("Good to know", info.about)}
     </dl>`;
 }
@@ -691,6 +686,7 @@ function pickMob(k, name) {
   renderMobs();
 }
 function pickTag(name, say = name) {
+  if (!name) tagGroupOpen = ""; // No name closes the section that was open
   mobTab.name = name;
   mobTab.say = say;
   renderMoods();

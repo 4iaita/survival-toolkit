@@ -28,7 +28,7 @@ def read_pack():
     spin = json.loads(json.dumps(anims[d["spin"]]))
     spin.pop("anim_time_update", None)
     spin["animation_length"] = 2
-    for bone, rot in spin["bones"].items():
+    for rot in spin["bones"].values():
         rot["rotation"] = [0, rot["rotation"][1].replace("v.pgcoey", "q.anim_time*180"), 0]
     anims["animation.blaze_spin"] = spin
     d["spin_baked"] = "animation.blaze_spin"

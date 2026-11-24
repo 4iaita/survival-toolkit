@@ -1,4 +1,7 @@
-# Survival Toolkit: working on the Mobs tab's stage backgrounds
+# Survival Toolkit: working on the Mobs tab
+
+Most of this is about the stage backgrounds; the rest of the tab is at the end ("The Mobs tab's controls and facts", "Finding
+what's unused").
 
 The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
@@ -20,8 +23,8 @@ one at a time. This is how to do that quickly.
    then SendUserFile `tools/backdrops/out/mob-backgrounds.html` (display `render`). The gallery needs a full capture in that
    folder first (step 3 without biomes) so every number has a picture; after that, recapture only what changes (and its
    `_night`, if it reuses the day scene).
-6. When the user wants to see it live: preview_start `survival-toolkit` (from `.claude/launch.json`; the port may
-   differ if another chat holds 8765), open `/index.html#mobs`, then run `pickMob("<mob key>", "")` in the page to pick a
+6. When the user wants to see it live: preview_start `survival-toolkit` (a chat started in `~/Personal` reads that folder's
+   `.claude/launch.json`, port 8770; one started here reads this folder's, 8765; another chat may hold either), open `/index.html#mobs`, then run `pickMob("<mob key>", "")` in the page to pick a
    mob. Reload after each build.
 
 Nothing here is committed unless the user asks.
@@ -39,7 +42,7 @@ Nothing here is committed unless the user asks.
 - "X replaces Y" (dropping a background): point every `biome: "Y"` in `src/mob-data.js` and `src/tag-data*.js` at X, then
   delete Y's scene and everything only it used: its helpers in `src/backdrop.js`, its colors in `src/mob.css`, its
   tints in `src/art.js` (`BIOME_TINTS`), its floor in `src/villager.js`, and mentions in header comments. Leave its
-  textures in `art/`. Recapture everything (numbers shift) and update the list below and the memory note.
+  textures in `art/` (the ones left from earlier drops went in the cleanup of 2026-11-24, which the user asked for). Recapture everything (numbers shift) and update the list below and the memory note.
 - "Make it symmetric": measure on the capture (pixels from each edge), don't eyeball; an odd-width prop is half a block
   off the grid, so place it at a half block (`-7.5`).
 - When the user asks why something looks off, say why, and if the fix isn't obvious offer the choices instead of
@@ -134,3 +137,30 @@ the pale garden's).
 - Jagged far shapes: snow lying a different depth column to column, or peaks bumping one column at a time, leave lone
   one-block spikes; the user asked for them gone. Smooth over several columns (`snowDepth`, `jag`).
 - After every change, capture and look before reporting.
+
+## The Mobs tab's controls and facts
+
+- Name tag picker under the stage (`renderTry` in `src/mob-ui.js`): **No name** and one dropdown button per section; no names
+  outside a section. `tagGroup(t, mob)` picks a name's section, by the rules in the comment above it; a mob's own sections
+  (the sulfur cube's Sports and Billiards, the parrot's Birds) are in `TAG_GROUP_MOB`, the order in `TAG_GROUP_ORDER` (a new
+  section must be added there). A dropdown shows one spelling per name, not "Halloween" or "Festive" where it has another
+  (`groupSay`); the Name tags section below lists every spelling. Picking No name or another mob closes the open section.
+- A mob's extra choices that combine with its variants go in `MOB_ROWS` (`src/mob-data.js`): `skins` there are keyed by the
+  texture the variant ended up with (`pickedSkins`), and a kind's `layers` (model -> layer) are drawn over the look's own
+  (`extra` in `src/mobs.js`). The bee's Nectar is one: its pollen specks come from `pollen()` in `import_bee.py`. A calm baby
+  bee looks the same with nectar, because the pack draws a baby's specks inside its body.
+- `VARIANT_LABELS` names a variant row something else (the bee's is "Mood").
+- Overview: the last box lists the mob's dimensions, one per line (`MOB_DIMENSIONS` in `src/mob-info.js`, only for mobs in
+  more than one). Anything else about dimensions goes in the mob's `about` (Good to know), never in a row of its own, and
+  isn't repeated from Spawns.
+- The unpacked Actions & Stuff pack is `../textures/full-pack`. `src/mob-models.js` is generated; change it through the import
+  scripts (they only write with `--write`).
+
+## Finding what's unused
+
+The cleanup of 2026-11-24 removed 43 textures from `art/` and some dead code. To check again: searching for a name isn't proof,
+since many are built at run time (`egg_${k}`, `coral_${a}`). Make a copy of `index.html` with `ART`, `SKINS` and `MOB_SKINS`
+wrapped in a Proxy that records reads (serve it from `tools/backdrops/out`, and delete it after), then draw every background
+and icon, every villager and every mob section; for mob textures and models, walk the evaluated data tables instead. Unused
+JS names: TypeScript's `noUnusedLocals` over the scripts in `build.py`'s order. Compare every background and icon with the
+committed page afterwards. When removing a texture, take it out of `FILES` in `import_textures.py` too.

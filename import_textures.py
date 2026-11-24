@@ -19,7 +19,6 @@ COLORS = ["white", "light_gray", "gray", "black", "brown", "red", "orange", "yel
           "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink"]
 METALS = {"iron": "iron", "chainmail": "chainmail", "diamond": "diamond", "golden": "gold", "stone": "stone"}
 PIECES = ["helmet", "chestplate", "leggings", "boots", "axe", "shovel", "pickaxe", "hoe", "sword"]
-
 # art name -> file in the pack
 FILES = {
     # Items
@@ -107,9 +106,9 @@ FILES = {
     "smoker_top": "blocks/smoker_top", "stonecutter_side": "blocks/stonecutter2_side", "stonecutter_top": "blocks/stonecutter2_top",
     "stonecutter_saw": "blocks/stonecutter2_saw",
     # Village biomes
-    "sand": "blocks/sand", "coarse_dirt": "blocks/coarse_dirt", "acacia_log": "blocks/log_acacia", "acacia_log_top": "blocks/log_acacia_top",
+    "sand": "blocks/sand", "coarse_dirt": "blocks/coarse_dirt", "acacia_log": "blocks/log_acacia",
     "snowy_grass_side": "blocks/grass_side_snowed", "snow": "blocks/snow", "podzol_side": "blocks/dirt_podzol_side",
-    "podzol_top": "blocks/dirt_podzol_top", "jungle_log": "blocks/log_jungle", "jungle_log_top": "blocks/log_jungle_top", "mud": "blocks/mud",
+    "podzol_top": "blocks/dirt_podzol_top", "jungle_log": "blocks/log_jungle", "mud": "blocks/mud",
     # Biome backdrops: trees, buildings and plants. Leaves, grass, ferns, vines and water are gray and take
     # the biome's tint.
     "log_oak": "blocks/log_oak", "log_spruce": "blocks/log_spruce", "leaves_oak": "blocks/leaves_oak",
@@ -126,13 +125,11 @@ FILES = {
     # The nether backdrop.
     "deepslate": "blocks/deepslate/deepslate", "glow_lichen": "blocks/glow_lichen",
     "moss_block": "blocks/moss_block", "clay": "blocks/clay", "big_dripleaf_top": "blocks/big_dripleaf_top", "big_dripleaf_stem": "blocks/big_dripleaf_stem",
-    "small_dripleaf_side": "blocks/small_dripleaf_side", "big_dripleaf_side2": "blocks/big_dripleaf_side2", "small_dripleaf_top": "blocks/small_dripleaf_top",
-    "small_dripleaf_stem_top": "blocks/small_dripleaf_stem_top", "small_dripleaf_stem_bottom": "blocks/small_dripleaf_stem_bottom", "azalea_side": "blocks/azalea_side", "flowering_azalea_side": "blocks/flowering_azalea_side",
-    "azalea_leaves": "blocks/azalea_leaves_opaque", "azalea_leaves_flowers": "blocks/azalea_leaves_flowers_opaque", "cave_vines_body": "blocks/cave_vines_body",
-    "cave_vines_berries": "blocks/cave_vines_body_berries", "cave_vines_tip": "blocks/cave_vines_head_berries",
+    "big_dripleaf_side2": "blocks/big_dripleaf_side2", "small_dripleaf_top": "blocks/small_dripleaf_top",
+    "small_dripleaf_stem_top": "blocks/small_dripleaf_stem_top", "small_dripleaf_stem_bottom": "blocks/small_dripleaf_stem_bottom",
     "kelp": "blocks/kelp_a", "kelp_top": "blocks/kelp_top", "kelp_bulb": "blocks/kelp_top_bulb", "seagrass": "blocks/seagrass",
     "tall_seagrass_top": "blocks/seagrass_doubletall_top_a", "tall_seagrass_bottom": "blocks/seagrass_doubletall_bottom_a",
-    "sea_pickle": "blocks/sea_pickle", "sea_lantern": "blocks/sea_lantern", "prismarine": "blocks/prismarine_rough",
+    "sea_pickle": "blocks/sea_pickle", "sea_lantern": "blocks/sea_lantern",
     "prismarine_bricks": "blocks/prismarine_bricks", "prismarine_dark": "blocks/prismarine_dark",
     "coral_red": "blocks/coral_red", "coral_yellow": "blocks/coral_yellow", "coral_pink": "blocks/coral_pink", "coral_blue": "blocks/coral_blue",
     "coral_plant_red": "blocks/coral_plant_red", "coral_plant_yellow": "blocks/coral_plant_yellow", "coral_plant_pink": "blocks/coral_plant_pink",
@@ -144,9 +141,8 @@ FILES = {
     "leaves_birch": "blocks/leaves_birch", "log_birch": "blocks/log_birch", "mushroom_red": "blocks/mushroom_red", "mushroom_brown": "blocks/mushroom_brown",
     "oxeye_daisy": "blocks/flower_oxeye_daisy", "mob_spawner": "blocks/mob_spawner",
     "netherrack": "blocks/netherrack", "nether_brick": "blocks/nether_brick", "blackstone": "blocks/blackstone", "quartz_ore": "blocks/quartz_ore",
-    "nether_gold_ore": "blocks/nether_gold_ore", "magma": "blocks/magma", "lava": "blocks/lava_still", "crimson_nylium": "blocks/crimson_nylium_side",
-    "crimson_roots": "blocks/crimson_roots", "crimson_fungus": "blocks/crimson_fungus", "weeping_vines": "blocks/weeping_vines",
-    "weeping_vines_base": "blocks/weeping_vines_base",
+    "nether_gold_ore": "blocks/nether_gold_ore", "magma": "blocks/magma", "lava": "blocks/lava_still",
+    "crimson_fungus": "blocks/crimson_fungus",
     # The cave backdrop.
     "coal_ore": "blocks/coal_ore", "iron_ore": "blocks/iron_ore", "copper_ore": "blocks/copper_ore", "gold_ore": "blocks/gold_ore",
     "redstone_ore": "blocks/redstone_ore", "lapis_ore": "blocks/lapis_ore", "diamond_ore": "blocks/diamond_ore", "tuff": "blocks/tuff",
@@ -160,14 +156,9 @@ FILES = {
     "water": "blocks/water_still_grey", "grass_side_overlay": "blocks/grass_side", "grass_top": "blocks/grass_top",
     "bamboo_stem": "blocks/bamboo_stem", "bamboo_leaf": "blocks/bamboo_leaf", "large_fern_top": "blocks/double_plant_fern_top",
     "large_fern_bottom": "blocks/double_plant_fern_bottom", "mossy_stone_bricks": "blocks/stonebrick_mossy",
-    # The wolf's wild biomes on the Mobs tab: badlands, groves and old growth taigas.
-    "red_sand": "blocks/red_sand", "powder_snow": "blocks/powder_snow", "tall_grass_top": "blocks/double_plant_grass_top",
+    # The wolf's wild biomes on the Mobs tab.
+    "red_sand": "blocks/red_sand", "tall_grass_top": "blocks/double_plant_grass_top",
     "tall_grass_bottom": "blocks/double_plant_grass_bottom",
-    # The warm frog's mangrove swamp: mangroves on arching roots, their leaves and hanging propagules.
-    "mangrove_log": "blocks/mangrove_log_side", "mangrove_leaves": "blocks/mangrove_leaves", "mangrove_roots": "blocks/mangrove_roots_side",
-    "muddy_mangrove_roots": "blocks/muddy_mangrove_roots_side", "mangrove_propagule_hanging": "blocks/mangrove_propagule_hanging",
-    # The panda's bamboo jungle: the small leaves partway up a stalk and the shoots coming up beside it.
-    "bamboo_small_leaf": "blocks/bamboo_small_leaf", "bamboo_sapling": "blocks/bamboo_sapling",
     # The mooshroom's mushroom fields: mycelium and the huge mushrooms' blocks.
     "mycelium_side": "blocks/mycelium_side", "mycelium_top": "blocks/mycelium_top",
     "red_mushroom_block": "blocks/mushroom_block_skin_red", "brown_mushroom_block": "blocks/mushroom_block_skin_brown",
@@ -178,29 +169,27 @@ FILES = {
     "pale_hanging_moss": "blocks/pale_hanging_moss_middle", "pale_hanging_moss_tip": "blocks/pale_hanging_moss_tip",
     "pale_moss_carpet_side": "blocks/pale_moss_carpet_side_base", "eyeblossom": "blocks/eyeblossom_dormant",
     "eyeblossom_open": "blocks/eyeblossom_blooming", "eyeblossom_eyes": "blocks/eyeblossom_eyes_blooming", "creaking_heart": "blocks/creaking_heart_side_dormant",
-    "wildflowers": "blocks/wildflowers", "firefly_bush": "blocks/firefly_bush", "bush": "blocks/bush", "leaf_litter": "blocks/leaf_litter",
-    "short_dry_grass": "blocks/short_dry_grass",
-    "sulfur": "blocks/sulfur", "potent_sulfur": "blocks/potent_sulfur", "calcite": "blocks/calcite", "emerald_ore": "blocks/emerald_ore",
+    "firefly_bush": "blocks/firefly_bush", "bush": "blocks/bush",
+    "sulfur": "blocks/sulfur", "potent_sulfur": "blocks/potent_sulfur", "emerald_ore": "blocks/emerald_ore",
     "sulfur_spike_up_tip": "blocks/sulfur_spike_up_tip", "sulfur_spike_up_frustum": "blocks/sulfur_spike_up_frustum",
     "sulfur_spike_down_frustum": "blocks/sulfur_spike_down_frustum", "sulfur_spike_down_middle": "blocks/sulfur_spike_down_middle",
     "sulfur_spike_down_tip": "blocks/sulfur_spike_down_tip", "cinnabar": "blocks/cinnabar", "sulfur_spike_up_base": "blocks/sulfur_spike_up_base",
     "sulfur_spike_up_middle": "blocks/sulfur_spike_up_middle", "sulfur_spike_down_base": "blocks/sulfur_spike_down_base",
-    # The mineshaft: its rails, chests and the deepslate deep down.
-    "rail": "blocks/rail_normal", "chest_front": "blocks/chest_front",
-    # The silverfish's stronghold: stone bricks, cracked and mossy, an iron door, and the portal room's frames.
+    # The mineshaft: its chests and the deepslate deep down.
+    "chest_front": "blocks/chest_front",
+    # The silverfish's stronghold: stone bricks, cracked and mossy, and the portal room's frames.
     "stone_bricks": "blocks/stonebrick", "cracked_stone_bricks": "blocks/stonebrick_cracked",
-    "door_iron_upper": "blocks/door_iron_upper", "door_iron_lower": "blocks/door_iron_lower",
     "end_portal_frame": "blocks/endframe_side",
     # The breeze's trial chamber: tuff and copper, its spawners, vaults and copper bulbs.
     "tuff_bricks": "blocks/tuff_bricks", "chiseled_tuff": "blocks/chiseled_tuff", "chiseled_tuff_bricks": "blocks/chiseled_tuff_bricks",
-    "polished_tuff": "blocks/polished_tuff", "cut_copper": "blocks/cut_copper", "weathered_cut_copper": "blocks/weathered_cut_copper",
-    "oxidized_cut_copper": "blocks/oxidized_cut_copper", "copper_grate": "blocks/copper_grate",
-    "weathered_copper_grate": "blocks/weathered_copper_grate", "oxidized_copper_grate": "blocks/oxidized_copper_grate",
+    "polished_tuff": "blocks/polished_tuff",
+    "oxidized_cut_copper": "blocks/oxidized_cut_copper",
+    "oxidized_copper_grate": "blocks/oxidized_copper_grate",
     "chiseled_copper": "blocks/chiseled_copper", "oxidized_chiseled_copper": "blocks/oxidized_chiseled_copper",
     "copper_bulb_lit": "blocks/copper_bulb_lit", "oxidized_copper_bulb_lit": "blocks/oxidized_copper_bulb_lit",
     "trial_spawner": "blocks/trial_spawner_side_active", "vault": "blocks/vault_front_on",
     # The trial chamber's oxidized copper, its copper doors, a dispenser in its wall and its decorated pots.
-    "oxidized_copper": "blocks/oxidized_copper", "oxidized_copper_door_top": "blocks/oxidized_copper_door_top",
+    "oxidized_copper_door_top": "blocks/oxidized_copper_door_top",
     "oxidized_copper_door_bottom": "blocks/oxidized_copper_door_bottom", "dispenser_front_horizontal": "blocks/dispenser_front_horizontal",
     "decorated_pot_side": "blocks/decorated_pot_side",
     # The deep dark's ancient city: polished basalt for its pillars.
@@ -217,12 +206,11 @@ FILES = {
     "sculk_shrieker": "blocks/sculk_shrieker_side", "deepslate_bricks": "blocks/deepslate/deepslate_bricks",
     "cracked_deepslate_bricks": "blocks/deepslate/cracked_deepslate_bricks", "chiseled_deepslate": "blocks/deepslate/chiseled_deepslate",
     "polished_deepslate": "blocks/deepslate/polished_deepslate", "reinforced_deepslate": "blocks/reinforced_deepslate_side",
-    "soul_lantern": "items/soul_lantern", 
     # The backdrops' lanterns and the village bell, drawn from parts of their block textures (backdrop.js, partsOf).
     "lantern_block": "blocks/lantern", "soul_lantern_block": "blocks/soul_lantern", "bell_body": "blocks/bell_side",
     "candle_lit": "blocks/candles/candle_lit",
     # The Mobs tab's drops and breeding foods.
-    "glow_ink_sac": "items/dye_powder_glow", "shulker_shell": "items/shulker_shell", "nether_star": "items/nether_star", "dragon_egg": "blocks/dragon_egg", "totem_of_undying": "items/totem", "gold_nugget": "items/gold_nugget", "copper_ingot": "items/copper_ingot", "prismarine_shard": "items/prismarine_shard", "prismarine_crystals": "items/prismarine_crystals", "sponge": "blocks/sponge", "wet_sponge": "blocks/sponge_wet", "snowball": "items/snowball", "bamboo": "items/bamboo", "armadillo_scute": "items/armadillo_scute", "bone_meal": "items/dye_powder_white", "music_disc_cat": "items/record_cat", "goat_horn": "items/goat_horn", "egg": "items/egg", "glow_berries": "items/glow_berries", "wheat_seeds": "items/seeds_wheat", "golden_apple": "items/apple_golden", "hay_block_side": "blocks/hay_block_side", "hay_block_top": "blocks/hay_block_top", "tropical_fish_bucket": "items/bucket_tropical", "warped_fungus": "blocks/warped_fungus", "torchflower_seeds": "items/torchflower_seeds", "honeycomb": "items/honeycomb", "amethyst_shard": "items/amethyst_shard", "resin_clump": "items/resin_clump", "ominous_bottle": "items/ominous_bottle", "tide_armor_trim_smithing_template": "items/tide_armor_trim_smithing_template", "pufferfish_bucket": "items/bucket_pufferfish", "golden_dandelion": "blocks/golden_dandelion", "melon_seeds": "items/seeds_melon", "pumpkin_seeds": "items/seeds_pumpkin", "beetroot_seeds": "items/seeds_beetroot", "pitcher_pod": "items/pitcher_pod", "harness": "items/harness/harness_white", "milk_bucket": "items/bucket_milk",
+    "glow_ink_sac": "items/dye_powder_glow", "shulker_shell": "items/shulker_shell", "nether_star": "items/nether_star", "dragon_egg": "blocks/dragon_egg", "totem_of_undying": "items/totem", "gold_nugget": "items/gold_nugget", "copper_ingot": "items/copper_ingot", "prismarine_shard": "items/prismarine_shard", "prismarine_crystals": "items/prismarine_crystals", "wet_sponge": "blocks/sponge_wet", "snowball": "items/snowball", "bamboo": "items/bamboo", "bone_meal": "items/dye_powder_white", "music_disc_cat": "items/record_cat", "egg": "items/egg", "glow_berries": "items/glow_berries", "wheat_seeds": "items/seeds_wheat", "golden_apple": "items/apple_golden", "hay_block_side": "blocks/hay_block_side", "hay_block_top": "blocks/hay_block_top", "tropical_fish_bucket": "items/bucket_tropical", "warped_fungus": "blocks/warped_fungus", "torchflower_seeds": "items/torchflower_seeds", "ominous_bottle": "items/ominous_bottle", "tide_armor_trim_smithing_template": "items/tide_armor_trim_smithing_template", "pufferfish_bucket": "items/bucket_pufferfish", "golden_dandelion": "blocks/golden_dandelion", "melon_seeds": "items/seeds_melon", "pumpkin_seeds": "items/seeds_pumpkin", "beetroot_seeds": "items/seeds_beetroot", "pitcher_pod": "items/pitcher_pod", "harness": "items/harness/harness_white", "milk_bucket": "items/bucket_milk",
     # The piglin's barters.
     "iron_nugget": "items/iron_nugget", "crying_obsidian": "blocks/crying_obsidian", "blackstone_top": "blocks/blackstone_top", "nether_brick_item": "items/netherbrick",
     # The wandering trader's trades.
@@ -249,9 +237,10 @@ for color in COLORS:
     FILES[f"{color}_terracotta"] = f"blocks/hardened_clay_stained_{pack_color}"
     FILES[f"{color}_glazed_terracotta"] = f"blocks/glazed_terracotta_{pack_color}"
     FILES[f"{color}_bed"] = f"items/bed_{pack_color}"
-# Spawn eggs: the Mobs tab's icons, egg_<mob>.
+# Spawn eggs: the Mobs tab's icons, egg_<mob> (the agent isn't a mob there).
 for egg in sorted((pack / "items" / "spawn_eggs").glob("spawn_egg_*.png")):
-    FILES[f"egg_{egg.stem[len('spawn_egg_'):]}"] = f"items/spawn_eggs/{egg.stem}"
+    if egg.stem != "spawn_egg_agent":
+        FILES[f"egg_{egg.stem[len('spawn_egg_'):]}"] = f"items/spawn_eggs/{egg.stem}"
 for metal, file in METALS.items():
     for piece in PIECES:
         path = pack / f"items/{file}_{piece}.png"

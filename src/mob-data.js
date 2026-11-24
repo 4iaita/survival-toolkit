@@ -73,7 +73,7 @@ const ARMOR_WEAR = [["", "New"], ["low", "Slightly cracked"], ["medium", "Cracke
 const wolfSkins = v => Object.fromEntries(["", "_baby", "_hellhound_pup", "_hellhound", "_angry", "_angry_baby", "_angry_hellhound_pup", "_angry_hellhound"]
   .map(s => [`new_wolf${s}`, `new_wolf_${v}${s}`]));
 const pandaSkins = v => ({ new_panda: `new_panda_${v}`, new_panda_baby: `new_panda_${v}_baby` });
-// An angry bee's skins (import_bee.py prints them): the firefly and the moths have one angry skin, nectar or not.
+// An angry bee's skins (import_bee.py prints them).
 const beeSkins = v => ({ new_bee: `new_bee_${v}`, new_bee_qween: `new_bee_${v}_qween`,
   ...Object.fromEntries(["firefly", "black_moth", "brown_moth", "green_moth", "pink_moth"].map(s => [`new_bee_${s}`, `new_bee_angry_${s}`])) });
 // A horse's coat (import_horse.py prints them): the foal's and the Wendigo looks' coats change with it.
@@ -92,6 +92,8 @@ const villagerSkins = p => ({ new_villager_1_1: `new_villager_${p}_1_1`, new_vil
 const ZOMBIE_JOBS = { unemployed: "new_villager_baby_1_1", nitwit: "new_villager_nitwit_1_1" };
 const zombieVillagerSkins = p => (ZOMBIE_JOBS[p] ? { new_villager_1_1: ZOMBIE_JOBS[p], new_villager_snowy_1_1: ZOMBIE_JOBS[p] }
   : { new_villager_1_1: villagerSkins(p).new_villager_1_1, new_villager_snowy_1_1: villagerSkins(p).new_villager_snowy_1_1 });
+// What a mob's variants are called, where they're something else (the bee's moods).
+const VARIANT_LABELS = { bee: "Mood" };
 const MOB_VARIANTS = {
   // The chickens' climates: the warm one has its own skin, the cold one its own model and skin too (MOB_CLIMATES).
   chicken: [
@@ -167,12 +169,11 @@ const MOB_VARIANTS = {
     { k: "jellie", n: "Jellie", where: "Villages" },
     { k: "black", n: "Black", where: "Swamp huts", biome: "swamp" },
   ].map((v, i) => (i ? { ...v, skins: catSkins(v.k) } : v)),
-  // The bee's moods (the pack's skins for q.is_angry, with and without nectar): an angry bee's eyes turn red. A calm bee
-  // with nectar looks like any other (its pollen specks are a layer the stage leaves out).
+  // The bee's moods (the pack's skins for q.is_angry): an angry bee's eyes turn red. Its nectar is a row of its own
+  // (MOB_ROWS).
   bee: [
     { k: "calm", n: "Calm", say: "" },
     { k: "angry", n: "Angry", where: "After it’s hit, or its nest is", skins: beeSkins("angry") },
-    { k: "angry_nectar", n: "Angry, with nectar", where: "Carrying pollen back to its nest", skins: beeSkins("angry_nectar") },
   ],
   // The fox's two kinds (the pack's q.variant 0 and 1) share its model and differ in skin, the kit's too: the game makes
   // foxes in snowy biomes snow foxes. The Raccoon and Jimothy looks keep their own skins.
@@ -289,6 +290,18 @@ const villagerBiome = k => ({ new_villager_1: `new_villager_${k}_1`, new_village
 const VILLAGER_DARK = { new_villager: "new_villager_desert", new_villager_baby: "new_villager_desert_baby" };
 const VILLAGER_PALE = { new_villager: "new_villager_snow", new_villager_baby: "new_villager_snow_baby" };
 const MOB_ROWS = {
+  // The bee's nectar, with either mood: the pack covers it in pollen specks (layers of their own), and an angry bee has
+  // a skin of its own with it too (the firefly's and the moths' angry skins are the same with nectar or not). A baby's
+  // specks are hidden inside it, so a calm baby looks the same either way.
+  bee: [
+    { k: "nectar", n: "Nectar", kinds: [
+      { k: "none", n: "No nectar", say: "without nectar", where: "Looking for flowers" },
+      { k: "nectar", n: "With nectar", where: "Carrying pollen back to its nest",
+        skins: { new_bee_angry: "new_bee_angry_nectar", new_bee_angry_qween: "new_bee_angry_nectar_qween" },
+        layers: Object.fromEntries([["new_bee", "new_bee_pollen"], ["new_bee_qween", "new_bee_pollen"],
+          ["new_bee_firefly", "new_bee_firefly_pollen"], ["new_bee_black_moth", "new_bee_black_moth_pollen"]].map(([model, skin]) => [model, [`${model}_pollen`, [skin], []]])) },
+    ] },
+  ],
   villager: [
     { k: "biome", n: "Biome", kinds: [
       { k: "plains", n: "Plains", say: "from the plains", where: "Plains villages", biome: "village" },
