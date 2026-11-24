@@ -14,8 +14,11 @@ const PROP_GROUPS = [
     { k: "rabbit_foot", n: "Rabbit’s Foot", what: "A bunny plushie." }, { k: "dragon_breath", n: "Dragon’s Breath", what: "An ender dragon plushie. Its eyes glow." },
     { k: "sculk_vein", n: "Sculk Vein", what: "A warden plushie. Its horns glow." }, { k: "dried_ghast", n: "Dried Ghast", what: "A reversible ghast plushie." },
   ] },
-  { n: "Couches", what: "Carpet turns into a couch in its color.", items: ["White", "Light Gray", "Gray", "Black", "Brown", "Red", "Orange", "Yellow", "Lime", "Green", "Cyan", "Light Blue", "Blue", "Purple", "Magenta", "Pink"]
-    .map(c => ({ k: `${c.toLowerCase().replace(" ", "_")}_carpet`, n: `${c} Carpet`, what: `A ${c.toLowerCase()} couch.` })) },
+  { n: "Rugs and Canopies", what: "Carpet turns into a rug, or a market stall canopy that drapes over the block under it.", items: Object.entries({
+    "White": "a striped rug", "Light Gray": "a checkered rug", "Gray": "a rug with a key pattern", "Black": "a rug with a diamond pattern", "Brown": "a plaid rug",
+    "Red": "a red rug with a gold border", "Orange": "a zigzag rug", "Yellow": "a rug with a diamond pattern", "Lime": "a checkered rug", "Green": "a rug with an ornate pattern",
+    "Cyan": "a floral rug", "Light Blue": "a striped rug", "Blue": "a rug with a pattern of squares", "Purple": "a rug with a pattern of swirls", "Magenta": "an ornate rug with a flower", "Pink": "a gingham rug",
+  }).map(([c, rug]) => ({ k: `${c.toLowerCase().replace(" ", "_")}_carpet`, n: `${c} Carpet`, what: `A${rug.slice(1)}, or ${/^[AEIOU]/.test(c) ? "an" : "a"} ${c.toLowerCase()}${c === "White" ? "" : " and white"} canopy.` })) },
   { n: "Presents", what: "Bundles turn into wrapped presents.", items: [
     { k: "bundle", n: "Bundle", what: "A wooden toy chest." },
     ...["White", "Light Gray", "Gray", "Black", "Brown", "Red", "Orange", "Yellow", "Lime", "Green", "Cyan", "Light Blue", "Blue", "Purple", "Magenta", "Pink"]
@@ -63,6 +66,8 @@ const PROP_GROUPS = [
 // once its props have been checked against the pack).
 const PROP_ICONS = {
   ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c === "light_gray" ? "silver" : c}_wool`, C_(`${c}_wool`, `${c}_wool`)])),
+  // A carpet's texture is its wool's: a slab a pixel thick, raised to the middle of the icon.
+  ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c}_carpet`, { shift: 3.5, boxes: [{ b: [0, 0, 0, 16, 1, 16], faces: [[`${c}_wool`], [`${c}_wool`], [`${c}_wool`]] }] }])),
   rabbit_foot: L("rabbit_foot"), dragon_breath: L("dragon_breath"), sculk_vein: L("sculk_vein"), dried_ghast: DRIED_GHAST,
 };
 for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
@@ -71,6 +76,7 @@ const CLIMATE_KINDS = ["Temperate", "Cold", "Warm"];
 const PROP_VARIANTS = {
   blue_wool: ["Squid", "Glow Squid"], dried_ghast: ["Happy Ghast", "Dried Ghast"],
   silver_wool: CLIMATE_KINDS, black_wool: ["Spider", "Cave Spider"], brown_wool: CLIMATE_KINDS, red_wool: ["Red", "Brown"], orange_wool: CLIMATE_KINDS,
+  ...Object.fromEntries(Object.keys(DYES).map(c => [`${c.replace(" ", "_")}_carpet`, ["Rug", "Canopy"]])),
   magenta_wool: ["Lucy", "Blue", "Wild", "Cyan", "Gold"], pink_wool: CLIMATE_KINDS,
   rabbit_foot: ["Brown", "Black", "Gold", "White", "Black and White", "Killer Bunny"],
 };

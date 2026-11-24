@@ -168,12 +168,12 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies (2026-11-24). Left, in page order: Couches, Presents, Christmas, Halloween, Around the house, Outdoors
+Plushies, and Rugs and Canopies (the carpets, once "Couches"; both 2026-11-24). Left, in page order: Presents, Christmas, Halloween, Around the house, Outdoors
 and Tents. For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
-How to do a section (as `import_plushies.py` does):
+How to do a section (as `import_plushies.py` and, for a simpler one, `import_couches.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
@@ -194,8 +194,24 @@ How to do a section (as `import_plushies.py` does):
 6. Item icons: `PROP_ICONS` in `src/prop-data.js`, one entry per item, shown only for the items listed there. Check each one against the folder
    pixel by pixel, and copy a missing one through `import_textures.py` (`FILES`). An item that isn't drawn as a block in the game
    (carpet) needs its own drawing: `ART_TRADES` draws carpets as whole wool blocks.
-7. Draw every prop large (`propPicture`) and check its description against what it really is: two plushies were described wrong.
+7. Draw every prop large (`propPicture`) and check its description against what it really is: two plushies were described wrong,
+   and the carpets weren't couches at all. The pack names every prop itself, with what it does: `texts/en_US.lang`, the lines with
+   `orevilleANSFeatures.prop` (from about 769: what's 45 degrees, cycling, interactive, static). Go by it (the Lime Wool
+   plushie is Rana there; the page still says a player in a frog hat).
    Draw frames of its animations, and check phone width and the console.
+
+More facts the first two sections found:
+
+- The pack's hint 6 there: some props have another look when the stand is placed diagonally (the candy canes). "Interactive" ones
+  play when punched or used, so that's an act (`PROP_ACTS`), not a variant.
+- Names under `sound_effects` in an attachable or animation are sounds: the page has none. Particles are `particle_effects`.
+- An animation that only shows or hides bones by scaling them from or to nothing: hide them by name (a layer's rules, and an act's
+  `show` parts) rather than baking the scale, which would grow over a frame. See `import_couches.py`.
+- A variant can have an `anim` of its own (None for none), and `ownFit` to be framed at its own size. A kind without acts or turns plays its
+  `spawn` when its variant is picked. A prop lower than `PROP_FLAT` lies flat: no shadow, its slot picture drawn from higher up.
+- Order the variants as the user wants, not as the pack does: the carpets start with the rug, the pack's second.
+- `boxModel`'s `shift` raises an icon (positive is up). The Villager Trades tab still draws carpets as whole wool blocks; changing
+  that was offered, not asked for.
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.

@@ -351,7 +351,8 @@ async function propPicture(item, size) {
   if (!boxes || !boxes.length) return null;
   const [lo, hi] = boxesBounds(boxes), mid = lo.map((v, i) => (v + hi[i]) / 2);
   const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
-  const px = renderScene(boxes, { yaw: 0.6, pitch: 0.3, scale: size * 0.66 / span, center: mid, origin: [size / 2, size / 2], width: size, height: size });
+  // One that lies flat is seen from higher up, or little of it would show.
+  const px = renderScene(boxes, { yaw: 0.6, pitch: hi[1] - lo[1] < PROP_FLAT ? 0.8 : 0.3, scale: size * 0.66 / span, center: mid, origin: [size / 2, size / 2], width: size, height: size });
   return rgbaURL(px, size, size);
 }
 
@@ -517,6 +518,8 @@ function overShell(px, shell) {
 // it lands on the canvas as it moves, from this side, however it's turned. zoom draws a mob that many times the size
 // that would fit, to scale with a bigger one.
 const MOB_MAX_SCALE = 8, MOB_FEET_UP = 26, MOB_TAG_ROOM = 44, MOB_MARGIN = 28, SWIM_MARGIN = 12, MOTION_FPS = 20, SLOW_FRAME_MS = 30, SLOW_FRAMES = 5, ACT_FADE = 0.25;
+// A prop lower than this lies flat (a rug), and the room left under its near corner.
+const PROP_FLAT = 2, PROP_BELOW = 4;
 // How far a prop's glow spreads, how strong it is, and how much of it is left off the glowing texels.
 const BLOOM_SPREAD = 12, BLOOM = 0.9, BLOOM_OFF = 0.85;
 // How many moments of an animation to look at for how far it reaches.
@@ -537,7 +540,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     return light.getContext("2d");
   };
   let boxes = null, rest = null, fit = null, zoomed = 1, swims = false, yaw = startYaw, frame = 0, dragX = null, wanted = "";
-  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
+  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, lies = false, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
   const draw = () => {
     frame = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -555,7 +558,9 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const scale = zoomed * Math.min(MOB_MAX_SCALE, (w - 2 * MOB_MARGIN) / (2 * radius), room / tall);
     // Stay centered on the space the mob's animation fills, so it doesn't shift the view.
     const [blo, bhi] = rest, mid = [(blo[0] + bhi[0]) / 2, GROUND, (blo[2] + bhi[2]) / 2];
-    const view = { yaw, pitch, scale: scale * dpr, center: mid, origin: [canvas.width / 2, canvas.height - MOB_FEET_UP * dpr] };
+    // A prop that lies flat casts no shadow, and is drawn further up, so its near corner isn't cut off.
+    const feetUp = lies ? Math.max(MOB_FEET_UP, radius * Math.sin(pitch) * scale + PROP_BELOW) : MOB_FEET_UP;
+    const view = { yaw, pitch, scale: scale * dpr, center: mid, origin: [canvas.width / 2, canvas.height - feetUp * dpr] };
     const shadow = Math.max(3, Math.min(bhi[0] - blo[0], bhi[2] - blo[2]) * 0.45);
     // A swimmer slides to the middle of the canvas and rises (or sinks) to the middle of the water; its shadow stays on
     // the ground below it.
@@ -572,7 +577,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const float = { pivot: NO_MOVE, angles: NO_MOVE, move: [0, -rise, 0] };
     const placed = rise ? boxes.map(m => ({ ...m, bones: [...m.bones, float] })) : boxes;
     const scene = { ...view, width: canvas.width, height: canvas.height };
-    const px = renderScene(placed.filter(m => !m.shell && !m.rim), { ...scene, shadows: [[mid[0], mid[2], shadow]] });
+    const px = renderScene(placed.filter(m => !m.shell && !m.rim), { ...scene, shadows: lies ? [] : [[mid[0], mid[2], shadow]] });
     // Rims only show where the mob isn't drawn (they may go over its shadow).
     const rims = placed.filter(m => m.rim);
     if (rims.length) {
@@ -663,7 +668,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const into = actStart ? (now - actStart) / 1000 : 0;
     if (actStart && into >= act.length) {
       actStart = 0;
-      nextAct = now + between() * 1000;
+      if (acts) nextAct = now + between() * 1000;
     }
     const acting = Boolean(actStart);
     // Nothing moves between the acts of something with no loops (a prop): it's already drawn.
@@ -771,13 +776,15 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       }
       motion = next && loops;
       blooms = Boolean(kind && look.layers.some(([, , , flags]) => flags && flags.lit));
+      lies = Boolean(kind && rest && rest[1][1] - rest[0][1] < PROP_FLAT);
       rested = false;
       intro = null;
       if (kind && !calmMotion()) {
         // Its entrance starts from nothing, so it isn't drawn before that. (A prop changing variants squishes, or turns
-        // inside out, instead: until that starts it's drawn as it was.)
-        intro = squish ? (kind.turns ? kind.turns[lookIndex] : kind.acts[0]) : kind.spawn;
-        boxes = squish ? before : null;
+        // inside out, instead: until that starts it's drawn as it was. One that does neither, a rug, comes in afresh.)
+        const change = squish && (kind.turns ? kind.turns[lookIndex] : kind.acts[0]);
+        intro = change || kind.spawn;
+        boxes = change ? before : null;
         actStart = nextAct = 0;
       }
       coarse = false;
@@ -792,7 +799,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // A look bigger than the mob's usual one (a balloon, a rider) gets room of its own; a swimmer's, below it too (a sea
       // monster's tentacles).
       const own = reach.bounds ? fitOf(reach.bounds) : f;
-      fit = f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), swim ? f[1].map((v, i) => Math.max(v, own[1][i])) : f[1]], { radius: Math.max(f.radius, own.radius) });
+      fit = look.ownFit ? own : f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), swim ? f[1].map((v, i) => Math.max(v, own[1][i])) : f[1]], { radius: Math.max(f.radius, own.radius) });
       tag.hidden = !next || !tag.textContent;
       redraw();
       return Boolean(next);
