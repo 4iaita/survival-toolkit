@@ -116,8 +116,8 @@ def main():
             own["culledBones"] = ["*"]
         if item in LIT:
             own["litBones"] = LIT[item]
-        if item in LIT:
-            look["evenBloom"] = 1  # glowing at half strength, or dying away
+        if item in LIT or item == "pufferfish":
+            look["evenBloom"] = 1  # glowing at half strength, dying away, or small (the balloons' eyes)
         if item in SUNK:
             own["buried"] = 1
             look["sunk"] = SUNK[item]

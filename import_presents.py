@@ -76,7 +76,9 @@ def main():
                  **({"opaqueBones": [SACK_INSIDE]} if any(b["name"] == SACK_INSIDE for b in geos[geo]["bones"]) else {})}
         name = f"prop_{item}"
         text = put(text, "MOB_MODELS", name, im.model(geos[geo]))
-        text = put(text, "PROP_LOOKS", item, {"names": ["§§"], "scale": 1, "anim": "present",
+        # What glows is small: the other halo (bloomOf) is off it, and another from each side.
+        even = {"evenBloom": 1} if "lit" in flags else {}
+        text = put(text, "PROP_LOOKS", item, {"names": ["§§"], "scale": 1, **even, "anim": "present",
                                               "layers": [[name, [TEXTURE], [[b, False] for b in inside], *([flags] if flags else [])]]})
         print(item, "hides", len(inside), flags)
     assert all(p == played[0] for p in played)

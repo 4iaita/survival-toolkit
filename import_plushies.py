@@ -61,7 +61,9 @@ def main():
             outer, inner = HALVES[item]
             hide = lambda half: [[layers[0][0][0], layers[0][0][1], [[p, False] for p in half], *layers[0][0][3:]]]
             layers, variants = [hide(inner)], [{"layers": hide(outer), "pose": INSIDE_OUT}]
-        text = put(text, "PROP_LOOKS", item, {"names": ["§§"], "scale": 1, "anim": kind, "layers": layers[0],
+        # Small eyes: the other halo (bloomOf) is off them, and another from each side.
+        even = {"evenBloom": 1} if item in ("purple_wool", "dragon_breath") else {}
+        text = put(text, "PROP_LOOKS", item, {"names": ["§§"], "scale": 1, **even, "anim": kind, "layers": layers[0],
                                               **({"variants": variants} if variants else {})})
         if kind not in acts:
             squish = im.baked_act(d, anims, {"every": EVERY, "parts": [("qhvtxw", 0, None, [])]})

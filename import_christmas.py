@@ -265,6 +265,8 @@ def main():
             look["emits"] = EMITS[item]
         if item == "brick_block":
             look["reach"] = 52  # room for its smoke
+        if item in LIT:
+            look["evenBloom"] = 1  # small lights: the other halo is off them, and another from each side
         if item not in STILL:
             kind, rest, value = kind_of(Prop(item, d, anims, bones))
             # The same animation bakes the same for both canes.

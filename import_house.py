@@ -43,6 +43,8 @@ LIT_WHOLE = ["lava_bucket", "copper_bulb", "copper_lantern"]
 LOW = {"rail": 10.5, "feather": 11.4, "furnace": 5.1, "web": [None, 10.9, 16.7]}
 BEAM_ROOM = 48
 # How far into the ground the pack has it, and so shows just what's over it.
+# The other halo (bloomOf) spills out past the lava lamp in patches, and is off these small lights, and another from each side.
+EVEN = ["lava_bucket", "rail", "feather"]
 SUNK = {"heartbreak_pottery_sherd": 5.09}
 OPAQUE = ["cartography_table"]  # oreville_sxepuo ignores alpha
 GLASS = {"lava_bucket": ["gl96j"], "soul_lantern": ["2dh923d6f5fg72f4q"]}
@@ -247,7 +249,8 @@ def main():
         if item == "lava_bucket":
             shape = turned_out(shape)
             own["insideBones"] = [f"*{WITHIN}"]
-            look["evenBloom"] = 1  # the other halo spills out past the lamp, in patches
+        if item in EVEN:
+            look["evenBloom"] = 1
         if item in SUNK:
             own["buried"] = 1
             look["sunk"] = SUNK[item]

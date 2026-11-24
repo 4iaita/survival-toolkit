@@ -302,7 +302,7 @@ What Around the house found:
   Check that nothing that goes round leaves a gap: count its pixels frame by frame. A particle's x is the other way round from the model's.
 - im.look's `pose` is everything the name turns on, loops and entrances too: don't take it as the rest pose.
 - BSD sed has no \b (use perl), and all the scripts share one scope: a new top-level name can clash (`CANDLE`). Check the whole page loads.
-- The importers rewrite `particle_z.png` and `prop_lava_bucket.png` with the same pixels: `git checkout` them before committing.
+- The importers rewrite `particle_z.png`, `prop_lava_bucket.png`, `prop_carrot.png` and `prop_water_bucket.png` with the same pixels: `git checkout` them before committing.
 - The user had the strider piñata moved from Christmas to Around the house, beside the llama (its importer is still `import_christmas.py`). The
   White Candle (the pack's "Festive candle") went to Christmas (its importer is still `import_house.py`).
 - The fireplace jumps partly off the stage as it lands: framing it for that would make it a quarter smaller, and the user chose to leave it.
@@ -321,7 +321,9 @@ What Outdoors found:
 - Array indexes wrap (the windmill's two models for eight poses). Two of a prop's poses can be the same (the sticks': left out).
 - A model picked by `anim_time` may only differ in how its texels glow (the brown mushroom's flash): compare the uvs' alpha, not the shapes.
 - `evenBloom` (a look): the halo as strong as each texel glows, blurred finely, the same wherever it falls. The old one (`bloomOf` without it) is blotchy
-  for small spots, and full strength for half lit ones. Use it for new props. The approved ones look nearly the same either way (compared, but not the presents' toys): only the lava lamp was moved to it.
+  for small spots, and full strength for half lit ones. Use it for new props. The approved ones look nearly the same from one side, but the old one is off centre and changes as the prop turns:
+  compare from several sides. The props with small lights were moved to it (eyes, toys, windows: 14). Kept on the old one, on purpose: the
+  spider, squid and warden plushies, the fireplace, the scoreboard, the spotlight and the jack o'lantern (its light spreads better).
 - `picks` (a look): bones one of which shows, picked at random as it's shown (what the enderman balloon holds). `sunk` can be negative: how far over
   the ground something that turns must be for its corners to clear it. A particle's `add` is light, `buried` is hidden by the ground.
 - Particles that only come at night (the fireflies) or in water (the water wheel's splashes): the first are shown, with the night in the description;
