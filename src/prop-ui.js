@@ -42,10 +42,10 @@ function renderProps() {
 }
 // squish: the prop is already there and changes variants, so it squishes instead of coming in.
 function showProp(squish = false) {
-  const p = propOf(stand.prop);
-  $("prop-line").innerHTML = `<span class="name-chip code"><span class="src" aria-hidden="true"></span>§§</span>${ICONS[`held:${p.k}`] ? `<span>holding</span>${(p.icons || [p.k]).map(k => iconImg(`held:${k}`)).join("")}<span>` : "<span>holding "}<b>${esc(p.n)}</b>: ${esc(p.what)}</span>`;
-  $("prop-art").setAttribute("aria-label", `${p.what.replace(/\.$/, "")}${PROP_VARIANTS[p.k] ? ` (${PROP_VARIANTS[p.k][propVariant]}${PROP_ROWS[p.k] ? `, ${PROP_ROWS[p.k].kinds[propRow].n.toLowerCase()} ${PROP_ROWS[p.k].what}` : ""})` : ""}, from an armor stand named §§ holding ${p.n}. Drag or use the arrow keys to turn it.`);
-  const kinds = PROP_VARIANTS[p.k], row = PROP_ROWS[p.k];
+  const p = propOf(stand.prop), kinds = PROP_VARIANTS[p.k], row = PROP_ROWS[p.k], verb = p.worn ? "wearing" : "holding", picked = row && row.kinds[propRow];
+  const version = [...(kinds ? [kinds[propVariant]] : []), ...(row ? [`${picked.is ? `${picked.is}, ` : ""}${picked.n.toLowerCase()} ${row.what}`] : [])];
+  $("prop-line").innerHTML = `<span class="name-chip code"><span class="src" aria-hidden="true"></span>§§</span>${ICONS[`held:${p.k}`] ? `<span>${verb}</span>${(p.icons || [p.k]).map(k => iconImg(`held:${k}`)).join("")}<span>` : `<span>${verb} `}<b>${esc(p.n)}</b>: ${esc(p.what)}</span>`;
+  $("prop-art").setAttribute("aria-label", `${p.what.replace(/\.$/, "")}${version.length ? ` (${version.join(", ")})` : ""}, from an armor stand named §§ ${verb} ${p.n}. Drag or use the arrow keys to turn it.`);
   $("prop-variant-bar").hidden = !kinds;
   if (kinds) {
     $("prop-variant-label").textContent = `Variant: ${kinds[propVariant]}`;
@@ -55,11 +55,11 @@ function showProp(squish = false) {
   // A second choice that goes with each variant: a button in each color.
   $("prop-row-bar").hidden = !row;
   if (row) {
-    $("prop-row-label").textContent = `${row.n}: ${row.kinds[propRow].n}`;
+    $("prop-row-label").textContent = `${row.n}: ${picked.n}${picked.is ? ` (${picked.is})` : ""}`;
     $("prop-row-how").textContent = row.how;
-    $("prop-row-try").innerHTML = row.kinds.map(({ n, swatch }, i) => `<button type="button" class="collar-swatch" data-kind="${i}" style="background:${swatch}" title="${n}" aria-label="${n}" aria-pressed="${i === propRow}"></button>`).join("");
+    $("prop-row-try").innerHTML = row.kinds.map(({ n, swatch, is }, i) => `<button type="button" class="collar-swatch" data-kind="${i}" style="background:${swatch}" title="${is ? `${n}: ${is}` : n}" aria-label="${is ? `${n}: ${is}` : n}" aria-pressed="${i === propRow}"></button>`).join("");
   }
-  propView.show(`prop:${p.k}`, row ? propRow * kinds.length + propVariant : propVariant, { squish });
+  propView.show(`prop:${p.k}`, row ? propRow * (kinds ? kinds.length : 1) + propVariant : propVariant, { squish });
 }
 
 $("props").addEventListener("click", e => {

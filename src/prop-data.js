@@ -1,6 +1,6 @@
 /* ---------- Armor stand props ---------- */
 // Armor stand props (Actions & Stuff): an armor stand named §§ shows the item in its hand as a decoration.
-// k is the item's id (PROP_LOOKS key), n its name, what the decoration it becomes; icons, where more than one item becomes the
+// k is the item's id (PROP_LOOKS key), n its name, what the decoration it becomes; worn, if the stand wears it instead of holding it; icons, where more than one item becomes the
 // same one, all their ids (the line under the stage shows each).
 const PROP_GROUPS = [
   { n: "Plushies", what: "Wool turns into a plushie, a different one for each color.", items: [
@@ -43,6 +43,7 @@ const PROP_GROUPS = [
     { k: "snow", n: "Snow Block", what: "A snowman with a broom." }, { k: "snowball", n: "Snowball", what: "A small snow globe with a snowman inside. Punch the stand to shake it." },
     { k: "snow_layer", n: "Snow", what: "A layer of snow that drapes over the block under it." }, { k: "diamond_shovel", n: "Diamond Shovel", what: "A shovel stuck in a pile of snow." },
     { k: "brick_block", n: "Bricks", what: "A brick chimney. Smoke rises from it." },
+    { k: "leather_boots", n: "Leather Boots", worn: 1, what: "A Christmas stocking hung on a nail, if the boots are dyed. Most have a toy and gifts in them, some of which glow." },
   ] },
   { n: "Halloween", items: [
     { k: "lit_pumpkin", n: "Jack o’Lantern", what: "A giant jack o’lantern lit by a candle inside. Punch the stand to pop its lid up." }, { k: "pumpkin", n: "Pumpkin", what: "A pumpkin patch with an orange, a red, a green and a white pumpkin." },
@@ -107,7 +108,7 @@ const PROP_ICONS = {
   rail: L("rail_carried"), feather: L("feather"), carrot_on_a_stick: L("carrot_on_a_stick"), heartbreak_pottery_sherd: L("heartbreak_pottery_sherd"),
   creeper_head: C("creeper_head_front", "creeper_head_top", "creeper_head_side"), bamboo: L("bamboo"), rose_bush: L("rose_bush_carried"),
   beehive: C("beehive_front", "beehive_top", "beehive_side"), spyglass: L("spyglass"), leather: L("leather"), web: L("web_carried"),
-  copper_bulb: C("copper_bulb"), copper_lantern: L("copper_lantern"),
+  copper_bulb: C("copper_bulb"), copper_lantern: L("copper_lantern"), leather_boots: L("leather_boots"),
   water_bucket: L("water_bucket"), campfire: L("campfire"), soul_campfire: L("soul_campfire"), ...Object.fromEntries(["torch", "soul_torch", "copper_torch", "redstone_torch", "crimson_fungus", "warped_fungus"].map(k => [k, L(`${k}_carried`)])),
   brown_mushroom: L("mushroom_brown_carried"), red_mushroom: L("mushroom_red_carried"), cobblestone: C("cobblestone"), mossy_cobblestone: C("mossy_cobblestone"), stone_bricks: C("stone_bricks"),
   ...Object.fromEntries(["moss", "pale_moss"].map(k => [`${k}_carpet`, { shift: 3.5, boxes: [{ b: [0, 0, 0, 16, 1, 16], faces: [[`${k}_block`], [`${k}_block`], [`${k}_block`]] }] }])),
@@ -138,9 +139,17 @@ const PROP_VARIANTS = {
   stick: ["Stacked", "Pair", "Single", "Leaning Trio", "Leaning Pair", "Leaning", "Tumbled Trio", "Tumbled Pair", "Upright", "Stacked Across", "Heap"],
   glow_frame: ["Opens Near, Framed", "Opens Near", "Shuts Near, Framed", "Shuts Near", "Open, Framed", "Open", "Slit, Framed", "Slit"],
 };
-// Another choice that goes with every variant: n its name, how to make it, kinds (a button in each color), what it picks. A
-// look for each of its kinds' variants, in turn.
+// Another choice that goes with every variant: n its name, how to make it, kinds (a button in each color; is, what that one
+// shows, as the pack calls it), what it picks. A look for each of its kinds' variants, in turn.
 const PROP_ROWS = {
+  // The 16 dyes, and the eight mixes of two: the boots' colors (the pack goes by the exact color), in import_stockings.py's order.
+  leather_boots: { n: "Boots", how: "Dye the stand’s leather boots to switch. Two names are two dyes mixed on the same pair.", what: "boots", kinds: [
+    ...Object.entries({ red: "Classic Stocking", black: "Penguin", blue: "Vibe Cat", brown: "Cowboy", cyan: "Electronics", gray: "Redstoner", green: "Classic Stocking",
+      "light blue": "Steampunk Inventor", "light gray": "Chess and Games Controller", lime: "Robot", magenta: "Enderman", orange: "Flame", pink: "Rana", purple: "Bee Lover",
+      white: "Kitty Cat", yellow: "Flint" }).map(([c, is]) => ({ n: c.replace(/\b./g, x => x.toUpperCase()), swatch: DYES[c], is })),
+    ...[["Brown and Black", "#503829", "Mustache Man"], ["Gray and Lime", "#638b38", "Alien"], ["Green and Black", "#3d4c1b", "Musical Knight"], ["Green and Brown", "#706824", "Woodland Critter"],
+      ["Green and Yellow", "#aeaa29", "Dinosaur"], ["Magenta and Black", "#72356f", "Coding Error"], ["Orange and Yellow", "#fbac2d", "Lion"], ["Red and Magenta", "#bb3e71", "Wizard"]].map(([n, swatch, is]) => ({ n, swatch, is })),
+  ] },
   banner: { n: "Boots", how: "Dye the stand’s leather boots to switch.", what: "boots", kinds: ["black", "blue", "brown", "cyan", "gray", "green", "light blue", "light gray", "lime", "magenta", "orange", "pink", "purple", "red", "white", "yellow"]
     .map(c => ({ n: c.replace(/\b./g, x => x.toUpperCase()), swatch: DYES[c] })) },
 };

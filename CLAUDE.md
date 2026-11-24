@@ -168,7 +168,7 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween, Around the house, Outdoors and Tents (all 2026-11-24): every section. For each section: every texture must be one from `../textures`, animations and light glow
+Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween, Around the house, Outdoors and Tents (all 2026-11-24): every section; then the Stockings (in Christmas). For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
@@ -249,8 +249,7 @@ What Christmas found:
 - `renderScene` is slow on props that fill the stage: while they move they're drawn at 1× (`coarse`), at rest always sharp. Time
   them warm, in a real Chrome at scale 2 (the globes run at 20 frames a second).
 - After touching the renderer, hash every prop picture and a frame of every mob on the new page and the committed one, and compare.
-- Offered, not asked for: Stockings (leather
-  boots the stand wears, with anything but a banner in its hand: 24 models on dpg, one entrance), and hanging the piñata and the wreath
+- Offered, not asked for: hanging the piñata and the wreath
   off the ground as the pack has them (they're landed, like every prop).
 
 What Halloween found:
@@ -334,6 +333,16 @@ What Tents found:
   the stage, on one that fills it: a look's `low` (its corner's radius times sin of `STAGE_PITCH`) keeps it from being cut off.
 - What an item looks like where the pack doesn't say is the game's: Mojang/bedrock-samples on GitHub has `blocks.json`, `terrain_texture.json` and the
   names for each version (wool stairs are drawn in plain wool; the pack's patterned wool is the slabs'). Stairs' icon: the tall half at the back left.
+
+What the checkup of the whole pack and the Stockings found (2026-11-24):
+
+- Every prop in the pack is on the page. Not there, as they aren't props: the empty §§ stand's own pedestal with a floating icon (`djnwuq`, `smsggo`), and
+  the `§§§§` / Item stand (`v.jvsiul`), which shows the plain item on it. `Prop` and `prop` are the same as §§, and a sulfur cube named §§ holding a block shows its
+  prop too. Sulfur spike's `parent_setup` says it has a prop (`v.hfipcv`), but it has none.
+- Comparing `im.look` with and without the name misses what also goes by something else (the boots' color): trace `v.eclqlw` through every script instead.
+- Stockings: leather boots worn, by their exact color (16 dyes, eight mixes), not by pose. `PROP_ROWS` without `PROP_VARIANTS`: only colors to pick (`is`, the
+  design's name); `worn` on an item says "wearing". Where all of a design is white and glows (the Vibe Cat), the halo hides it: it's drawn without.
+- A hook or outline that's inside out: `turned_out`, and `culledBones` for the plain cubes whose material shows one side only.
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.
