@@ -247,6 +247,7 @@ def main():
         if item == "lava_bucket":
             shape = turned_out(shape)
             own["insideBones"] = [f"*{WITHIN}"]
+            look["evenBloom"] = 1  # the other halo spills out past the lamp, in patches
         if item in SUNK:
             own["buried"] = 1
             look["sunk"] = SUNK[item]
