@@ -238,6 +238,9 @@ FILES = {
     "white_candle": "items/candles/white_candle", "orange_candle": "items/candles/orange_candle", "rail_carried": "blocks/carried/rail_carried", "heartbreak_pottery_sherd": "items/heartbreak_pottery_sherd",
     "rose_bush_carried": "blocks/carried/rose_bush_carried", "beehive_front": "blocks/beehive_front", "beehive_side": "blocks/beehive_side", "beehive_top": "blocks/beehive_top",
     "spyglass": "items/spyglass", "web_carried": "blocks/carried/web_carried", "copper_bulb": "blocks/copper_bulb", "copper_lantern": "items/copper_lantern",
+    "soul_campfire": "items/soul_campfire", "glow_item_frame": "items/glow_item_frame", "boat_spruce": "items/boat_spruce", "target_side": "blocks/target_side", "target_top": "blocks/target_top",
+    "spruce_trapdoor": "blocks/spruce_trapdoor", "pale_oak_trapdoor": "blocks/pale_oak_trapdoor",
+    **{f"{k}_carried": f"blocks/carried/{k}_carried" for k in ("mushroom_brown", "mushroom_red", "crimson_fungus", "warped_fungus", "torch", "soul_torch", "copper_torch", "redstone_torch")},
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
 FIRST_FRAME = {"sculk", "fire", "pumpkin_face_on"}

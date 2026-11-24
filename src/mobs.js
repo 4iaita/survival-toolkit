@@ -138,6 +138,8 @@ function faceSpot(face, fx, fy, fz) {
 // glassBones, bones whose alpha says how solid they are (a jar's glass), blended over what's behind them; culledBones, bones
 // whose faces only show from the front (a snow globe's walls, seen from within).
 // buried, it's in the ground and only shows above it (the zombie under a tombstone).
+// room, what's only seen through the look's portal (a doorway into a room of its own), from the front; wrap, its texture goes on and
+// on; bare, no light but its own falls on it.
 // beam, a beam of light (a spotlight's): its colors, one, or several it goes through over so many seconds; its cubes' v says how
 // far along it's faded, from 0.5 (gone) to 1.5. It's left out of the model's bounds.
 // rim, an outline the game draws only where the mob itself isn't (a stencil), glowing: the allay's, its parts again a
@@ -250,7 +252,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
       const flipped = inside ? [0, 1, 2].map(k => hi[k] < lo[k]) : [false, false, false];
       for (const k of [0, 1, 2]) if (flipped[k]) [lo[k], hi[k]] = [hi[k] + 2 * g, lo[k] - 2 * g];
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), buried: Boolean(flags.buried), beam: Boolean(beam), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim) || Boolean(flags.bare), rim: Boolean(flags.rim), room: flags.room ? model : null, portal: Boolean(flags.portal), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), buried: Boolean(flags.buried), beam: Boolean(beam), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
           if (flipped[axis]) side = 1 - side;
           if (flipped[0]) fx = 0.9999 - fx;
@@ -271,6 +273,10 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
           if (scroll && clock) {
             u = (((u / tw + scroll[0] * clock.t) % 1) + 1) % 1 * tw;
             v = (((v / th + scroll[1] * clock.t) % 1) + 1) % 1 * th;
+          }
+          if (flags.wrap) {
+            u = ((u % tw) + tw) % tw;
+            v = ((v % th) + th) % th;
           }
           const px = Math.min(tex.w - 1, Math.max(0, Math.floor(u * kx))), py = Math.min(tex.h - 1, Math.max(0, Math.floor(v * ky)));
           const k = (py * tex.w + px) * 4, alpha = tex.px[k + 3];
@@ -349,14 +355,16 @@ async function lookBoxes(look, { flip = false, tint = null, clock = null, night 
   }
   const parts = shown.flatMap(([model, , rules, flags], i) =>
     modelBoxes(MOB_MODELS[model], layers[i], [...rules, ...showParts, ...showing], { size, pose, flip: flip ? height / 2 : null, flags, tint, clock, dim: night ? NIGHT_DIM : 1, glintAt: performance.now() / 1000 }));
-  return Object.assign(parts.filter(p => !p.soft), { soft: parts.filter(p => p.soft) });
+  const beyond = parts.filter(p => p.room);
+  for (const p of parts) if (p.portal) p.beyond = beyond;
+  return Object.assign(parts.filter(p => !p.soft && !p.room), { soft: parts.filter(p => p.soft) });
 }
 // Boxes moved down or up to stand on the ground: props hang from an armor stand's hand in their models. drop: how far, for
-// a prop that's animating (as far as it would at rest, so that it can jump). sunk: how far into the ground it stands (a look's: a broken pot).
+// a prop that's animating (as far as it would at rest, so that it can jump). sunk: how far into the ground it stands (a look's: a broken pot), or over it (a windmill's sails, for their corners to clear it).
 const landing = (boxes, sunk = 0) => [{ pivot: [0, 0, 0], angles: [0, 0, 0], move: [0, GROUND - boxesBounds(boxes)[1][1] + sunk, 0] }];
 function landed(boxes, drop = boxes && boxes.length ? landing(boxes) : null) {
   if (!boxes || !drop) return boxes;
-  const moved = m => ({ ...m, bones: [...(m.bones || []), ...drop] });
+  const moved = m => ({ ...m, bones: [...(m.bones || []), ...drop], ...(m.beyond ? { beyond: m.beyond.map(moved) } : {}) });
   return Object.assign(boxes.map(moved), { soft: (boxes.soft || []).map(moved) });
 }
 // A mob's looks (MOB_LOOKS key), or a prop's one look and its variants ("prop:" and its item, a PROP_LOOKS key).
@@ -471,13 +479,17 @@ function sleepZs(age) {
 
 // The light a scene's glowing texels (EMITS) spread round them, as a canvas to add over it: just those texels (renderScene's
 // emitted, width by height), blurred by shrinking and growing them back, and mostly left off the texels themselves, which would
-// wash out. spread: how far, in pixels.
-function bloomOf(emitted, { width, height }, spread) {
+// wash out. spread: how far, in pixels. Each texel counts in full, however strongly it glows (emitted's alpha), but with even
+// (a look's evenBloom: small spots, ones that glow at half strength, a flash that dies away): as much as it glows, and blurred
+// finely, the same wherever it falls on the canvas.
+function bloomOf(emitted, { width, height }, spread, even) {
+  const strength = even ? new Uint8ClampedArray(emitted) : null;
+  for (let i = 3; i < emitted.length; i += 4) if (emitted[i]) emitted[i] = 255;
   const canvasOf = (width, height) => Object.assign(document.createElement("canvas"), { width, height });
   const sharp = canvasOf(width, height);
   sharp.getContext("2d").putImageData(new ImageData(emitted, width, height), 0, 0);
-  let from = sharp;
-  for (let step = spread; step > 1; step /= 2) {
+  let from = even ? evenly(strength, width, height, spread) : sharp;
+  if (!even) for (let step = spread; step > 1; step /= 2) {
     const to = canvasOf(Math.max(1, Math.round(from.width / 2)), Math.max(1, Math.round(from.height / 2))), ctx = to.getContext("2d");
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(from, 0, 0, to.width, to.height);
@@ -485,10 +497,48 @@ function bloomOf(emitted, { width, height }, spread) {
   }
   const out = canvasOf(width, height), ctx = out.getContext("2d");
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(from, 0, 0, out.width, out.height);
+  ctx.drawImage(from, 0, 0, even ? from.width * bloomCell(spread) : out.width, even ? from.height * bloomCell(spread) : out.height);
   ctx.globalCompositeOperation = "destination-out";
   ctx.globalAlpha = BLOOM_OFF;
   ctx.drawImage(sharp, 0, 0);
+  return out;
+}
+
+const bloomCell = spread => Math.max(1, Math.round(spread / 8));
+// A picture's light (px, solid as far as its alpha) blurred, as a small canvas to be drawn at full size: averaged into squares an
+// eighth of the spread across, then three box blurs each way, which come out round.
+function evenly(px, width, height, spread) {
+  const cell = bloomCell(spread), w = Math.ceil(width / cell), h = Math.ceil(height / cell);
+  let now = new Float32Array(w * h * 4), next = new Float32Array(w * h * 4);
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const i = (y * width + x) * 4, a = px[i + 3];
+    if (!a) continue;
+    const j = (Math.floor(y / cell) * w + Math.floor(x / cell)) * 4, share = a / 255 / (cell * cell);
+    for (let c = 0; c < 3; c++) now[j + c] += px[i + c] * share;
+    now[j + 3] += 255 * share;
+  }
+  const reach = Math.max(1, Math.round(spread / cell / 4)), box = reach * 2 + 1;
+  for (let pass = 0; pass < 6; pass++) {
+    const step = (pass & 1 ? w : 1) * 4, count = pass & 1 ? h : w, lines = pass & 1 ? w : h, across = (pass & 1 ? 1 : w) * 4;
+    for (let line = 0; line < lines; line++) for (let c = 0; c < 4; c++) {
+      const start = line * across + c;
+      let sum = 0;
+      for (let k = 0; k < Math.min(reach, count); k++) sum += now[start + k * step];
+      for (let k = 0; k < count; k++) {
+        if (k + reach < count) sum += now[start + (k + reach) * step];
+        next[start + k * step] = sum / box;
+        if (k >= reach) sum -= now[start + (k - reach) * step];
+      }
+    }
+    [now, next] = [next, now];
+  }
+  const out = Object.assign(document.createElement("canvas"), { width: w, height: h }), image = out.getContext("2d").createImageData(w, h);
+  // Colors as they're stored: not multiplied by how solid they are.
+  for (let i = 0; i < now.length; i += 4) if (now[i + 3] > 0.5) {
+    for (let c = 0; c < 3; c++) image.data[i + c] = now[i + c] / now[i + 3] * 255;
+    image.data[i + 3] = now[i + 3] * EVEN_BLOOM;
+  }
+  out.getContext("2d").putImageData(image, 0, 0);
   return out;
 }
 
@@ -534,7 +584,7 @@ const STAGE_PITCH = 0.2, MOB_MAX_SCALE = 8, MOB_FEET_UP = 26, MOB_TAG_ROOM = 44,
 // A prop lower than this lies flat (a rug), and the room left under its near corner.
 const PROP_FLAT = 2, PROP_BELOW = 4;
 // How far a prop's glow spreads, how strong it is, and how much of it is left off the glowing texels.
-const BLOOM_SPREAD = 12, BLOOM = 0.9, BLOOM_OFF = 0.85;
+const BLOOM_SPREAD = 12, BLOOM = 0.9, BLOOM_OFF = 0.85, EVEN_BLOOM = 1.5;
 // How many moments of an animation to look at for how far it reaches.
 const MOTION_SAMPLES = 12;
 // yaw: how it's turned to start with, and after a reset (turnBack).
@@ -553,7 +603,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     return light.getContext("2d");
   };
   let boxes = null, rest = null, fit = null, zoomed = 1, swims = false, yaw = startYaw, frame = 0, dragX = null, wanted = "";
-  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, lies = false, grounded = false, low = 0, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
+  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, evenBloom = false, lies = false, grounded = false, low = 0, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
   // What looks at the reader (a look's gaze: [bone, x, y], an enderman portrait's pupils) moves that far for each degree the
   // reader is round to its side and above it, as the pack's do for the camera.
   let gaze = null, gazedAt = null;
@@ -630,7 +680,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     // See-through shells (a slime's jelly) go on top of what's inside them.
     const shells = same ? [] : placed.filter(m => m.shell);
     if (shells.length) overShell(px, renderScene(shells, scene));
-    const halo = same ? base.halo : blooms ? bloomOf(emitted, scene, BLOOM_SPREAD * dpr) : null;
+    const halo = same ? base.halo : blooms ? bloomOf(emitted, scene, BLOOM_SPREAD * dpr, evenBloom) : null;
     if (flies) {
       if (!same) base = { boxes, at: `${JSON.stringify(scene)}/${JSON.stringify(shadow)}`, px: px.slice(), depth, halo };
       air.draw(px, depth, scene, dropped);
@@ -853,7 +903,12 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         if (base.bounds) fits[mob] = fitOf(base.bounds);
       }
       const f = fits[mob];
-      const options = { flip, tint, clock, night, glowing, stand, armor, skins, overlays, carpet, dyes, extra, showParts: shown, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
+      // One of each of a look's picks (lists of bones), as the game picks one at random (what an enderman balloon holds).
+      const picked = (look.picks || []).flatMap(names => {
+        const on = names[Math.floor(Math.random() * names.length)];
+        return names.map(n => [n, n === on]);
+      });
+      const options = { flip, tint, clock, night, glowing, stand, armor, skins, overlays, carpet, dyes, extra, showParts: [...shown, ...picked], size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
       const reach = f ? await reachOf(look, options) : { boxes: null, bounds: null }, next = reach.boxes;
       // A prop lands by how it stands at rest.
       const raw = mob.startsWith("prop:") ? await lookBoxes(look, options) : null, drop = raw && raw.length ? landing(raw, look.sunk) : null;
@@ -887,6 +942,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // Where the pack draws the light itself (soft glow panels), that's the glow.
       const lights = flag => look.layers.some(([, , , flags]) => flags && flags[flag]);
       blooms = Boolean(kind && (lights("lit") || lights("litBones")) && !lights("soft"));
+      evenBloom = Boolean(look.evenBloom);
       low = look.low || (kind && kind.low) || 0;
       // So does one that says so (flat: a train set, whose shadow would be a disc inside its track).
       lies = Boolean(look.flat || (kind && rest && rest[1][1] - rest[0][1] < PROP_FLAT));

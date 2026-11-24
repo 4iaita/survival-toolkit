@@ -10,10 +10,11 @@ addProps("Around the house", [
   { k: "copper_bulb", n: "Copper Bulb", what: "A copper scoreboard that shows a number. The number glows." }, { k: "copper_lantern", n: "Copper Lantern", what: "A copper spotlight sweeping its beam round, warm white or in every color of the rainbow." },
 ]);
 addProps("Outdoors", [
-  { k: "fishing_rod", n: "Fishing Rod", what: "A crane with a hook." }, { k: "pale_oak_trapdoor", n: "Pale Oak Trapdoor", what: "A windmill." },
-  { k: "spruce_trapdoor", n: "Spruce Trapdoor", what: "A wooden water wheel." }, { k: "spruce_boat", n: "Spruce Boat", what: "A wooden wheelbarrow." },
-  { k: "spruce_fence", n: "Spruce Fence", what: "A fence section on stone feet." }, { k: "stick", n: "Stick", what: "A log." },
-  { k: "target", n: "Target", what: "A crate with bullseyes on it." }, { k: "glow_frame", n: "Glow Item Frame", what: "A tiny ladder and a small block." },
+  { k: "pale_oak_trapdoor", n: "Pale Oak Trapdoor", what: "A windmill’s turning sails, big or small, upright or lying flat." },
+  { k: "spruce_trapdoor", n: "Spruce Trapdoor", what: "A turning water wheel. In water it splashes." }, { k: "spruce_boat", n: "Spruce Boat", what: "A wooden handcart." },
+  { k: "spruce_fence", n: "Spruce Fence", what: "A wooden fence on stone feet, one to three sections long." }, { k: "stick", n: "Stick", what: "One to three logs: stacked, leaning or lying about." },
+  { k: "target", n: "Target", what: "An archery target on a stand, with two arrows in it. Punch the stand to shake it." },
+  { k: "glow_frame", n: "Glow Item Frame", what: "A doorway into the Backrooms, seen from the front. It opens, or shuts to a slit, as you come near, or stays open, or only a slit, with or without a blue frame round it." },
 ]);
 PROP_GROUPS.push({
   n: "Tents", what: "Wool stairs turn into a camping tent in their color.",

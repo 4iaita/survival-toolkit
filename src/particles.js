@@ -38,10 +38,33 @@ const flame = (texture, sheet, frame, frames, spots, size, { u = 0, phase = fals
 // The candles' flames all share a sheet, a color to each column. Half its width and height.
 const CANDLE_FLAME = [0.666 / 8, 0.666 * 3 / 16];
 const candles = (u, spots, more) => flame("candle_flame", [12, 192], [4, 6], 32, spots.map(([x, y, z]) => [x / 16, y / 16 + CANDLE_FLAME[1], z / 16]), CANDLE_FLAME, { u, ...more });
+// A color on the way through three, f (0-1) of the way along.
+const fading = (colors, f) => { const [a, b] = f < 0.5 ? colors.slice(0, 2) : colors.slice(1); return [...a.map((v, k) => v + (b[k] - v) * (f * 2 % 1)), 1]; };
+const EMBER = [[255, 241, 164], [235, 116, 12], [153, 16, 29]], SOUL_EMBER = [[164, 248, 255], [12, 139, 235], [16, 29, 153]];
+// Sparks going up from a square half across, so high over the ground.
+const sparks = (colors, half, high, speed, least, most, count) => ({
+  texture: "z", sheet: [16, 16], uv: () => [0, 0, 1, 1], rate: 40, most: count, at: () => [between(-half, half), high, between(-half, half)], way: () => [0, 1, 0], speed: () => speed,
+  life: () => between(0.25, 0.75), size: p => { const s = Math.min(most, Math.max(least, p.life - p.age)) * 0.2; return [s, s]; }, tint: p => fading(colors, p.age / p.life),
+});
+// A flash of light, from #FFEA72, half solid, to #FF5400, gone.
+const FLASH = { texture: "flash", sheet: [16, 16], uv: () => [4, 2, 4, 4], add: true, count: () => 1, life: () => 0.8, tint: p => { const f = p.age / p.life; return [255, 234 - 150 * f, 114 * (1 - f), 0.5 * (1 - f)]; } };
+// A spot on a flat square's outside (half across): along an edge, or anywhere on it.
+const onSquare = half => {
+  const spot = [between(-half, half), between(-half, half)], side = Math.floor(Math.random() * 3);
+  if (side < 2) spot[side] = Math.random() < 0.5 ? half : -half;
+  return spot;
+};
+// Squares of smoke, rising and fading.
+const SMOKE = {
+  texture: "smoke", sheet: [1, 12], way: () => [0, 1, 0], speed: () => between(0.5, 1), life: () => 5, pull: () => [0, 0.4, 0],
+  size: p => { const s = 0.75 * Math.pow(Math.max(0, 1 - p.age / p.life), 0.08); return [s, s]; }, uv: p => [0, Math.floor(p.r2 * 12), 1, 1],
+  tint: p => { const f = Math.min(1, Math.max(0, (p.age - 1) / 4)); return [255, 255, 255, 1 - f * f * (3 - 2 * f)]; },
+};
 // count: how many at once (every so many seconds), or rate: how many a second, up to most at a time, for so many seconds (else
 // all the time). A particle is born at at, going way at speed; pull and drag move it, spin turns it, lands is how it lands.
 // size: its half width and height; uv: its part of the sheet; tint: its color and how solid it is; upright: it only turns to the
-// reader about its own height.
+// reader about its own height; add: it's light, added to what's behind it; buried: the ground
+// hides what of it is under it.
 const PARTICLES = {
   pumpkin_flame: flame("pumpkin_flame", [8, 384], [8, 12], 32, [[0, 1.5, 0]], [0.25, 0.375]), // cestwf
   candle_flame: candles(0, [[0, 15, 0]]), // hwbujj
@@ -70,9 +93,28 @@ const PARTICLES = {
   crumbs: { ...EARTH, count: () => 3, way: () => [between(-0.25, 0.25), 0.1, between(-0.25, 0.25)], speed: () => 2 }, // wvqbjj
   dust: { texture: "dust", sheet: [144, 32], count: () => 4, at: () => [0, 0, 0], way: () => [between(-1, 1), 0, between(-1, 1)], speed: () => 2, life: () => between(0.2, 0.6), drag: () => 4, // vtviky
     turned: () => Math.floor(between(1, 5)) * 90, size: () => [0.25, 0.25], uv: p => [Math.min(8, Math.floor(p.age / p.life * 9)) * 16, Math.round(p.r1) * 16, 16, 16], tint: () => [211, 197, 174, 0.451] },
-  smoke: { texture: "smoke", sheet: [1, 12], rate: 4, most: 20, at: () => [0, 2, 0], way: () => [0, 1, 0], speed: () => between(0.5, 1), life: () => 5, pull: () => [0, 0.4, 0], // drnrvi
-    size: p => { const s = 0.75 * Math.pow(Math.max(0, 1 - p.age / p.life), 0.08); return [s, s]; }, uv: p => [0, Math.floor(p.r2 * 12), 1, 1],
-    tint: p => { const f = Math.min(1, Math.max(0, (p.age - 1) / 4)); return [255, 255, 255, 1 - f * f * (3 - 2 * f)]; } },
+  campfire_flames: { texture: "pumpkin_flame", sheet: [8, 384], rate: 4, most: 100, life: () => 3, // nuonev
+    at: p => { const low = p.r4 < 0.5, [x, z] = onSquare(low ? 0.5 : 0.4); return [x, (low ? 6 : 14) / 16, z]; },
+    size: p => [0.2, Math.min(p.age * 3, 0.3)], uv: p => [0, Math.min(31, Math.floor(p.age / 3 * 32)) * 12, 8, 12] },
+  campfire_sparks: { texture: "z", sheet: [16, 16], uv: () => [0, 0, 1, 1], rate: 5, most: 30, at: () => [between(-0.5, 0.5), 0.4, between(-0.5, 0.5)], way: () => [0, 1, 0], speed: () => 1.25, life: () => between(0.25, 2), // uikxhc
+    pull: () => [between(1, -1), 0, between(1, -1)], size: p => { const s = Math.min(0.35, Math.max(0.1, p.life - p.age)) * 0.15; return [s, s]; },
+    tint: p => fading([[252, 232, 7], [242, 140, 0], [91, 27, 0]], p.age / p.life) },
+  put_out: { texture: "puff", sheet: [144, 32], count: () => 9, life: () => 1, pull: () => [0, 1.5, 0], drag: () => 7, // tsvvai
+    at: p => { const way = anyWay(); way[1] = between(-1, 1); const far = Math.hypot(...way) || 1; p.from = way.map(v => v / far); return p.from.map((v, k) => v * 0.2 + (k === 1 ? 1 : 0)); },
+    way: p => p.from.map(v => -v), speed: () => 7.5, turned: () => Math.floor(between(0, 4)) * 90, size: () => [0.32, 0.32],
+    uv: p => [Math.min(8, Math.floor(p.age / p.life * 9)) * 16, Math.round(p.r1) * 16, 16, 16], tint: () => [108, 81, 81, 1] },
+  torch_sparks: sparks(EMBER, 0.25, 0.9, 1.25, 0.1, 0.35, 30), // qqouwr
+  soul_sparks: sparks(SOUL_EMBER, 0.25, 0.9, 1.25, 0.1, 0.35, 30), // wnhqgm
+  brazier_sparks: sparks(EMBER, 0.3, 0.5, 1.5, 0.1, 1, 32), // gctgse
+  soul_brazier_sparks: sparks(SOUL_EMBER, 0.3, 0.5, 1.5, 0.1, 1, 32), // lvmvxu
+  fireflies: { texture: "firefly", sheet: [16, 16], uv: () => [4, 4, 8, 8], count: () => 1, every: 1.5, at: () => [between(-1, 1), between(0, 2), between(-1, 1)], life: () => between(6, 12), // mfvnui
+    pull: p => [Math.cos(p.age * 240 * RAD) * 2 + between(-1, 1), Math.cos(Math.max(0.24, p.r3) * p.age * 720 * RAD) * 4, p.age > 0.5 ? Math.sin(p.age * 180 * RAD) * 2 + between(-1.06, 1) : 0],
+    size: p => { const s = 0.12 - Math.cos(p.age / p.life * 1800 * RAD) * 0.05; return [s, s]; },
+    tint: p => { const blink = Math.cos(p.age / p.life * 1800 * RAD); return [255, (0.7 - blink * 0.16) * 255, 0.16 * 255, 0.6 - blink * 0.4]; } },
+  mushroom_flash: { ...FLASH, at: () => [0, 0.15, 0], size: () => [0.3, 0.3] }, // kbjmol
+  mushrooms_flash: { ...FLASH, at: () => [0, 0.35, 0], size: () => [0.6, 0.5] },
+  smoke: { ...SMOKE, rate: 4, most: 20, at: () => [0, 2, 0] }, // drnrvi
+  campfire_smoke: { ...SMOKE, rate: 6, most: 200, at: () => [0, 0, 0], buried: true }, // zblnox
   globe_snow: { ...snow(() => 55 / 16, p => 0.333 + p.r4 * 0.666 * 4, [0, 0, 0.72, 0.92, 0.98, 0.99, 1, 1, 0.98, 0.9, 0.75, 0.4, 0, 0]), rate: 5, most: 200 }, // ajivwq
   globe_flurry: { ...snow(p => 17 / 16 + 0.333 + p.r4 * 0.666 * 50 / 16, p => 0.222 + p.r4 * 0.555 * 3.5, [1, 1, 1, 1, 1, 1, 1, 1, 0.98, 0.9, 0.75, 0.4, 0, 0]), rate: 50, most: 100, for: 1 }, // mxlnse
 };
@@ -180,15 +222,24 @@ function particleStage(onLoad) {
         const [sx, sy] = p.def.size(p), hw = sx * 16 * scale, hh = sy * 16 * scale * (p.def.upright ? Math.cos(pitch) : 1);
         if (hw <= 0 || hh <= 0) continue;
         const [u, v, uw, vh] = p.def.uv(p), kx = tex.w / p.def.sheet[0], ky = tex.h / p.def.sheet[1], [r, g, b, a] = p.def.tint ? p.def.tint(p) : [255, 255, 255, 1];
+        const toGround = p.def.buried ? (p.at[1] * 16 - drop) / Math.cos(pitch) * scale : Infinity;
         const c = Math.cos(p.turn * RAD), s = Math.sin(p.turn * RAD), bw = Math.abs(hw * c) + Math.abs(hh * s), bh = Math.abs(hw * s) + Math.abs(hh * c);
-        const x1 = Math.min(width - 1, Math.ceil(gx + bw)), y1 = Math.min(height - 1, Math.ceil(gy + bh));
+        const x1 = Math.min(width - 1, Math.ceil(gx + bw)), y1 = Math.min(height - 1, Math.ceil(gy + Math.min(bh, toGround)));
         for (let y = Math.max(0, Math.floor(gy - bh)); y <= y1; y++) for (let x = Math.max(0, Math.floor(gx - bw)); x <= x1; x++) {
           const dx = x + 0.5 - gx, dy = y + 0.5 - gy, fx = (dx * c + dy * s) / hw / 2 + 0.5, fy = (dy * c - dx * s) / hh / 2 + 0.5;
           if (fx < 0 || fx >= 1 || fy < 0 || fy >= 1 || depth[y * width + x] < t) continue;
           const k = (Math.min(tex.h - 1, Math.floor((v + fy * vh) * ky)) * tex.w + Math.min(tex.w - 1, Math.floor((u + fx * uw) * kx))) * 4;
           const solid = tex.px[k + 3] / 255 * a;
           if (solid <= 0) continue;
-          const j = (y * width + x) * 4, under = (px[j + 3] / 255) * (1 - solid), alpha = solid + under;
+          const j = (y * width + x) * 4;
+          // Light added to what's there.
+          if (p.def.add) {
+            const was = px[j + 3] / 255, alpha = was + (1 - was) * solid;
+            [r, g, b].forEach((c, n) => { px[j + n] = (px[j + n] * was + tex.px[k + n] * c / 255 * solid) / alpha; });
+            px[j + 3] = alpha * 255;
+            continue;
+          }
+          const under = (px[j + 3] / 255) * (1 - solid), alpha = solid + under;
           px[j] = (tex.px[k] * r / 255 * solid + px[j] * under) / alpha;
           px[j + 1] = (tex.px[k + 1] * g / 255 * solid + px[j + 1] * under) / alpha;
           px[j + 2] = (tex.px[k + 2] * b / 255 * solid + px[j + 2] * under) / alpha;

@@ -1,6 +1,7 @@
 /* ---------- Armor stand props ---------- */
 // Armor stand props (Actions & Stuff): an armor stand named §§ shows the item in its hand as a decoration.
-// k is the item's id (PROP_LOOKS key), n its name, what the decoration it becomes.
+// k is the item's id (PROP_LOOKS key), n its name, what the decoration it becomes; icons, where more than one item becomes the
+// same one, all their ids (the line under the stage shows each).
 const PROP_GROUPS = [
   { n: "Plushies", what: "Wool turns into a plushie, a different one for each color.", items: [
     { k: "white_wool", n: "White Wool", what: "A sheep plushie." }, { k: "silver_wool", n: "Light Gray Wool", what: "A chicken plushie." },
@@ -65,15 +66,18 @@ const PROP_GROUPS = [
     { k: "creeper_head", n: "Creeper Head", what: "A creeper anatomy statue: one half its skin, the other its skeleton with TNT inside." },
   ] },
   { n: "Outdoors", items: [
-    { k: "water_bucket", n: "Water Bucket", what: "A birdbath." }, { k: "campfire", n: "Campfire", what: "An iron fire pit." },
-    { k: "soul_campfire", n: "Soul Campfire", what: "An iron fire pit for soul fire." }, { k: "torch", n: "Torch", what: "A stone fire bowl." },
-    { k: "soul_torch", n: "Soul Torch", what: "A stone fire bowl for soul fire." }, { k: "copper_torch", n: "Copper Torch", what: "A stone fire bowl for copper fire." },
-    { k: "brown_mushroom", n: "Brown Mushroom", what: "A giant brown mushroom." }, { k: "red_mushroom", n: "Red Mushroom", what: "A giant red mushroom." },
-    { k: "crimson_fungus", n: "Crimson Fungus", what: "A crimson fungus tree." }, { k: "warped_fungus", n: "Warped Fungus", what: "A warped fungus tree." },
-    { k: "moss_carpet", n: "Moss Carpet", what: "Hanging moss." }, { k: "pale_moss_carpet", n: "Pale Moss Carpet", what: "Hanging pale moss." },
-    { k: "cobblestone", n: "Cobblestone", what: "A pile of rubble." }, { k: "mossy_cobblestone", n: "Mossy Cobblestone", what: "A pile of mossy rubble." },
-    { k: "stone_bricks", n: "Stone Bricks", what: "A stack of stone blocks." }, { k: "redstone_torch", n: "Redstone Torch", what: "A heap of redstone." },
-    { k: "carrot", n: "Carrot", what: "A bunch of carrots." }, { k: "pufferfish", n: "Pufferfish", what: "Fishing rods in a stand." },
+    { k: "water_bucket", n: "Water Bucket", what: "An ornate stone birdbath." },
+    { k: "campfire", n: "Campfire or Soul Campfire", icons: ["campfire", "soul_campfire"], what: "A campfire in a ring of stones: burning, just put out, burnt out or not lit yet." },
+    { k: "torch", n: "Torch", what: "A stone fire pillar or an iron brazier, with a fire burning in it." }, { k: "soul_torch", n: "Soul Torch", what: "A stone fire pillar or an iron brazier, with soul fire burning in it." },
+    { k: "copper_torch", n: "Copper Torch", what: "A stone fire pillar with no fire in it." },
+    { k: "brown_mushroom", n: "Brown Mushroom", what: "A little brown mushroom, or four of them. Punch the stand to make them wobble and flash. Fireflies drift round them at night." },
+    { k: "red_mushroom", n: "Red Mushroom", what: "A little red mushroom, or three of them. Punch the stand to make them wobble." },
+    { k: "crimson_fungus", n: "Crimson Fungus", what: "A little crimson fungus, or three of them. Their spots glow." }, { k: "warped_fungus", n: "Warped Fungus", what: "A little warped fungus, or three of them. Their spots glow." },
+    { k: "moss_carpet", n: "Moss Carpet", what: "A layer of moss that drapes over the block under it." }, { k: "pale_moss_carpet", n: "Pale Moss Carpet", what: "A layer of pale moss that drapes over the block under it." },
+    { k: "cobblestone", n: "Cobblestone", what: "A small cluster of cobbles." }, { k: "mossy_cobblestone", n: "Mossy Cobblestone", what: "A small cluster of mossy cobbles." },
+    { k: "stone_bricks", n: "Stone Bricks", what: "A small pile of stone bricks." }, { k: "redstone_torch", n: "Redstone Torch", what: "A small pile of redstone blocks." },
+    { k: "carrot", n: "Carrot", what: "A pair of carrots, one lying over the other." },
+    { k: "pufferfish", n: "Pufferfish", what: "Three party balloons shaped like mobs. Punch the stand to make them sway. The glow squid glows, and so do the enderman’s and the piglin’s eyes." },
   ] },
 ];
 // The items' own icons, for the line under the stage: the same drawing the rest of the site uses (a section's are added
@@ -102,6 +106,12 @@ const PROP_ICONS = {
   creeper_head: C("creeper_head_front", "creeper_head_top", "creeper_head_side"), bamboo: L("bamboo"), rose_bush: L("rose_bush_carried"),
   beehive: C("beehive_front", "beehive_top", "beehive_side"), spyglass: L("spyglass"), leather: L("leather"), web: L("web_carried"),
   copper_bulb: C("copper_bulb"), copper_lantern: L("copper_lantern"),
+  water_bucket: L("water_bucket"), campfire: L("campfire"), soul_campfire: L("soul_campfire"), ...Object.fromEntries(["torch", "soul_torch", "copper_torch", "redstone_torch", "crimson_fungus", "warped_fungus"].map(k => [k, L(`${k}_carried`)])),
+  brown_mushroom: L("mushroom_brown_carried"), red_mushroom: L("mushroom_red_carried"), cobblestone: C("cobblestone"), mossy_cobblestone: C("mossy_cobblestone"), stone_bricks: C("stone_bricks"),
+  ...Object.fromEntries(["moss", "pale_moss"].map(k => [`${k}_carpet`, { shift: 3.5, boxes: [{ b: [0, 0, 0, 16, 1, 16], faces: [[`${k}_block`], [`${k}_block`], [`${k}_block`]] }] }])),
+  carrot: L("carrot"), pufferfish: L("pufferfish"), spruce_boat: L("boat_spruce"), stick: L("stick"), target: C("target_side", "target_top"), glow_frame: L("glow_item_frame"),
+  ...Object.fromEntries(["pale_oak_trapdoor", "spruce_trapdoor"].map(k => [k, { shift: 2.5, boxes: [{ b: [0, 0, 0, 16, 3, 16], faces: [[k], [k], [k]] }] }])),
+  spruce_fence: { boxes: [[6, 0, 0, 10, 16, 4], [6, 0, 12, 10, 16, 16], [7, 12, 4, 9, 15, 12], [7, 6, 4, 9, 9, 12]].map(b => ({ b, faces: [["planks_spruce"], ["planks_spruce"], ["planks_spruce"]] })) },
 };
 for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
 // A banner is a model in the game, with no picture of its own: the one the Villager Trades tab draws.
@@ -118,6 +128,13 @@ const PROP_VARIANTS = {
   banner: ["Standing", "On a Wall", "Flagpole", "Flag"], leather: ["Standing", "On a Wall"], web: ["Basketball", "Soccer", "Volleyball"],
   copper_bulb: ["Blank", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "–", "="],
   copper_lantern: ["White, High", "White, Low", "Rainbow, High", "Rainbow, Low"],
+  campfire: ["Lit", "Put Out", "Burnt Out", "Unlit"], torch: ["Pillar", "Brazier"], soul_torch: ["Pillar", "Brazier"],
+  ...Object.fromEntries(["brown_mushroom", "red_mushroom", "crimson_fungus", "warped_fungus"].map(k => [k, ["One", "Cluster"]])),
+  pufferfish: ["Monsters", "Cave", "Hive", "Aquatic", "Nether"],
+  pale_oak_trapdoor: ["Big", "Small", "Big, Fast", "Small, Fast", "Big, Flat", "Small, Flat", "Big, Flat, Fast", "Small, Flat, Fast"],
+  spruce_boat: ["Whole", "Open Front", "Open Back", "Tipped Up"], spruce_fence: ["Short", "Medium", "Long"],
+  stick: ["Stacked", "Pair", "Single", "Leaning Trio", "Leaning Pair", "Leaning", "Tumbled Trio", "Tumbled Pair", "Upright", "Stacked Across", "Heap"],
+  glow_frame: ["Opens Near, Framed", "Opens Near", "Shuts Near, Framed", "Shuts Near", "Open, Framed", "Open", "Slit, Framed", "Slit"],
 };
 // Another choice that goes with every variant: n its name, how to make it, kinds (a button in each color), what it picks. A
 // look for each of its kinds' variants, in turn.
@@ -127,3 +144,4 @@ const PROP_ROWS = {
 };
 // How to switch, where it isn't by changing the stand's pose.
 const PROP_SWITCH = Object.fromEntries(["twisting_vines", "weeping_vines"].map(k => [k, "Place the stand diagonally for the big one."]));
+for (const k of ["brown_mushroom", "red_mushroom", "crimson_fungus", "warped_fungus"]) PROP_SWITCH[k] = "Place the stand diagonally for a cluster.";

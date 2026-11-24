@@ -43,7 +43,7 @@ function renderProps() {
 // squish: the prop is already there and changes variants, so it squishes instead of coming in.
 function showProp(squish = false) {
   const p = propOf(stand.prop);
-  $("prop-line").innerHTML = `<span class="name-chip code"><span class="src" aria-hidden="true"></span>§§</span>${ICONS[`held:${p.k}`] ? `<span>holding</span>${iconImg(`held:${p.k}`)}<span>` : "<span>holding "}<b>${esc(p.n)}</b>: ${esc(p.what)}</span>`;
+  $("prop-line").innerHTML = `<span class="name-chip code"><span class="src" aria-hidden="true"></span>§§</span>${ICONS[`held:${p.k}`] ? `<span>holding</span>${(p.icons || [p.k]).map(k => iconImg(`held:${k}`)).join("")}<span>` : "<span>holding "}<b>${esc(p.n)}</b>: ${esc(p.what)}</span>`;
   $("prop-art").setAttribute("aria-label", `${p.what.replace(/\.$/, "")}${PROP_VARIANTS[p.k] ? ` (${PROP_VARIANTS[p.k][propVariant]}${PROP_ROWS[p.k] ? `, ${PROP_ROWS[p.k].kinds[propRow].n.toLowerCase()} ${PROP_ROWS[p.k].what}` : ""})` : ""}, from an armor stand named §§ holding ${p.n}. Drag or use the arrow keys to turn it.`);
   const kinds = PROP_VARIANTS[p.k], row = PROP_ROWS[p.k];
   $("prop-variant-bar").hidden = !kinds;

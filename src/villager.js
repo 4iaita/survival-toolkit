@@ -126,6 +126,67 @@ function camera({ yaw, pitch = 0.2, scale, center, origin }) {
 // A light beam (beam) is light added over what's behind it, its colors saying how much as glass does, and stops at the ground.
 const EMITS = 0x1000000;
 const shadeOf = (m, shade, color) => (m.glow ? 1 : shade + (1 - shade) * Math.floor(color / EMITS) / 255);
+// What's seen through a doorway (a box's portal, its beyond: the boxes of the room behind it). Unlike the rest of the scene it's
+// seen in perspective, from this far in front of the doorway at the height of its middle (a player's eyes), or a room would look
+// like a corridor seen from far off and above.
+const DOORWAY_EYE = 90;
+function doorwayRoom(beyond, light) {
+  // The boxes by the model they're of, each with where it lies, so that a ray only tries the ones it comes near.
+  const groups = [...new Set(beyond.map(m => m.room))].map(of => {
+    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+    const all = beyond.filter(m => m.room === of).map(m => {
+      const back = p => m.bones.reduceRight((q, { pivot, move = NO_MOVE, angles, scale = NO_SCALE }) =>
+        unturn(q.map((v, i) => v - pivot[i] - move[i]), angles).map((v, i) => v / scale[i] + pivot[i]), p);
+      const at = back([0, 0, 0]), [a, b, c] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]].map(e => back(e).map((v, i) => v - at[i]));
+      const shade = [0, 1, 2].map(axis => [-1, 1].map(side => {
+        const n = m.bones.reduce((q, { angles }) => turn(q, angles), [0, 1, 2].map(i => (i === axis ? side : 0)));
+        return m.glow ? 1 : 0.5 + 0.5 * Math.max(0, dot(n, light));
+      }));
+      for (let k = 0; k < 8; k++) placeBy(m.bones, [k & 1 ? m.hi[0] : m.lo[0], k & 2 ? m.hi[1] : m.lo[1], k & 4 ? m.hi[2] : m.lo[2]]).forEach((v, i) => {
+        lo[i] = Math.min(lo[i], v - 0.01);
+        hi[i] = Math.max(hi[i], v + 0.01);
+      });
+      return { m, lo: m.lo, hi: m.hi, at, a, b, c, shade };
+    });
+    return { lo, hi, all };
+  });
+  const o = [0, 0, 0], r = [0, 0, 0], spot = [0, 0, 0];
+  // Whether a ray (from o, going r) meets a box: how far along it goes in and out (near, far), and by which faces' axes.
+  let near = 0, far = 0, axis = 0, backAxis = 0;
+  const meets = (lo, hi, o, r) => {
+    near = -Infinity;
+    far = Infinity;
+    for (let i = 0; i < 3; i++) {
+      const t1 = (lo[i] - o[i]) / (r[i] || 1e-12), t2 = (hi[i] - o[i]) / (r[i] || 1e-12), first = t1 < t2 ? t1 : t2, last = t1 < t2 ? t2 : t1;
+      if (first > near) { near = first; axis = i; }
+      if (last < far) { far = last; backAxis = i; }
+    }
+    return near <= far && far > 0;
+  };
+  // What a ray from a point meets first, as [its 0xRRGGBB, its light], or null.
+  return (from, way) => {
+    let best = Infinity, found = null;
+    for (const group of groups) {
+      if (!meets(group.lo, group.hi, from, way) || near >= best) continue;
+      for (const { m, lo, hi, at, a, b, c, shade } of group.all) {
+        for (let i = 0; i < 3; i++) {
+          o[i] = at[i] + a[i] * from[0] + b[i] * from[1] + c[i] * from[2];
+          r[i] = a[i] * way[0] + b[i] * way[1] + c[i] * way[2];
+        }
+        if (!meets(lo, hi, o, r)) continue;
+        const t = m.inside ? far : near, on = m.inside ? backAxis : axis;
+        if (t < 1e-6 || t >= best) continue;
+        const side = m.inside === r[on] > 0 ? 1 : 0;
+        for (let i = 0; i < 3; i++) spot[i] = hi[i] > lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * t - lo[i]) / (hi[i] - lo[i]))) : 0;
+        const color = m.color(on, side, spot[0], spot[1], spot[2]);
+        if (color < 0) continue;
+        best = t;
+        found = [color % EMITS, shade[on][m.inside ? 1 - side : side]];
+      }
+    }
+    return found;
+  };
+}
 function renderScene(boxes, { width, height, shadows = [], emitted = null, depth = null, ...view }) {
   const { right, down, dir, scale, center, origin } = camera(view);
   const toWorld = ([a, b, c]) => [0, 1, 2].map(i => right[i] * a + down[i] * b + dir[i] * c);
@@ -152,7 +213,8 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, buried: m.buried, beam: m.beam, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, buried: m.buried, beam: m.beam,
+      room: m.portal && doorwayRoom(m.beyond, light), eye: m.portal && placeBy(chain, lo.map((v, i) => (v + hi[i]) / 2)).map((v, i) => (i === 1 ? v : v - dir[i] / Math.hypot(dir[0], dir[2]) * DOORWAY_EYE)), o, stepX, stepY, r, shade, across: span(0), along: span(1) };
   });
   // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
   const shadowSpans = shadows.map(([sx, sz, radius]) => {
@@ -175,7 +237,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
     const from = Math.max(0, Math.floor(origin[0] + first * scale) - 1), to = Math.min(width, Math.ceil(origin[0] + last * scale) + 1);
     for (let px = from; px < to; px++) {
       const a = (px + 0.5 - origin[0]) / scale;
-      let bestT = Infinity, bestColor = -1, bestShade = 0, bestEmits = false, panes = 0, rays = 0;
+      let bestT = Infinity, bestColor = -1, bestShade = 0, bestEmits = 0, panes = 0, rays = 0;
       const groundT = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
       for (const m of row) {
         if (a < m.across[0] || a > m.across[1]) continue;
@@ -203,12 +265,22 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
           if (back >= 0) {
             bestT = far;
             bestColor = back % EMITS;
-            bestEmits = back >= EMITS;
+            bestEmits = Math.floor(back / EMITS);
             bestShade = shadeOf(m, m.shade[backAxis][1 - backSide], back);
           }
           continue;
         }
         const side = r[axis] > 0 ? 0 : 1;
+        if (m.room) {
+          if (axis !== 2 || side) continue;
+          const spot = [0, 1, 2].map(i => start[i] + right[i] * a + down[i] * b + dir[i] * near);
+          const seen = m.room(spot, spot.map((v, i) => v - m.eye[i]));
+          bestT = near;
+          bestColor = seen ? seen[0] : 0;
+          bestEmits = 0;
+          bestShade = seen ? seen[1] : 1;
+          continue;
+        }
         if (m.beam) {
           for (let pass = 0; pass < 2; pass++) {
             const t = pass ? far : near, i = pass ? backAxis : axis;
@@ -236,7 +308,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
         if (color >= 0) {
           bestT = near;
           bestColor = color % EMITS;
-          bestEmits = color >= EMITS;
+          bestEmits = Math.floor(color / EMITS);
           bestShade = shadeOf(m, m.shade[axis][side], color);
         } else if (far < bestT && !m.culled && !(m.buried && far > groundT)) {
           // Through a see-through texel, the inside of the box's far face shows: the game draws both sides.
@@ -244,7 +316,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
           if (back >= 0) {
             bestT = far;
             bestColor = back % EMITS;
-            bestEmits = back >= EMITS;
+            bestEmits = Math.floor(back / EMITS);
             bestShade = shadeOf(m, m.shade[backAxis][backSide], back);
           }
         }
@@ -256,7 +328,10 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
         out[j + 1] = (bestColor >> 8 & 255) * bestShade;
         out[j + 2] = (bestColor & 255) * bestShade;
         out[j + 3] = 255;
-        if (emitted && bestEmits) for (let k = 0; k < 4; k++) emitted[j + k] = out[j + k];
+        if (emitted && bestEmits) {
+          for (let k = 0; k < 3; k++) emitted[j + k] = out[j + k];
+          emitted[j + 3] = bestEmits;
+        }
       } else if (shadows.length) {
         const gx = start[0] + right[0] * a + down[0] * b + dir[0] * groundT, gz = start[2] + right[2] * a + down[2] * b + dir[2] * groundT;
         let dark = 0;

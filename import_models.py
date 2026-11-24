@@ -213,7 +213,7 @@ def copy_wolf_variants(out):
 # Particles the stage draws for what a mob does (an act's effects): kind -> the pack's texture, copied into art/mobs/ as
 # particle_<kind>. A sleeping wolf's Zs (the pack's oreville_ans:pupoyec_wrciiur).
 # The armor stand props' are in src/particles.js.
-STAGE_PARTICLES = {"z": "textures/particle/z", "snow": "textures/environment/weather", "smoke": "textures/particle/campfire_smoke", "dust": "textures/particle/dust_small",
+STAGE_PARTICLES = {"z": "textures/particle/z", "snow": "textures/environment/weather", "smoke": "textures/particle/campfire_smoke", "dust": "textures/particle/dust_small", "puff": "textures/particle/dust", "firefly": "textures/particle/glowing_smol", "flash": "textures/particle/particles",
                    **{kind: f"textures/oreville/ans/{key}" for kind, key in {"confetti": "dgk", "pumpkin_flame": "dcx", "sweets": "dgj", "candle_flame": "dgf", "leaves": "dgh",
                                                                              "straw": "dgs"}.items()}}
 

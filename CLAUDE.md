@@ -168,11 +168,11 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween and Around the house (all 2026-11-24). Left, in page order: Outdoors and Tents. For each section: every texture must be one from `../textures`, animations and light glow
+Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween, Around the house and Outdoors (all 2026-11-24). Left: Tents. For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
-How to do a section (as `import_house.py`, `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
+How to do a section (as `import_outdoors.py`, `import_house.py`, `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
@@ -305,6 +305,27 @@ What Around the house found:
 - The user had the strider piñata moved from Christmas to Around the house, beside the llama (its importer is still `import_christmas.py`). The
   White Candle (the pack's "Festive candle") was offered to Christmas, and an "unlit" for the Orange Candle (no flame in the pack); neither asked for.
 - The fireplace jumps partly off the stage as it lands: framing it for that would make it a quarter smaller, left as it is.
+
+What Outdoors found:
+
+- A prop can be the stand's own: the glow item frame's doorway is on `minecraft:armor_stand` (`v.wrnkzf`), the item adds only its frame and chairs.
+  Where a prop makes no sense, look for its bones' words ("backrooms") and materials (`gbgjhb`, a stencil) in the entities too.
+- A room behind a doorway: its layers are `room` (with `wrap`, a texture that goes on, and `bare`, unshaded), the doorway's `portal`. They're drawn in
+  perspective (`doorwayRoom` in `src/villager.js`), whatever the stage's own camera. It opens by how near the camera is; here as an entrance and
+  acts. "Shut" is a slit 1/32 wide in the pack. 33 ms a frame at 1×, so it's drawn coarse while it moves.
+- The fishing rod isn't a prop (bound to the shrunken hand, and the scripts' animations have none of its bones): taken out. The copper torch's fire
+  (`wnhqgm`) ends at once, as its expiry only knows the soul torch: the user asked, and it stays without one. The soul campfire is the campfire,
+  orange fire and all: merged into one prop with both `icons` (`PROP_GROUPS`), and the importer checks they're still the same.
+- A particle's `emitter_lifetime_expression` can name the item: read it before adding the particle. And its uv can be an empty corner (`vzoaiu`).
+- Array indexes wrap (the windmill's two models for eight poses). Two of a prop's poses can be the same (the sticks': left out).
+- A model picked by `anim_time` may only differ in how its texels glow (the brown mushroom's flash): compare the uvs' alpha, not the shapes.
+- `evenBloom` (a look): the halo as strong as each texel glows, blurred finely, the same wherever it falls. The old one (`bloomOf` without it) is blotchy
+  for small spots, and full strength for half lit ones. Use it for new props; moving the approved ones to it was offered, not asked for.
+- `picks` (a look): bones one of which shows, picked at random as it's shown (what the enderman balloon holds). `sunk` can be negative: how far over
+  the ground something that turns must be for its corners to clear it. A particle's `add` is light, `buried` is hidden by the ground.
+- Particles that only come at night (the fireflies) or in water (the water wheel's splashes): the first are shown, with the night in the description;
+  the second only described. The item icons for oak, spruce, jungle, acacia and dark oak boats on the Villager Trades tab are older than the
+  textures folder's (Outdoors has its own, `boat_spruce`): offered, not asked for.
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.
