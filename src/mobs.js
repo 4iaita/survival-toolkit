@@ -800,6 +800,8 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // monster's tentacles).
       const own = reach.bounds ? fitOf(reach.bounds) : f;
       fit = look.ownFit ? own : f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), swim ? f[1].map((v, i) => Math.max(v, own[1][i])) : f[1]], { radius: Math.max(f.radius, own.radius) });
+      // A kind whose act goes up out of it (a present's toy) is framed to this height instead (its reach).
+      if (fit && kind && kind.reach) fit = Object.assign([fit[0].map((v, i) => (i === 1 ? Math.min(v, GROUND - kind.reach) : v)), fit[1]], { radius: fit.radius });
       tag.hidden = !next || !tag.textContent;
       redraw();
       return Boolean(next);

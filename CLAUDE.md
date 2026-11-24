@@ -168,12 +168,12 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, and Rugs and Canopies (the carpets, once "Couches"; both 2026-11-24). Left, in page order: Presents, Christmas, Halloween, Around the house, Outdoors
+Plushies, Rugs and Canopies (the carpets, once "Couches"), and Presents (all 2026-11-24). Left, in page order: Christmas, Halloween, Around the house, Outdoors
 and Tents. For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
-How to do a section (as `import_plushies.py` and, for a simpler one, `import_couches.py` do):
+How to do a section (as `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
@@ -183,7 +183,7 @@ How to do a section (as `import_plushies.py` and, for a simpler one, `import_cou
    last prop has left an old texture, delete it.
 3. Read the pre_animation line with `v.jxykui`: `Math.mod(v.rczxgr, n)` means n versions, one for each of the stand's poses
    (`rczxgr` is the pose), picked from the render controller's arrays. They go in `PROP_LOOKS`' `variants` (each what differs:
-   `layers`, `pose`) and their names in `PROP_VARIANTS`. The keys are scrambled; name them by looking at them.
+   `layers`, `pose`) and their names in `PROP_VARIANTS`. The keys are scrambled; name them by looking at them. (Bone names aren't: see below.)
    `v.pihgwp` is the stand being hit or its pose changing.
 4. A prop's `anim` names its kind in `PROP_ACTS`: `spawn` (played when it's picked), `acts` (now and then) and `turns` (how it
    changes into each variant, else it plays its first act). `spawn` in the pack can be a plain animation with keyframes, not a
@@ -212,6 +212,22 @@ More facts the first two sections found:
 - Order the variants as the user wants, not as the pack does: the carpets start with the rug, the pack's second.
 - `boxModel`'s `shift` raises an icon (positive is up). The Villager Trades tab still draws carpets as whole wool blocks; changing
   that was offered, not asked for.
+
+What Presents found:
+
+- Bone names are words in a shifted alphabet: read each character as base 36 and take 2 off to get the letter (`lgq` is toy,
+  `3gp` box, `4g2d` coal, `gh2im6` opaque): `''.join(chr(97 + int(c, 36) - 2) ...)`. Plain words in them (head, body, hat) are
+  left as they are. Geometry, texture, material and animation keys aren't decodable.
+- A material with no emissive and no alpha test (`oreville_sxepuo`, `oreville_ytdhnl`) ignores alpha: clear texels are drawn,
+  mostly black. `im.look` doesn't say so for props; give the layer `opaqueBones` (the sack's inside).
+- `lit` is for the whole layer, so check each bone's texels: glowing ones are alpha 1 and lit in the MER. A whole face at alpha
+  192 with nothing in the MER (orange's box) is left unlit, or all of it blooms. Texels lit in the MER but alpha 255 with a plain
+  material (the creaking toy's eyes, the coins) only glow with Vibrant Visuals; offered, and left off.
+- A hidden bone's children aren't hidden with it: rules go by name, so list every bone under it. `["*", true]` as an act's
+  `show` shows everything again.
+- One act can be shared by props whose animation is the same, with all their bones in it: bones a model lacks are ignored.
+- An act that goes up out of the prop: the kind's `reach` (in `PROP_ACTS`) is the height the stage is framed to.
+- A prop with an `anim` plays no loops (`ownLoops` in `src/mobs.js`): a section whose props have an idle needs that added.
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.

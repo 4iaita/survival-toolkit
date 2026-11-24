@@ -227,6 +227,7 @@ FILES = {
     "sapling_acacia": "blocks/sapling_acacia", "sapling_birch": "blocks/sapling_birch", "sapling_cherry": "blocks/cherry_sapling", "sapling_dark_oak": "blocks/sapling_roofed_oak",
     "sapling_jungle": "blocks/sapling_jungle", "mangrove_propagule": "items/mangrove_propagule", "sapling_oak": "blocks/sapling_oak", "sapling_pale_oak": "blocks/pale_oak_sapling",
     "sapling_spruce": "blocks/sapling_spruce", "sapling_poplar": "blocks/poplar_sapling", "iron_nautilus_armor": "items/nautilus_armor/iron_nautilus_armor", "bowl": "items/bowl", "iron_horse_armor": "items/iron_horse_armor",
+    "bundle": "items/bundle",
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
 FIRST_FRAME = {"sculk", "fire"}
@@ -237,6 +238,7 @@ for color in COLORS:
     FILES[f"{color}_terracotta"] = f"blocks/hardened_clay_stained_{pack_color}"
     FILES[f"{color}_glazed_terracotta"] = f"blocks/glazed_terracotta_{pack_color}"
     FILES[f"{color}_bed"] = f"items/bed_{pack_color}"
+    FILES[f"{color}_bundle"] = f"items/bundle_{color}"
 # Spawn eggs: the Mobs tab's icons, egg_<mob> (the agent isn't a mob there).
 for egg in sorted((pack / "items" / "spawn_eggs").glob("spawn_egg_*.png")):
     if egg.stem != "spawn_egg_agent":

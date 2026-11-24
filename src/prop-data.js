@@ -19,10 +19,18 @@ const PROP_GROUPS = [
     "Red": "a red rug with a gold border", "Orange": "a zigzag rug", "Yellow": "a rug with a diamond pattern", "Lime": "a checkered rug", "Green": "a rug with an ornate pattern",
     "Cyan": "a floral rug", "Light Blue": "a striped rug", "Blue": "a rug with a pattern of squares", "Purple": "a rug with a pattern of swirls", "Magenta": "an ornate rug with a flower", "Pink": "a gingham rug",
   }).map(([c, rug]) => ({ k: `${c.toLowerCase().replace(" ", "_")}_carpet`, n: `${c} Carpet`, what: `A${rug.slice(1)}, or ${/^[AEIOU]/.test(c) ? "an" : "a"} ${c.toLowerCase()}${c === "White" ? "" : " and white"} canopy.` })) },
-  { n: "Presents", what: "Bundles turn into wrapped presents.", items: [
-    { k: "bundle", n: "Bundle", what: "A wooden toy chest." },
-    ...["White", "Light Gray", "Gray", "Black", "Brown", "Red", "Orange", "Yellow", "Lime", "Green", "Cyan", "Light Blue", "Blue", "Purple", "Magenta", "Pink"]
-      .map(c => ({ k: `${c.toLowerCase().replace(" ", "_")}_bundle`, n: `${c} Bundle`, what: c === "Light Gray" ? "A stone box with a carved face." : `A ${c.toLowerCase()} present with a bow.` })),
+  { n: "Presents", what: "Bundles turn into presents with a toy inside. Punch the stand to open one.", items: [
+    { k: "bundle", n: "Bundle", what: "A sack of gold coins." },
+    ...Object.entries({
+      "White": "A checkered present with a creaking toy inside.", "Light Gray": "A stone box with a carved face and a dried ghast toy inside.",
+      "Gray": "A sooty gray present with lumps of coal inside.", "Black": "A black and gray present with a panda toy inside.",
+      "Brown": "A cardboard box with a cat toy packed in foam inside. The cat’s eyes glow.", "Red": "A red present with snowflakes on it and a snow golem toy inside.",
+      "Orange": "A black present with flames on it and a strider toy inside.", "Yellow": "A bee-striped present with a bee toy inside.",
+      "Lime": "A creeper present with a TNT toy inside. Its fuse glows.", "Green": "A green plaid present with an iron golem toy dressed as Santa inside. Its eyes glow.",
+      "Cyan": "A cyan present with oranges on it and fruit inside: a pineapple, oranges and kiwis.", "Light Blue": "A white and light blue present with a wolf toy inside.",
+      "Blue": "A blue and gold present with a copper golem robot inside. Its lights glow.", "Purple": "A purple and green striped present with an enderman toy holding a grass block inside. Its eyes glow.",
+      "Magenta": "A flowery magenta present with a pig toy inside, an allium on its head.", "Pink": "A pink present with hearts on it and a teddy bear inside.",
+    }).map(([c, what]) => ({ k: `${c.toLowerCase().replace(" ", "_")}_bundle`, n: `${c} Bundle`, what })),
   ] },
   { n: "Christmas", items: [
     { k: "spruce_sapling", n: "Spruce Sapling", what: "A decorated Christmas tree." }, { k: "spruce_leaves", n: "Spruce Leaves", what: "A Christmas wreath." },
@@ -68,6 +76,7 @@ const PROP_ICONS = {
   ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c === "light_gray" ? "silver" : c}_wool`, C_(`${c}_wool`, `${c}_wool`)])),
   // A carpet's texture is its wool's: a slab a pixel thick, raised to the middle of the icon.
   ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c}_carpet`, { shift: 3.5, boxes: [{ b: [0, 0, 0, 16, 1, 16], faces: [[`${c}_wool`], [`${c}_wool`], [`${c}_wool`]] }] }])),
+  bundle: L("bundle"), ...Object.fromEntries(Object.keys(DYES).map(c => `${c.replace(" ", "_")}_bundle`).map(k => [k, L(k)])),
   rabbit_foot: L("rabbit_foot"), dragon_breath: L("dragon_breath"), sculk_vein: L("sculk_vein"), dried_ghast: DRIED_GHAST,
 };
 for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
