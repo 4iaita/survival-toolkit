@@ -88,6 +88,8 @@ const PROP_ICONS = {
   ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c === "light_gray" ? "silver" : c}_wool`, C_(`${c}_wool`, `${c}_wool`)])),
   // A carpet's texture is its wool's: a slab a pixel thick, raised to the middle of the icon.
   ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c}_carpet`, { shift: 3.5, boxes: [{ b: [0, 0, 0, 16, 1, 16], faces: [[`${c}_wool`], [`${c}_wool`], [`${c}_wool`]] }] }])),
+  // Stairs: a slab with half a block on the back left of it.
+  ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c}_wool_stairs`, { boxes: [[0, 0, 0, 16, 8, 16], [0, 8, 0, 8, 16, 16]].map(b => ({ b, faces: [[`${c}_wool`], [`${c}_wool`], [`${c}_wool`]] })) }])),
   bundle: L("bundle"), ...Object.fromEntries(Object.keys(DYES).map(c => `${c.replace(" ", "_")}_bundle`).map(k => [k, L(k)])),
   rabbit_foot: L("rabbit_foot"), dragon_breath: L("dragon_breath"), sculk_vein: L("sculk_vein"), dried_ghast: DRIED_GHAST,
   // The pack gives some blocks an inventory texture of their own (blocks.json's carried_textures). A layer of snow is two

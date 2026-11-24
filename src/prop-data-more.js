@@ -17,7 +17,7 @@ addProps("Outdoors", [
   { k: "glow_frame", n: "Glow Item Frame", what: "A doorway into the Backrooms, seen from the front. It opens, or shuts to a slit, as you come near, or stays open, or only a slit, with or without a blue frame round it." },
 ]);
 PROP_GROUPS.push({
-  n: "Tents", what: "Wool stairs turn into a camping tent in their color.",
+  n: "Tents", what: "Wool stairs turn into a camping tent in their color, big enough to walk into.",
   items: ["White", "Light Gray", "Gray", "Black", "Brown", "Red", "Orange", "Yellow", "Lime", "Green", "Cyan", "Light Blue", "Blue", "Purple", "Magenta", "Pink"]
-    .map(c => ({ k: `${c.toLowerCase().replace(" ", "_")}_wool_stairs`, n: `${c} Wool Stairs`, what: `A ${c.toLowerCase()} tent.` })),
+    .map(c => ({ k: `${c.toLowerCase().replace(" ", "_")}_wool_stairs`, n: `${c} Wool Stairs`, what: `A patched ${c.toLowerCase()} tent on wooden poles, open at both ends.` })),
 });

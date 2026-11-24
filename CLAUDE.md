@@ -168,11 +168,11 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween, Around the house and Outdoors (all 2026-11-24). Left: Tents. For each section: every texture must be one from `../textures`, animations and light glow
+Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween, Around the house, Outdoors and Tents (all 2026-11-24): every section. For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
-How to do a section (as `import_outdoors.py`, `import_house.py`, `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
+How to do a section (as `import_outdoors.py`, `import_house.py`, `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for simpler ones, `import_couches.py` and `import_tents.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
@@ -326,6 +326,14 @@ What Outdoors found:
 - Particles that only come at night (the fireflies) or in water (the water wheel's splashes): the first are shown, with the night in the description;
   the second only described. The item icons for oak, spruce, jungle, acacia and dark oak boats on the Villager Trades tab are older than the
   textures folder's (Outdoors has its own, `boat_spruce`): offered, not asked for.
+
+What Tents found:
+
+- A survey's bounds that leave out the cubes' own rotation are wrong: measure the turned corners (`corners` in `import_tents.py`) or `boxesBounds`.
+  A slanted pole's foot under the ground makes landing lift the whole prop: `sunk` and `buried`. Check a prop's near corner all the way round on
+  the stage, on one that fills it: a look's `low` (its corner's radius times sin of `STAGE_PITCH`) keeps it from being cut off.
+- What an item looks like where the pack doesn't say is the game's: Mojang/bedrock-samples on GitHub has `blocks.json`, `terrain_texture.json` and the
+  names for each version (wool stairs are drawn in plain wool; the pack's patterned wool is the slabs'). Stairs' icon: the tall half at the back left.
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.
