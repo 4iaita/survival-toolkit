@@ -168,12 +168,11 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents and Christmas (all 2026-11-24). Left, in page order: Halloween, Around the house, Outdoors
-and Tents. For each section: every texture must be one from `../textures`, animations and light glow
+Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas and Halloween (all 2026-11-24). Left, in page order: Around the house, Outdoors and Tents. For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
-How to do a section (as `import_christmas.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
+How to do a section (as `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
@@ -204,7 +203,7 @@ More facts the first two sections found:
 
 - The pack's hint 6 there: some props have another look when the stand is placed diagonally (the candy canes). "Interactive" ones
   play when punched or used, so that's an act (`PROP_ACTS`), not a variant.
-- Names under `sound_effects` in an attachable or animation are sounds: the page has none. Particles are `particle_effects`.
+- Names under `sound_effects` in an attachable or animation are sounds: the page has none. Particles are `particle_effects` (`src/particles.js`).
 - An animation that only shows or hides bones by scaling them from or to nothing: hide them by name (a layer's rules, and an act's
   `show` parts) rather than baking the scale, which would grow over a frame. See `import_couches.py`.
 - A variant can have an `anim` of its own (None for none), and `ownFit` to be framed at its own size. A kind without acts or turns plays its
@@ -250,9 +249,33 @@ What Christmas found:
 - `renderScene` is slow on props that fill the stage: while they move they're drawn at 1× (`coarse`), at rest always sharp. Time
   them warm, in a real Chrome at scale 2 (the globes run at 20 frames a second).
 - After touching the renderer, hash every prop picture and a frame of every mob on the new page and the committed one, and compare.
-- Offered, not asked for: particles on the prop stage (snow in the big globe, chimney smoke, the piñata's confetti), Stockings (leather
+- Offered, not asked for: Stockings (leather
   boots the stand wears, with a banner in its hand: 24 models on dpg, one entrance), and hanging the piñata and the wreath
   off the ground as the pack has them (they're landed, like every prop).
+
+What Halloween found:
+
+- Read the materials off the render controller the prop uses (the one on with `v.eclqlw`), not the attachable's list: half of that list
+  belongs to the plain item (the portrait's see-through ones, bone meal's that ignores alpha).
+- What the game only does at night (the scarecrow awake, the tombstone's zombie): the user was offered Day / Night buttons and chose
+  acts, with the night in the description. Ask again for another one.
+- Glow panels (bones `8dgo*`, material nbbfor): a model and layer of their own (`panels_apart` in `import_halloween.py`, flags `glow`,
+  `soft` and `eyes` or `halo`), so that an act's `show` can't bring them up as solid planes. `v.habcyx` in their scale is 1 from the
+  front: give the cube that size. A prop with panels doesn't bloom as well (both at once washed the vampire's face white). A prop's
+  parts in front of a panel hide it (`depth`), which a mob's don't.
+- `relative_to` rotation: entity (the zombie's head, the candle in the jack o'lantern): `level()` works it out with matrices; taking
+  the parents' angles off one by one is only right for small turns. The head's angles must be kept near the last frame's.
+- A look's `gaze` (bone, how far for each degree round and above) follows the stage's camera, an act's `faces` turns a bone to it.
+- `buried` (a layer): only what's over the ground shows (the zombie). A kind's `low`: how far under its feet an act reaches, so it isn't
+  cut off by the stage's edge (the portrait's arms, the coffin's door). Measure it, don't guess: project the corners at every moment.
+- `bloomOf` is brighter or fainter as small lit texels move by a pixel (it works in 16-pixel cells).
+  Moving eyes would pulse; give them panels, or fix it first.
+- Particles: `PARTICLES` in `src/particles.js`, written by hand from the pack's particles folder (each says which). A look's `emits` go on,
+  an act's `puffs` burst; the player draws over the cached scene where only they move. Textures in `STAGE_PARTICLES`
+  (`import_models.py`). A particle with a locator the model lacks comes from the stand's feet. `Math.random` in a size or an acceleration
+  is taken again every frame. Follow the attachable's `particle_effects` (a name it lacks plays nothing: the Christmas tree's).
+  A look's `reach` makes room for what rises (the chimney's smoke, which made it smaller).
+- The jack-in-the-box is framed for the creeper at full stretch (`reach`), so it's small when shut: offered to change, not asked for.
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.

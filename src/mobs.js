@@ -136,6 +136,7 @@ function faceSpot(face, fx, fy, fz) {
 // face the camera: the allay's halo), so it only lights what's round the mob, not the mob itself.
 // glassBones, bones whose alpha says how solid they are (a jar's glass), blended over what's behind them; culledBones, bones
 // whose faces only show from the front (a snow globe's walls, seen from within).
+// buried, it's in the ground and only shows above it (the zombie under a tombstone).
 // rim, an outline the game draws only where the mob itself isn't (a stencil), glowing: the allay's, its parts again a
 // little bigger in one bright color, so it shows as a thin lit edge round the mob.
 const SHEER_FINE = 4;
@@ -222,14 +223,16 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
         // Where the panel hangs from a bone the game turns for it (GLOW_TURNS), that bone's pivot is the one: a spider's
         // own bone pivots mid-head, but the one it hangs from is on the eyes.
         const sideways = w === 0, axis = sideways ? 0 : 2;
-        let facing = null;
+        // hold: how far out from that the game's panel is held, so that only what's in front of it hides the light.
+        let facing = null, hold = 0;
         if (flags.eyes || flags.halo) {
           const pivotAt = toScene(parent >= 0 && GLOW_TURNS.test(bones[parent][0]) ? bones[parent][2] : pivot)[axis];
           if (flags.eyes) facing = sideways ? [Math.sign(at[0] - pivotAt) || 1, 0, 0] : [0, 0, Math.sign(at[2] - pivotAt) || -1];
+          hold = Math.abs(at[axis] - pivotAt);
           at[axis] = pivotAt;
         }
         const rect = ["front", "right", "left"].map(face => faceRect(uv, dims, face)).find(r => r && r[2] && r[3]);
-        if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, bright: flags.bright === undefined ? 1 : flags.bright, behind: Boolean(flags.behind), bones: [...own, ...chainOf(i), ...upsideDown] });
+        if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, hold, bright: flags.bright === undefined ? 1 : flags.bright, behind: Boolean(flags.behind), bones: [...own, ...chainOf(i), ...upsideDown] });
         continue;
       }
       // An inside-out cube (inside) lays its faces out from its origin, as the game does: where a size is negative its
@@ -240,7 +243,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
       const flipped = inside ? [0, 1, 2].map(k => hi[k] < lo[k]) : [false, false, false];
       for (const k of [0, 1, 2]) if (flipped[k]) [lo[k], hi[k]] = [hi[k] + 2 * g, lo[k] - 2 * g];
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), buried: Boolean(flags.buried), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
           if (flipped[axis]) side = 1 - side;
           if (flipped[0]) fx = 0.9999 - fx;
@@ -517,7 +520,7 @@ function overShell(px, shell) {
 // show's swim floats the mob in the middle of the water above the ground strip, whatever its size: the middle of where
 // it lands on the canvas as it moves, from this side, however it's turned. zoom draws a mob that many times the size
 // that would fit, to scale with a bigger one.
-const MOB_MAX_SCALE = 8, MOB_FEET_UP = 26, MOB_TAG_ROOM = 44, MOB_MARGIN = 28, SWIM_MARGIN = 12, MOTION_FPS = 20, SLOW_FRAME_MS = 30, SLOW_FRAMES = 5, ACT_FADE = 0.25;
+const STAGE_PITCH = 0.2, MOB_MAX_SCALE = 8, MOB_FEET_UP = 26, MOB_TAG_ROOM = 44, MOB_MARGIN = 28, SWIM_MARGIN = 12, MOTION_FPS = 20, SLOW_FRAME_MS = 30, SLOW_FRAMES = 5, ACT_FADE = 0.25;
 // A prop lower than this lies flat (a rug), and the room left under its near corner.
 const PROP_FLAT = 2, PROP_BELOW = 4;
 // How far a prop's glow spreads, how strong it is, and how much of it is left off the glowing texels.
@@ -540,7 +543,21 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     return light.getContext("2d");
   };
   let boxes = null, rest = null, fit = null, zoomed = 1, swims = false, yaw = startYaw, frame = 0, dragX = null, wanted = "";
-  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, lies = false, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
+  let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, lies = false, grounded = false, low = 0, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
+  // What looks at the reader (a look's gaze: [bone, x, y], an enderman portrait's pupils) moves that far for each degree the
+  // reader is round to its side and above it, as the pack's do for the camera.
+  let gaze = null, gazedAt = null;
+  const roundBy = () => Math.atan2(Math.sin(yaw), Math.cos(yaw)) / RAD;
+  const looking = (moving, at = gaze) => {
+    if (!at) return moving;
+    const [bone, x, y] = at, m = moving[bone] || (moving[bone] = {}), p = m.p || NO_MOVE;
+    m.p = [p[0] - roundBy() * x, p[1] + (STAGE_PITCH / RAD) * y, p[2]];
+    return moving;
+  };
+  // A prop's particles, when they were last moved on, how far down its ground is, and its scene as it was last drawn (base), to
+  // draw them over again where nothing else has changed.
+  const air = particleStage(() => redraw());
+  let airAt = 0, dropped = 0, base = null, puffing = 0, puffed = 0;
   // Whether it's moving now: what's at rest (a prop between its acts) is always drawn sharp.
   const moves = () => Boolean(motion && motion.length) || !rested;
   const draw = () => {
@@ -554,14 +571,15 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (!boxes) return;
     // Fit the mob's usual size (a baby keeps its parent's scale, so it looks small): its height, seen a little
     // from above, under the name tag or in the water; and its widest turn across the canvas.
-    const pitch = 0.2, [lo, hi] = fit, radius = fit.radius;
+    const pitch = STAGE_PITCH, [lo, hi] = fit, radius = fit.radius;
     const tall = (swims ? hi[1] - lo[1] : GROUND - lo[1]) * Math.cos(pitch) + 2 * radius * Math.sin(pitch);
     const room = swims ? h - GROUND_STRIP - 2 * SWIM_MARGIN : h - MOB_FEET_UP - MOB_TAG_ROOM;
     const scale = zoomed * Math.min(MOB_MAX_SCALE, (w - 2 * MOB_MARGIN) / (2 * radius), room / tall);
     // Stay centered on the space the mob's animation fills, so it doesn't shift the view.
     const [blo, bhi] = rest, mid = [(blo[0] + bhi[0]) / 2, GROUND, (blo[2] + bhi[2]) / 2];
     // A prop that lies flat casts no shadow, and is drawn further up, so its near corner isn't cut off.
-    const feetUp = lies ? Math.max(MOB_FEET_UP, radius * Math.sin(pitch) * scale + PROP_BELOW) : MOB_FEET_UP;
+    // So is one whose act reaches out toward the reader (its kind's low: how far under its feet that looks).
+    const feetUp = lies || low ? Math.max(MOB_FEET_UP, (low || radius * Math.sin(pitch)) * scale + PROP_BELOW) : MOB_FEET_UP;
     const view = { yaw, pitch, scale: scale * dpr, center: mid, origin: [canvas.width / 2, canvas.height - feetUp * dpr] };
     const shadow = Math.max(3, Math.min(bhi[0] - blo[0], bhi[2] - blo[2]) * 0.45);
     // A swimmer slides to the middle of the canvas and rises (or sinks) to the middle of the water; its shadow stays on
@@ -579,21 +597,28 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const float = { pivot: NO_MOVE, angles: NO_MOVE, move: [0, -rise, 0] };
     const placed = rise ? boxes.map(m => ({ ...m, bones: [...m.bones, float] })) : boxes;
     const scene = { ...view, width: canvas.width, height: canvas.height };
-    const emitted = blooms ? new Uint8ClampedArray(scene.width * scene.height * 4) : null;
-    const px = renderScene(placed.filter(m => !m.shell && !m.rim), { ...scene, emitted, shadows: lies ? [] : [[mid[0], mid[2], shadow]] });
+    const flies = grounded && air.busy, same = flies && base && base.boxes === boxes && base.at === `${JSON.stringify(scene)}/${JSON.stringify(shadow)}`;
+    const emitted = blooms && !same ? new Uint8ClampedArray(scene.width * scene.height * 4) : null;
+    // A prop's parts hide its soft glows where they're in front of them (a coffin's door).
+    const depth = same ? base.depth : flies || (grounded && (boxes.soft || []).length) ? new Float32Array(scene.width * scene.height).fill(Infinity) : null;
+    const px = same ? base.px.slice() : renderScene(placed.filter(m => !m.shell && !m.rim), { ...scene, emitted, depth, shadows: lies ? [] : [[mid[0], mid[2], shadow]] });
     // Rims only show where the mob isn't drawn (they may go over its shadow).
-    const rims = placed.filter(m => m.rim);
+    const rims = same ? [] : placed.filter(m => m.rim);
     if (rims.length) {
       const rp = renderScene(rims, scene);
       for (let i = 3; i < px.length; i += 4) if (rp[i] && px[i] < 255) px.set(rp.subarray(i - 3, i + 1), i - 3);
     }
     // See-through shells (a slime's jelly) go on top of what's inside them.
-    const shells = placed.filter(m => m.shell);
+    const shells = same ? [] : placed.filter(m => m.shell);
     if (shells.length) overShell(px, renderScene(shells, scene));
+    const halo = same ? base.halo : blooms ? bloomOf(emitted, scene, BLOOM_SPREAD * dpr) : null;
+    if (flies) {
+      if (!same) base = { boxes, at: `${JSON.stringify(scene)}/${JSON.stringify(shadow)}`, px: px.slice(), depth, halo };
+      air.draw(px, depth, scene, dropped);
+    } else base = null;
     ctx.putImageData(new ImageData(px, canvas.width, canvas.height), 0, 0);
     // A prop whose texels glow lights up what's round them.
-    if (blooms) {
-      const halo = bloomOf(emitted, scene, BLOOM_SPREAD * dpr);
+    if (halo) {
       ctx.globalCompositeOperation = "lighter";
       ctx.globalAlpha = BLOOM;
       ctx.drawImage(halo, 0, 0);
@@ -601,12 +626,16 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       ctx.globalCompositeOperation = "source-over";
     }
     // Soft glows add their light over the rest, smooth and always facing the camera.
-    for (const { soft, span, tall, at, bones, facing, bright, behind } of boxes.soft || []) {
+    for (const { soft, span, tall, at, bones, facing, hold, bright, behind } of boxes.soft || []) {
       // A glow behind the mob adds its light to the backdrop, under the mob; the rest adds it on top.
       const ctx = behind ? lightCtx() : sceneCtx;
       ctx.globalCompositeOperation = "lighter";
       ctx.imageSmoothingEnabled = true;
       const placed = [...bones, float], spot = placeBy(placed, at), [gx, gy] = camera(view).project(spot), sw = span * scale * dpr, sh = tall * scale * dpr;
+      if (depth) {
+        const on = Math.round(gy) * scene.width + Math.round(gx), off = dot(spot.map((v, k) => v - mid[k]), camera(view).dir) + CAMERA_BACK;
+        if (depth[on] < off - hold - 0.5) continue;
+      }
       // Eyes fade out as the face turns away: full from the front and most of the side, gone from behind.
       if (facing) {
         const ahead = placeBy(placed, at.map((v, k) => v + facing[k])).map((v, k) => v - spot[k]);
@@ -635,6 +664,15 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const [x, y] = camera(view).project([mid[0], blo[1] - 2 - rise, mid[2]]);
     tag.style.left = `${x / dpr}px`;
     tag.style.top = `${Math.max(MOB_TAG_ROOM - 8, y / dpr)}px`;
+  };
+  // An act's faces: bones that turn to the reader as it plays, [bone, the most degrees, [[seconds in, how much]...]] each.
+  const facing = (moving, { faces = [] }, t) => {
+    for (const [bone, most, keys] of faces) {
+      const i = keys.findIndex(([at]) => t < at);
+      if (i < 1) continue;
+      const [[a, from], [b, to]] = [keys[i - 1], keys[i]], m = moving[bone] || (moving[bone] = {}), r = m.r || NO_MOVE;
+      m.r = [r[0], r[1] + Math.max(-most, Math.min(most, roundBy())) * (from + ((to - from) * (t - a)) / (b - a)), r[2]];
+    }
   };
   const redraw = () => { if (!frame) frame = requestAnimationFrame(draw); };
   const play = async now => {
@@ -674,10 +712,26 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       if (acts) nextAct = now + between() * 1000;
     }
     const acting = Boolean(actStart);
+    // What's in the air moves on, and the act's puffs come when it's time.
+    if (acting && puffing !== actStart) {
+      puffing = actStart;
+      puffed = 0;
+    }
+    for (const puffs = (acting && act.puffs) || []; puffed < puffs.length && into >= puffs[puffed][0]; puffed++) air.start(puffs[puffed][1]);
+    const blowing = air.busy;
+    if (blowing) air.step(Math.min(0.1, (now - airAt) / 1000));
+    airAt = now;
     // Nothing moves between the acts of something with no loops (a prop): it's already drawn.
-    if (!acting && !motion.length && rested) return;
+    // (But for its particles.)
+    if (!acting && !motion.length && rested && (!gaze || gazedAt === yaw)) {
+      if (blowing) draw();
+      return;
+    }
     const usual = acting && !act.keep ? Math.min(1, Math.max(0, 1 - into / ACT_FADE, (into - act.length + ACT_FADE) / ACT_FADE)) : 1;
     const moving = motionPose(motion, now / 1000, usual), showing = acting ? actPose(moving, act, into) : [];
+    if (acting) facing(moving, act, into);
+    looking(moving);
+    gazedAt = yaw;
     effects = acting ? actEffects(act, into) : [];
     const key = wanted, next = await rebuild(moving, showing);
     if (key !== wanted || !next) return;
@@ -689,9 +743,17 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     if (slowFrames >= SLOW_FRAMES) coarse = true;
   };
   new ResizeObserver(redraw).observe(canvas);
+  // Its eyes follow as it's turned, also where nothing else moves (the reader asked for less motion).
+  const regaze = async () => {
+    const key = wanted, next = await rebuild(looking({}), []);
+    if (key !== wanted || !next) return;
+    boxes = next;
+    redraw();
+  };
   const turnBy = step => {
     yaw += step;
     onTurn();
+    if (gaze && calmMotion()) regaze();
     redraw();
   };
   canvas.addEventListener("pointerdown", e => { dragX = e.clientX; canvas.setPointerCapture(e.pointerId); });
@@ -737,7 +799,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // corners of what shows of its boxes at each moment (spots).
       const reachOf = async (shape, options) => {
         const moves = Boolean(loops && loops.length), longest = moves ? Math.max(...loops.map(l => l.length)) : 0;
-        const moments = moves ? Array.from({ length: MOTION_SAMPLES }, (_, i) => motionPose(loops, (i / MOTION_SAMPLES) * longest)) : [null];
+        const moments = moves ? Array.from({ length: MOTION_SAMPLES }, (_, i) => motionPose(loops, (i / MOTION_SAMPLES) * longest)) : [look.gaze ? looking({}, look.gaze) : null];
         const all = [];
         for (const moving of moments) all.push(ground(await lookBoxes(shape, { ...options, moving })));
         if (!all[0] || !all[0].length) return { boxes: all[0], bounds: null };
@@ -759,7 +821,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       const options = { flip, tint, clock, night, glowing, stand, armor, skins, overlays, carpet, dyes, extra, showParts: shown, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
       const reach = f ? await reachOf(look, options) : { boxes: null, bounds: null }, next = reach.boxes;
       // A prop lands by how it stands at rest.
-      const raw = kind ? await lookBoxes(look, options) : null, drop = raw && raw.length ? landing(raw) : null;
+      const raw = mob.startsWith("prop:") ? await lookBoxes(look, options) : null, drop = raw && raw.length ? landing(raw) : null;
       if (wanted !== key) return false;
       const before = boxes;
       boxes = next;
@@ -777,8 +839,18 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         act = null;
         actStart = nextAct = 0;
       }
-      motion = next && loops;
-      blooms = Boolean(kind && look.layers.some(([, , , flags]) => flags && (flags.lit || flags.litBones)));
+      gaze = look.gaze || null;
+      grounded = mob.startsWith("prop:");
+      const emits = look.emits || [];
+      dropped = drop ? drop[0].move[1] : 0;
+      base = null;
+      air.reset(grounded ? emits : [], { still: calmMotion(), ground: dropped / 16 });
+      // Particles need the stage to play, though the prop itself doesn't move.
+      motion = next && (loops || (emits.length ? [] : null));
+      // Where the pack draws the light itself (soft glow panels), that's the glow.
+      const lights = flag => look.layers.some(([, , , flags]) => flags && flags[flag]);
+      blooms = Boolean(kind && (lights("lit") || lights("litBones")) && !lights("soft"));
+      low = (kind && kind.low) || 0;
       lies = Boolean(kind && rest && rest[1][1] - rest[0][1] < PROP_FLAT);
       rested = false;
       intro = null;
@@ -803,8 +875,10 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // monster's tentacles).
       const own = reach.bounds ? fitOf(reach.bounds) : f;
       fit = look.ownFit ? own : f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), swim ? f[1].map((v, i) => Math.max(v, own[1][i])) : f[1]], { radius: Math.max(f.radius, own.radius) });
-      // A kind whose act goes up out of it (a present's toy) is framed to this height instead (its reach).
-      if (fit && kind && kind.reach) fit = Object.assign([fit[0].map((v, i) => (i === 1 ? Math.min(v, GROUND - kind.reach) : v)), fit[1]], { radius: fit.radius });
+      // A kind whose act goes up out of it (a present's toy) is framed to this height instead (its reach), and so is a look
+      // whose particles do (the chimney's smoke).
+      const up = look.reach || (kind && kind.reach);
+      if (fit && up) fit = Object.assign([fit[0].map((v, i) => (i === 1 ? Math.min(v, GROUND - up) : v)), fit[1]], { radius: fit.radius });
       tag.hidden = !next || !tag.textContent;
       redraw();
       return Boolean(next);

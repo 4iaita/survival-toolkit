@@ -44,12 +44,12 @@ const PROP_GROUPS = [
     { k: "brick_block", n: "Bricks", what: "A brick chimney. Smoke rises from it." },
   ] },
   { n: "Halloween", items: [
-    { k: "lit_pumpkin", n: "Jack o’Lantern", what: "A big carved jack o’lantern." }, { k: "pumpkin", n: "Pumpkin", what: "A pile of pumpkins and gourds." },
-    { k: "sugar", n: "Sugar", what: "A trick-or-treat bucket full of candy." }, { k: "skeleton_skull", n: "Skeleton Skull", what: "A skull with a candle on top." },
-    { k: "bone_meal", n: "Bone Meal", what: "A skeleton lying in pieces." }, { k: "chiseled_stone_bricks", n: "Chiseled Stone Bricks", what: "A grave, with a zombie climbing out." },
-    { k: "mangrove_door", n: "Mangrove Door", what: "A coffin." }, { k: "pointed_dripstone", n: "Pointed Dripstone", what: "A stone gargoyle." },
-    { k: "wheat", n: "Wheat", what: "A scarecrow." }, { k: "ender_eye", n: "Eye of Ender", what: "A framed portrait of an enderman." },
-    { k: "trapped_chest", n: "Trapped Chest", what: "A jack-in-the-box." }, { k: "leaf_litter", n: "Leaf Litter", what: "A rake in a pile of leaves." },
+    { k: "lit_pumpkin", n: "Jack o’Lantern", what: "A giant jack o’lantern lit by a candle inside. Punch the stand to pop its lid up." }, { k: "pumpkin", n: "Pumpkin", what: "A pumpkin patch with an orange, a red, a green and a white pumpkin." },
+    { k: "sugar", n: "Sugar", what: "A pumpkin trick-or-treat bucket full of sweets. Punch the stand to send sweets flying." }, { k: "skeleton_skull", n: "Skeleton Skull", what: "A skull with a candle burning on top. Its flame glows." },
+    { k: "bone_meal", n: "Bone Meal", what: "The remains of a skeleton." }, { k: "chiseled_stone_bricks", n: "Chiseled Stone Bricks", what: "A zombie’s tombstone. Come close at night and the zombie climbs out of its grave." },
+    { k: "mangrove_door", n: "Mangrove Door", what: "A vampire’s coffin. Punch the stand to wake the vampire. Its eyes glow." }, { k: "pointed_dripstone", n: "Pointed Dripstone", what: "A stone gargoyle. Its eyes glow." },
+    { k: "wheat", n: "Wheat", what: "A scarecrow with a pumpkin head. It wakes up at night, its eyes glowing." }, { k: "ender_eye", n: "Eye of Ender", what: "A portrait of an enderman, its glowing eyes following you. Punch the stand, or stay close, and it jumps out at you." },
+    { k: "trapped_chest", n: "Trapped Chest", what: "A jack-in-the-box with a creeper in a jester’s hat. Come close, or punch the stand, and it springs out." }, { k: "leaf_litter", n: "Leaf Litter", what: "A pile of autumn leaves with a rake. Punch the stand for a puff of leaves." },
   ] },
   { n: "Around the house", items: [
     { k: "cake", n: "Cake", what: "A birthday cake with candles." }, { k: "furnace", n: "Furnace", what: "A kitchen stove." },
@@ -87,6 +87,10 @@ const PROP_ICONS = {
   cocoa_beans: L("cocoa_beans"), cookie: L("cookie"), twisting_vines: L("twisting_vines_carried"), weeping_vines: L("weeping_vines_carried"), sweet_berries: L("sweet_berries"),
   warped_fungus_on_a_stick: L("warped_fungus_on_a_stick"), snow: C("snow"), snowball: L("snowball"), diamond_shovel: L("diamond_shovel"), brick_block: C("brick_block"),
   snow_layer: { shift: 3, boxes: [{ b: [0, 0, 0, 16, 2, 16], faces: [["snow"], ["snow"], ["snow"]] }] },
+  lit_pumpkin: C("pumpkin_face_on", "pumpkin_top", "pumpkin_side"), pumpkin: C("pumpkin_side", "pumpkin_top"), sugar: L("sugar"), bone_meal: L("bone_meal"),
+  skeleton_skull: C("skeleton_skull_front", "skeleton_skull_top", "skeleton_skull_side"), chiseled_stone_bricks: C("chiseled_stone_bricks"),
+  mangrove_door: L("mangrove_door"), pointed_dripstone: L("dripstone_carried"), wheat: L("wheat"), ender_eye: L("ender_eye"),
+  trapped_chest: C("trapped_chest_front", "chest_top", "chest_side"), leaf_litter: L("leaf_litter"),
 };
 for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
 // The versions an item's prop comes in (PROP_LOOKS' look and its variants, in order), one for each of the stand's poses in turn.

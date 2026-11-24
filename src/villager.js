@@ -104,6 +104,8 @@ const placeBy = (chain, p) => chain.reduce((q, { pivot, move = NO_MOVE, angles, 
 
 // An orthographic camera turned by yaw (radians) and looking down by pitch, scale pixels per game pixel,
 // with the scene point center at the canvas point origin. project says where a scene point lands.
+// How far back from the scene's center the rays start.
+const CAMERA_BACK = 80;
 function camera({ yaw, pitch = 0.2, scale, center, origin }) {
   const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
   const right = [cy, 0, -sy], down = [-sp * sy, cp, -sp * cy], dir = [cp * sy, sp, cp * cy];
@@ -123,11 +125,11 @@ function camera({ yaw, pitch = 0.2, scale, center, origin }) {
 // (glass aside), the rest left clear (bloomOf). A culled box (culled) only shows the faces turned to the camera.
 const EMITS = 0x1000000;
 const shadeOf = (m, shade, color) => (m.glow ? 1 : shade + (1 - shade) * Math.floor(color / EMITS) / 255);
-function renderScene(boxes, { width, height, shadows = [], emitted = null, ...view }) {
+function renderScene(boxes, { width, height, shadows = [], emitted = null, depth = null, ...view }) {
   const { right, down, dir, scale, center, origin } = camera(view);
   const toWorld = ([a, b, c]) => [0, 1, 2].map(i => right[i] * a + down[i] * b + dir[i] * c);
   const light = toWorld([-0.45, -1, -0.75].map(v => v / Math.hypot(0.45, 1, 0.75)));
-  const start = center.map((v, i) => v - dir[i] * 80);
+  const start = center.map((v, i) => v - dir[i] * CAMERA_BACK);
   // The camera is orthographic, so in each box's own frame every ray has the same direction and a start
   // that moves by stepX and stepY per pixel. Faces keep one light level each: shade[axis][side].
   const prepared = boxes.map(m => {
@@ -149,7 +151,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, ...vi
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, buried: m.buried, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
   });
   // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
   const shadowSpans = shadows.map(([sx, sz, radius]) => {
@@ -173,6 +175,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, ...vi
     for (let px = from; px < to; px++) {
       const a = (px + 0.5 - origin[0]) / scale;
       let bestT = Infinity, bestColor = -1, bestShade = 0, bestEmits = false, panes = 0;
+      const groundT = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
       for (const m of row) {
         if (a < m.across[0] || a > m.across[1]) continue;
         const r = m.r;
@@ -189,6 +192,8 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, ...vi
         }
         // Where two faces meet, the first box's shows, but an overlay's (over) shows over what's under it.
         if (near > far || (m.inside ? far : near) > bestT || (near === bestT && !m.over)) continue;
+        // What's in the ground (buried) only shows above it.
+        if (m.buried && near > groundT) continue;
         const frac = (i, t) => (m.hi[i] > m.lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * t - m.lo[i]) / (m.hi[i] - m.lo[i]))) : 0);
         // A box drawn from inside only (inside: the game culls its outsides) shows its far faces.
         if (m.inside) {
@@ -221,7 +226,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, ...vi
           bestColor = color % EMITS;
           bestEmits = color >= EMITS;
           bestShade = shadeOf(m, m.shade[axis][side], color);
-        } else if (far < bestT && !m.culled) {
+        } else if (far < bestT && !m.culled && !(m.buried && far > groundT)) {
           // Through a see-through texel, the inside of the box's far face shows: the game draws both sides.
           const backSide = r[backAxis] > 0 ? 1 : 0, back = m.color(backAxis, backSide, frac(0, far), frac(1, far), frac(2, far));
           if (back >= 0) {
@@ -233,6 +238,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, ...vi
         }
       }
       const j = (py * width + px) * 4;
+      if (depth) depth[py * width + px] = bestT;
       if (bestColor >= 0) {
         out[j] = (bestColor >> 16) * bestShade;
         out[j + 1] = (bestColor >> 8 & 255) * bestShade;
@@ -240,8 +246,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, ...vi
         out[j + 3] = 255;
         if (emitted && bestEmits) for (let k = 0; k < 4; k++) emitted[j + k] = out[j + k];
       } else if (shadows.length) {
-        const t = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
-        const gx = start[0] + right[0] * a + down[0] * b + dir[0] * t, gz = start[2] + right[2] * a + down[2] * b + dir[2] * t;
+        const gx = start[0] + right[0] * a + down[0] * b + dir[0] * groundT, gz = start[2] + right[2] * a + down[2] * b + dir[2] * groundT;
         let dark = 0;
         for (const [sx, sz, radius] of shadows) dark = Math.max(dark, 1 - ((gx - sx) ** 2 + (gz - sz) ** 2) / radius ** 2);
         out[j + 3] = 90 * dark;

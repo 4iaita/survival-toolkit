@@ -30,6 +30,11 @@ SHEET, TEXTURE = "textures/oreville/ans/dpg", "new_prop_bamboo"
 JAR_SHEET, JAR_TEXTURE = "textures/oreville/ans/diq", "prop_cookie"
 CANES = ["twisting_vines", "weeping_vines"]
 STILL = ["mangrove_boat", "cookie", "snow", "snow_layer", "brick_block"]
+# Their particles (src/particles.js): what goes on all the time, [effect, seconds in] (the big globe's snow starts twice, with its
+# entrance and after 2 seconds), and what bursts out of an act, [seconds in, effect] (the shake's is in both the controller and the
+# animation).
+EMITS = {"powder_snow_bucket": [["globe_snow", 0.9583], ["globe_snow", 2]], "brick_block": [["smoke"]]}
+SHAKE, WHACK = [[0, "globe_flurry"], [0, "globe_flurry"]], [[0, "confetti"]]
 FPS = im.MOTION_FPS
 EVERY = [4, 8]
 # The way the stand is hit from decides which way these rock (v.vipnxs and v.cdntav, or v.tkoeby and v.ufczzf): sideways
@@ -199,7 +204,7 @@ def kind_of(p):
         still = first(together(p.at("lvhwtp", [0]), {b: {c: f[:1] for c, f in ch.items()} for b, ch in creeper.items()}))
         length = p.length("ermejm")
         times = moments(length)
-        shake = act([whole(beyond(p.at("ermejm", times), still, len(times)), length)], length, ease=0.1)
+        shake = act([whole(beyond(p.at("ermejm", times), still, len(times)), length)], length, ease=0.1, puffs=SHAKE)
         rest = first(together({b: {c: [v] for c, v in ch.items()} for b, ch in came.items()}, {b: {c: [v] for c, v in ch.items()} for b, ch in still.items()}))
         return "snow_globe", rest, {"spawn": spawn, "acts": [shake], "loops": [
             loop(p.at("idle", loop_times(1)), 1, keep=True), loop(beyond(creeper, first(creeper), len(loop_times(5))), 5)]}
@@ -229,7 +234,7 @@ def kind_of(p):
         rest = {bone: {ch: frames[-1] for ch, frames in channels.items()} for bone, channels in rope.items()}
         spawn = act([whole(beyond(together(swing, rope), rest, len(times)), length)], length, keep=1)
         hit = p.length("wiggle")
-        whack = act([whole(p.at("wiggle", moments(hit), fades(0.25, 3.5)), hit)], hit, ease=0.1, keep=1)
+        whack = act([whole(p.at("wiggle", moments(hit), fades(0.25, 3.5)), hit)], hit, ease=0.1, keep=1, puffs=WHACK)
         sway = loop(p.at("idle", loop_times(8 / 3), lambda t: 0.025, 0.25), round(8 / 3, 4), keep=True)
         return "pinata", rest, {"spawn": spawn, "acts": [whack], "loops": [sway]}
     if p.item == "diamond_shovel":
@@ -256,6 +261,10 @@ def main():
         bones = {b["name"] for b in geos[geo]["bones"]}
         text = put(text, "MOB_MODELS", f"prop_{item}", im.model(geos[geo]))
         look = {"names": ["§§"], "scale": 1}
+        if item in EMITS:
+            look["emits"] = EMITS[item]
+        if item == "brick_block":
+            look["reach"] = 52  # room for its smoke
         if item not in STILL:
             kind, rest, value = kind_of(Prop(item, d, anims, bones))
             # The same animation bakes the same for both canes.
@@ -284,6 +293,7 @@ def main():
         return
     copy_texture(SHEET, TEXTURE)
     copy_texture(JAR_SHEET, JAR_TEXTURE)
+    im.copy_particles(im.root / "art" / "mobs")
     (im.root / "art" / "mobs" / "prop_snowball.png").unlink(missing_ok=True)
     ia.MODELS_JS.write_text(text)
 
