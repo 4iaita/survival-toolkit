@@ -159,7 +159,8 @@ the pale garden's).
 ## Finding what's unused
 
 The cleanup of 2026-11-24 removed 43 textures from `art/` and some dead code. To check again: searching for a name isn't proof,
-since many are built at run time (`egg_${k}`, `coral_${a}`). Make a copy of `index.html` with `ART`, `SKINS` and `MOB_SKINS`
+since many are built at run time (`egg_${k}`, `coral_${a}`, the bee's `${model}_pollen`: `new_bee_qween_pollen` was
+called unused once, and is the Qween bee's nectar). Make a copy of `index.html` with `ART`, `SKINS` and `MOB_SKINS`
 wrapped in a Proxy that records reads (serve it from `tools/backdrops/out`, and delete it after), then draw every background
 and icon, every villager and every mob section; for mob textures and models, walk the evaluated data tables instead. Unused
 JS names: TypeScript's `noUnusedLocals` over the scripts in `build.py`'s order. Compare every background and icon with the
@@ -167,12 +168,14 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 
 ## Armor Stands, section by section
 
-The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween, Around the house, Outdoors and Tents (all 2026-11-24): every section; then the Stockings (in Christmas). For each section: every texture must be one from `../textures`, animations and light glow
+The user reviewed the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
+Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween, Around the house, Outdoors and Tents (all 2026-11-24): every section; then the Stockings (in Christmas), a checkup of the whole pack, and
+every open offer, one by one: nothing is left open. What the user chose to leave is noted below, so don't offer it again. For a new prop or section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
-result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
+result, wait for approval, then update README and this file, commit and push to main. They prefer one question at a time, with a short description and the
+options, and ask what something is before deciding: answer from the pack's files and show a side by side picture where it's about looks.
 
-How to do a section (as `import_outdoors.py`, `import_house.py`, `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for simpler ones, `import_couches.py` and `import_tents.py` do):
+How to do a section (as `import_outdoors.py`, `import_house.py`, `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for simpler ones, `import_couches.py`, `import_tents.py` and `import_stockings.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
