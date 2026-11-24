@@ -123,6 +123,7 @@ function camera({ yaw, pitch = 0.2, scale, center, origin }) {
 // A glass box (glass) is see-through: its texels' colors say how solid they are in those units instead, and it shows its
 // near and far faces, blended over what's behind them. emitted: pixels to fill with just the texels that give off light
 // (glass aside), the rest left clear (bloomOf). A culled box (culled) only shows the faces turned to the camera.
+// A light beam (beam) is light added over what's behind it, its colors saying how much as glass does, and stops at the ground.
 const EMITS = 0x1000000;
 const shadeOf = (m, shade, color) => (m.glow ? 1 : shade + (1 - shade) * Math.floor(color / EMITS) / 255);
 function renderScene(boxes, { width, height, shadows = [], emitted = null, depth = null, ...view }) {
@@ -151,7 +152,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, buried: m.buried, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, buried: m.buried, beam: m.beam, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
   });
   // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
   const shadowSpans = shadows.map(([sx, sz, radius]) => {
@@ -163,7 +164,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
   });
   const out = new Uint8ClampedArray(width * height * 4), o = [0, 0, 0];
   // The glass faces a pixel's ray meets: how far off, their colors and their light.
-  const paneT = [], paneColor = [], paneShade = [];
+  const paneT = [], paneColor = [], paneShade = [], rayT = [], rayColor = [];
   for (let py = 0; py < height; py++) {
     const b = (py + 0.5 - origin[1]) / scale, row = prepared.filter(m => b >= m.along[0] && b <= m.along[1]);
     // Most of the canvas is empty, so each row only works out the pixels a box or shadow can reach.
@@ -174,7 +175,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
     const from = Math.max(0, Math.floor(origin[0] + first * scale) - 1), to = Math.min(width, Math.ceil(origin[0] + last * scale) + 1);
     for (let px = from; px < to; px++) {
       const a = (px + 0.5 - origin[0]) / scale;
-      let bestT = Infinity, bestColor = -1, bestShade = 0, bestEmits = false, panes = 0;
+      let bestT = Infinity, bestColor = -1, bestShade = 0, bestEmits = false, panes = 0, rays = 0;
       const groundT = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
       for (const m of row) {
         if (a < m.across[0] || a > m.across[1]) continue;
@@ -208,6 +209,17 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
           continue;
         }
         const side = r[axis] > 0 ? 0 : 1;
+        if (m.beam) {
+          for (let pass = 0; pass < 2; pass++) {
+            const t = pass ? far : near, i = pass ? backAxis : axis;
+            if (t > groundT) continue;
+            const color = m.color(i, pass ? (r[backAxis] > 0 ? 1 : 0) : side, frac(0, t), frac(1, t), frac(2, t));
+            if (color < 0) continue;
+            rayT[rays] = t;
+            rayColor[rays++] = color;
+          }
+          continue;
+        }
         if (m.glass) {
           for (let pass = 0; pass < (m.culled ? 1 : 2); pass++) {
             const t = pass ? far : near, i = pass ? backAxis : axis, on = pass ? (r[backAxis] > 0 ? 1 : 0) : side;
@@ -259,6 +271,16 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
         out[j] = ((rgb >> 16) * shade + out[j] * under) / alpha;
         out[j + 1] = ((rgb >> 8 & 255) * shade + out[j + 1] * under) / alpha;
         out[j + 2] = ((rgb & 255) * shade + out[j + 2] * under) / alpha;
+        out[j + 3] = alpha * 255;
+      }
+      // And the light of beams. (Where nothing's drawn it can't be added to the backdrop: it covers it as far as it's bright.)
+      for (let k = 0; k < rays; k++) {
+        if (rayT[k] >= bestT) continue;
+        const rgb = rayColor[k] % EMITS, bright = Math.floor(rayColor[k] / EMITS) / 255, was = out[j + 3] / 255, alpha = was + (1 - was) * bright;
+        if (alpha <= 0) continue;
+        out[j] = (out[j] * was + (rgb >> 16) * bright) / alpha;
+        out[j + 1] = (out[j + 1] * was + (rgb >> 8 & 255) * bright) / alpha;
+        out[j + 2] = (out[j + 2] * was + (rgb & 255) * bright) / alpha;
         out[j + 3] = alpha * 255;
       }
     }

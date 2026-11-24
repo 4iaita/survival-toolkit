@@ -234,6 +234,10 @@ FILES = {
     "twisting_vines_carried": "blocks/carried/twisting_vines_carried", "weeping_vines_carried": "blocks/carried/weeping_vines_carried", "brick_block": "blocks/brick",
     "pumpkin_face_on": "blocks/pumpkin_face_on", "trapped_chest_front": "blocks/trapped_chest_front", "dripstone_carried": "blocks/carried/dripstone_carried",
     "mangrove_door": "items/mangrove_door", "ender_eye": "items/ender_eye", "leaf_litter": "items/leaf_litter",
+    "furnace_front": "blocks/furnace_front_off", "furnace_side": "blocks/furnace_side", "furnace_top": "blocks/furnace_top", "soul_lantern": "items/soul_lantern",
+    "white_candle": "items/candles/white_candle", "orange_candle": "items/candles/orange_candle", "rail_carried": "blocks/carried/rail_carried", "heartbreak_pottery_sherd": "items/heartbreak_pottery_sherd",
+    "rose_bush_carried": "blocks/carried/rose_bush_carried", "beehive_front": "blocks/beehive_front", "beehive_side": "blocks/beehive_side", "beehive_top": "blocks/beehive_top",
+    "spyglass": "items/spyglass", "web_carried": "blocks/carried/web_carried", "copper_bulb": "blocks/copper_bulb", "copper_lantern": "items/copper_lantern",
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
 FIRST_FRAME = {"sculk", "fire", "pumpkin_face_on"}

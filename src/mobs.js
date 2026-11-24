@@ -131,12 +131,15 @@ function faceSpot(face, fx, fy, fz) {
 // (the breeze's wind); scroll, it slides by that much of its width and
 // height a second, clock.t seconds in; glow, it shines in the dark, so it keeps its brightness and its faint texels
 // show, while dim darkens the rest for night (but not a lit texel's glow: the fainter it is, the less night dims it);
+// flat, a soft glow that lies on the face it's on, not turned to face the camera (a skull's eyes);
 // over, it's drawn over the layers before it where their faces meet, as the game draws an overlay on the same model
 // (the iron golem's cracks); behind, a soft glow the game draws behind the mob (a panel held behind its pivot, turned to
 // face the camera: the allay's halo), so it only lights what's round the mob, not the mob itself.
 // glassBones, bones whose alpha says how solid they are (a jar's glass), blended over what's behind them; culledBones, bones
 // whose faces only show from the front (a snow globe's walls, seen from within).
 // buried, it's in the ground and only shows above it (the zombie under a tombstone).
+// beam, a beam of light (a spotlight's): its colors, one, or several it goes through over so many seconds; its cubes' v says how
+// far along it's faded, from 0.5 (gone) to 1.5. It's left out of the model's bounds.
 // rim, an outline the game draws only where the mob itself isn't (a stencil), glowing: the allay's, its parts again a
 // little bigger in one bright color, so it shows as a thin lit edge round the mob.
 const SHEER_FINE = 4;
@@ -203,6 +206,10 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
     const shell = (flags.shellBones || []).some(pattern => boneMatches(name, pattern));
     const named = patterns => (patterns || []).some(pattern => boneMatches(name, pattern));
     const glass = named(flags.glassBones), culled = named(flags.culledBones);
+    const beam = flags.beam && flags.beam.colors;
+    // Where along its colors the beam is now, in the pack's 70 steps.
+    const along = beam && beam.length > 1 ? Math.floor((glintAt / flags.beam.seconds) % 1 * 70) / 70 * 6.9 : 0;
+    const shine = beam && beam[0].map((_, k) => Math.round(beam[Math.floor(along)][k] + (beam[Math.min(beam.length - 1, Math.floor(along) + 1)][k] - beam[Math.floor(along)][k]) * (along % 1)));
     // insideBones: the game culls the outsides of their cubes (a negative size turns a cube inside out), so only the
     // far faces show, seen from within (the Eye endermite's jelly, its pupil showing through the top).
     const inside = (flags.insideBones || []).some(pattern => boneMatches(name, pattern));
@@ -232,7 +239,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
           at[axis] = pivotAt;
         }
         const rect = ["front", "right", "left"].map(face => faceRect(uv, dims, face)).find(r => r && r[2] && r[3]);
-        if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, hold, bright: flags.bright === undefined ? 1 : flags.bright, behind: Boolean(flags.behind), bones: [...own, ...chainOf(i), ...upsideDown] });
+        if (rect) out.push({ soft: sprite(rect), span: Math.max(w, d) * size, tall: h * size, at, facing, hold, flat: Boolean(flags.flat), bright: flags.bright === undefined ? 1 : flags.bright, behind: Boolean(flags.behind), bones: [...own, ...chainOf(i), ...upsideDown] });
         continue;
       }
       // An inside-out cube (inside) lays its faces out from its origin, as the game does: where a size is negative its
@@ -243,7 +250,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
       const flipped = inside ? [0, 1, 2].map(k => hi[k] < lo[k]) : [false, false, false];
       for (const k of [0, 1, 2]) if (flipped[k]) [lo[k], hi[k]] = [hi[k] + 2 * g, lo[k] - 2 * g];
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), buried: Boolean(flags.buried), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), buried: Boolean(flags.buried), beam: Boolean(beam), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
           if (flipped[axis]) side = 1 - side;
           if (flipped[0]) fx = 0.9999 - fx;
@@ -259,6 +266,8 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
           const [s, t] = turnedSpot(faceSpot(face, fx, fy, fz), rect[4]);
           // A face drawn backwards (negative width or height) starts from the far edge of its texels.
           let u = rect[0] + s * rect[2] - (rect[2] < 0 ? 1e-4 : 0), v = rect[1] + t * rect[3] - (rect[3] < 0 ? 1e-4 : 0);
+          // Its color and its strength both fade out along it.
+          if (beam) return (shine[0] << 16 | shine[1] << 8 | shine[2]) + Math.round(255 * (v - 0.5) ** 2) * EMITS;
           if (scroll && clock) {
             u = (((u / tw + scroll[0] * clock.t) % 1) + 1) % 1 * tw;
             v = (((v / th + scroll[1] * clock.t) % 1) + 1) % 1 * th;
@@ -288,6 +297,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
 function boxesBounds(boxes) {
   const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
   for (const m of boxes) {
+    if (m.beam) continue;
     for (let c = 0; c < 8; c++) {
       const p = placeBy(m.bones || [], [c & 1 ? m.hi[0] : m.lo[0], c & 2 ? m.hi[1] : m.lo[1], c & 4 ? m.hi[2] : m.lo[2]]);
       p.forEach((v, i) => { lo[i] = Math.min(lo[i], v); hi[i] = Math.max(hi[i], v); });
@@ -342,8 +352,8 @@ async function lookBoxes(look, { flip = false, tint = null, clock = null, night 
   return Object.assign(parts.filter(p => !p.soft), { soft: parts.filter(p => p.soft) });
 }
 // Boxes moved down or up to stand on the ground: props hang from an armor stand's hand in their models. drop: how far, for
-// a prop that's animating (as far as it would at rest, so that it can jump).
-const landing = boxes => [{ pivot: [0, 0, 0], angles: [0, 0, 0], move: [0, GROUND - boxesBounds(boxes)[1][1], 0] }];
+// a prop that's animating (as far as it would at rest, so that it can jump). sunk: how far into the ground it stands (a look's: a broken pot).
+const landing = (boxes, sunk = 0) => [{ pivot: [0, 0, 0], angles: [0, 0, 0], move: [0, GROUND - boxesBounds(boxes)[1][1] + sunk, 0] }];
 function landed(boxes, drop = boxes && boxes.length ? landing(boxes) : null) {
   if (!boxes || !drop) return boxes;
   const moved = m => ({ ...m, bones: [...(m.bones || []), ...drop] });
@@ -355,7 +365,7 @@ const looksOf = key => (key.startsWith("prop:") ? propLooks(PROP_LOOKS[key.slice
 
 // A prop drawn on its own, size pixels square, as a PNG data URL, or null without its textures.
 async function propPicture(item, size) {
-  const boxes = await lookBoxes(PROP_LOOKS[item]);
+  const all = await lookBoxes(PROP_LOOKS[item]), boxes = all && all.filter(m => !m.beam);
   if (!boxes || !boxes.length) return null;
   const [lo, hi] = boxesBounds(boxes), mid = lo.map((v, i) => (v + hi[i]) / 2);
   const span = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
@@ -554,6 +564,15 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     m.p = [p[0] - roundBy() * x, p[1] + (STAGE_PITCH / RAD) * y, p[2]];
     return moving;
   };
+  // What changes on its own (a look's cycles: [seconds each, the bones shown one at a time], a fire's frames): the rules for now,
+  // and which they were when it was last drawn.
+  let cycles = [], cycledAt = "";
+  // Each of those moments as it was drawn (base), where nothing else moves.
+  const drawn = new Map();
+  const cycling = seconds => cycles.flatMap(([each, names]) => {
+    const now = names[Math.floor(seconds / each) % names.length];
+    return [...new Set(names)].map(n => [n, n === now]);
+  });
   // A prop's particles, when they were last moved on, how far down its ground is, and its scene as it was last drawn (base), to
   // draw them over again where nothing else has changed.
   const air = particleStage(() => redraw());
@@ -597,7 +616,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const float = { pivot: NO_MOVE, angles: NO_MOVE, move: [0, -rise, 0] };
     const placed = rise ? boxes.map(m => ({ ...m, bones: [...m.bones, float] })) : boxes;
     const scene = { ...view, width: canvas.width, height: canvas.height };
-    const flies = grounded && air.busy, same = flies && base && base.boxes === boxes && base.at === `${JSON.stringify(scene)}/${JSON.stringify(shadow)}`;
+    const flies = grounded && (air.busy || cycles.length > 0), same = flies && base && base.boxes === boxes && base.at === `${JSON.stringify(scene)}/${JSON.stringify(shadow)}`;
     const emitted = blooms && !same ? new Uint8ClampedArray(scene.width * scene.height * 4) : null;
     // A prop's parts hide its soft glows where they're in front of them (a coffin's door).
     const depth = same ? base.depth : flies || (grounded && (boxes.soft || []).length) ? new Float32Array(scene.width * scene.height).fill(Infinity) : null;
@@ -626,7 +645,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       ctx.globalCompositeOperation = "source-over";
     }
     // Soft glows add their light over the rest, smooth and always facing the camera.
-    for (const { soft, span, tall, at, bones, facing, hold, bright, behind } of boxes.soft || []) {
+    for (const { soft, span, tall, at, bones, facing, hold, flat, bright, behind } of boxes.soft || []) {
       // A glow behind the mob adds its light to the backdrop, under the mob; the rest adds it on top.
       const ctx = behind ? lightCtx() : sceneCtx;
       ctx.globalCompositeOperation = "lighter";
@@ -641,7 +660,13 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         const ahead = placeBy(placed, at.map((v, k) => v + facing[k])).map((v, k) => v - spot[k]);
         ctx.globalAlpha = bright * Math.min(1, Math.max(0, (0.2 - dot(ahead, camera(view).dir)) / 0.4));
       } else ctx.globalAlpha = bright;
-      ctx.drawImage(soft, gx - sw / 2, gy - sh / 2, sw, sh);
+      // A flat one (a panel the game doesn't turn to the camera: a skull's eyes) lies on its face, seen at its angle.
+      if (flat) {
+        const [[rx, ry], [dx, dy]] = [[span / 2, 0, 0], [0, tall / 2, 0]].map(by => camera(view).project(placeBy(placed, at.map((v, k) => v + by[k]))));
+        ctx.setTransform(rx - gx, ry - gy, dx - gx, dy - gy, gx, gy);
+        ctx.drawImage(soft, -1, -1, 2, 2);
+        ctx.resetTransform();
+      } else ctx.drawImage(soft, gx - sw / 2, gy - sh / 2, sw, sh);
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = "source-over";
     }
@@ -723,12 +748,21 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     airAt = now;
     // Nothing moves between the acts of something with no loops (a prop): it's already drawn.
     // (But for its particles.)
-    if (!acting && !motion.length && rested && (!gaze || gazedAt === yaw)) {
+    const cycled = cycling(now / 1000), cycledNow = JSON.stringify(cycled);
+    if (!acting && !motion.length && rested && (!gaze || gazedAt === yaw) && cycledAt === cycledNow) {
       if (blowing) draw();
       return;
     }
     const usual = acting && !act.keep ? Math.min(1, Math.max(0, 1 - into / ACT_FADE, (into - act.length + ACT_FADE) / ACT_FADE)) : 1;
-    const moving = motionPose(motion, now / 1000, usual), showing = acting ? actPose(moving, act, into) : [];
+    cycledAt = cycledNow;
+    const still = !acting && !motion.length && cycles.length > 0, kept = still && rested && drawn.get(cycledNow);
+    if (kept) {
+      ({ boxes } = base = kept);
+      draw();
+      drawn.set(cycledNow, base);
+      return;
+    }
+    const moving = motionPose(motion, now / 1000, usual), showing = [...cycled, ...(acting ? actPose(moving, act, into) : [])];
     if (acting) facing(moving, act, into);
     looking(moving);
     gazedAt = yaw;
@@ -739,6 +773,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     rested = !acting;
     const started = performance.now();
     draw();
+    if (still && base) drawn.set(cycledNow, base);
     slowFrames = performance.now() - started > SLOW_FRAME_MS ? slowFrames + 1 : 0;
     if (slowFrames >= SLOW_FRAMES) coarse = true;
   };
@@ -778,7 +813,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       const mooded = (mood && MOB_MOODS[mob] && MOB_MOODS[mob][mood]) || null, ofSize = (sized && MOB_SIZES[mob] && MOB_SIZES[mob][sized] && MOB_SIZES[mob][sized].looks) || null;
       const climated = (climate && MOB_CLIMATES[mob] && MOB_CLIMATES[mob][climate]) || null, ofClimate = (climated && climated.looks) || null;
       const key = wanted = `${mob}/${lookIndex}/${flip}/${night}/${mood}/${sized}/${climate}/${JSON.stringify(skins)}/${JSON.stringify(overlays)}/${JSON.stringify(shown)}/${JSON.stringify(carpet)}/${JSON.stringify(dyes)}/${JSON.stringify(extra)}/${plays}`, looks = ofSize || (mooded ? mooded.looks : ofClimate ? looksOf(mob).map((l, i) => (ofClimate[i] ? { ...l, ...ofClimate[i] } : l)) : looksOf(mob)), look = looks[lookIndex] || looks[0];
-      const ground = mob.startsWith("prop:") ? landed : b => b;
+      const ground = !mob.startsWith("prop:") ? b => b : look && look.sunk ? b => landed(b, b && b.length ? landing(b, look.sunk) : null) : b => landed(b);
       if (!look) return false;
       const fitOf = ([lo, hi]) => {
         const cx = (lo[0] + hi[0]) / 2, cz = (lo[2] + hi[2]) / 2;
@@ -821,7 +856,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       const options = { flip, tint, clock, night, glowing, stand, armor, skins, overlays, carpet, dyes, extra, showParts: shown, size: look.scale, height: f ? (2 * GROUND - f[0][1] - f[1][1]) * look.scale : 0 };
       const reach = f ? await reachOf(look, options) : { boxes: null, bounds: null }, next = reach.boxes;
       // A prop lands by how it stands at rest.
-      const raw = mob.startsWith("prop:") ? await lookBoxes(look, options) : null, drop = raw && raw.length ? landing(raw) : null;
+      const raw = mob.startsWith("prop:") ? await lookBoxes(look, options) : null, drop = raw && raw.length ? landing(raw, look.sunk) : null;
       if (wanted !== key) return false;
       const before = boxes;
       boxes = next;
@@ -840,18 +875,21 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         actStart = nextAct = 0;
       }
       gaze = look.gaze || null;
+      cycles = look.cycles || [];
+      drawn.clear();
       grounded = mob.startsWith("prop:");
       const emits = look.emits || [];
       dropped = drop ? drop[0].move[1] : 0;
       base = null;
       air.reset(grounded ? emits : [], { still: calmMotion(), ground: dropped / 16 });
       // Particles need the stage to play, though the prop itself doesn't move.
-      motion = next && (loops || (emits.length ? [] : null));
+      motion = next && (loops || (emits.length || cycles.length ? [] : null));
       // Where the pack draws the light itself (soft glow panels), that's the glow.
       const lights = flag => look.layers.some(([, , , flags]) => flags && flags[flag]);
       blooms = Boolean(kind && (lights("lit") || lights("litBones")) && !lights("soft"));
-      low = (kind && kind.low) || 0;
-      lies = Boolean(kind && rest && rest[1][1] - rest[0][1] < PROP_FLAT);
+      low = look.low || (kind && kind.low) || 0;
+      // So does one that says so (flat: a train set, whose shadow would be a disc inside its track).
+      lies = Boolean(look.flat || (kind && rest && rest[1][1] - rest[0][1] < PROP_FLAT));
       rested = false;
       intro = null;
       if (kind && !calmMotion()) {

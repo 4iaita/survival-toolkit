@@ -12,6 +12,6 @@
 @media (max-width: 880px) { .props-view { position: static; } }
 .prop-stage { height: 280px; }
 .prop-line { margin-top: 12px; }
-.props-pick .cat-label, #prop-variant-bar .cat-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
-.props-pick .cat-hint, #prop-variant-bar .cat-hint { font: 600 12.5px/1.3 var(--font-body); color: var(--ink-soft); }
+.props-pick .cat-label, #prop-variant-bar .cat-label, #prop-row-bar .cat-label { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.props-pick .cat-hint, #prop-variant-bar .cat-hint, #prop-row-bar .cat-hint { font: 600 12.5px/1.3 var(--font-body); color: var(--ink-soft); }
 .props-pick .slot-btn .ico { width: 36px; height: 36px; image-rendering: auto; }

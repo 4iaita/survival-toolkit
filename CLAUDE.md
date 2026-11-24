@@ -168,11 +168,11 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas and Halloween (all 2026-11-24). Left, in page order: Around the house, Outdoors and Tents. For each section: every texture must be one from `../textures`, animations and light glow
+Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents, Christmas, Halloween and Around the house (all 2026-11-24). Left, in page order: Outdoors and Tents. For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
-How to do a section (as `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
+How to do a section (as `import_house.py`, `import_christmas.py` and `import_halloween.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
@@ -250,7 +250,7 @@ What Christmas found:
   them warm, in a real Chrome at scale 2 (the globes run at 20 frames a second).
 - After touching the renderer, hash every prop picture and a frame of every mob on the new page and the committed one, and compare.
 - Offered, not asked for: Stockings (leather
-  boots the stand wears, with a banner in its hand: 24 models on dpg, one entrance), and hanging the piñata and the wreath
+  boots the stand wears, with anything but a banner in its hand: 24 models on dpg, one entrance), and hanging the piñata and the wreath
   off the ground as the pack has them (they're landed, like every prop).
 
 What Halloween found:
@@ -276,6 +276,35 @@ What Halloween found:
   is taken again every frame. Follow the attachable's `particle_effects` (a name it lacks plays nothing: the Christmas tree's).
   A look's `reach` makes room for what rises (the chimney's smoke, which made it smaller).
 - The jack-in-the-box is framed for the creeper at full stretch (`reach`), so it's small when shut: offered to change, not asked for.
+
+What Around the house found:
+
+- The list in the user's prompt (from the last section's survey) can be wrong too: check each claim. The cobweb, copper bulb and copper
+  lantern are the sports nets, the scoreboard and the spotlight; the globe and the lava lamp do move; the banner's layers weren't the Stockings.
+- A banner alone shows nothing: its plain model is bound to the stand's shrunken hand. With leather boots of one of the 16 dyes it's a
+  flag, four poses in 16 designs. That second choice is a row of its own, `PROP_ROWS` (`src/prop-data.js`): `PROP_LOOKS`' variants hold a
+  look for each of the first kind's poses, then the second's, and so on. With anything else in the hand the boots are the Stockings.
+- A pose can be read without `v.jxykui` (`v.rczxgr==n` in a pre_animation line: the scoreboard's digits, by part_visibility).
+- What changes on its own by a timer in a render controller (arrays picked by life_time, part_visibility by time_stamp) goes in a look's
+  `cycles`: [seconds each, bones shown one at a time]. Each moment is drawn once and kept (`drawn` in `src/mobs.js`), so it stays sharp.
+  Several geometries become one model, a bone for each (`fire_model`).
+- `beam` (a layer's flag): light added over what's behind it, fading along its cubes' v, going through its colors; not in the bounds. A
+  negative cube (`turned_out`) is inside out: a bone of its own in `insideBones`, or its far walls are drawn in front (the fireplace was
+  a flat orange sheet, the lava lamp a solid block).
+- `sunk` (a look) with `buried` (its layer): how far into the ground it stands. `low` and `flat` can be a look's too. Check every prop's lowest
+  point (`boxesBounds` on `lookBoxes`): landing it lifts what the pack sinks.
+- A layer left unlit drops its texels under alpha 128, so a glowing one (alpha 1) becomes a hole: the skull's pupils. Scan for texels of
+  alpha 1 to 127 on bones that aren't lit, glass or opaque, and give those bones `litBones`.
+- A panel the pack doesn't turn to the camera (no animation on its bone) is `flat`, as well as `eyes`. A panel that's a cube round something
+  (the soul lantern's) is held out past that thing's corners, or its frame hides the light.
+- A flame is one particle that stays (`flame`, `candles`): starting a new one every time round left a frame without it, which the user saw.
+  Check that nothing that goes round leaves a gap: count its pixels frame by frame. A particle's x is the other way round from the model's.
+- im.look's `pose` is everything the name turns on, loops and entrances too: don't take it as the rest pose.
+- BSD sed has no \b (use perl), and all the scripts share one scope: a new top-level name can clash (`CANDLE`). Check the whole page loads.
+- The importers rewrite `particle_z.png` and `prop_lava_bucket.png` with the same pixels: `git checkout` them before committing.
+- The user had the strider piñata moved from Christmas to Around the house, beside the llama (its importer is still `import_christmas.py`). The
+  White Candle (the pack's "Festive candle") was offered to Christmas, and an "unlit" for the Orange Candle (no flame in the pack); neither asked for.
+- The fireplace jumps partly off the stage as it lands: framing it for that would make it a quarter smaller, left as it is.
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.

@@ -38,7 +38,7 @@ const PROP_GROUPS = [
     { k: "mangrove_boat", n: "Mangrove Boat", what: "A red and gold sleigh with a sack of presents." },
     { k: "cocoa_beans", n: "Cocoa Beans", what: "A gingerbread house. Punch the stand three times to knock, and a gingerbread man steps out and waves. Its windows light up at night." }, { k: "cookie", n: "Cookie", what: "A jar of cookies." },
     { k: "twisting_vines", n: "Twisting Vines", what: "A green candy cane." }, { k: "weeping_vines", n: "Weeping Vines", what: "A red candy cane." },
-    { k: "sweet_berries", n: "Sweet Berries", what: "A potted holly bush with a red bow." }, { k: "warped_fungus_on_a_stick", n: "Warped Fungus on a Stick", what: "A strider piñata hanging from a rope. Punch the stand to whack it." },
+    { k: "sweet_berries", n: "Sweet Berries", what: "A potted holly bush with a red bow." },
     { k: "snow", n: "Snow Block", what: "A snowman with a broom." }, { k: "snowball", n: "Snowball", what: "A small snow globe with a snowman inside. Punch the stand to shake it." },
     { k: "snow_layer", n: "Snow", what: "A layer of snow that drapes over the block under it." }, { k: "diamond_shovel", n: "Diamond Shovel", what: "A shovel stuck in a pile of snow." },
     { k: "brick_block", n: "Bricks", what: "A brick chimney. Smoke rises from it." },
@@ -52,12 +52,17 @@ const PROP_GROUPS = [
     { k: "trapped_chest", n: "Trapped Chest", what: "A jack-in-the-box with a creeper in a jester’s hat. Come close, or punch the stand, and it springs out." }, { k: "leaf_litter", n: "Leaf Litter", what: "A pile of autumn leaves with a rake. Punch the stand for a puff of leaves." },
   ] },
   { n: "Around the house", items: [
-    { k: "cake", n: "Cake", what: "A birthday cake with candles." }, { k: "furnace", n: "Furnace", what: "A kitchen stove." },
-    { k: "cartography_table", n: "Cartography Table", what: "A globe." }, { k: "lava_bucket", n: "Lava Bucket", what: "A lava lamp." },
-    { k: "soul_lantern", n: "Soul Lantern", what: "A street lamp." }, { k: "red_candle", n: "Red Candle", what: "A lamp with red shades." },
-    { k: "white_candle", n: "White Candle", what: "A candle beside a little autumn tree." }, { k: "rail", n: "Rail", what: "A toy train set." },
-    { k: "feather", n: "Feather", what: "A heap of cushions." }, { k: "carrot_on_a_stick", n: "Carrot on a Stick", what: "A piñata hanging from a stick." },
-    { k: "heartbreak_pottery_sherd", n: "Heartbreak Pottery Sherd", what: "A smashed pot." }, { k: "creeper_head", n: "Creeper Head", what: "A creeper on a stand." },
+    { k: "cake", n: "Cake", what: "A two-tier birthday cake with nine candles. Their flames glow." }, { k: "furnace", n: "Furnace", what: "A brick fireplace with a log fire burning in it." },
+    { k: "cartography_table", n: "Cartography Table", what: "A desk globe. Punch the stand to spin it." }, { k: "lava_bucket", n: "Lava Bucket", what: "A lava lamp. It glows." },
+    { k: "soul_lantern", n: "Soul Lantern", what: "A gothic street lamp with a soul flame in it. The flame glows." },
+    { k: "red_candle", n: "Red Candle", what: "A candelabra with a skull on it and three red candles. Its flames and the skull’s eyes glow." },
+    { k: "white_candle", n: "White Candle", what: "Three festive candles with holly round them. Their flames glow." },
+    { k: "rail", n: "Rail", what: "A toy train that goes round its track with a villager, a creeper and a zombie on board. The signal glows." },
+    { k: "feather", n: "Feather", what: "A pillow fort with a teddy bear inside. Its string lights glow." },
+    { k: "carrot_on_a_stick", n: "Carrot on a Stick", what: "A llama piñata hanging from a rope. Punch the stand to whack it." },
+    { k: "warped_fungus_on_a_stick", n: "Warped Fungus on a Stick", what: "A strider piñata hanging from a rope. Punch the stand to whack it." },
+    { k: "heartbreak_pottery_sherd", n: "Heartbreak Pottery Sherd", what: "A broken pot, half sunk in the ground." },
+    { k: "creeper_head", n: "Creeper Head", what: "A creeper anatomy statue: one half its skin, the other its skeleton with TNT inside." },
   ] },
   { n: "Outdoors", items: [
     { k: "water_bucket", n: "Water Bucket", what: "A birdbath." }, { k: "campfire", n: "Campfire", what: "An iron fire pit." },
@@ -91,8 +96,16 @@ const PROP_ICONS = {
   skeleton_skull: C("skeleton_skull_front", "skeleton_skull_top", "skeleton_skull_side"), chiseled_stone_bricks: C("chiseled_stone_bricks"),
   mangrove_door: L("mangrove_door"), pointed_dripstone: L("dripstone_carried"), wheat: L("wheat"), ender_eye: L("ender_eye"),
   trapped_chest: C("trapped_chest_front", "chest_top", "chest_side"), leaf_litter: L("leaf_litter"),
+  cake: L("cake"), furnace: C("furnace_front", "furnace_top", "furnace_side"), cartography_table: C("cartography_table_front", "cartography_table_top", "cartography_table_side"),
+  lava_bucket: L("lava_bucket"), soul_lantern: L("soul_lantern"), red_candle: L("red_candle"), white_candle: L("white_candle"), orange_candle: L("orange_candle"),
+  rail: L("rail_carried"), feather: L("feather"), carrot_on_a_stick: L("carrot_on_a_stick"), heartbreak_pottery_sherd: L("heartbreak_pottery_sherd"),
+  creeper_head: C("creeper_head_front", "creeper_head_top", "creeper_head_side"), bamboo: L("bamboo"), rose_bush: L("rose_bush_carried"),
+  beehive: C("beehive_front", "beehive_top", "beehive_side"), spyglass: L("spyglass"), leather: L("leather"), web: L("web_carried"),
+  copper_bulb: C("copper_bulb"), copper_lantern: L("copper_lantern"),
 };
 for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
+// A banner is a model in the game, with no picture of its own: the one the Villager Trades tab draws.
+ICONS["held:banner"] = tradeSpec("White Banner");
 // The versions an item's prop comes in (PROP_LOOKS' look and its variants, in order), one for each of the stand's poses in turn.
 const CLIMATE_KINDS = ["Temperate", "Cold", "Warm"];
 const PROP_VARIANTS = {
@@ -102,6 +115,15 @@ const PROP_VARIANTS = {
   magenta_wool: ["Lucy", "Blue", "Wild", "Cyan", "Gold"], pink_wool: CLIMATE_KINDS,
   rabbit_foot: ["Brown", "Black", "Gold", "White", "Black and White", "Killer Bunny"],
   twisting_vines: ["Small", "Big"], weeping_vines: ["Small", "Big"],
+  banner: ["Standing", "On a Wall", "Flagpole", "Flag"], leather: ["Standing", "On a Wall"], web: ["Basketball", "Soccer", "Volleyball"],
+  copper_bulb: ["Blank", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "–", "="],
+  copper_lantern: ["White, High", "White, Low", "Rainbow, High", "Rainbow, Low"],
+};
+// Another choice that goes with every variant: n its name, how to make it, kinds (a button in each color), what it picks. A
+// look for each of its kinds' variants, in turn.
+const PROP_ROWS = {
+  banner: { n: "Boots", how: "Dye the stand’s leather boots to switch.", what: "boots", kinds: ["black", "blue", "brown", "cyan", "gray", "green", "light blue", "light gray", "lime", "magenta", "orange", "pink", "purple", "red", "white", "yellow"]
+    .map(c => ({ n: c.replace(/\b./g, x => x.toUpperCase()), swatch: DYES[c] })) },
 };
 // How to switch, where it isn't by changing the stand's pose.
 const PROP_SWITCH = Object.fromEntries(["twisting_vines", "weeping_vines"].map(k => [k, "Place the stand diagonally for the big one."]));

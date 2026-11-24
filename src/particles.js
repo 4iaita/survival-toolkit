@@ -27,23 +27,43 @@ const snow = (from, life, nodes) => ({
   texture: "snow", sheet: [32, 32], uv: () => [8, 0, 4, 4], at: p => [between(-1.25, 1.25), from(p), between(-1.25, 1.25)], way: () => [0, -1, 0], speed: () => 1,
   life, pull: () => [between(-1, 1), 0, between(-1, 1)], size: p => { const s = between(0.75, 1) * curveAt(nodes, p.age / p.life) / 8; return [s, s]; },
 });
-// A flame: one at a time, its frames one under another over the 4 seconds it lasts; still, it shows where nothing moves.
-const flame = (texture, sheet, frame, frames, y, size) => ({
-  texture, sheet, count: () => 1, every: 4, still: true, upright: true, at: () => [0, y, 0], life: () => 4, size: () => size,
-  uv: p => [0, Math.min(frames - 1, Math.floor(p.age / p.life * frames)) * frame[1], ...frame],
+// A flame, one at each spot: its frames one under another (from u across), round and round in FLAME_SECONDS. (The pack starts a
+// new one each time round; one that stays doesn't blink as it goes.) still: it shows where nothing moves too. phase: each starts
+// at a frame of its own.
+const FLAME_SECONDS = 4;
+const flame = (texture, sheet, frame, frames, spots, size, { u = 0, phase = false } = {}) => ({
+  texture, sheet, count: () => spots.length, still: true, upright: true, at: p => spots[p.n], life: () => Infinity, size: () => size,
+  uv: p => [u, (Math.floor(p.age / FLAME_SECONDS * frames) + (phase ? Math.floor(p.r1 * frames) : 0)) % frames * frame[1], ...frame],
 });
+// The candles' flames all share a sheet, a color to each column. Half its width and height.
+const CANDLE_FLAME = [0.666 / 8, 0.666 * 3 / 16];
+const candles = (u, spots, more) => flame("candle_flame", [12, 192], [4, 6], 32, spots.map(([x, y, z]) => [x / 16, y / 16 + CANDLE_FLAME[1], z / 16]), CANDLE_FLAME, { u, ...more });
 // count: how many at once (every so many seconds), or rate: how many a second, up to most at a time, for so many seconds (else
 // all the time). A particle is born at at, going way at speed; pull and drag move it, spin turns it, lands is how it lands.
 // size: its half width and height; uv: its part of the sheet; tint: its color and how solid it is; upright: it only turns to the
 // reader about its own height.
 const PARTICLES = {
-  pumpkin_flame: flame("pumpkin_flame", [8, 384], [8, 12], 32, 1.5, [0.25, 0.375]), // cestwf
-  candle_flame: flame("candle_flame", [12, 192], [4, 6], 32, 15 / 16 + 0.666 * 3 / 16, [0.666 / 8, 0.666 * 3 / 16]), // hwbujj
+  pumpkin_flame: flame("pumpkin_flame", [8, 384], [8, 12], 32, [[0, 1.5, 0]], [0.25, 0.375]), // cestwf
+  candle_flame: candles(0, [[0, 15, 0]]), // hwbujj
+  cake_flames: candles(0, [[13, 25, -13], [0, 25, -13], [-13, 25, -13], [-13, 25, 0], [-13, 25, 13], [0, 25, 13], [13, 25, 13], [13, 25, 0], [0, 39, 0]], { phase: true }), // hqhjri
+  // Their x is the other way round from the model's, as the game has it.
+  red_flames: candles(4, [[-6, 35, 0], [0, 40, 0], [6, 37, 0]]), // wvqasx, yarqfa, jxbvwo
+  white_flames: candles(0, [[6, 18.25, 1], [0, 24.25, -2], [-6, 18.25, 1]]), // vmpdgl
+  soul_flame: flame("candle_flame", [12, 192], [4, 6], 32, [[0, 53 / 16 + 3 / 16, 0]], [2 / 16, 3 / 16], { u: 8 }), // corpjb
+  // The hearth's: a flame every 0.4 seconds, growing up out of nothing, and sparks.
+  hearth_flames: { texture: "pumpkin_flame", sheet: [8, 384], count: () => 1, every: 0.4, at: () => [between(-0.4, 0.4), 0.6 + between(-0.1, 0.1), between(-0.25, 0.25)], life: () => 3, // hsfnkm
+    size: p => [0.2, Math.min(p.age * 3, 0.3)], uv: p => [0, Math.min(31, Math.floor(p.age / 3 * 32)) * 12, 8, 12] },
+  hearth_sparks: { texture: "z", sheet: [16, 16], uv: () => [0, 0, 1, 1], rate: 20, most: 30, at: () => [between(-0.35, 0.35), 0.4, between(-0.25, 0.25)], way: () => [0, 1, 0], speed: () => 1.25, life: () => between(0.25, 0.75), // culanl
+    size: p => { const s = Math.min(0.35, Math.max(0.1, p.life - p.age)) * 0.15; return [s, s]; },
+    // From #FFF1A4 to #EB740C to #99101D.
+    tint: p => { const f = p.age / p.life * 2, [a, b] = f < 1 ? [[255, 241, 164], [235, 116, 12]] : [[235, 116, 12], [153, 16, 29]]; return [...a.map((v, k) => v + (b[k] - v) * (f % 1)), 1]; } },
   sweets: { ...THROWN, texture: "sweets", sheet: [14, 2], count: () => between(10, 15), uv: p => [Math.floor(p.r4 * 7) * 2, 0, 2, 2], size: () => [1 / 16, 1 / 16] }, // sabqgy
   leaves: { ...THROWN, texture: "leaves", sheet: [8, 4], count: () => between(10, 15), uv: p => [5, Math.floor(p.r4 * 4), 1, 1], // fgaqsv
     size: p => { const s = (1 - Math.min(1, Math.max(0, (p.age / p.life - 0.95) / 0.05))) * 0.375; return [s, s]; } },
   confetti: { ...THROWN, texture: "confetti", sheet: [1, 1], count: () => between(3, 4), at: () => [0, 12 / 16, 0], uv: () => [0, 0, 1, 1], size: () => [1 / 32, 2 / 32], // fivuiy
     tint: p => [...(p.r1 < 0.325 ? [0xc9, 0x19, 0x19] : p.r1 < 0.655 ? [0xff, 0xb2, 0x09] : [0x23, 0xa9, 0x6d]), 1], lands: { drag: 20, bounce: 0.25, radius: 0.05 } },
+  confetti_bright: { ...THROWN, texture: "confetti", sheet: [1, 1], count: () => between(3, 4), at: () => [0, 12 / 16, 0], uv: () => [0, 0, 1, 1], size: () => [1 / 32, 2 / 32], // gywhhe
+    tint: p => [...[[0xff, 0x67, 0x20], [0xff, 0xd2, 0x1f], [0x1d, 0xd3, 0x75], [0x24, 0xbc, 0xc9], [0xe6, 0x4b, 0xbe]][Math.min(4, Math.floor(p.r1 * 5))], 1], lands: { drag: 20, bounce: 0.25, radius: 0.05 } },
   straw: { ...THROWN, texture: "straw", sheet: [1, 5], count: () => Math.pow(between(0, 2), 3), at: () => [0, 1.75, 0], way: () => [between(-1, 1), between(-0.25, 1), between(-1, 1)], // hvbtrt
     speed: p => 2 + p.r4 * 3, drag: p => 3 - p.r4 * 2, spin: p => (p.r2 > 0.5 ? 200 : -200), uv: p => [0, Math.floor(p.r3 * 5), 1, 1], size: () => [0.25, 0.25], lands: { drag: 3, bounce: 0, radius: 0.125 } },
   earth: { ...EARTH, count: () => 6, way: () => [between(-0.25, 0.25), 0.5, between(-0.25, 0.25)], speed: () => 5 }, // dsdrzi
@@ -60,8 +80,8 @@ const PARTICLES = {
 // A stage's particles: what's emitting, and what's in the air. onLoad hears when a texture has come.
 function particleStage(onLoad) {
   let emitters = [], bits = [], textures = {}, floor = 0;
-  const born = kind => {
-    const def = PARTICLES[kind], p = { kind, def, age: 0, r1: Math.random(), r2: Math.random(), r3: Math.random(), r4: Math.random() };
+  const born = (kind, n = 0) => {
+    const def = PARTICLES[kind], p = { kind, def, n, age: 0, r1: Math.random(), r2: Math.random(), r3: Math.random(), r4: Math.random() };
     p.life = def.life(p);
     p.at = def.at(p);
     const way = def.way ? def.way(p) : NO_MOVE, far = Math.hypot(...way) || 1, speed = def.speed ? def.speed(p) : 0;
@@ -95,7 +115,7 @@ function particleStage(onLoad) {
         if (!still) start(kind, wait);
         else if (PARTICLES[kind].still) {
           load(kind);
-          born(kind);
+          for (let n = 0; n < PARTICLES[kind].count(); n++) born(kind, n);
         }
       }
     },
@@ -108,7 +128,7 @@ function particleStage(onLoad) {
         }
         const def = PARTICLES[e.kind];
         if (def.count) {
-          if (e.age === 0) for (let n = Math.round(def.count()); n > 0; n--) born(e.kind);
+          if (e.age === 0) for (let n = 0, all = Math.round(def.count()); n < all; n++) born(e.kind, n);
           e.age += dt;
           if (!def.every) e.done = true;
           else if (e.age >= def.every) e.age = 0;
