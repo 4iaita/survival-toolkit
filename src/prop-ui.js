@@ -49,6 +49,7 @@ function showProp(squish = false) {
   $("prop-variant-bar").hidden = !kinds;
   if (kinds) {
     $("prop-variant-label").textContent = `Variant: ${kinds[propVariant]}`;
+    $("prop-variant-how").textContent = PROP_SWITCH[p.k] || "Change the stand’s pose to switch.";
     $("prop-variant-try").innerHTML = kinds.map((n, i) => `<button type="button" class="name-chip" data-variant="${i}" aria-pressed="${i === propVariant}">${n}</button>`).join("");
   }
   propView.show(`prop:${p.k}`, propVariant, { squish });

@@ -228,6 +228,10 @@ FILES = {
     "sapling_jungle": "blocks/sapling_jungle", "mangrove_propagule": "items/mangrove_propagule", "sapling_oak": "blocks/sapling_oak", "sapling_pale_oak": "blocks/pale_oak_sapling",
     "sapling_spruce": "blocks/sapling_spruce", "sapling_poplar": "blocks/poplar_sapling", "iron_nautilus_armor": "items/nautilus_armor/iron_nautilus_armor", "bowl": "items/bowl", "iron_horse_armor": "items/iron_horse_armor",
     "bundle": "items/bundle",
+    # The armor stand props' items (the ones nothing else has).
+    "bucket_powder_snow": "items/bucket_powder_snow", "mangrove_boat": "items/mangrove_boat", "cocoa_beans": "items/dye_powder_brown",
+    "sapling_spruce_carried": "blocks/carried/sapling_spruce_carried", "leaves_spruce_carried": "blocks/leaves_spruce_carried",
+    "twisting_vines_carried": "blocks/carried/twisting_vines_carried", "weeping_vines_carried": "blocks/carried/weeping_vines_carried", "brick_block": "blocks/brick",
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
 FIRST_FRAME = {"sculk", "fire"}

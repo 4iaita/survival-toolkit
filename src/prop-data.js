@@ -33,14 +33,15 @@ const PROP_GROUPS = [
     }).map(([c, what]) => ({ k: `${c.toLowerCase().replace(" ", "_")}_bundle`, n: `${c} Bundle`, what })),
   ] },
   { n: "Christmas", items: [
-    { k: "spruce_sapling", n: "Spruce Sapling", what: "A decorated Christmas tree." }, { k: "spruce_leaves", n: "Spruce Leaves", what: "A Christmas wreath." },
-    { k: "powder_snow_bucket", n: "Powder Snow Bucket", what: "A snow globe with a village inside." }, { k: "mangrove_boat", n: "Mangrove Boat", what: "Santa’s sleigh, full of presents." },
-    { k: "cocoa_beans", n: "Cocoa Beans", what: "A gingerbread house." }, { k: "cookie", n: "Cookie", what: "A jar of cookies." },
+    { k: "spruce_sapling", n: "Spruce Sapling", what: "A decorated Christmas tree with presents around it. Its lights and star glow." }, { k: "spruce_leaves", n: "Spruce Leaves", what: "A Christmas wreath with a red bow." },
+    { k: "powder_snow_bucket", n: "Powder Snow Bucket", what: "A large snow globe with a cabin and an iron golem Santa inside. Punch the stand to shake it. The windows and the golem’s eyes glow." },
+    { k: "mangrove_boat", n: "Mangrove Boat", what: "A red and gold sleigh with a sack of presents." },
+    { k: "cocoa_beans", n: "Cocoa Beans", what: "A gingerbread house. Punch the stand three times to knock, and a gingerbread man steps out and waves. Its windows light up at night." }, { k: "cookie", n: "Cookie", what: "A jar of cookies." },
     { k: "twisting_vines", n: "Twisting Vines", what: "A green candy cane." }, { k: "weeping_vines", n: "Weeping Vines", what: "A red candy cane." },
-    { k: "sweet_berries", n: "Sweet Berries", what: "A potted holly plant." }, { k: "warped_fungus_on_a_stick", n: "Warped Fungus on a Stick", what: "A Christmas cracker hanging from a stick." },
-    { k: "snow", n: "Snow Block", what: "A snowman with a broom." }, { k: "snowball", n: "Snowball", what: "A giant snowball." },
-    { k: "snow_layer", n: "Snow", what: "A snowdrift." }, { k: "diamond_shovel", n: "Diamond Shovel", what: "A shovel stuck in the snow." },
-    { k: "brick_block", n: "Bricks", what: "A brick chimney." },
+    { k: "sweet_berries", n: "Sweet Berries", what: "A potted holly bush with a red bow." }, { k: "warped_fungus_on_a_stick", n: "Warped Fungus on a Stick", what: "A strider piñata hanging from a rope. Punch the stand to whack it." },
+    { k: "snow", n: "Snow Block", what: "A snowman with a broom." }, { k: "snowball", n: "Snowball", what: "A small snow globe with a snowman inside. Punch the stand to shake it." },
+    { k: "snow_layer", n: "Snow", what: "A layer of snow that drapes over the block under it." }, { k: "diamond_shovel", n: "Diamond Shovel", what: "A shovel stuck in a pile of snow." },
+    { k: "brick_block", n: "Bricks", what: "A brick chimney. Smoke rises from it." },
   ] },
   { n: "Halloween", items: [
     { k: "lit_pumpkin", n: "Jack o’Lantern", what: "A big carved jack o’lantern." }, { k: "pumpkin", n: "Pumpkin", what: "A pile of pumpkins and gourds." },
@@ -72,12 +73,20 @@ const PROP_GROUPS = [
 ];
 // The items' own icons, for the line under the stage: the same drawing the rest of the site uses (a section's are added
 // once its props have been checked against the pack).
+// Leaves: a see-through block, its far sides showing through the gaps.
+const LEAVES = { boxes: [[0, 0, 0, 16, 16, 16], [0, 0, 0, 0.1, 16, 16], [0, 0, 0, 16, 0.1, 16], [0, 0, 0, 16, 16, 0.1]].map(b => ({ b, faces: [["leaves_spruce_carried"], ["leaves_spruce_carried"], ["leaves_spruce_carried"]] })) };
 const PROP_ICONS = {
   ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c === "light_gray" ? "silver" : c}_wool`, C_(`${c}_wool`, `${c}_wool`)])),
   // A carpet's texture is its wool's: a slab a pixel thick, raised to the middle of the icon.
   ...Object.fromEntries(Object.keys(DYES).map(c => c.replace(" ", "_")).map(c => [`${c}_carpet`, { shift: 3.5, boxes: [{ b: [0, 0, 0, 16, 1, 16], faces: [[`${c}_wool`], [`${c}_wool`], [`${c}_wool`]] }] }])),
   bundle: L("bundle"), ...Object.fromEntries(Object.keys(DYES).map(c => `${c.replace(" ", "_")}_bundle`).map(k => [k, L(k)])),
   rabbit_foot: L("rabbit_foot"), dragon_breath: L("dragon_breath"), sculk_vein: L("sculk_vein"), dried_ghast: DRIED_GHAST,
+  // The pack gives some blocks an inventory texture of their own (blocks.json's carried_textures). A layer of snow is two
+  // pixels thick.
+  spruce_sapling: L("sapling_spruce_carried"), spruce_leaves: LEAVES, powder_snow_bucket: L("bucket_powder_snow"), mangrove_boat: L("mangrove_boat"),
+  cocoa_beans: L("cocoa_beans"), cookie: L("cookie"), twisting_vines: L("twisting_vines_carried"), weeping_vines: L("weeping_vines_carried"), sweet_berries: L("sweet_berries"),
+  warped_fungus_on_a_stick: L("warped_fungus_on_a_stick"), snow: C("snow"), snowball: L("snowball"), diamond_shovel: L("diamond_shovel"), brick_block: C("brick_block"),
+  snow_layer: { shift: 3, boxes: [{ b: [0, 0, 0, 16, 2, 16], faces: [["snow"], ["snow"], ["snow"]] }] },
 };
 for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
 // The versions an item's prop comes in (PROP_LOOKS' look and its variants, in order), one for each of the stand's poses in turn.
@@ -88,4 +97,7 @@ const PROP_VARIANTS = {
   ...Object.fromEntries(Object.keys(DYES).map(c => [`${c.replace(" ", "_")}_carpet`, ["Rug", "Canopy"]])),
   magenta_wool: ["Lucy", "Blue", "Wild", "Cyan", "Gold"], pink_wool: CLIMATE_KINDS,
   rabbit_foot: ["Brown", "Black", "Gold", "White", "Black and White", "Killer Bunny"],
+  twisting_vines: ["Small", "Big"], weeping_vines: ["Small", "Big"],
 };
+// How to switch, where it isn't by changing the stand's pose.
+const PROP_SWITCH = Object.fromEntries(["twisting_vines", "weeping_vines"].map(k => [k, "Place the stand diagonally for the big one."]));

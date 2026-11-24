@@ -168,12 +168,12 @@ committed page afterwards. When removing a texture, take it out of `FILES` in `i
 ## Armor Stands, section by section
 
 The user reviews the tab's sections one at a time (`PROP_GROUPS` in `src/prop-data.js`, more in `prop-data-more.js`). Done:
-Plushies, Rugs and Canopies (the carpets, once "Couches"), and Presents (all 2026-11-24). Left, in page order: Christmas, Halloween, Around the house, Outdoors
+Plushies, Rugs and Canopies (the carpets, once "Couches"), Presents and Christmas (all 2026-11-24). Left, in page order: Halloween, Around the house, Outdoors
 and Tents. For each section: every texture must be one from `../textures`, animations and light glow
 are added where the pack has them, variants get buttons, and the held item's icon goes in the line under the stage. Show the
 result, wait for approval, then update README and this file, commit, push to main and write the prompt for the next section.
 
-How to do a section (as `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
+How to do a section (as `import_christmas.py`, the fullest, `import_plushies.py`, `import_presents.py` and, for a simpler one, `import_couches.py` do):
 
 1. Look the props up in the pack, not in the page: `import_additions.read_props()` (the attachables that check §§),
    `im.look(d, rcs, mats, anims, "§§", held=True)` for the layers, `im.scripted(d, "§§", True)` to see which of
@@ -227,7 +227,32 @@ What Presents found:
   `show` shows everything again.
 - One act can be shared by props whose animation is the same, with all their bones in it: bones a model lacks are ignored.
 - An act that goes up out of the prop: the kind's `reach` (in `PROP_ACTS`) is the height the stage is framed to.
-- A prop with an `anim` plays no loops (`ownLoops` in `src/mobs.js`): a section whose props have an idle needs that added.
+
+What Christmas found:
+
+- A §§ stand scales its waist to nothing (`xyblkf`), so anything bound to its hand never shows: `im.look`'s last layer is the prop,
+  and layers before it (a plain snowball, a plain shovel) are dropped.
+- A kind's idle goes in its `loops` (`PROP_ACTS`; `keep`, one that goes on under its acts). What's still in a loop, and an entrance's
+  last frame, go in the look's `pose`, and everything else is baked as what it adds to that (`entrance`, `beyond` in
+  `import_christmas.py`): so nothing is posed twice. A long entrance is stored in `held` parts, each bone for just the seconds it moves in.
+- `blend_weight` isn't baked by `im`: multiply it in yourself (`Prop.at`'s weight; Molang's ease_out_expo isn't in `molang.py`). An
+  `anim_time_update` of delta_time * 0.25 is a quarter of the speed. Check how many of the model's bones an animation has: the
+  tree's wiggle has none.
+- `v.vipnxs` and `v.cdntav` (the side the stand is hit from) have to be given values, or the swing bakes as nothing (`HIT`).
+- See-through materials (`oreville_kipfdc`, `entity_alphablend`): `glassBones`, blended by their alpha. Without `DisableCulling`
+  ("onesided" in the bone's name): `culledBones`. Drawn without them a globe's far walls hid what's inside.
+- `litBones` on a prop blooms too. Use it rather than `lit` where other texels of the layer are faint but not lit (a bee's wings).
+- q.body_y_rotation in a controller's arrays picks a look by how the stand is placed: a variant, with its own line in `PROP_SWITCH`.
+  A `time_of_day` part (the gingerbread windows) shows its lit state, and the description says when it's lit.
+- The pack's list can be wrong: it swaps the two piñatas (warped fungus on a stick is the strider). Go by the model.
+- Item icons: the pack's `subpacks/SP2/blocks.json` gives some blocks an inventory texture (`carried_textures`, in
+  `textures/blocks/carried`). Leaves (`LEAVES`) and a layer of snow have drawings of their own.
+- `renderScene` is slow on props that fill the stage: while they move they're drawn at 1× (`coarse`), at rest always sharp. Time
+  them warm, in a real Chrome at scale 2 (the globes run at 20 frames a second).
+- After touching the renderer, hash every prop picture and a frame of every mob on the new page and the committed one, and compare.
+- Offered, not asked for: particles on the prop stage (snow in the big globe, chimney smoke, the piñata's confetti), Stockings (leather
+  boots the stand wears, with a banner in its hand: 24 models on dpg, one entrance), and hanging the piñata and the wreath
+  off the ground as the pack has them (they're landed, like every prop).
 
 Anything the pack triggers by the stand's pose is a variant with a button, never something that plays by itself (the user
 asked why the reversible squid and ghast weren't). Picking another prop puts its turn and variant back to the start, as the Mobs tab does.

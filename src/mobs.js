@@ -134,6 +134,8 @@ function faceSpot(face, fx, fy, fz) {
 // over, it's drawn over the layers before it where their faces meet, as the game draws an overlay on the same model
 // (the iron golem's cracks); behind, a soft glow the game draws behind the mob (a panel held behind its pivot, turned to
 // face the camera: the allay's halo), so it only lights what's round the mob, not the mob itself.
+// glassBones, bones whose alpha says how solid they are (a jar's glass), blended over what's behind them; culledBones, bones
+// whose faces only show from the front (a snow globe's walls, seen from within).
 // rim, an outline the game draws only where the mob itself isn't (a stencil), glowing: the allay's, its parts again a
 // little bigger in one bright color, so it shows as a thin lit edge round the mob.
 const SHEER_FINE = 4;
@@ -198,6 +200,8 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
     // game's emissive materials draw them (a zombie pig's eye, a baby spider's).
     const emissive = least === 1 && !glow;
     const shell = (flags.shellBones || []).some(pattern => boneMatches(name, pattern));
+    const named = patterns => (patterns || []).some(pattern => boneMatches(name, pattern));
+    const glass = named(flags.glassBones), culled = named(flags.culledBones);
     // insideBones: the game culls the outsides of their cubes (a negative size turns a cube inside out), so only the
     // far faces show, seen from within (the Eye endermite's jelly, its pupil showing through the top).
     const inside = (flags.insideBones || []).some(pattern => boneMatches(name, pattern));
@@ -236,7 +240,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
       const flipped = inside ? [0, 1, 2].map(k => hi[k] < lo[k]) : [false, false, false];
       for (const k of [0, 1, 2]) if (flipped[k]) [lo[k], hi[k]] = [hi[k] + 2 * g, lo[k] - 2 * g];
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim), rim: Boolean(flags.rim), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), bones: [...own, ...chainOf(i), ...upsideDown],
         color(axis, side, fx, fy, fz) {
           if (flipped[axis]) side = 1 - side;
           if (flipped[0]) fx = 0.9999 - fx;
@@ -258,6 +262,7 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
           }
           const px = Math.min(tex.w - 1, Math.max(0, Math.floor(u * kx))), py = Math.min(tex.h - 1, Math.max(0, Math.floor(v * ky)));
           const k = (py * tex.w + px) * 4, alpha = tex.px[k + 3];
+          if (glass) return alpha ? (tex.px[k] << 16 | tex.px[k + 1] << 8 | tex.px[k + 2]) + alpha * EMITS : -1;
           if (flags.sheer ? alpha === 0 || (alpha < 128 && (Math.floor(u * kx * SHEER_FINE) + Math.floor(v * ky * SHEER_FINE)) & 1) : dye ? alpha === 0 : alpha < least) return -1;
           const bright = emissive ? light + (1 - light) * (1 - alpha / 255) : light;
           const mul = dye && alpha >= 128 ? dye.color.map(c => c / 255 * bright) : [bright, bright, bright];
@@ -379,32 +384,33 @@ function layerBones(pose, bones, frameAt, weight = 1) {
   }
 }
 // A mob's animation t seconds in, as bone poses: its loops layered, each between its nearest two frames, weight times
-// as strong.
+// as strong (a loop that keeps going under the acts, keep, always at full strength).
 function motionPose(loops, t, weight = 1) {
   const pose = {};
-  for (const { length, bones } of loops) {
+  for (const { length, bones, keep } of loops) {
     layerBones(pose, bones, frames => {
       const at = ((t % length) / length) * frames.length, i = Math.floor(at);
       return [frames[i], frames[(i + 1) % frames.length], at - i];
-    }, weight);
+    }, keep ? 1 : weight);
   }
   return pose;
 }
 // Something a mob is doing, t seconds in, layered onto a pose; says which bones it shows or hides. As in the game, one
 // part blends into the next that follows on from it over ACT_BLEND seconds: the one ending held at its last frame,
 // fading out, as the next fades in. An act that eases (its ease, in seconds) fades in at its start and out at its end
-// (a walk, starting and stopping).
+// (a walk, starting and stopping). A held part (a prop's entrance is stored as these) blends with nothing: it holds its
+// first frame before it and its last one after.
 const ACT_BLEND = 0.24;
 function actPose(pose, act, t) {
   const showing = [], follows = (a, b) => Math.abs(a - b) < 1e-3;
   const edge = act.ease ? Math.max(0, Math.min(1, t / act.ease, (act.length - t) / act.ease)) : 1;
   for (const part of act.parts) {
-    const going = t >= part.to && t - part.to < ACT_BLEND && act.parts.some(q => follows(q.from, part.to));
-    if ((t < part.from || t >= part.to) && !going) continue;
+    const going = !part.held && t >= part.to && t - part.to < ACT_BLEND && act.parts.some(q => !q.held && follows(q.from, part.to));
+    if ((t < part.from || t >= part.to) && !going && !part.held) continue;
     if (!going) showing.push(...part.show);
-    const coming = !going && t - part.from < ACT_BLEND && act.parts.some(q => q !== part && follows(q.to, part.from));
+    const coming = !going && !part.held && t - part.from < ACT_BLEND && act.parts.some(q => q !== part && !q.held && follows(q.to, part.from));
     const weight = going ? 1 - (t - part.to) / ACT_BLEND : coming ? (t - part.from) / ACT_BLEND : 1;
-    const through = going ? 1 : (t - part.from) / (part.to - part.from);
+    const through = going ? 1 : Math.max(0, Math.min(1, (t - part.from) / (part.to - part.from)));
     layerBones(pose, part.bones, frames => {
       const at = through * (frames.length - 1), i = Math.floor(at);
       return [frames[i], frames[Math.min(i + 1, frames.length - 1)], at - i];
@@ -450,19 +456,13 @@ function sleepZs(age) {
   return out;
 }
 
-// The light a scene's glowing texels (EMITS) spread round them, as a canvas to add over it: just those texels, the rest
-// black and in front of them where it is, blurred by shrinking and growing them back, and mostly left off the texels
-// themselves, which would wash out. spread: how far, in pixels.
-function bloomOf(boxes, scene, spread) {
-  const lit = boxes.map(m => ({ ...m, color: (...spot) => {
-    const color = m.color(...spot), emits = Math.floor(color / EMITS);
-    return color < 0 ? -1 : emits > 0 ? color : 0;
-  } }));
-  const px = renderScene(lit, scene);
-  for (let i = 0; i < px.length; i += 4) if (!px[i] && !px[i + 1] && !px[i + 2]) px[i + 3] = 0;
+// The light a scene's glowing texels (EMITS) spread round them, as a canvas to add over it: just those texels (renderScene's
+// emitted, width by height), blurred by shrinking and growing them back, and mostly left off the texels themselves, which would
+// wash out. spread: how far, in pixels.
+function bloomOf(emitted, { width, height }, spread) {
   const canvasOf = (width, height) => Object.assign(document.createElement("canvas"), { width, height });
-  const sharp = canvasOf(scene.width, scene.height);
-  sharp.getContext("2d").putImageData(new ImageData(px, scene.width, scene.height), 0, 0);
+  const sharp = canvasOf(width, height);
+  sharp.getContext("2d").putImageData(new ImageData(emitted, width, height), 0, 0);
   let from = sharp;
   for (let step = spread; step > 1; step /= 2) {
     const to = canvasOf(Math.max(1, Math.round(from.width / 2)), Math.max(1, Math.round(from.height / 2))), ctx = to.getContext("2d");
@@ -470,7 +470,7 @@ function bloomOf(boxes, scene, spread) {
     ctx.drawImage(from, 0, 0, to.width, to.height);
     from = to;
   }
-  const out = canvasOf(scene.width, scene.height), ctx = out.getContext("2d");
+  const out = canvasOf(width, height), ctx = out.getContext("2d");
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(from, 0, 0, out.width, out.height);
   ctx.globalCompositeOperation = "destination-out";
@@ -541,11 +541,13 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
   };
   let boxes = null, rest = null, fit = null, zoomed = 1, swims = false, yaw = startYaw, frame = 0, dragX = null, wanted = "";
   let effects = [], lookScale = 1, motion = null, acts = null, act = null, actStart = 0, nextAct = 0, intro = null, rested = false, blooms = false, lies = false, rebuild = null, playing = false, busy = false, lastStep = 0, slowFrames = 0, coarse = false;
+  // Whether it's moving now: what's at rest (a prop between its acts) is always drawn sharp.
+  const moves = () => Boolean(motion && motion.length) || !rested;
   const draw = () => {
     frame = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (!w || !h) return;
-    const dpr = dragX !== null || coarse ? 1 : Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
+    const dpr = dragX !== null || (coarse && moves()) ? 1 : Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     if (light) lightCtx().clearRect(0, 0, light.width, light.height);
@@ -577,7 +579,8 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     const float = { pivot: NO_MOVE, angles: NO_MOVE, move: [0, -rise, 0] };
     const placed = rise ? boxes.map(m => ({ ...m, bones: [...m.bones, float] })) : boxes;
     const scene = { ...view, width: canvas.width, height: canvas.height };
-    const px = renderScene(placed.filter(m => !m.shell && !m.rim), { ...scene, shadows: lies ? [] : [[mid[0], mid[2], shadow]] });
+    const emitted = blooms ? new Uint8ClampedArray(scene.width * scene.height * 4) : null;
+    const px = renderScene(placed.filter(m => !m.shell && !m.rim), { ...scene, emitted, shadows: lies ? [] : [[mid[0], mid[2], shadow]] });
     // Rims only show where the mob isn't drawn (they may go over its shadow).
     const rims = placed.filter(m => m.rim);
     if (rims.length) {
@@ -590,7 +593,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
     ctx.putImageData(new ImageData(px, canvas.width, canvas.height), 0, 0);
     // A prop whose texels glow lights up what's round them.
     if (blooms) {
-      const halo = bloomOf(placed, scene, BLOOM_SPREAD * dpr);
+      const halo = bloomOf(emitted, scene, BLOOM_SPREAD * dpr);
       ctx.globalCompositeOperation = "lighter";
       ctx.globalAlpha = BLOOM;
       ctx.drawImage(halo, 0, 0);
@@ -723,9 +726,9 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // another of the mob's sets (plays: a chick's, in MOB_MOTIONS and MOB_ACTS as "<mob>:<set>"); so can what it wears
       // (plays, a sheared snow golem's).
       const setKey = plays || look.plays ? `${mob}:${plays || look.plays}` : null;
-      // A prop's are its kind's (look.anim, PROP_ACTS): an entrance when it's picked, and acts.
+      // A prop's are its kind's (look.anim, PROP_ACTS): an entrance when it's picked, acts and loops.
       const kind = (look.anim && PROP_ACTS[look.anim]) || null;
-      const ownLoops = kind ? [] : look.motions || (setKey && MOB_MOTIONS[setKey]) || (mooded ? mooded.motions : (climated && climated.motions) || MOB_MOTIONS[mob] || null);
+      const ownLoops = kind ? kind.loops || [] : look.motions || (setKey && MOB_MOTIONS[setKey]) || (mooded ? mooded.motions : (climated && climated.motions) || MOB_MOTIONS[mob] || null);
       // What it wears can have loops of its own, played over the mob's (a harness's wings beating).
       const kinds = armor && MOB_ARMOR[armor.kind] && MOB_ARMOR[armor.kind].kinds, wornLoops = (kinds && kinds[armor.type] && kinds[armor.type].motions) || null;
       const loops = wornLoops ? [...(ownLoops || []), ...wornLoops] : ownLoops;
@@ -775,7 +778,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
         actStart = nextAct = 0;
       }
       motion = next && loops;
-      blooms = Boolean(kind && look.layers.some(([, , , flags]) => flags && flags.lit));
+      blooms = Boolean(kind && look.layers.some(([, , , flags]) => flags && (flags.lit || flags.litBones)));
       lies = Boolean(kind && rest && rest[1][1] - rest[0][1] < PROP_FLAT);
       rested = false;
       intro = null;

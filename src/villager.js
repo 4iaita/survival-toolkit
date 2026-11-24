@@ -118,9 +118,12 @@ function camera({ yaw, pitch = 0.2, scale, center, origin }) {
 // lit from the camera's upper left; where nothing is hit, shadows ([x, z, radius] on the ground) darken it.
 // A texel's color can also say how much of its own light it gives off, 0 to 255, in units of EMITS above its 0xRRGGBB
 // (a mob's emissive texels: glowing eyes): that much of it isn't shaded by the face it's on. A glowing box isn't shaded.
+// A glass box (glass) is see-through: its texels' colors say how solid they are in those units instead, and it shows its
+// near and far faces, blended over what's behind them. emitted: pixels to fill with just the texels that give off light
+// (glass aside), the rest left clear (bloomOf). A culled box (culled) only shows the faces turned to the camera.
 const EMITS = 0x1000000;
 const shadeOf = (m, shade, color) => (m.glow ? 1 : shade + (1 - shade) * Math.floor(color / EMITS) / 255);
-function renderScene(boxes, { width, height, shadows = [], ...view }) {
+function renderScene(boxes, { width, height, shadows = [], emitted = null, ...view }) {
   const { right, down, dir, scale, center, origin } = camera(view);
   const toWorld = ([a, b, c]) => [0, 1, 2].map(i => right[i] * a + down[i] * b + dir[i] * c);
   const light = toWorld([-0.45, -1, -0.75].map(v => v / Math.hypot(0.45, 1, 0.75)));
@@ -146,7 +149,7 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
       return [dot(rel, right), dot(rel, down)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
-    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+    return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, o, stepX, stepY, r, shade, across: span(0), along: span(1) };
   });
   // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
   const shadowSpans = shadows.map(([sx, sz, radius]) => {
@@ -157,6 +160,8 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
     return [0, 1].flatMap(k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))]);
   });
   const out = new Uint8ClampedArray(width * height * 4), o = [0, 0, 0];
+  // The glass faces a pixel's ray meets: how far off, their colors and their light.
+  const paneT = [], paneColor = [], paneShade = [];
   for (let py = 0; py < height; py++) {
     const b = (py + 0.5 - origin[1]) / scale, row = prepared.filter(m => b >= m.along[0] && b <= m.along[1]);
     // Most of the canvas is empty, so each row only works out the pixels a box or shadow can reach.
@@ -167,7 +172,7 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
     const from = Math.max(0, Math.floor(origin[0] + first * scale) - 1), to = Math.min(width, Math.ceil(origin[0] + last * scale) + 1);
     for (let px = from; px < to; px++) {
       const a = (px + 0.5 - origin[0]) / scale;
-      let bestT = Infinity, bestColor = -1, bestShade = 0;
+      let bestT = Infinity, bestColor = -1, bestShade = 0, bestEmits = false, panes = 0;
       for (const m of row) {
         if (a < m.across[0] || a > m.across[1]) continue;
         const r = m.r;
@@ -192,22 +197,37 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
           if (back >= 0) {
             bestT = far;
             bestColor = back % EMITS;
+            bestEmits = back >= EMITS;
             bestShade = shadeOf(m, m.shade[backAxis][1 - backSide], back);
           }
           continue;
         }
         const side = r[axis] > 0 ? 0 : 1;
+        if (m.glass) {
+          for (let pass = 0; pass < (m.culled ? 1 : 2); pass++) {
+            const t = pass ? far : near, i = pass ? backAxis : axis, on = pass ? (r[backAxis] > 0 ? 1 : 0) : side;
+            const color = m.color(i, on, frac(0, t), frac(1, t), frac(2, t));
+            if (color < 0) continue;
+            // Kept farthest first.
+            let k = panes++;
+            for (; k > 0 && paneT[k - 1] < t; k--) { paneT[k] = paneT[k - 1]; paneColor[k] = paneColor[k - 1]; paneShade[k] = paneShade[k - 1]; }
+            paneT[k] = t; paneColor[k] = color; paneShade[k] = m.shade[i][on];
+          }
+          continue;
+        }
         const color = m.color(axis, side, frac(0, near), frac(1, near), frac(2, near));
         if (color >= 0) {
           bestT = near;
           bestColor = color % EMITS;
+          bestEmits = color >= EMITS;
           bestShade = shadeOf(m, m.shade[axis][side], color);
-        } else if (far < bestT) {
+        } else if (far < bestT && !m.culled) {
           // Through a see-through texel, the inside of the box's far face shows: the game draws both sides.
           const backSide = r[backAxis] > 0 ? 1 : 0, back = m.color(backAxis, backSide, frac(0, far), frac(1, far), frac(2, far));
           if (back >= 0) {
             bestT = far;
             bestColor = back % EMITS;
+            bestEmits = back >= EMITS;
             bestShade = shadeOf(m, m.shade[backAxis][backSide], back);
           }
         }
@@ -218,12 +238,23 @@ function renderScene(boxes, { width, height, shadows = [], ...view }) {
         out[j + 1] = (bestColor >> 8 & 255) * bestShade;
         out[j + 2] = (bestColor & 255) * bestShade;
         out[j + 3] = 255;
+        if (emitted && bestEmits) for (let k = 0; k < 4; k++) emitted[j + k] = out[j + k];
       } else if (shadows.length) {
         const t = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
         const gx = start[0] + right[0] * a + down[0] * b + dir[0] * t, gz = start[2] + right[2] * a + down[2] * b + dir[2] * t;
         let dark = 0;
         for (const [sx, sz, radius] of shadows) dark = Math.max(dark, 1 - ((gx - sx) ** 2 + (gz - sz) ** 2) / radius ** 2);
         out[j + 3] = 90 * dark;
+      }
+      // Glass in front of that.
+      for (let k = 0; k < panes; k++) {
+        if (paneT[k] >= bestT) continue;
+        const rgb = paneColor[k] % EMITS, solid = Math.floor(paneColor[k] / EMITS) / 255, shade = paneShade[k] * solid;
+        const under = (out[j + 3] / 255) * (1 - solid), alpha = solid + under;
+        out[j] = ((rgb >> 16) * shade + out[j] * under) / alpha;
+        out[j + 1] = ((rgb >> 8 & 255) * shade + out[j + 1] * under) / alpha;
+        out[j + 2] = ((rgb & 255) * shade + out[j + 2] * under) / alpha;
+        out[j + 3] = alpha * 255;
       }
     }
   }
