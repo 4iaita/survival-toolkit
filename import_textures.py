@@ -413,6 +413,47 @@ def import_cuts(out):
         (out / f"_{name}.png").unlink(missing_ok=True)
 
 
+# Whole animated textures (art/frames/), as [file in the pack, the piece to cut out of it]: the moving backdrops draw every
+# frame (see src/backdrop-motion.js).
+FRAMES = {"lava_still": ("blocks/lava_still", None), "lava_flow": ("blocks/lava_flow", None), "fire": ("blocks/fire_0", None), "sculk": ("blocks/sculk", None),
+          "gold_ore": ("blocks/gold_ore", None), "diamond_ore": ("blocks/diamond_ore", None), "redstone_ore": ("blocks/redstone_ore", None),
+          "lantern_block": ("blocks/lantern", None),
+          "leaf_tinted": ("full-pack/subpacks/SP2/textures/particle/biome_tinted_leaves_atlas", None), "leaf_pale_oak": ("full-pack/subpacks/SP2/textures/particle/pale_oak_leaves_atlas", None),
+          "leaf_orange": ("full-pack/subpacks/SP2/textures/particle/orange_poplar_leaves_atlas", None), "leaf_red": ("full-pack/subpacks/SP2/textures/particle/red_poplar_leaves_atlas", None), "leaf_gold": ("full-pack/subpacks/SP2/textures/particle/yellow_poplar_leaves_atlas", None),
+          "lava_pop": ("full-pack/subpacks/SP2/textures/particle/particles", (8, 24, 16, 32)),
+          "flame": ("full-pack/subpacks/SP2/textures/particle/particles", (0, 24, 8, 32))}
+
+
+# The pack's lapis ore doesn't glint as its gold and diamonds do: the same white star, coming and going on three of its stones.
+def lapis_frames(first):
+    from PIL import Image
+    stages = [{(0, 0): .8}, {(0, 0): 1, **dict.fromkeys([(1, 0), (-1, 0), (0, 1), (0, -1)], .5)},
+              {(0, 0): 1, **dict.fromkeys([(1, 0), (-1, 0), (0, 1), (0, -1)], 1), **dict.fromkeys([(2, 0), (-2, 0), (0, 2), (0, -2)], .45)},
+              {(0, 0): 1, **dict.fromkeys([(1, 0), (-1, 0), (0, 1), (0, -1)], .75), **dict.fromkeys([(2, 0), (-2, 0), (0, 2), (0, -2)], .4)},
+              {(0, 0): 1, **dict.fromkeys([(1, 0), (-1, 0), (0, 1), (0, -1)], .5)}]
+    sheet = Image.new("RGBA", (16, 16 * 11))
+    for f in range(11):
+        img = first.copy()
+        for (x, y), start in [((4, 5), 1), ((11, 9), 4), ((4, 12), 6)]:
+            for (dx, dy), white in (stages[f - start] if 0 <= f - start < 5 else {}).items():
+                at = (x + dx, y + dy)
+                img.putpixel(at, tuple(round(c + (255 - c) * white) for c in img.getpixel(at)[:3]) + (255,))
+        sheet.paste(img, (0, f * 16))
+    return sheet
+
+
+def import_frames(out):
+    from PIL import Image
+    (out / "frames").mkdir(exist_ok=True)
+    for name, (file, box) in FRAMES.items():
+        src, to = pack / f"{file}.png", out / "frames" / f"{name}.png"
+        if box:
+            Image.open(src).convert("RGBA").crop(box).save(to)
+        else:
+            shutil.copyfile(src, to)
+    lapis_frames(Image.open(pack / "blocks/lapis_ore.png").convert("RGBA").crop((0, 0, 16, 16))).save(out / "frames" / "lapis_ore.png")
+
+
 def main():
     out = root / "art"
     out.mkdir(exist_ok=True)
@@ -432,6 +473,7 @@ def main():
     print(f"art/: {len(FILES) - len(missing)} textures from {pack}")
     if missing:
         print("missing (the drawn icon is used instead):", ", ".join(missing))
+    import_frames(out)
     import_cuts(out)
     import_dried_ghast(out)
     import_item_pictures(out)

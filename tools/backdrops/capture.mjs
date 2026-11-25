@@ -60,7 +60,7 @@ try {
     }
     return out;
   })()`);
-  const seen = {}, order = [];
+  const seen = {}, order = [], motions = {};
   for (const c of configs) {
     await run(`(() => { pickMob(${JSON.stringify(c.mob)}, ${JSON.stringify(c.tag || "")});
       ${c.variant ? `document.querySelector('button[data-variant="${c.variant}"]').click();` : ""}
@@ -70,11 +70,12 @@ try {
     if (seen[biome]) { seen[biome].push(c.label); continue; }
     seen[biome] = [c.label];
     order.push(biome);
+    motions[biome] = await run(`mobBackdrop.motion()`);
     if (want && !want.has(biome)) continue;
     await sleep(2500);
     // The mob (and any glow the pack draws behind it, .stage-light: the blaze's), its name tag and the hint hidden (SHOW_MOB=1 keeps the mob, to judge the scene round it); the clouds'
-    // drift stopped at its start.
-    const hide = process.env.SHOW_MOB ? ".stage-hint,#mob-tag" : "#mob-art,.stage-light,.stage-hint,#mob-tag";
+    // drift stopped at its start. What moves (.stage-motion) is left out too: the gallery draws it over the picture, moving.
+    const hide = process.env.SHOW_MOB ? ".stage-hint,#mob-tag" : "#mob-art,.stage-light,.stage-motion,.stage-hint,#mob-tag";
     const box = await run(`(() => { const s = document.getElementById("mob-stage");
       for (const el of s.querySelectorAll(${JSON.stringify(hide)})) el.style.visibility = "hidden";
       for (const a of document.getAnimations()) a.pause(), a.currentTime = 0;
@@ -85,7 +86,7 @@ try {
     writeFileSync(file, Buffer.from(shot.result.data, "base64"));
     console.log(`#${order.length} ${biome} (${c.label}) -> ${file}`);
   }
-  writeFileSync(join(out, "index.json"), JSON.stringify(order.map(b => ({ biome: b, mobs: seen[b] })), null, 1));
+  writeFileSync(join(out, "index.json"), JSON.stringify(order.map(b => ({ biome: b, mobs: seen[b], ...(motions[b] && { motion: motions[b] }) })), null, 1));
   done(0);
 } catch (e) {
   console.error(e);

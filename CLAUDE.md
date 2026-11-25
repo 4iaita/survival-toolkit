@@ -76,14 +76,16 @@ rows (`MOB_ROWS`), and on name tags in `src/tag-data*.js`.
 
 - `src/backdrop.js`: every scene (`BACKDROPS`) and the drawing (`backdropView`). Read the header comments of the helpers
   you touch.
+- `src/backdrop-motion.js`: what moves in a background, drawn on a canvas of its own (`.stage-motion`) over the still picture.
+  See "What moves in a background".
 - `src/mob.css`: each stage's `--sky` and `--haze` colors, and the ground strip's brightness, by `data-biome`.
 - `src/trade.css`: the clouds (`.stage::before`), shared by every stage; the jungle has its own placement.
 - `src/villager.js`: the ground strip's texture for each biome (`groundArt`).
 - `art/`: the 16×16 textures the page embeds (a taller one is animation frames; the first frame is used). Add one by
   copying it from `../textures/blocks/` and registering it in `import_textures.py` (`FILES`) so a re-import keeps it.
 
-The Villager Trades tab draws the village biomes with the same scenes, so changing plains, desert, savanna, snowy, taiga,
-swamp, jungle or village changes that tab too. A `_night` biome reuses its day scene unless it has its own (the plains',
+The Villager Trades tab's link (`#trading`) opens the villager in the Mobs tab (`openVillagerTrades` in `src/mob-ui.js`), so its own stage
+isn't seen. A `_night` biome reuses its day scene unless it has its own (the plains',
 the pale garden's).
 
 ## How a scene is built
@@ -114,6 +116,57 @@ the pale garden's).
 - `wall.props`: things drawn in the far wall itself, `[prop, at, up]` (`up`: blocks over the floor), hazed like the wall
   (the mineshaft's corridor, `mineCorridor`).
 
+## What moves in a background
+
+Every background has an animation, added one by one and approved by the user (2026-11-24 and 25):
+
+- Air bubbles (`drawBubbles`): 14, 15, 16, 17, 26. Gas off the sulfur pools (`drawGas`, `sulfurPool`'s `gas`): 24.
+- Twinkling stars (`drawStars`): 19, 21, 23, 27, 29. Falling leaves (`drawLeaves`): 7, 8, 23, 25, and a few in 1, 3, 5, 10, 19, 29; not
+  from spruces or far trees.
+- Snow (`drawSnow`, "not too much"): 6. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
+- Calm sand (`drawSand`): 4, 21, 13. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
+- Lava (`drawLava`): 32, 30. Fire (`drawFire`): 32. Torches (`drawTorches`): 22, 28. Spawner flames (`drawSpawners`): 20, 30. Vault
+  sparks (`drawVaults`): 20. Lights that wax and wane (`drawLight`): 2, 22, 28, 30, 34.
+- Ores and the lantern (`drawSheets`): 2. Drips (`drawDrips`): 2, 22. Sculk (`drawSculk`): 31. Wheat (`drawSway`): 18.
+- End crystals (`drawCrystals`): 33. End rods (`drawRods`): 34.
+
+Left still: snow in 27 (flakes would be lost among its stars; `NIGHTS.snowy` turns `moves` off), the End's sky, the nether's magma and light.
+
+- `backdropView`'s `draw` ends by describing what moves (`setMotion`: plain data, in CSS pixels); `drawMotion` draws it from
+  that and the seconds gone by, nothing else. A new kind of motion: a key in that description, and a line in `drawMotion`.
+- `src/backdrop-motion.js` must not use anything else on the page: the gallery runs that same file over its pictures. The
+  captures leave the layer out (`.stage-motion` hidden) and put the description in `index.json` (`motion`), so a new animation
+  needs its backgrounds captured again and the gallery rebuilt, and then plays there as on the page.
+- A block's texture that moves: name it in the scene's `moves` (`["lava", "fire"]`). `movingCells` finds its blocks and, by painting the
+  scene twice with a flat stand-in for the texture (`standIns`), the haze and light over them and what stands in front, so they look
+  exactly as they did still. One with see-through texels (fire) must be left out of the still picture too (`paint`'s stand-ins); so
+  it's missing from the PNG captures, not from the gallery.
+- Stars: `drawNight` leaves every other star that nothing covers out of the still picture and lists it (`twinkling`), so the moving
+  ones need no cutting out; at 0 seconds (reduced motion) all shine in full.
+- Plants that sway: their texture in `LEFT_OUT` and `SWAYS`, and in the scene's `moves`.
+- Something that moves behind what stands near (mist): `front` is the near props alone, as a picture, cut out of it.
+- Leaves: a scene's `leaves` is how many at most (`leavesLand`: blocks over the floor they land, the swamp's water). `leafMotion` finds the
+  crowns as they're painted and picks the pack's leaf particle by block and tint (`leafSheet`); the pack has no cherry petal (`CHERRY_PETAL`).
+- Blocks that simply play their texture's frames: an entry in `SHEETS` and its name in the scene's `moves` (`sheetMotion`, `drawSheets`); `"light"` in
+  `moves` makes the scene's lights wax and wane; `drips` picks which dripstones drip (the user wanted two, not all). The pack has no lapis
+  glint: `lapis_frames` in `import_textures.py` makes it.
+- Light drawn at less than full strength: a frame and the next must share it out (`lighter`, 1 - fade and fade), or it pulses at every frame.
+- Working out what moves takes up to 90 ms (the nether): `show` redraws only for another biome.
+- A near prop is hazed less than the wall (`mist`), so it stands out lighter; where the user wanted it in the wall's tone (the cave's and the mineshaft's ore mounds), shade
+  its blocks by the difference (`oreMound`'s `tone`).
+- The gallery cuts the moving layer off at the ground strip (`clip-path`), which is in front of it on the page.
+- Dim scenes: what glows in the game is too faint to see move under the scene's shade (the user asked for more glow on the sculk). Add its
+  bright texels again over it, unshaded (`glowSheet`, `SCULK_GLOW` is how strongly; `drawInScene`'s `bare`).
+- A check for movement must compare colors, not only alpha: sculk changes color in place.
+- Small things (flakes, leaves) at a texel a CSS pixel were too small to see: draw them 1.5 to 2 times that.
+- Whole animated textures are in `art/frames/` (`FRAMES` in `import_textures.py`, `ART_FRAMES` on the page); speeds come from the
+  pack's `flipbook_textures.json` (`../textures/full-pack/subpacks/SP2/textures`). The lavafall runs at 4 texels a second, not the
+  pack's 1, so it shows.
+  `art/lava.png` is older than the folder's `lava_still`, which is what moves.
+- After changing `backdropView`, capture all 34 into the scratchpad and compare with `out`: pixels should differ by 1 at most.
+- Reduced motion: it's drawn once and stays still. It stops while the stage is hidden.
+- Don't check it in the browser pane: it throttles frames, so it can look stuck. Use a headless Chrome of its own, as `capture.mjs` does.
+
 ## Lessons learned (check these first)
 
 - Many block textures are sheets of parts (a model's UV layout), not pictures: lantern, soul lantern, bell, candle, sea
@@ -136,6 +189,8 @@ the pale garden's).
 - Some pack textures are made pale to be tinted (sugar cane, `reeds`): tint them with the biome's grass color.
 - Jagged far shapes: snow lying a different depth column to column, or peaks bumping one column at a time, leave lone
   one-block spikes; the user asked for them gone. Smooth over several columns (`snowDepth`, `jag`).
+- Near snow as single blocks on one-wide steps touches only at the corners and looks like it floats: make it one sheet, each column's snow
+  reaching down beside the next lower one's (the peaks' crags).
 - After every change, capture and look before reporting.
 
 ## The Mobs tab's controls and facts

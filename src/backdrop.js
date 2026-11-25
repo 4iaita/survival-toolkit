@@ -303,7 +303,13 @@ const wheatFarm = prop([
 // Each biome's scene: hills (top and fill blocks, height in blocks, trees at fractions of the width) and
 // nearer props at offsets in blocks from the middle.
 const grassyTop = t => ({ layers: [["dirt"], ["grass_side_overlay", t.grass]] });
-const oreMound = (ore, rows) => prop(rows, { R: blockTex("stone"), T: blockTex("tuff"), O: blockTex(ore) });
+// tone: shades it (a color), where it should be as dark as the wall behind it.
+const oreMound = (ore, rows, tone) => {
+  const more = tone ? { shade: [[0, 0, 16, 16, tone]] } : {};
+  return prop(rows, { R: blockTex("stone", null, more), T: blockTex("tuff", null, more), O: blockTex(ore, null, more) });
+};
+// The cave's wall is 62% haze (the mineshaft's 50%) and what stands near 30%: this much more of it makes the two the same.
+const CAVE_TONE = "rgba(13, 13, 19, .457)", MINE_TONE = "rgba(13, 13, 19, .286)";
 // A tunnel leading off from a cave: a stepped opening in the rock, its stone darker the further in, black at its heart,
 // a seam of coal in its side in the same shade.
 const caveTunnel = prop([
@@ -333,7 +339,8 @@ const fortressBridge = prop([
   "ii......ii......ii......ii......ii",
   "jj......jj......jj......jj......jj",
 ], { f: { layers: [["nether_brick", null, [5, 11]]] }, ...Object.fromEntries([..."abcdefghij"].map(k => [k, blockTex("nether_brick")])) });
-const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava") });
+// flows: it runs down (see drawLava).
+const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava", null, { flows: true }) });
 const monument = prop([
   "......PPPP......",
   "....PPPLLPPP....",
@@ -583,13 +590,14 @@ const spikePatch = (heights, base) => {
     t: plantTex("sulfur_spike_up_tip"), f: plantTex("sulfur_spike_up_frustum"), m: plantTex("sulfur_spike_up_middle"), b: plantTex("sulfur_spike_up_base") });
 };
 // A sulfur pool, as the game makes them: acid-green water (~) in a basin of sulfur (S), potent sulfur (P) on its floor
-// giving off its noxious gas (w, bubbles on it), white bubbles rising out of the water over it (g).
+// giving off its noxious gas (w), white bubbles rising out of the water (g, the block over it they rise into, not drawn
+// itself: they move, drawn by backdrop-motion.js). gas: where, as [column, blocks up it starts, blocks up it ends].
 const SULFUR_WATER = "#34bf89";
-const GAS = { rects: [[3, 9, 5, 11, "rgba(240, 250, 235, .85)"], [10, 4, 12, 6, "rgba(240, 250, 235, .8)"], [6, 1, 7, 2, "rgba(240, 250, 235, .7)"], [13, 12, 14, 13, "rgba(240, 250, 235, .6)"]], cap: false };
-const sulfurPool = rows => prop(rows, {
-  S: blockTex("sulfur"), C: blockTex("cinnabar"), P: blockTex("potent_sulfur"), g: GAS,
-  "~": { layers: [["water", SULFUR_WATER]], rows: [2, 16], cap: false },
-  w: { layers: [["potent_sulfur"]], rects: GAS.rects, cap: false } });
+const sulfurPool = rows => ({
+  ...prop(rows, { S: blockTex("sulfur"), C: blockTex("cinnabar"), P: blockTex("potent_sulfur"), w: blockTex("potent_sulfur"),
+    "~": { layers: [["water", SULFUR_WATER]], rows: [2, 16], cap: false } }),
+  gas: [...rows[0]].flatMap((ch, c) => (ch === "g" ? [[c, rows[rows.length - 1][c] === "w" ? 0 : 1, rows.length]] : [])),
+});
 // A badlands mesa's bands of terracotta, top down.
 const TERRACOTTA_BANDS = ["terracotta", "orange_terracotta", "terracotta", "yellow_terracotta", "brown_terracotta", "terracotta",
   "white_terracotta", "orange_terracotta", "light_gray_terracotta", "red_terracotta", "terracotta", "orange_terracotta"].map(n => blockTex(n));
@@ -777,6 +785,7 @@ const BACKDROPS = {
   // city's base floor close by, its tower rising out of sight; chorus trees on the flat end stone beyond; further off on
   // the left, more of the city, a tower with a bridge out to the end ship hanging in the void; under the End's sky.
   end_city: () => ({
+    moves: ["rods", "light"],
     mist: { far: 0.5, near: 0.08 },
     // A pale violet glow low in the middle, so that the dark mobs that live here stand out against it.
     sky: { texture: "end_sky", tint: "#1e1634", glow: "150, 105, 215" },
@@ -803,6 +812,7 @@ const BACKDROPS = {
   // nearer, netherrack with quartz, gold ore, magma and blackstone in it, fires burning on it, mushrooms, and a lavafall
   // pouring into the lava at a shore of soul sand and gravel.
   nether: () => ({
+    moves: ["lava", "fire"],
     mist: { far: 0.32, near: 0.08 },
     hills: { top: blockTex("netherrack"), fill: blockTex("netherrack"), base: 2, rise: 0, liquid: [2, blockTex("lava"), [blockTex("magma"), 0.3]],
       ores: [["quartz_ore", "nether_gold_ore", "magma", "blackstone", "blackstone"], 0.05],
@@ -820,6 +830,7 @@ const BACKDROPS = {
   // stalagmites, ore and cobwebs (the spiders' work); in the far wall, the mineshaft's corridor cut right across, lit
   // by its torches, its supports every four blocks, cobwebs, rails and a chest minecart.
   mineshaft: () => ({
+    moves: ["torches", "light"], drips: [0.14, 0.86],
     mist: { far: 0.5, near: 0.3 },
     wall: { rock: ["stone", "stone", "stone", "andesite", "tuff"], ores: ["coal_ore", "coal_ore", "iron_ore", "copper_ore", "andesite", "gravel"],
       props: [[mineBack([
@@ -832,17 +843,20 @@ const BACKDROPS = {
         "RRRFRRRFRRMFg.fFRRRFRRRFRR.FgRgFR.RF",
       ]), -18, 6]] },
     ceiling: { rock: ["stone", "andesite", "stone", "cobblestone"], drip: ["dripstone_down_frustum", "dripstone_down_middle", "dripstone_down_tip"] },
-    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"]), -22], [stalagmite, -17], [plant("cobweb"), -15], [oreMound("coal_ore", [".R", "OR"]), -12], [plant("cobweb"), -10],
-      [plant("cobweb"), 7], [stalagmite, 9], [oreMound("coal_ore", [".T.", "ROR"]), 11], [plant("cobweb"), 14], [oreMound("copper_ore", ["..R", ".RO", "TRR"]), 17]],
+    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"], MINE_TONE), -22], [stalagmite, -17], [plant("cobweb"), -15], [oreMound("coal_ore", [".R", "OR"], MINE_TONE), -12], [plant("cobweb"), -10],
+      [plant("cobweb"), 7], [stalagmite, 9], [oreMound("coal_ore", [".T.", "ROR"], MINE_TONE), 11], [plant("cobweb"), 14], [oreMound("copper_ore", ["..R", ".RO", "TRR"], MINE_TONE), 17]],
     // The corridor's torches.
     lights: [[-12, 7.5], [4, 7.5], [8, 7.5]], lightSize: 4, lightStrength: 0.3,
   }),
   cave: () => ({
+    moves: ["gold_ore", "diamond_ore", "lapis_ore", "redstone_ore", "lantern_block", "light"],
+    // Two of the dripstones drip, the nearest to these places across.
+    drips: [0.29, 0.77],
     mist: { far: 0.62, near: 0.3 },
     wall: { rock: ["stone", "stone", "stone", "andesite", "tuff"], ores: ["coal_ore", "coal_ore", "iron_ore", "copper_ore", "redstone_ore", "gold_ore", "lapis_ore", "diamond_ore"] },
     ceiling: { rock: ["stone", "andesite", "stone", "cobblestone"], drip: ["dripstone_down_frustum", "dripstone_down_middle", "dripstone_down_tip"] },
-    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"]), -21], [caveTunnel, -14], [prop(["L"], { L: lanternTex("lantern_block") }), -15],
-      [stalagmite, 8], [oreMound("gold_ore", [".T.", "ROR"]), 10], [oreMound("diamond_ore", ["..RR", ".ROR", "TRRR"]), 17]],
+    near: [[oreMound("iron_ore", ["..R.", ".ROR", "RRTR"], CAVE_TONE), -21], [caveTunnel, -14], [prop(["L"], { L: lanternTex("lantern_block") }), -15],
+      [stalagmite, 8], [oreMound("gold_ore", [".T.", "ROR"], CAVE_TONE), 10], [oreMound("diamond_ore", ["..RR", ".ROR", "TRRR"], CAVE_TONE), 17]],
     lights: [-15],
   }),
   // The goat's jagged peaks, as the game builds them: mountains of stone under one layer of snow blocks, rising to sharp,
@@ -853,35 +867,31 @@ const BACKDROPS = {
     hills: { top: blockTex("snow"), fill: blockTex("stone"), snowDepth: 5, jag: 3, base: 3, rise: 2,
       ores: [["coal_ore", "coal_ore", "iron_ore", "andesite", "andesite", "emerald_ore"], 0.035],
       peaks: [[0.02, 20, 1.7], [0.15, 25, 1.8], [0.3, 30, 2], [0.52, 19, 1.7], [0.63, 15, 1.9], [0.74, 27, 1.5], [0.98, 21, 1.6]] },
+    // Low crags, the snow on them one sheet: each column's reaches down beside the next lower one's.
     near: [[crag([
       "NN.......",
+      "SNN......",
       "SSNN.....",
-      "SCSS.....",
-      "ASSSN....",
-      "SASCSN...",
-      "SEASSS...",
-      "SASASAN..",
-      "ASISSSS..",
-      "SSSSICSN.",
-      "SSSAAASSN",
+      "ASSNNN...",
+      "SSASSNN..",
+      "SSSCISNN.",
+      "SAASSSSNN",
     ]), -19], [crag([
       ".......NN",
-      ".......SS",
-      "......NAS",
-      ".....NASI",
-      ".....ASSA",
-      "...NNSCSS",
-      "...ASASSS",
-      "..NSSSACS",
-      ".NSISSSSS",
-      "NSSSASSAS",
+      ".....NNNS",
+      "....NNSSA",
+      "..NNNSSCS",
+      ".NNSASISS",
+      "NNSSSAASS",
     ]), 10]],
+    moves: ["spindrift"],
     snowy: true, seed: 41,
   }),
   // The wooded badlands, the striped wolf's: flat-topped mesas of level terracotta bands behind, small oaks on their grass
   // and coarse dirt tops, the lower mesas bare; nearer, a mesa's stepped cliffs either side, and red sand between them with
   // dead bushes and a cactus.
   badlands: t => ({
+    moves: ["sand"], sandColor: "red",
     hills: { top: [grassyTop(t), grassyTop(t), blockTex("coarse_dirt")], fill: blockTex("terracotta"), bands: TERRACOTTA_BANDS, base: 6, rise: 9, bareBelow: 12,
       profile: [[0.2, 15], [0.26, 13], [0.33, 8], [0.42, 6], [0.46, 9], [0.56, 12], [0.6, 9], [0.7, 7], [0.75, 13], [1, 16]],
       trees: [[oakTree(t), 0.15], [oakTree(t), 0.48], [oakTree(t), 0.8], [oakTree(t), 0.91]] },
@@ -890,6 +900,7 @@ const BACKDROPS = {
     seed: 33,
   }),
   plains: t => ({
+    leaves: 5,
     // Low, gently rolling hills, as flat as plains are, oaks dotted on them.
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 2, trees: [[oakTree(t), 0.5], [oakTree(t), 0.7]] },
     // Grass and the plains' wildflowers round the house and between the oaks: dandelions, poppies, oxeye daisies,
@@ -903,6 +914,7 @@ const BACKDROPS = {
   // The middle of a plains village, the iron golem's and the villager's: houses either side, the well, the bell and a lamp
   // post, a farm and hay bales, with more roofs on the far hills.
   village: t => ({
+    moves: ["wheat_crop"],
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: [[oakTree(t), 0.432], [oakTree(t), 0.93]],
       landmarks: [[smallHouse(PLAINS_HOUSE), 0.33], [smallHouse(PLAINS_HOUSE), 0.66], [smallHouse(PLAINS_HOUSE), 0.8]] },
     near: [[house(PLAINS_HOUSE), -14], [lampPost, -7], [plant("poppy"), -5], [villageWell, 2], [bellFrame, 7], [block("composter_side"), 10],
@@ -910,23 +922,27 @@ const BACKDROPS = {
     seed: 9,
   }),
   desert: () => ({
+    moves: ["sand"],
     hills: { top: blockTex("sand"), fill: blockTex("sand"), base: 2, rise: 4 },
     near: [[desertHouse, -15], [plant("cactus_side", null, 3), -6], [plant("dead_bush"), -3],
       [plant("dead_bush"), 9], [plant("cactus_side", null, 2), 14]],
   }),
   savanna: t => ({
+    leaves: 5,
     hills: { top: grassyTop(t), fill: blockTex("coarse_dirt"), base: 3, rise: 5, steps: 2, trees: [[mirrored(acaciaTree(t)), 0.5]] },
     // Acacias of different shapes: a tall one by the house, a forked one the other side.
     near: [[house({ roof: "orange_terracotta", wall: "planks_acacia", frame: "acacia_log", base: "yellow_terracotta", door: "acacia" }), -15],
       [tallAcacia(t), -8], [plant("short_grass", t.grass), 0], [plant("short_grass", t.grass), 3], [forkedAcacia(t), 4]],
   }),
   snowy: () => ({
+    moves: ["snow"],
     hills: { top: blockTex("snowy_grass_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [[spruceTree(), 0.08], [spruceTree(), 0.3], [spruceTree(), 0.58], [spruceTree(), 0.9]] },
     near: [[igloo, -14], [spruceTree(), -7], [spruceTree(), 7], [spruceTree(), 12]],
   }),
   // Inside a woodland mansion, the vex's: a hall of bays between log pillars, bookshelves along the wall, a chest, a
   // door, and torches on the pillars for light.
   mansion: () => ({
+    moves: ["torches", "light"],
     mist: { far: 0.12, near: 0.04 },
     wall: { pattern: MANSION_WALL, legend: MANSION, dim: "rgba(22, 12, 4, .45)" },
     nearDim: "rgba(22, 12, 4, .3)",
@@ -939,6 +955,7 @@ const BACKDROPS = {
   // A trial chamber, the breeze's (it only spawns from their trial spawners): pillars with copper bulbs, grates,
   // spawners and vaults, under a tuff brick ceiling, lit by the bulbs.
   trial_chamber: () => ({
+    moves: ["spawners", "vaults"],
     mist: { far: 0.2, near: 0.06 },
     wall: { pattern: TRIAL_WALL, legend: TRIAL, dim: "rgba(20, 13, 8, .42)" },
     nearDim: "rgba(20, 13, 8, .32)",
@@ -953,6 +970,7 @@ const BACKDROPS = {
   // A stronghold's portal room, the silverfish's: its stone brick wall with a row of iron bars, the entrance grate, and the
   // portal's platform with the spawner on its stairs and lava at its foot, the lava its only light.
   stronghold: () => ({
+    moves: ["lava", "light", "spawners"],
     mist: { far: 0.15, near: 0.04 },
     wall: { pattern: STRONGHOLD_WALL, legend: STRONGHOLD, dim: "rgba(8, 8, 12, .55)" },
     nearDim: "rgba(8, 8, 12, .12)",
@@ -967,6 +985,7 @@ const BACKDROPS = {
   // The deep dark, the warden's (it comes out of the ground there, summoned by shriekers): an ancient city's pillars and
   // the frame of its portal in the deepslate, sculk spread over it all, lit by soul lanterns.
   deep_dark: () => ({
+    moves: ["sculk"],
     mist: { far: 0.3, near: 0.05 },
     wall: { rock: ["deepslate", "deepslate", "deepslate", "sculk", "deepslate", "deepslate_tiles"], ores: ["sculk", "sculk", "sculk_catalyst"], alone: ["sculk_catalyst"], dim: "rgba(4, 8, 10, .55)" },
     ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate"], drip: [], shade: 0.55 },
@@ -985,12 +1004,14 @@ const BACKDROPS = {
       near: [[house({ ...PLAINS_HOUSE, window: LIT_WINDOW }), -14], ...scene.near.slice(1)], lights: [[-13, 2.5], [-9, 2.5]], lightColor: "255, 190, 100" };
   },
   taiga: t => ({
+    moves: ["mist"],
     hills: { top: blockTex("podzol_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [0.04, 0.16, 0.3, 0.45, 0.6, 0.74, 0.88].map(at => [spruceTree(), at]) },
     near: [[house({ roof: "cobblestone", wall: "planks_spruce", frame: "log_spruce", base: "mossy_cobblestone", door: "spruce" }), -14],
       [spruceTree(), -7], [plant("berry_bush"), -1], [plant("fern", t.grass), 3], [spruceTree(), 7], [plant("berry_bush"), 13], [spruceTree(), 14]],
   }),
   // A dense canopy on low hills behind; giant trees frame the scene from above, one off to the left.
   jungle: t => ({
+    leaves: 7,
     hills: {
       top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 2,
       trees: Array.from({ length: 16 }, (_, i) => [jungleTree(t, [5, 3, 7, 4][i % 4]), i / 15 - 0.03]),
@@ -1001,6 +1022,7 @@ const BACKDROPS = {
   // The mooshroom's mushroom fields: mycelium hills with no trees at all, only huge red and brown mushrooms, and small
   // ones underneath.
   mushroom_fields: () => ({
+    moves: ["spores"],
     hills: { top: blockTex("mycelium_side"), fill: blockTex("dirt"), base: 3, rise: 4, trees: [
       [hugeBrownMushroom(3), 0.17], [hugeRedMushroom(1), 0.33], [hugeBrownMushroom(4), 0.5],
       [hugeRedMushroom(3), 0.64], [hugeBrownMushroom(2), 0.78]] },
@@ -1011,6 +1033,7 @@ const BACKDROPS = {
   }),
   // The cherry grove: a meadow high in the mountains, cherry trees on the slopes behind and nearer by, saplings and grass.
   cherry_grove: t => ({
+    leaves: 24,
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 4, rise: 6, trees: [[smallCherry(), 0.41], [tallFarCherry(), 0.55], [midCherry(), 0.65]] },
     near: [[tallCherry(5), -26], [plant("short_grass", t.grass), -17], [forkedCherry(2), -18], [plant("cherry_sapling"), -9], [plant("short_grass", t.grass), -7],
       [plant("short_grass", t.grass), 4], [plant("cherry_sapling"), 6], [cherryTree(3), 9], [plant("short_grass", t.grass), 19], [tallCherry(3), 18]],
@@ -1022,6 +1045,7 @@ const BACKDROPS = {
     const blossom = () => plant(open ? "eyeblossom_open" : "eyeblossom");
     const blossoms = [-19, 12, 18];
     return {
+      leaves: 12,
       mist: { far: 0.5, near: 0.16 },
       hills: { top: blockTex("pale_moss_block"), fill: blockTex("pale_moss_block"), base: 3, rise: 3, trees: Array.from({ length: 22 }, (_, i) => [smallPaleOak(), i / 21 - 0.02]) },
       near: [[paleOak(4), -28], [paleOak(5), -22], [blossom(), blossoms[0]], [paleOak(3, true), -16], [smallPaleOak(), -10], [paleMound(["M.", "MM"]), -11],
@@ -1036,6 +1060,7 @@ const BACKDROPS = {
   pale_garden_night: t => ({ ...BACKDROPS.pale_garden(t, true), night: NIGHTS.default.night }),
   // The dappled forest: oaks gone orange and red and birches gone gold, bushes and firefly bushes beneath.
   dappled_forest: t => ({
+    leaves: 16,
     mist: { far: 0.3, near: 0.08 },
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3, rise: 3, trees: Array.from({ length: 14 }, (_, i) => [
       i % 3 === 2 ? autumnBirch() : oakTree({ foliage: i % 3 ? DAPPLED.red : DAPPLED.orange }), i / 13 - 0.02]) },
@@ -1069,6 +1094,7 @@ const BACKDROPS = {
   // oak hung with vines and a small one; blue orchids (only swamps grow them), mushrooms and a
   // firefly bush.
   swamp: t => ({
+    leaves: 5, leavesLand: 1,
     hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 0 },
     // A small swamp oak on the left, at the same scale as everything else on the ground; the hut over the middle of its pool.
     near: [[lifted(smallSwampOak(t)), -16], [swampGround(t, [
@@ -1098,6 +1124,9 @@ function textureCanvas(name, tint) {
   return cache[key];
 }
 
+// What's drawn in place of some textures, by name (null for none), while a scene's moving parts are left out or looked for
+// (see movingCells): each gives the picture to draw, or nothing.
+let standIns = null;
 // Draw one block at (left, top), size pixels square; rows: [first, last) texel rows only.
 function shadeBlock(ctx, rects, left, top, size) {
   for (const [x0, y0, x1, y1, color] of rects || []) {
@@ -1118,7 +1147,7 @@ function drawBlock(ctx, spec, left, top, size) {
     ctx.fillRect(left, top, size, size);
   }
   (spec.layers || []).forEach(([name, tint, [x0, x1] = [0, 16]], i) => {
-    const tex = textureCanvas(name, tint);
+    const tex = standIns && standIns[name] ? standIns[name](left, top, size, Boolean(spec.flows), tint, null, from) : textureCanvas(name, tint);
     // squash: the whole texture drawn into those rows (a lily pad lying flat, seen edge on).
     if (tex && spec.squash) ctx.drawImage(tex, x0, 0, x1 - x0, 16, left + (x0 / 16) * size, top + (spec.squash[0] / 16) * size, ((x1 - x0) / 16) * size, ((spec.squash[1] - spec.squash[0]) / 16) * size);
     else if (tex) ctx.drawImage(tex, x0, from, x1 - x0, to - from, left + (x0 / 16) * size, top + (from / 16) * size, ((x1 - x0) / 16) * size, ((to - from) / 16) * size);
@@ -1130,7 +1159,7 @@ function drawBlock(ctx, spec, left, top, size) {
   // texels (a lantern's body, cap and handle, cut from its block texture).
   // [x, y, w, h]: drawn that size instead, squeezed (a small dripleaf's leaf, seen edge on).
   for (const [name, [x0, y0, x1, y1], [x, y, w = x1 - x0, h = y1 - y0]] of spec.parts || []) {
-    const tex = textureCanvas(name);
+    const tex = standIns && standIns[name] ? standIns[name](left, top, size, false, null, [x0, y0, x1, y1, x, y, w, h]) : textureCanvas(name);
     if (tex) ctx.drawImage(tex, x0, y0, x1 - x0, y1 - y0, Math.round(left + (x / 16) * size), Math.round(top + (y / 16) * size), (w / 16) * size, (h / 16) * size);
   }
   // Flat-colored boxes over the layers, in texels: [x0, y0, x1, y1, color] (a rail seen from the side, a minecart).
@@ -1269,22 +1298,6 @@ function drawSky(ctx, { texture, tint, glow }, width, height, size, seed) {
 
 // Where a stand of pillars' crystals sit, as [middle, bottom]: each pillar in spots, as [prop, left edge, ground].
 const crystalsOf = (spots, size) => spots.filter(([p]) => p.crystal).map(([p, left, ground]) => [left + (p.rows[0].length * size) / 2, ground - p.crystal * size]);
-// End crystals: a small pink cube, each with the glow round it.
-function drawCrystals(ctx, crystals, size) {
-  ctx.globalCompositeOperation = "lighter";
-  for (const [x, bottom] of crystals) {
-    const y = bottom - 0.7 * size, r = 2.6 * size;
-    const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-    glow.addColorStop(0, "rgba(255, 150, 235, .85)");
-    glow.addColorStop(0.3, "rgba(225, 90, 225, .28)");
-    glow.addColorStop(1, "rgba(200, 80, 220, 0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
-  }
-  ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "#f7c9f4";
-  for (const [x, bottom] of crystals) ctx.fillRect(x - size * 0.28, bottom - size * 0.9, size * 0.56, size * 0.56);
-}
 // Sunlight slanting down from the surface in soft bands that fade with depth, drawn in steps like the blocks; strength
 // dims them (a swamp's murky water lets less through).
 function drawSunShafts(ctx, width, height, step, seed, strength = 1) {
@@ -1309,24 +1322,6 @@ function drawSurface(ctx, width, size, tint = "#a8e4ff", pads = []) {
   ctx.imageSmoothingEnabled = false;
   for (const at of pad ? pads : []) ctx.drawImage(pad, Math.round((at * width) / size) * size, size - thick, size, thick);
   ctx.globalAlpha = 1;
-}
-
-// Columns of little bubbles on their way up, to either side of the mob in the middle.
-function drawBubbles(ctx, width, height, size, seed) {
-  const random = rng(seed), px = size / 8;
-  for (const at of [0.06, 0.17, 0.27, 0.74, 0.85, 0.95]) {
-    let x = (at + (random() - 0.5) * 0.05) * width, y = height * (0.4 + random() * 0.35);
-    for (let n = 2 + Math.floor(random() * 4); n > 0; n--) {
-      const r = (1 + Math.floor(random() * 2)) * px, sx = Math.round(x / px) * px, sy = Math.round(y / px) * px;
-      ctx.fillStyle = "rgba(225, 248, 255, .75)";
-      ctx.fillRect(sx, sy - r, r * 2, px);
-      ctx.fillRect(sx, sy + r, r * 2, px);
-      ctx.fillRect(sx - px, sy, px, r);
-      ctx.fillRect(sx + r * 2, sy, px, r);
-      y -= (3 + random() * 5) * px * 2;
-      x += (random() - 0.5) * px * 6;
-    }
-  }
 }
 
 // A rock wall filling the canvas, with drifts of other rock and ore here and there in small clusters.
@@ -1383,11 +1378,13 @@ function drawWall(ctx, { rock, strata, ores, dim, alone = [], oreRate = 34 }, wi
 // hang: how often a column has something hanging from it (.24 if not given). blobs: shapes hung from it in chosen
 // places instead, [at (blocks from the middle), rows top first, block]: each column of the shape hangs from the rock
 // right above it (the nether's glowstone).
+// Gives how many blocks down it comes in each column, with what hangs there (and, in its tips, where the dripstones end, [column, blocks down]).
 function drawCeiling(ctx, { rock, drip, low, shade = 0, hang: often = 0.24, blobs = [] }, width, size, seed, horizon) {
-  const random = rng(seed), roof = low ? Math.max(0, Math.floor(horizon / size - low)) : 0, depths = [];
+  const random = rng(seed), roof = low ? Math.max(0, Math.floor(horizon / size - low)) : 0, depths = [], reach = [];
+  reach.tips = [];
   for (let c = 0; c < Math.ceil(width / size); c++) {
     const depth = roof + 1 + Math.round(2 * ((Math.sin(c * 0.43 + seed) + Math.sin(c * 0.97) + 2) / 4)) - (low ? 1 : 0);
-    depths[c] = depth;
+    depths[c] = reach[c] = depth;
     for (let k = 0; k < depth; k++) drawBlock(ctx, blockTex(rock[Math.floor(random() * rock.length)]), c * size, k * size, size);
     // shade: how much darker the rock is (a mineshaft's roof, out of the torchlight).
     if (shade) {
@@ -1397,6 +1394,8 @@ function drawCeiling(ctx, { rock, drip, low, shade = 0, hang: often = 0.24, blob
     if (random() < often) {
       const hang = random() < 0.4 ? drip : drip.slice(-2);
       hang.forEach((name, k) => drawBlock(ctx, blockTex(name), c * size, (depth + k) * size, size));
+      reach[c] += hang.length;
+      if (hang.length && hang[hang.length - 1].startsWith("dripstone")) reach.tips.push([c, reach[c]]);
     }
   }
   for (const [at, rows, name] of blobs) {
@@ -1405,10 +1404,13 @@ function drawCeiling(ctx, { rock, drip, low, shade = 0, hang: often = 0.24, blob
       if (ch !== "." && depths[left + j] !== undefined) drawBlock(ctx, blockTex(name), (left + j) * size, (depths[left + j] + r) * size, size);
     }));
   }
+  return reach;
 }
 
 // Night over a scene: what's drawn so far shaded (shade), then stars and a full moon (at moon across the sky) behind it.
-function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, size, seed) {
+// Some of the stars twinkle: those go in twinkling, [x, y, how big, how bright], and aren't drawn here. Only stars with nothing
+// in front of them do, as they're drawn over the picture.
+function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, size, seed, twinkling) {
   ctx.globalCompositeOperation = "source-atop";
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, width, horizon + size);
@@ -1424,6 +1426,7 @@ function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, si
   for (const [x, y, w, h] of [[3, 3, 3, 2], [9, 5, 4, 3], [5, 10, 3, 3], [11, 11, 2, 2], [2, 7, 2, 2]]) ctx.fillRect(mx + (x * m) / 16, my + (y * m) / 16, (w * m) / 16, (h * m) / 16);
   ctx.fillStyle = "#e9ecdc";
   ctx.fillRect(mx, my, m, m);
+  const ahead = ctx.getImageData(0, 0, width, Math.ceil(horizon)).data, open = (x, y) => x < width && !ahead[(y * width + x) * 4 + 3];
   const halo = ctx.createRadialGradient(mx + m / 2, my + m / 2, m / 2, mx + m / 2, my + m / 2, 3 * m);
   halo.addColorStop(0, "rgba(220, 228, 255, .28)");
   halo.addColorStop(1, "rgba(220, 228, 255, 0)");
@@ -1432,8 +1435,15 @@ function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, si
   // Stars: square pixels of one or two sizes, some brighter.
   for (let i = Math.round((width * horizon) / (size * size * 1.6)); i > 0; i--) {
     const x = Math.floor(random() * width), y = Math.floor(random() * horizon * 0.85), big = random() < 0.15;
-    ctx.fillStyle = `rgba(235, 240, 255, ${(0.35 + random() * 0.6).toFixed(2)})`;
-    ctx.fillRect(x, y, big ? 2 * px : px, big ? 2 * px : px);
+    const bright = 0.35 + random() * 0.6, side = big ? 2 * px : px;
+    let clear = i % 2 === 0;
+    for (let dy = 0; clear && dy < side; dy++) for (let dx = 0; clear && dx < side; dx++) clear = open(x + dx, y + dy);
+    if (clear) {
+      twinkling.push([x, y, side, bright]);
+      continue;
+    }
+    ctx.fillStyle = `rgba(235, 240, 255, ${bright.toFixed(2)})`;
+    ctx.fillRect(x, y, side, side);
   }
   ctx.globalCompositeOperation = "source-over";
 }
@@ -1444,108 +1454,290 @@ function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, si
 const NIGHTS = {
   default: { night: { shade: "rgba(12, 20, 48, .45)", moon: 0.78 } },
   swamp: { night: { shade: "rgba(10, 22, 30, .5)", moon: 0.7 } },
-  snowy: { night: { shade: "rgba(14, 24, 60, .38)", moon: 0.74 } },
+  // Clear: snow falling would be lost among the stars.
+  snowy: { night: { shade: "rgba(14, 24, 60, .38)", moon: 0.74 }, moves: [] },
   ocean: { night: { shade: "rgba(4, 12, 36, .52)", stars: false }, water: { sun: true, shafts: 0.4, surface: "#3f6290" } },
 };
+
+// The blocks of a scene drawn from a texture that moves (its lava, its fires; or several, in a list: each cell has its name), for backdrop-motion.js: where they are
+// (cells, in CSS pixels), and how the scene lies over them. That's found by painting the scene with them black, then dark
+// gray: where the two differ they show (nothing stands in front); the black one is what the haze and the light add (base),
+// and the difference is how much comes through them (gain).
+function movingCells(paint, names, width, height, dpr) {
+  const cells = [], LEVEL = 64;
+  const shot = (level, found) => {
+    const flat = Object.assign(document.createElement("canvas"), { width: 16, height: 16 }), fc = flat.getContext("2d");
+    fc.fillStyle = `rgb(${level}, ${level}, ${level})`;
+    fc.fillRect(0, 0, 16, 16);
+    const cv = Object.assign(document.createElement("canvas"), { width, height }), ctx = cv.getContext("2d");
+    // from: the block's first row of texels, if it isn't all there (lava in a floor).
+    const spot = name => (left, top, size, flows, tint, part, from) => {
+      if (found && left < width && left + size > 0 && top < height && top + size > 0) found.push({ x: left / dpr, y: top / dpr, size: size / dpr, ...(flows && { flows }), ...(part && { part }), ...(from && { from }), ...(Array.isArray(names) && { name }) });
+      return flat;
+    };
+    paint(ctx, Object.fromEntries([].concat(names).map(name => [name, spot(name)])));
+    return ctx.getImageData(0, 0, width, height);
+  };
+  const base = shot(0, cells), gain = shot(LEVEL);
+  for (let i = 0; i < gain.data.length; i += 4) {
+    const parts = [0, 1, 2].map(k => gain.data[i + k] - base.data[i + k]);
+    if (Math.max(...parts) > 4) parts.forEach((d, k) => { gain.data[i + k] = Math.min(255, Math.max(0, Math.round((d * 255) / LEVEL))); });
+    else base.data[i + 3] = gain.data[i + 3] = 0;
+  }
+  const url = data => {
+    const cv = Object.assign(document.createElement("canvas"), { width, height });
+    cv.getContext("2d").putImageData(data, 0, 0);
+    return cv.toDataURL();
+  };
+  const shows = (x, y) => gain.data[(Math.floor(y * dpr) * width + Math.floor(x * dpr)) * 4 + 3] > 0;
+  return { shows, parts: { cells, base: url(base), gain: url(gain) } };
+}
+// Lava that moves, and where it spits sparks (pops: each block of its surface that shows, not under the lavafall).
+function lavaMotion(paint, width, height, dpr) {
+  const { parts, shows } = movingCells(paint, "lava", width, height, dpr);
+  const pops = parts.cells.filter(c => !c.flows && c.x >= 0 && (c.x + c.size) * dpr <= width && shows(c.x + c.size / 2, c.y + ((c.from || 0) / 16) * c.size + 1) && !parts.cells.some(o => o !== c && o.x === c.x && o.y <= c.y && o.y + o.size >= c.y)).map(({ x, y, size, from = 0 }) => ({ x, y: y + (from / 16) * size, size }));
+  return { ...parts, pops, still: ART_FRAMES.lava_still, flow: ART_FRAMES.lava_flow, pop: ART_FRAMES.lava_pop };
+}
+// See-through blocks that move, left out of the still picture (they'd show through the moving ones' gaps): fires, plants that sway.
+const LEFT_OUT = ["fire", "wheat_crop"], SWAYS = ["wheat_crop"];
+// Plants that sway in the wind, their tops the most.
+const swayMotion = (paint, names, width, height, dpr) => ({ ...movingCells(paint, names, width, height, dpr).parts, pictures: Object.fromEntries(names.map(name => [name, textureCanvas(name).toDataURL()])) });
+const fireMotion = (paint, width, height, dpr) => ({ ...movingCells(paint, "fire", width, height, dpr).parts, frames: ART_FRAMES.fire });
+
+// Blocks that play their texture's frames (art/frames/): ticks, how long each stays before it fades into the next; frames, their
+// order if not simply one after another; every: not over and over but once in that many seconds (an ore's glint); glow: how
+// strongly what's brighter than the first frame shines through the scene's dimness; shine: how strongly its ore itself does,
+// slowly stronger and weaker.
+const SHEETS = {
+  gold_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, diamond_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, lapis_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.6 },
+  redstone_ore: { ticks: 6, glow: 0.9, shine: 0.4 },
+  lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.5 },
+};
+function sheetMotion(paint, names, width, height, dpr) {
+  const { parts } = movingCells(paint, names, width, height, dpr);
+  return { ...parts, sheets: Object.fromEntries(names.map(name => [name, { picture: ART_FRAMES[name], ...SHEETS[name] }])) };
+}
+// Sculk that glimmers.
+const sculkMotion = (paint, width, height, dpr) => ({ ...movingCells(paint, "sculk", width, height, dpr).parts, frames: ART_FRAMES.sculk });
+
+// The leaves that fall from a tree's crown: the pack's particles (art/frames/, 7x7 texels each), by its leaves' block and tint.
+// The dappled forest's are its poplar leaves, by their colors; the cherry's, which the pack has none of, the tinted leaves in pink.
+function leafSheet(name, tint) {
+  const dappled = name !== "leaves_jungle" && Object.keys(DAPPLED).find(k => DAPPLED[k] === tint);
+  if (name === "pale_oak_leaves") return ["leaf_pale_oak"];
+  return dappled ? [`leaf_${dappled}`] : ["leaf_tinted", name === "cherry_leaves" ? "petal" : tint];
+}
+const CHERRY_PETAL = "#f9a9cf";
+const LEAF_BLOCKS = ["leaves_oak", "leaves_birch", "leaves_acacia", "leaves_jungle", "cherry_leaves", "pale_oak_leaves"];
+// Leaves falling in a scene, for backdrop-motion.js: many, how many at once at most; from, the undersides of the crowns
+// nearby (blocks: those a paint found, in canvas pixels) as [left, bottom, sheet]; and the sheets, tinted, hazed and darkened
+// as the crowns are.
+function leafMotion(blocks, many, floor, dpr, washes) {
+  const sheets = [], at = (x, y) => blocks.some(b => Math.abs(b.left - x) < 1 && Math.abs(b.top - y) < 1);
+  const from = blocks.filter(b => b.size === NEAR * dpr && !at(b.left, b.top + b.size)).map(b => {
+    const key = leafSheet(b.name, b.tint).join("/");
+    if (!sheets.includes(key)) sheets.push(key);
+    return [b.left / dpr, (b.top + b.size) / dpr, sheets.indexOf(key)];
+  });
+  return from.length ? { many, floor, from, washes, sheets: sheets.map(key => {
+    const [name, tint] = key.split("/");
+    return { picture: ART_FRAMES[name], ...(tint && (tint === "petal" ? { petal: CHERRY_PETAL } : { tint })) };
+  }) } : null;
+}
 
 // The backdrop canvas for a stage: far hills at FAR and the nearer props at NEAR CSS pixels per block,
 // standing on the top edge of the stage's ground strip (GROUND_STRIP pixels tall). It redraws when the
 // stage changes size.
 const FAR = 8, NEAR = 16, GROUND_STRIP = 48, HAZE = { far: 0.38, near: 0.18 };
 function backdropView(canvas) {
-  let biome = null;
+  let biome = null, drawnBiome = null;
+  // What moves (backdrop-motion.js), on a canvas of its own over the still picture; still itself for those who'd rather
+  // nothing moved, and stopped while there's nothing to show or no one to see it.
+  const moving = Object.assign(document.createElement("canvas"), { className: "stage-backdrop stage-motion", ariaHidden: "true" });
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let motion = null, frame = 0;
+  const step = now => {
+    frame = 0;
+    if (!motion || !moving.clientWidth) return;
+    const drawn = drawMotion(moving.getContext("2d"), motion, calm.matches ? 0 : now / 1000, moving.width / motion.width);
+    if (!calm.matches || !drawn) frame = requestAnimationFrame(step);
+  };
+  const move = () => { if (!frame) frame = requestAnimationFrame(step); };
+  const setMotion = (next, dpr) => {
+    motion = next;
+    if (!motion) return moving.remove();
+    moving.width = motion.width * dpr;
+    moving.height = motion.height * dpr;
+    if (!moving.isConnected) canvas.after(moving);
+    move();
+  };
+  calm.addEventListener("change", move);
   const draw = () => {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (!w || !h || !biome) return;
+    drawnBiome = biome;
     const dpr = Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
     canvas.width = w * dpr;
     canvas.height = h * dpr;
-    const ctx = canvas.getContext("2d");
     // A biome's night (swamp_night): its own scene if it has one (the plains', its windows lit), else the biome's under NIGHTS.
     const base = biome.replace(/_night$/, ""), t = BIOME_TINTS[base];
     const scene = BACKDROPS[biome] ? BACKDROPS[biome](t) : { ...BACKDROPS[base](t), ...(base === biome ? {} : NIGHTS[base] || NIGHTS.default) };
     const snowy = base === "snowy" || Boolean(scene.snowy), mist = scene.mist || HAZE;
     // The hills' shape: a village biome's by its place in BIOMES, a scene's own seed otherwise.
     const seed = scene.seed || BIOMES.findIndex(b => b.k === base) + 1;
+    let roof = null, twinkling = [];
     const haze = getComputedStyle(canvas).getPropertyValue("--haze").trim() || "#bcd5ff";
     const horizon = (h - GROUND_STRIP + 2) * dpr;
-    // Each layer is drawn on its own canvas, then washed with the haze where it has pixels.
-    const layer = (paint, mist) => {
-      const cv = Object.assign(document.createElement("canvas"), { width: canvas.width, height: canvas.height });
-      const lc = cv.getContext("2d");
-      lc.imageSmoothingEnabled = false;
-      paint(lc);
-      lc.globalCompositeOperation = "source-atop";
-      lc.globalAlpha = mist;
-      lc.fillStyle = haze;
-      lc.fillRect(0, 0, cv.width, cv.height);
-      ctx.drawImage(cv, 0, 0);
-    };
-    if (scene.sky) drawSky(ctx, scene.sky, canvas.width, canvas.height, 2 * NEAR * dpr, 13);
-    // distant: things further off than the far hills, at half their size and deeper in the haze, [prop, across (0 to 1),
-    // how many of their blocks up] (the end ship hanging in the void).
-    if (scene.distant) layer(lc => scene.distant.forEach(([p, at, up]) => drawProp(lc, p, at * canvas.width, horizon - up * (FAR / 2) * dpr, (FAR / 2) * dpr, false)), mist.distant ?? 0.68);
-    layer(lc => (scene.wall ? (scene.wall.pattern ? drawPatternWall(lc, scene.wall, canvas.width, horizon, NEAR * dpr) : drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7),
-      // props: things in the wall itself, [prop, left edge, how many blocks up its bottom is] (the mineshaft's corridor).
-      (scene.wall.props || []).forEach(([p, at, up]) => drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon - up * NEAR * dpr, NEAR * dpr, false)))
-      : drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, seed)), mist.far);
-    if (scene.crystals) drawCrystals(ctx, crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, seed), FAR * dpr), FAR * dpr);
-    if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11, scene.water.shafts);
-    layer(lc => {
-      if (scene.ceiling) drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5, horizon);
-      for (const [p, at] of scene.near) drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
-      // nearDim: the room's dimness on what stands in it too (a little less than on its far wall), so blocks of the
-      // wall's own stone in front of it don't stand out lighter.
-      if (scene.nearDim) {
+    // The whole still picture.
+    const paintScene = ctx => {
+      // Each layer is drawn on its own canvas, then washed with the haze where it has pixels.
+      const layer = (paint, mist) => {
+        const cv = Object.assign(document.createElement("canvas"), { width: canvas.width, height: canvas.height });
+        const lc = cv.getContext("2d");
+        lc.imageSmoothingEnabled = false;
+        paint(lc);
         lc.globalCompositeOperation = "source-atop";
-        lc.fillStyle = scene.nearDim;
-        lc.fillRect(0, 0, canvas.width, canvas.height);
-        lc.globalCompositeOperation = "source-over";
+        lc.globalAlpha = mist;
+        lc.fillStyle = haze;
+        lc.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(cv, 0, 0);
+      };
+      if (scene.sky) drawSky(ctx, scene.sky, canvas.width, canvas.height, 2 * NEAR * dpr, 13);
+      // distant: things further off than the far hills, at half their size and deeper in the haze, [prop, across (0 to 1),
+      // how many of their blocks up] (the end ship hanging in the void).
+      if (scene.distant) layer(lc => scene.distant.forEach(([p, at, up]) => drawProp(lc, p, at * canvas.width, horizon - up * (FAR / 2) * dpr, (FAR / 2) * dpr, false)), mist.distant ?? 0.68);
+      layer(lc => (scene.wall ? (scene.wall.pattern ? drawPatternWall(lc, scene.wall, canvas.width, horizon, NEAR * dpr) : drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7),
+        // props: things in the wall itself, [prop, left edge, how many blocks up its bottom is] (the mineshaft's corridor).
+        (scene.wall.props || []).forEach(([p, at, up]) => drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon - up * NEAR * dpr, NEAR * dpr, false)))
+        : drawHills(lc, scene.hills, canvas.width, horizon, FAR * dpr, snowy, seed)), mist.far);
+      if (scene.water && scene.water.sun) drawSunShafts(ctx, canvas.width, canvas.height, (NEAR * dpr) / 2, 11, scene.water.shafts);
+      layer(lc => {
+        if (scene.ceiling) roof = drawCeiling(lc, scene.ceiling, canvas.width, NEAR * dpr, 5, horizon);
+        for (const [p, at] of scene.near) drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
+        // nearDim: the room's dimness on what stands in it too (a little less than on its far wall), so blocks of the
+        // wall's own stone in front of it don't stand out lighter.
+        if (scene.nearDim) {
+          lc.globalCompositeOperation = "source-atop";
+          lc.fillStyle = scene.nearDim;
+          lc.fillRect(0, 0, canvas.width, canvas.height);
+          lc.globalCompositeOperation = "source-over";
+        }
+      }, mist.near);
+      // At night everything drawn so far is darkened and turned blue, and stars and the moon come out behind it.
+      if (scene.night) drawNight(ctx, scene.night, canvas.width, horizon, NEAR * dpr, 17, (twinkling = []));
+      // What glows in the dark (an open eyeblossom's eyes): drawn again over the night's shade, in a soft glow of its own.
+      for (const [p, at] of scene.glows || []) {
+        const left = canvas.width / 2 + at * NEAR * dpr, x = left + 0.5 * NEAR * dpr, y = horizon - 0.75 * NEAR * dpr, r = 1.2 * NEAR * dpr;
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+        glow.addColorStop(0, "rgba(255, 150, 40, .45)");
+        glow.addColorStop(1, "rgba(255, 150, 40, 0)");
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = glow;
+        ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+        ctx.globalCompositeOperation = "source-over";
+        drawProp(ctx, p, left, horizon, NEAR * dpr, snowy);
       }
-    }, mist.near);
-    if (scene.crystals) drawCrystals(ctx, crystalsOf(scene.near.map(([p, at]) => [p, canvas.width / 2 + at * NEAR * dpr, horizon]), NEAR * dpr), NEAR * dpr);
-    // At night everything drawn so far is darkened and turned blue, and stars and the moon come out behind it.
-    if (scene.night) drawNight(ctx, scene.night, canvas.width, horizon, NEAR * dpr, 17);
-    // What glows in the dark (an open eyeblossom's eyes): drawn again over the night's shade, in a soft glow of its own.
-    for (const [p, at] of scene.glows || []) {
-      const left = canvas.width / 2 + at * NEAR * dpr, x = left + 0.5 * NEAR * dpr, y = horizon - 0.75 * NEAR * dpr, r = 1.2 * NEAR * dpr;
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-      glow.addColorStop(0, "rgba(255, 150, 40, .45)");
-      glow.addColorStop(1, "rgba(255, 150, 40, 0)");
-      ctx.globalCompositeOperation = "lighter";
-      ctx.fillStyle = glow;
-      ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
-      ctx.globalCompositeOperation = "source-over";
-      drawProp(ctx, p, left, horizon, NEAR * dpr, snowy);
-    }
-    if (scene.water) {
-      if (scene.water.sun) drawSurface(ctx, canvas.width, NEAR * dpr, scene.water.surface, scene.water.pads);
-      if (scene.water.wash) {
-        ctx.fillStyle = scene.water.wash;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (scene.water) {
+        if (scene.water.sun) drawSurface(ctx, canvas.width, NEAR * dpr, scene.water.surface, scene.water.pads);
+        if (scene.water.wash) {
+          ctx.fillStyle = scene.water.wash;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
       }
-      drawBubbles(ctx, canvas.width, canvas.height, NEAR * dpr, 3);
+      // Warm light round each lantern, up that many blocks if it isn't on the ground.
+      for (const light of scene.lights || []) {
+        const [at, up = 0.6] = [].concat(light);
+        // lightSize: how many blocks a light reaches (6 if not given); lightStrength: how bright at its heart (.34).
+        const x = canvas.width / 2 + (at + 0.5) * NEAR * dpr, y = horizon - up * NEAR * dpr, r = (scene.lightSize || 6) * NEAR * dpr;
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+        const color = scene.lightColor || "255, 176, 84";
+        glow.addColorStop(0, `rgba(${color}, ${scene.lightStrength ?? 0.34})`);
+        glow.addColorStop(1, `rgba(${color}, 0)`);
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = glow;
+        ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+        ctx.globalCompositeOperation = "source-over";
+      }
+    };
+    // moves: what of the scene moves, on the canvas over it; what's LEFT_OUT isn't in the still picture. also: more stand-ins.
+    const moves = scene.moves || [];
+    const paint = (ctx, also) => {
+      standIns = { ...Object.fromEntries(LEFT_OUT.filter(name => moves.includes(name)).map(name => [name, () => null])), ...also };
+      try { paintScene(ctx); } finally { standIns = null; }
+    };
+    // The crowns leaves fall from, and trial spawners and vaults, found as they're painted.
+    const crowns = [], watched = [...(scene.leaves ? LEAF_BLOCKS : []), ...(moves.includes("spawners") ? ["trial_spawner", "mob_spawner"] : []), ...(moves.includes("vaults") ? ["vault"] : []), ...(moves.includes("torches") ? ["torch"] : []), ...(moves.includes("rods") ? ["end_rod"] : [])], found = name => (left, top, size, flows, tint) => {
+      if (left > -size && left < canvas.width) crowns.push({ name, left, top, size, tint });
+      return textureCanvas(name, tint);
+    };
+    paint(canvas.getContext("2d"), Object.fromEntries(watched.map(name => [name, found(name)])));
+    // Underwater, bubbles rise to the surface (a block deep), or to the roof of a flooded cave.
+    const columns = Math.ceil(w / NEAR), bubbles = scene.water && { width: w, floor: h - GROUND_STRIP, roof: Array.from({ length: columns }, (_, c) => (roof ? roof[c] || 0 : 1) * NEAR) };
+    // And gas rises out of the sulfur pools.
+    const gas = scene.near.flatMap(([p, at]) => (p.gas || []).map(([c, from, to]) => ({ x: w / 2 + (at + c) * NEAR, from: horizon / dpr - from * NEAR, to: horizon / dpr - to * NEAR })));
+    // And the nether's lava churns, runs down and spits, and its fires burn.
+    const lava = moves.includes("lava") && lavaMotion(paint, canvas.width, canvas.height, dpr), fire = moves.includes("fire") && fireMotion(paint, canvas.width, canvas.height, dpr);
+    // And the deep dark's sculk glimmers.
+    const sculk = moves.includes("sculk") && sculkMotion(paint, canvas.width, canvas.height, dpr);
+    // Blocks that play their frames: ores that glint, lanterns that flicker.
+    const played = moves.filter(name => SHEETS[name]), sheets = played.length > 0 && sheetMotion(paint, played, canvas.width, canvas.height, dpr);
+    // Water drips off the dripstones' tips (their last block is 11 texels long), and the lights wax and wane.
+    const tips = scene.drips && roof ? roof.tips.map(([c, down]) => [(c + 0.5) * NEAR, (down - 1) * NEAR + 11]) : [];
+    const drips = tips.length > 0 && { floor: h - GROUND_STRIP, tips: scene.drips.map(at => tips.reduce((best, tip) => (Math.abs(tip[0] - at * w) < Math.abs(best[0] - at * w) ? tip : best))) };
+    const light = moves.includes("light") && (scene.lights || []).map(l => [].concat(l)).map(([at, up = 0.6]) => ({ x: w / 2 + (at + 0.5) * NEAR, y: horizon / dpr - up * NEAR, r: (scene.lightSize || 6) * NEAR, color: scene.lightColor || "255, 176, 84", strength: scene.lightStrength ?? 0.34 }));
+    // Mist lies among the far trees, behind what stands near (front: those props alone, to keep it off them).
+    let mistMoves = false;
+    if (moves.includes("mist")) {
+      const front = Object.assign(document.createElement("canvas"), { width: canvas.width, height: canvas.height }), fc = front.getContext("2d");
+      fc.imageSmoothingEnabled = false;
+      for (const [p, at] of scene.near) drawProp(fc, p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, snowy);
+      mistMoves = { width: w, floor: h - GROUND_STRIP, front: front.toDataURL() };
     }
-    // Warm light round each lantern, up that many blocks if it isn't on the ground.
-    for (const light of scene.lights || []) {
-      const [at, up = 0.6] = [].concat(light);
-      // lightSize: how many blocks a light reaches (6 if not given); lightStrength: how bright at its heart (.34).
-      const x = canvas.width / 2 + (at + 0.5) * NEAR * dpr, y = horizon - up * NEAR * dpr, r = (scene.lightSize || 6) * NEAR * dpr;
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-      const color = scene.lightColor || "255, 176, 84";
-      glow.addColorStop(0, `rgba(${color}, ${scene.lightStrength ?? 0.34})`);
-      glow.addColorStop(1, `rgba(${color}, 0)`);
-      ctx.globalCompositeOperation = "lighter";
-      ctx.fillStyle = glow;
-      ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
-      ctx.globalCompositeOperation = "source-over";
+    // Snow blows off the far peaks: their crests, a few columns round each top (in CSS pixels).
+    let spindrift = false;
+    if (moves.includes("spindrift")) {
+      const cols = w / FAR, hillAt = hillHeights(scene.hills, seed, cols);
+      spindrift = { crests: scene.hills.peaks.filter(([, tall]) => tall >= 19).map(([at]) => {
+        const around = Array.from({ length: 7 }, (_, k) => Math.round(at * cols) + k - 3), top = around.reduce((a, b) => (hillAt(b) > hillAt(a) ? b : a));
+        return [top - 1, top, top + 1, top + 2].map(c => [(c + 0.5) * FAR, horizon / dpr - hillAt(c) * FAR]);
+      }) };
     }
+    // Mycelium gives off spores: the ground, and the far hills' tops (in CSS pixels, one for each column).
+    let spores = false;
+    if (moves.includes("spores")) {
+      const cols = Math.ceil(w / FAR), hillAt = hillHeights(scene.hills, seed, w / FAR);
+      spores = { width: w, floor: h - GROUND_STRIP, tops: Array.from({ length: cols }, (_, c) => horizon / dpr - hillAt(c) * FAR) };
+    }
+    // Flames flicker about spawners, and sparks rise round vaults (their left edges and tops).
+    const placed = name => crowns.filter(b => b.name === name).map(b => [b.left / dpr, b.top / dpr]);
+    const spawners = moves.includes("spawners") && { at: [...placed("trial_spawner"), ...placed("mob_spawner")], flame: ART_FRAMES.flame }, vaults = moves.includes("vaults") && { at: placed("vault") };
+    // Torches burn.
+    const torches = moves.includes("torches") && { at: placed("torch"), flame: ART_FRAMES.flame };
+    // Specks drift off the end rods (a rod is drawn in parts, found once each).
+    const rods = moves.includes("rods") && { at: placed("end_rod").filter(([x, y], i, all) => all.findIndex(o => o[0] === x && o[1] === y) === i) };
+    // End crystals, [middle, bottom, a block's size] (in CSS pixels): they aren't in the still picture.
+    const crystals = scene.crystals && [...crystalsOf(hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, seed), FAR * dpr).map(c => [...c, FAR * dpr]),
+      ...crystalsOf(scene.near.map(([p, at]) => [p, canvas.width / 2 + at * NEAR * dpr, horizon]), NEAR * dpr).map(c => [...c, NEAR * dpr])].map(c => c.map(v => v / dpr));
+    const swaying = moves.filter(name => SWAYS.includes(name)), sway = swaying.length > 0 && swayMotion(paint, swaying, canvas.width, canvas.height, dpr);
+    // Grains of sand hang in the desert's and the badlands' air.
+    const sand = moves.includes("sand") && { width: w, floor: h - GROUND_STRIP, color: scene.night ? "night" : scene.sandColor || "day" };
+    // And a little snow falls.
+    const snow = moves.includes("snow") && { width: w, floor: h - GROUND_STRIP };
+    // And leaves fall (leaves: how many, leavesLand: how many blocks over the floor the ground is).
+    const leaves = scene.leaves && leafMotion(crowns, scene.leaves, h - GROUND_STRIP - (scene.leavesLand || 0) * NEAR, dpr, [[haze, mist.near], ...(scene.night ? [[scene.night.shade, 1]] : [])]);
+    // And stars twinkle at night.
+    const stars = twinkling.length > 0 && twinkling.map(([x, y, side, bright]) => [x / dpr, y / dpr, side / dpr, Number(bright.toFixed(2))]);
+    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || torches || crystals || rods ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }) } : null, dpr);
   };
   new ResizeObserver(draw).observe(canvas);
   return {
+    // Drawn again only if it's another biome (what moves takes a while to work out), or wasn't drawn yet: a new size has its
+    // own redraw.
     show(biomeKey) {
+      if (biomeKey === biome && drawnBiome === biome) return;
       biome = biomeKey;
       draw();
     },
+    motion: () => motion,
   };
 }
