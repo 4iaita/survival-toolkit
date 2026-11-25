@@ -1,7 +1,7 @@
 /* ---------- Tool tabs ---------- */
-const VIEWS = ["anvil", "potions", "trading", "mobs", "armorstands"];
+const VIEWS = ["equipment", "potions", "trading", "mobs", "armorstands"];
 function showView() {
-  const current = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "anvil";
+  const current = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "equipment";
   for (const v of VIEWS) {
     $("view-" + v).hidden = v !== current;
     if (v === current) $("tab-" + v).setAttribute("aria-current", "page");

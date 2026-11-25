@@ -1,0 +1,48 @@
+  <section id="view-equipment" aria-label="Equipment">
+    <p class="view-intro">Every piece of armor, weapon and tool you can enchant. Pick one and its material to see how good it is, which enchantments go on it, how to make, mend and find it, and the cheapest anvil order for the enchantments you want.</p>
+
+    <section class="panel villager-panel mob-panel" aria-label="Equipment">
+      <div class="villager-scene">
+        <div class="stage prop-stage" id="gear-stage" data-biome="plains">
+          <canvas class="stage-scene" id="gear-art" tabindex="0" role="img"></canvas>
+          <span class="stage-hint" aria-hidden="true">
+            <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
+            Drag to turn
+          </span>
+        </div>
+        <div class="try-bar" id="gear-mat-bar">
+          <span class="cat-label" id="gear-mat-label">Material</span>
+          <div class="try-tags" id="gear-mat" role="group" aria-labelledby="gear-mat-label"></div>
+        </div>
+      </div>
+
+      <div class="villager-pick">
+        <div class="panel-head">
+          <h2 id="gear-name"></h2>
+        </div>
+        <div class="mob-order">
+          <select class="mc-select" id="gear-order" aria-label="Order">
+            <option value="kind">Kind</option>
+            <option value="az">Alphabetical</option>
+          </select>
+        </div>
+        <div class="cats" id="gear-picker" role="group" aria-label="Equipment"></div>
+      </div>
+    </section>
+
+    <div class="trade-grid">
+      <article class="panel result mob-result" id="gear-result"></article>
+
+      <div class="trade-side">
+        <section class="panel">
+          <h2><label for="gear-search">Find equipment</label></h2>
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 8 8" width="16" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7z"/></svg>
+            <input type="search" class="mc-input" id="gear-search" placeholder="Sword, Netherite, Mending…" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="search-results" id="gear-results" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+

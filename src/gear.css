@@ -1,0 +1,52 @@
+
+/* ---------- Equipment ---------- */
+/* The tab is laid out as the Mobs tab is (mob.css); this is what only equipment has. */
+#view-equipment .name-chip .ico { width: 18px; height: 18px; }
+#view-equipment .item-list.wide { grid-template-columns: minmax(0, 1fr); }
+#view-equipment .item-list.wide .item-chance { min-width: 4.6em; }
+/* Numbers in the body font: the pixel font's 2 and 8, and 5 and S, look alike. */
+#view-equipment .mob-stat:not(.text) .stat-value { font: 800 22px/1.05 var(--font-body); font-variant-numeric: tabular-nums; }
+#view-equipment .item-count { font: 800 16px/1 var(--font-body); font-variant-numeric: tabular-nums; }
+.gear-label { margin: 14px 0 6px !important; }
+.gear-none { margin-top: 10px; }
+.curse-name { color: var(--bad-ink); }
+
+/* Materials: a row for each, whose name is a button that picks it. */
+.mat-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; margin: -4px 0; }
+.mat-table thead th { font: 600 14px/1.2 var(--font-pixel); color: var(--ink); text-align: center; padding: 2px 4px; }
+.mat-table tbody th { text-align: left; padding: 0; }
+.mat-table tbody td { text-align: center; padding: 0 4px; font: 700 14.5px/1 var(--font-body); font-variant-numeric: tabular-nums; color: var(--ink); background: var(--well); box-shadow: inset 0 2px 0 var(--panel-lo), inset 0 -2px 0 var(--panel-hi); }
+.mat-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 4px 8px; text-align: left; cursor: pointer;
+  font: 700 14px/1.25 var(--font-body); color: var(--ink); background: var(--well); border: 2px solid transparent; border-radius: 0;
+  box-shadow: inset 2px 2px 0 var(--panel-lo), inset 0 -2px 0 var(--panel-hi);
+}
+.mat-btn .ico { width: 24px; height: 24px; }
+.mat-btn .sub { display: block; font-weight: 500; font-size: 12.5px; color: var(--ink-soft); }
+.mat-btn:hover { border-color: var(--white); }
+.mat-table tbody tr.on td, .mat-btn[aria-pressed="true"] { background: var(--picked); box-shadow: none; }
+.mat-btn[aria-pressed="true"] { border-color: var(--picked-edge); }
+@media (max-width: 560px) {
+  .mat-table thead th { font: 700 10px/1.2 var(--font-body); letter-spacing: -.02em; padding: 2px 1px; }
+  .mat-btn .ico { display: none; }
+  .mat-btn { padding: 4px; gap: 5px; font-size: 12.5px; }
+  .mat-btn .sub { display: none; }
+  .mat-table tbody td { font-size: 13px; padding: 0 2px; }
+}
+
+/* Crafting: the grid and what comes out. */
+.smith-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#gear-section .item-list { margin-top: 12px; }
+#gear-section .gear-label + .item-list { margin-top: 0; }
+
+/* The anvil plan, in the same column as the other sections: the books in two columns where there's room, the options, then the plan. */
+.anvil-head { margin: 16px 0 8px; }
+.anvil-head h4 { margin: 0; font: 600 17px/1.1 var(--font-pixel); color: var(--ink); }
+.anvil-plan { margin-top: 16px; }
+.anvil-plan .steps { padding: 0; margin-top: 14px; }
+.anvil-plan .final { padding: 14px 0 0; }
+/* A step's slots beside what goes in them. */
+.step-body { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px 18px; }
+.step-body .anvil-row { flex: none; }
+.step-body .what { flex: 1 1 240px; min-width: 0; margin-top: 0; flex-direction: row; flex-wrap: wrap; gap: 6px 16px; }
+.step-body .what > div { flex: 1 1 160px; min-width: 0; }

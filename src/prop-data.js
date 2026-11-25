@@ -116,7 +116,7 @@ const PROP_ICONS = {
   spruce_fence: { boxes: [[6, 0, 0, 10, 16, 4], [6, 0, 12, 10, 16, 16], [7, 12, 4, 9, 15, 12], [7, 6, 4, 9, 9, 12]].map(b => ({ b, faces: [["planks_spruce"], ["planks_spruce"], ["planks_spruce"]] })) },
 };
 for (const [k, spec] of Object.entries(PROP_ICONS)) if (artReady(spec)) ICONS[`held:${k}`] = spec;
-// A banner is a model in the game, with no picture of its own: the one the Villager Trades tab draws.
+// A banner is a model in the game, with no picture of its own: the Villager Trades tab's, the pack's banner in the hand.
 ICONS["held:banner"] = tradeSpec("White Banner");
 // The versions an item's prop comes in (PROP_LOOKS' look and its variants, in order), one for each of the stand's poses in turn.
 const CLIMATE_KINDS = ["Temperate", "Cold", "Warm"];

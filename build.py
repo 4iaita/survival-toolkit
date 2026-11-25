@@ -13,7 +13,7 @@ head = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Survival Toolkit</title>
-<meta name="description" content="Anvil enchanting planner, potion guide with brewing plans, villager trade guide, mobs and name tag secrets, and armor stand props for Minecraft, Java and Bedrock.">
+<meta name="description" content="Equipment guide with an anvil enchanting planner, potion guide with brewing plans, villager trade guide, mobs and name tag secrets, and armor stand props for Minecraft, Java and Bedrock.">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -28,12 +28,12 @@ body { margin: 0; }
 
 def build_page():
     body = read("body.html")
-    for part in ("potion.html", "trade.html", "mob.html", "prop.html"):
+    for part in ("gear.html", "potion.html", "trade.html", "mob.html", "prop.html"):
         body = body.replace(f"<!-- {part} -->\n", read(part))
-    scripts = ["brew-data.js", "potion-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js",
+    scripts = ["brew-data.js", "potion-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js", "gear-data.js",
                "villager.js", "backdrop-motion.js", "backdrop.js", "trade-data.js", "mob-models.js", "particles.js", "mobs.js", "mob-data.js", "mob-info.js", "tag-data.js", "tag-data-more.js", "prop-data.js", "prop-data-more.js",
-               "ui.js", "tabs.js", "trade-ui.js", "mob-ui.js", "item-stage.js", "potion-ui.js", "prop-ui.js"]
-    out = (head + read("style.css") + read("potion.css") + read("trade.css") + read("mob.css") + read("prop.css") + "</style>\n</head>\n<body>\n" + body +
+               "ui.js", "tabs.js", "trade-ui.js", "mob-ui.js", "item-stage.js", "potion-ui.js", "prop-ui.js", "anvil-ui.js", "gear-ui.js"]
+    out = (head + read("style.css") + read("gear.css") + read("potion.css") + read("trade.css") + read("mob.css") + read("prop.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
            art_script() + "\n" + effects_script() + "\n" + frames_script() + "\n" + skins_script() + "\n" + mob_skins_script() + "\n" + "\n".join(read(f) for f in scripts) +
            "</script>\n</body>\n</html>\n")

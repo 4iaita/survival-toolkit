@@ -1,4 +1,4 @@
-/* Layout: inventory-style panels on a deepslate backdrop. Choices stack on the left, the anvil plan stays beside them; one column on phones. */
+/* Layout: inventory-style panels on a deepslate backdrop; one column on phones. */
 :root {
   color-scheme: dark;
   --page: #1d1d21;
@@ -87,9 +87,6 @@ h1 { font: 600 clamp(28px, 4.4vw, 42px)/1.05 var(--font-pixel); color: var(--whi
 .edition { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* Panels */
-.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-@media (max-width: 880px) { .grid { grid-template-columns: minmax(0, 1fr); } }
-.col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .panel {
   background: var(--panel); color: var(--ink);
   border: 3px solid var(--edge);
@@ -137,42 +134,39 @@ h1 { font: 600 clamp(28px, 4.4vw, 42px)/1.05 var(--font-pixel); color: var(--whi
   background: var(--tip-bg); color: var(--white); font: 600 14px/1 var(--font-body);
   padding: 6px 8px; border: 2px solid var(--tip-edge);
 }
-.picked-name { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; }
 
 /* Enchantments */
-.ench-list { display: flex; flex-direction: column; gap: 2px; }
+.ench-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 6px; }
 .ench {
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "slot name lv" "slot meta meta";
-  align-items: center; gap: 0 12px; padding: 5px 8px;
-  border: 2px solid transparent; cursor: pointer;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "slot name worth" "slot meta meta"; align-items: center; align-content: center;
+  gap: 4px 10px; min-height: 62px; padding: 5px 8px 5px 5px; border: 2px solid transparent; cursor: pointer;
+  background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
 }
 .ench:hover { background: #d3d3d3; }
-.ench.on { background: var(--picked); border-color: var(--picked-edge); }
+.ench.on { background: var(--picked); border-color: var(--picked-edge); box-shadow: none; }
 .ench .slot { grid-area: slot; }
 .ench-name { grid-area: name; font-weight: 800; font-size: 15px; line-height: 1.25; }
-.ench-name .curse { color: var(--bad-ink); font-weight: 700; font-size: 12px; margin-left: 6px; }
-.ench-meta { grid-area: meta; font-size: 12.5px; color: var(--ink-soft); line-height: 1.35; }
+.ench-worth { grid-area: worth; font-size: 12.5px; color: var(--ink-soft); white-space: nowrap; }
+.ench-meta { grid-area: meta; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.35; }
 .ench-meta .warn { color: var(--bad-ink); font-weight: 700; }
 .ench.blocked .ench-name { color: #6a6a6a; }
 .ench.blocked .ico { opacity: .5; }
-.levels { grid-area: lv; display: inline-flex; gap: 3px; }
+.levels { display: inline-flex; gap: 3px; }
 .levels button {
   font: 800 13px/1 var(--font-body); color: var(--white); text-shadow: 1px 1px 0 var(--shadow);
-  min-width: 32px; padding: 6px 5px 7px; cursor: pointer;
+  min-width: 28px; padding: 4px 4px 5px; cursor: pointer;
   background: var(--btn); border: 2px solid var(--edge);
   box-shadow: inset 2px 2px 0 var(--btn-hi), inset -2px -2px 0 var(--btn-lo);
 }
 .levels button:hover { border-color: var(--white); }
 .levels button[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -2px 0 var(--btn-on-lo); }
-@media (max-width: 480px) {
-  .ench { grid-template-areas: "slot name" "slot meta" "slot lv"; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; }
-  .levels { justify-self: start; margin-top: 4px; }
-}
 
 /* Options */
-.opts { display: flex; flex-direction: column; gap: 10px; }
-.opt { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; cursor: pointer; }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 10px 16px; }
+.opt { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; cursor: pointer; }
+.opt .slot { grid-row: 1 / 3; }
+.opt .mc-select { grid-column: 2; justify-self: start; }
+.opt.opt-check { grid-template-columns: auto minmax(0, 1fr) auto; }
 .opt-label { font-weight: 800; font-size: 14.5px; line-height: 1.25; }
 .mc-select {
   font: 700 14px/1.2 var(--font-body); color: var(--white); text-shadow: 1px 1px 0 var(--shadow);
@@ -191,11 +185,6 @@ h1 { font: 600 clamp(28px, 4.4vw, 42px)/1.05 var(--font-pixel); color: var(--whi
 }
 .mc-check:checked {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23203f08' d='M2 5h1v2H2zM3 6h1v2H3zM4 7h1v2H4zM5 6h1v2H5zM6 5h1v2H6zM7 4h1v2H7zM8 3h1v2H8z'/%3E%3Cpath fill='%2380ff20' d='M1 4h1v2H1zM2 5h1v2H2zM3 6h1v2H3zM4 5h1v2H4zM5 4h1v2H5zM6 3h1v2H6zM7 2h1v2H7z'/%3E%3C/svg%3E");
-}
-@media (max-width: 520px) {
-  .opt { grid-template-columns: auto minmax(0, 1fr); }
-  .opt .mc-select { grid-column: 1 / -1; }
-  .opt.opt-check { grid-template-columns: auto minmax(0, 1fr) auto; }
 }
 
 /* Anvil plan */

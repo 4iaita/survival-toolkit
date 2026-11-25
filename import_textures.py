@@ -17,7 +17,8 @@ pack = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else root.parent / "textur
 DYE_FILES = {"white": "white_new", "light_gray": "silver", "black": "black_new", "blue": "blue_new", "brown": "brown_new"}
 COLORS = ["white", "light_gray", "gray", "black", "brown", "red", "orange", "yellow",
           "lime", "green", "cyan", "light_blue", "blue", "purple", "magenta", "pink"]
-METALS = {"iron": "iron", "chainmail": "chainmail", "diamond": "diamond", "golden": "gold", "stone": "stone"}
+METALS = {"iron": "iron", "chainmail": "chainmail", "diamond": "diamond", "golden": "gold", "stone": "stone",
+          "wooden": "wood", "copper": "copper", "netherite": "netherite"}
 PIECES = ["helmet", "chestplate", "leggings", "boots", "axe", "shovel", "pickaxe", "hoe", "sword"]
 # art name -> file in the pack
 FILES = {
@@ -240,6 +241,11 @@ FILES = {
     "spyglass": "items/spyglass", "web_carried": "blocks/carried/web_carried", "copper_bulb": "blocks/copper_bulb", "copper_lantern": "items/copper_lantern",
     "soul_campfire": "items/soul_campfire", "glow_item_frame": "items/glow_item_frame", "boat_spruce": "items/boat_spruce", "target_side": "blocks/target_side", "target_top": "blocks/target_top",
     "spruce_trapdoor": "blocks/spruce_trapdoor", "pale_oak_trapdoor": "blocks/pale_oak_trapdoor",
+    # The Equipment tab: the spears the other tabs don't have (the diamond one is "spear"), and what gear is made with.
+    "wooden_spear": "items/spear/wood_spear", "stone_spear": "items/spear/stone_spear", "copper_spear": "items/spear/copper_spear",
+    "golden_spear": "items/spear/gold_spear", "netherite_spear": "items/spear/netherite_spear",
+    "netherite_ingot": "items/netherite_ingot", "netherite_upgrade": "items/netherite_upgrade_smithing_template", "heavy_core": "blocks/heavy_core",
+    "crafting_table_front": "blocks/crafting_table_front", "crafting_table_side": "blocks/crafting_table_side", "crafting_table_top": "blocks/crafting_table_top",
     **{f"{k}_carried": f"blocks/carried/{k}_carried" for k in ("mushroom_brown", "mushroom_red", "crimson_fungus", "warped_fungus", "torch", "soul_torch", "copper_torch", "redstone_torch")},
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
@@ -320,6 +326,10 @@ def import_villagers():
 # Pieces cut out of a bigger texture: art/ name -> (file in the pack, its box). The ender dragon's head, side on, for
 # the dragon head on an end ship's bow; its upper jaw's scales for the snout.
 CUTS = {"dragon_head_side": ("entity/dragon/dragon", (112, 46, 128, 62)), "dragon_snout_side": ("entity/dragon/dragon", (112, 64, 128, 80))}
+# The shield's model texture, a 64x64 sheet, as the 16x16 pieces with something on them: shield_<column>_<row>.
+SHIELD_PIECES = [(0, 0), (1, 0), (2, 0), (0, 1), (1, 1)]
+for x, y in SHIELD_PIECES:
+    CUTS[f"shield_{x}_{y}"] = ("entity/shield", (x * 16, y * 16, x * 16 + 16, y * 16 + 16))
 # The Mobs tab's heads, as drops: each skull texture's front, top and side, 8 pixels square, enlarged to 16 so the icon
 # draws them as a block.
 for head, file in {"creeper_head": "creeper", "skeleton_skull": "skeleton", "wither_skeleton_skull": "wither_skeleton", "zombie_head": "zombie"}.items():
@@ -411,6 +421,38 @@ def import_cuts(out):
             img = img.resize((16, 16 * img.height // img.width), Image.NEAREST)
         img.save(out / f"{name}.png")
         (out / f"_{name}.png").unlink(missing_ok=True)
+
+
+# The banners: the pack's own model of a banner in the hand (attachables/gvu.json), 16 pixels tall and painted for each dye on one sheet,
+# seen from the front: its bar, its pole under it and the flag over both. The number is where a dye's part of the sheet starts (its
+# geometry's uv). The model turns the bar's texture round, left to right.
+BANNER_SHEET = "full-pack/textures/oreville/ans/dim"
+BANNERS = {"black": 25, "blue": 43, "brown": 61, "cyan": 79, "gray": 97, "green": 115, "light_blue": 133, "lime": 151, "magenta": 169, "orange": 187,
+           "pink": 205, "purple": 223, "red": 241, "light_gray": 259, "white": 277, "yellow": 295}
+
+
+def import_banners(out):
+    from PIL import Image, ImageOps
+    sheet = Image.open(pack / f"{BANNER_SHEET}.png").convert("RGBA")
+    for dye, top in BANNERS.items():
+        icon = Image.new("RGBA", (16, 16))
+        piece = lambda x, y, w, h: sheet.crop((x, top + y, x + w, top + y + h))
+        for part, at in ((piece(24, 0, 2, 14), (7, 2)), (ImageOps.mirror(piece(0, 15, 11, 2)), (2, 0)), (piece(9, 0, 9, 15), (3, 0))):
+            icon.paste(part, at, part)
+        icon.save(out / f"banner_{dye}.png")
+
+
+# The leather tunic: the pack has the other three pieces in brown (.png) beside the pale ones the game colors (.tga), but only the pale
+# one of the tunic. This is how the others' pale tones turn brown, their uncolored clasps (nearly clear) too.
+LEATHER_BROWNS = {(242, 210, 140): (142, 77, 26), (193, 152, 94): (113, 57, 13), (135, 101, 62): (80, 37, 11), (91, 63, 36): (80, 37, 11), (60, 39, 19): (56, 25, 7),
+                  (199, 130, 60): (172, 110, 39)}
+
+
+def import_leather_tunic(out):
+    from PIL import Image
+    img = Image.open(pack / "items/leather_chestplate.png").convert("RGBA")
+    img.putdata([(*LEATHER_BROWNS[p[:3]], 255) if p[3] else (0, 0, 0, 0) for p in img.getdata()])
+    img.save(out / "leather_chestplate.png")
 
 
 # Whole animated textures (art/frames/), as [file in the pack, the piece to cut out of it]: the moving backdrops draw every
@@ -505,6 +547,8 @@ def main():
         print("missing (the drawn icon is used instead):", ", ".join(missing))
     import_frames(out)
     import_cuts(out)
+    import_banners(out)
+    import_leather_tunic(out)
     import_dried_ghast(out)
     import_effects(out)
     import_item_pictures(out)

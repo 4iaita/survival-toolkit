@@ -1,7 +1,8 @@
-# Survival Toolkit: working on the Mobs, Potions and Armor Stands tabs
+# Survival Toolkit: working on the Mobs, Equipment, Potions and Armor Stands tabs
 
 Most of this is about the Mobs tab's stage backgrounds; the rest of that tab is at the end ("The Mobs tab's controls and facts",
-"Finding what's unused"). For the Potions tab, read "The Potions tab"; for the Armor Stands tab, "Armor Stands, section by section".
+"Finding what's unused"). For the Equipment tab, read "The Equipment tab"; for the Potions tab, "The Potions tab"; for the Armor Stands
+tab, "Armor Stands, section by section".
 
 The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
@@ -227,6 +228,43 @@ Was the Brewing Guide (`#brewing` still opens its Brewing section). It's laid ou
 - `potionIcon(form, color)` finds the pack's own bottle by the potion's color, so colors must stay unique (`drink_`, `splash_`, `lingering_` and `arrow_`
   in `art/`; `POTIONS` in `import_textures.py`). Effects' icons and the swirls are in `art/effects/` (`EFFECT_ART`).
 - Left out: Luck and Decay (can't be brewed) and Freezing (2026's last drop; the pack has no bottle for it yet).
+
+## The Equipment tab
+
+Was the Anvil Planner (`#anvil` still opens its Anvil plan section). It's laid out as the Potions tab is, on the same stage. The user chose it
+to be about items (a sword, in any material), over a tab about enchantments, as the plan is made for one item.
+
+- `src/solver.js`: the items (`ITEMS`: all that can be enchanted), the enchantments and the plan's search. `src/gear-data.js`: everything else, from the
+  Minecraft Wiki, by edition where they differ. `src/gear-ui.js`: the tab; `src/anvil-ui.js`: its Anvil plan section. They load last, as they use
+  `mob-ui.js`'s and `potion-ui.js`'s helpers.
+- The picked item is the plan's (`state.item` in `src/ui.js`, saved with the edition under the planner's old key, so saved choices live on). The material
+  (`gear.mat`) goes through every section; an item without it shows in diamond and the pick is kept for the next one.
+- Every section of Equipment, Potions and Mobs keeps the same column, with the search beside it: the user didn't want the anvil plan wider than the
+  others. So it's stacked: the books as cards (two columns where there's room), the options, then the plan. Make a new tool fit the column too.
+- Villagers' and the wandering trader's sales in Where to find come from their trades (`gearSales`), so they aren't in `GEAR_FOUND`.
+- Checked 2026-11-25 against the games' own files (Java 26.3, Bedrock 1.26.60), not only the wiki: every chest, barrel, brushing, fishing and bartering
+  chance in both editions, and Java's durability, damage, speed, armor, enchantability, recipes, what each enchantment goes on, conflicts and effects.
+  Files: `misode/mcmeta` on GitHub (branches `26.3-data`, and `26.3-summary` for `item_components`) and `Mojang/bedrock-samples` (`behavior_pack/loot_tables`,
+  `recipes`), read raw. For a new version check there first; the wiki refuses scripted reads after a few (403), so don't loop over it.
+- From the wiki only: mobs' 8.5% drops, the taiga village's armor stands, the ancient city's furnace, Bedrock's damage numbers and enchantment levels,
+  and the mace's smash. Not checked: what a hit costs a hoe in Bedrock (left out).
+- 26.4 lowers the ancient city's chances (diamond hoe and leggings 15.9%, iron leggings 23%).
+- The shield has no item picture in the pack: its icon and stage are its model (the game's: a plate and a handle) in the pack's `entity/shield`
+  (`SHIELD_CUBES` in `src/icons5.js`; an icon with a `model` is shown as that on the stage). Don't go back to the drawn one.
+- Banners (trades, Armor Stands) have no item picture either. The user chose the pack's own banner in the hand (`attachables/gvu.json`, painted per dye,
+  16 pixels tall; `import_banners`) over the inventory's big model (`entity/banner/banner_base`), which is a plain plate at icon size. No trade or
+  equipment icon is hand-drawn now but the arrow between slots.
+- The pack has the leather tunic only in the pale tones the game colors; the other leather pieces are brown. `import_leather_tunic` gives it their browns
+  (so `art/leather_chestplate.png` isn't a plain copy).
+- Two functions with one name in different files don't fail the syntax check: the later one silently wins (a second `modelBoxes`, the
+  mobs', broke the page). After adding any, list every top-level name in `src/` and look for doubles.
+- Numbers are in the body font: the pixel font's 2 and 8, and 5 and S, look alike.
+- `import_textures.py` run whole rewrites every texture: 30 of the folder's pictures differ from `art/`'s (potions, sand, dripstone, doors, TNT...). After
+  running it for a new texture, put the others back with `git restore` (new files stay), unless the user wants the refresh; but not a changed file that
+  isn't committed yet. Better: import it as a module and call only the function needed (`import_banners(out)`).
+- To check a change here: render every item, material, section and edition (`gearSections`, `renderGear`) and look for errors, "undefined" and "NaN", and
+  compare the plans (`renderPlan`) with the committed page's. Compare pages with a fresh browser profile each, as they share saved settings.
+- Told to the user and left: the planner's rules still end with "Icons are original pixel art drawn for this page", the tab still says "Changes coming".
 
 ## Finding what's unused
 
