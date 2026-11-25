@@ -70,35 +70,43 @@ const POTIONS = [
     path: [WART, ["stone", "infestation"]], dur: { base: 180 } },
 ];
 
+// The bottles other potions start from. They have no effect, and their path is how to get them from a water bottle.
+const BASE_POTIONS = [
+  { k: "water", n: "Water Bottle", title: "Water Bottle", path: [] },
+  { k: "awkward", n: "Awkward Potion", title: "Awkward Potion", path: [WART] },
+  { k: "mundane", n: "Mundane Potion", title: "Mundane Potion", path: [["redstone", "mundane"]] },
+  { k: "thick", n: "Thick Potion", title: "Thick Potion", path: [["glowstone", "thick"]] },
+].map(p => ({ ...p, base: true, cat: "Base", color: "#385dc6", fx: [], dur: { base: 0 } }));
+
 const HARMFUL = new Set(["Slowness", "Instant Damage", "Poison", "Weakness", "Wind Charged", "Weaving", "Oozing", "Infested"]);
 const WATER_COLOR = "#385dc6";
 const BOTTLES_PER_BATCH = 3;
 const BREWS_PER_BLAZE = 20;
 const BREW_SECONDS = 20;
 
-const potionByKey = k => POTIONS.find(p => p.k === k);
+const potionByKey = k => POTIONS.find(p => p.k === k) || BASE_POTIONS.find(p => p.k === k);
 const byEdition = (v, edition) => (v && typeof v === "object" ? v[edition] : v);
 const fmtTime = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 function potionTitle(key, form = "drink") {
-  if (key === "water") return "Water Bottle";
-  if (key === "awkward") return "Awkward Potion";
-  const base = `Potion of ${potionByKey(key).n}`;
-  return form === "splash" ? `Splash ${base}` : form === "lingering" ? `Lingering ${base}` : base;
+  const base = BASE_POTIONS.find(p => p.k === key), name = base ? base.title : `Potion of ${potionByKey(key).n}`;
+  if (form === "arrow") return `Arrow of ${potionByKey(key).n}`;
+  return form === "splash" ? `Splash ${name}` : form === "lingering" ? `Lingering ${name}` : name;
 }
 
 // Which modifiers a potion accepts, in display order.
 const modsFor = p => ["base", ...("long" in p.dur ? ["long"] : []), ...("strong" in p.dur ? ["strong"] : [])];
 
-// Effects of the finished potion. Lingering clouds apply a quarter of the duration.
+// Effects of the finished potion. Lingering clouds apply a quarter of the duration, tipped arrows an eighth.
 function potionEffects(p, mod, form, edition) {
   const fx = mod === "strong" && p.strongFx ? p.strongFx : p.fx;
   let secs = byEdition(p.dur[mod], edition) || 0;
   if (form === "lingering") secs = Math.floor(secs / 4);
+  if (form === "arrow") secs = Math.floor(secs / 8);
   return fx.map(([name, level]) => ({ name, level, secs, bad: HARMFUL.has(name) }));
 }
 
-// Brewing steps for `count` bottles. Each step is one 20-second brew on a full stand of up to 3 bottles.
+// Brewing steps for `count` bottles (for tipped arrows, the lingering potions to craft them with). Each step is one 20-second brew on a full stand of up to 3 bottles.
 function brewPlan(p, { mod = "base", form = "drink", count = 3 } = {}) {
   const steps = [];
   let cur = { key: "water", mod: "base", form: "drink" };
@@ -107,11 +115,11 @@ function brewPlan(p, { mod = "base", form = "drink", count = 3 } = {}) {
   if (mod === "long") add("redstone", { ...cur, mod: "long" });
   if (mod === "strong") add("glowstone", { ...cur, mod: "strong" });
   if (form !== "drink") add("gunpowder", { ...cur, form: "splash" });
-  if (form === "lingering") add("dragon_breath", { ...cur, form: "lingering" });
+  if (form === "lingering" || form === "arrow") add("dragon_breath", { ...cur, form: "lingering" });
 
   const batches = Math.ceil(count / BOTTLES_PER_BATCH);
   const brews = steps.length * batches;
   const items = new Map([["water_bottle", count]]);
   for (const s of steps) items.set(s.item, (items.get(s.item) || 0) + batches);
-  return { steps, batches, brews, fuel: Math.ceil(brews / BREWS_PER_BLAZE), seconds: brews * BREW_SECONDS, items: [...items] };
+  return { steps, final: cur, batches, brews, fuel: Math.ceil(brews / BREWS_PER_BLAZE), seconds: brews * BREW_SECONDS, items: [...items] };
 }

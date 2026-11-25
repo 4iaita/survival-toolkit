@@ -1,7 +1,7 @@
-# Survival Toolkit: working on the Mobs and Armor Stands tabs
+# Survival Toolkit: working on the Mobs, Potions and Armor Stands tabs
 
 Most of this is about the Mobs tab's stage backgrounds; the rest of that tab is at the end ("The Mobs tab's controls and facts",
-"Finding what's unused"). For the Armor Stands tab, read "Armor Stands, section by section".
+"Finding what's unused"). For the Potions tab, read "The Potions tab"; for the Armor Stands tab, "Armor Stands, section by section".
 
 The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
@@ -79,7 +79,7 @@ rows (`MOB_ROWS`), and on name tags in `src/tag-data*.js`.
 - `src/backdrop-motion.js`: what moves in a background, drawn on a canvas of its own (`.stage-motion`) over the still picture.
   See "What moves in a background".
 - `src/mob.css`: each stage's `--sky` and `--haze` colors, and the ground strip's brightness, by `data-biome`.
-- `src/trade.css`: the stage itself. Its CSS clouds are only the armor stands' stage's (`.prop-stage::before`); a backdrop's are `drawClouds`.
+- `src/trade.css`: the stage itself. Its CSS clouds are only the armor stands' and the potions' stage's (`.prop-stage::before`); a backdrop's are `drawClouds`.
 - `src/villager.js`: the ground strip's texture for each biome (`groundArt`).
 - `art/`: the 16×16 textures the page embeds (a taller one is animation frames; the first frame is used). Add one by
   copying it from `../textures/blocks/` and registering it in `import_textures.py` (`FILES`) so a re-import keeps it.
@@ -215,6 +215,18 @@ Left still: the End's sky, the nether's magma and light.
   isn't repeated from Spawns.
 - The unpacked Actions & Stuff pack is `../textures/full-pack`. `src/mob-models.js` is generated; change it through the import
   scripts (they only write with `--write`).
+
+## The Potions tab
+
+Was the Brewing Guide (`#brewing` still opens its Brewing section). It's laid out as the Mobs tab is and uses its styles (`src/mob.css`).
+
+- `src/brew-data.js`: recipes and durations (`POTIONS`, also used by the trades, and `BASE_POTIONS`). `src/potion-data.js`: everything else it
+  tells, from the Minecraft Wiki, by edition where they differ (`forEdition`). `src/potion-ui.js`: the tab; it loads after `mob-ui.js`, whose helpers it uses.
+- The picked strength and bottle (`brew.mod`, `brew.form`) go through every section; the buttons are under the stage and again in Brewing.
+- The stage is the armor stands' (`.prop-stage`: plain sky, CSS clouds, plains grass) for every potion: the user chose it over a background for each.
+- `potionIcon(form, color)` finds the pack's own bottle by the potion's color, so colors must stay unique (`drink_`, `splash_`, `lingering_` and `arrow_`
+  in `art/`; `POTIONS` in `import_textures.py`). Effects' icons and the swirls are in `art/effects/` (`EFFECT_ART`).
+- Left out: Luck and Decay (can't be brewed) and Freezing (2026's last drop; the pack has no bottle for it yet).
 
 ## Finding what's unused
 

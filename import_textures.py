@@ -425,6 +425,35 @@ FRAMES = {"lava_still": ("blocks/lava_still", None), "lava_flow": ("blocks/lava_
           "candle_flame": ("full-pack/subpacks/SP2/textures/particle/particles", (64, 64, 72, 72))}
 
 
+# The Potions tab: each potion's own bottles and tipped arrow (its key in src/brew-data.js -> the pack's two names for it).
+POTIONS = {
+    "swiftness": ("moveSpeed", "swift"), "leaping": ("jump", "leaping"), "strength": ("damageBoost", "strength"),
+    "healing": ("heal", "healing"), "regeneration": ("regeneration", "regen"), "fire_resistance": ("fireResistance", "fireres"),
+    "water_breathing": ("waterBreathing", "waterbreathing"), "night_vision": ("nightVision", "nightvision"),
+    "invisibility": ("invisibility", "invisibility"), "slow_falling": ("slowFall", "slowfalling"),
+    "turtle_master": ("turtleMaster", "turtlemaster"), "slowness": ("moveSlowdown", "slow"), "harming": ("harm", "harm"),
+    "poison": ("poison", "poison"), "weakness": ("weakness", "weakness"), "wind_charging": ("windCharged", "windCharged"),
+    "weaving": ("weaving", "weaving"), "oozing": ("oozing", "oozing"), "infestation": ("infested", "infested"),
+}
+for k, (bottle, arrow) in POTIONS.items():
+    FILES[f"drink_{k}"] = f"items/potion_bottle_{bottle}"
+    FILES[f"splash_{k}"] = f"items/potion_bottle_splash_{bottle}"
+    FILES[f"lingering_{k}"] = f"items/potion_bottle_lingering_{bottle}"
+    FILES[f"arrow_{k}"] = f"items/tipped_arrow_{arrow}"
+# The effects' icons (18x18, copied whole to art/effects/) and the swirls that rise from whoever has one (eight frames side by side).
+EFFECTS = ["speed", "jump_boost", "strength", "regeneration", "fire_resistance", "water_breathing", "night_vision", "invisibility",
+           "slow_falling", "slowness", "resistance", "poison", "weakness", "wind_charged", "weaving", "oozing", "infested"]
+
+
+def import_effects(out):
+    from PIL import Image
+    (out / "effects").mkdir(exist_ok=True)
+    textures = pack / "full-pack/subpacks/SP2/textures"
+    for name in EFFECTS:
+        shutil.copyfile(textures / f"ui/{name}_effect.png", out / "effects" / f"{name}.png")
+    Image.open(textures / "particle/particles.png").convert("RGBA").crop((0, 64, 64, 72)).save(out / "effects" / "swirl.png")
+
+
 # The pack's lapis ore doesn't glint as its gold and diamonds do: the same white star, coming and going on three of its stones.
 def lapis_frames(first):
     from PIL import Image
@@ -477,6 +506,7 @@ def main():
     import_frames(out)
     import_cuts(out)
     import_dried_ghast(out)
+    import_effects(out)
     import_item_pictures(out)
     import_villagers()
 

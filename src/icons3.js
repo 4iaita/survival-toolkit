@@ -253,9 +253,15 @@ function tint(color, f) {
   return "#" + hex(color).map(v => Math.round(f > 0 ? v + (255 - v) * f : v * (1 + f)).toString(16).padStart(2, "0")).join("");
 }
 
-// Bottle icons are made on demand for any liquid color and bottle shape.
+// Bottle icons are made on demand for any liquid color and bottle shape: the pack's own picture for a potion's color, else a
+// recolored one. form can also be "arrow", the potion's tipped arrow.
 function potionIcon(form, color) {
   const name = `p:${form}:${color}`;
+  if (!ICONS[name]) {
+    const known = POTIONS.find(p => p.color === color), own = known && `${form}_${known.k}`;
+    if (own && hasArt(own)) ICONS[name] = { layers: [[own]] };
+  }
+  if (!ICONS[name] && form === "arrow") ICONS[name] = hasArt("tipped_arrow_base", "tipped_arrow_head") ? { layers: [["tipped_arrow_base"], ["tipped_arrow_head", color]] } : ICONS["ui:book"];
   if (!ICONS[name]) {
     const bottle = { drink: "potion", splash: "splash_potion", lingering: "lingering_potion" }[form];
     ICONS[name] = hasArt(bottle, `${bottle}_heal`)
