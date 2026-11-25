@@ -194,7 +194,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
   const start = center.map((v, i) => v - dir[i] * CAMERA_BACK);
   // The camera is orthographic, so in each box's own frame every ray has the same direction and a start
   // that moves by stepX and stepY per pixel. Faces keep one light level each: shade[axis][side].
-  const prepared = boxes.map(m => {
+  const prepared = boxes.map((m, order) => {
     const { lo, hi } = m, chain = m.bones || (m.bone ? [m.bone] : []);
     // Into the box's own frame: undo the outermost turn first.
     let o = start, stepX = right, stepY = down, r = dir;
@@ -207,14 +207,27 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
       const n = chain.reduce((q, { angles }) => turn(q, angles), [0, 1, 2].map(i => (i === axis ? side : 0)));
       return 0.5 + 0.5 * Math.max(0, dot(n, light));
     }));
+    // The faces turned to the camera and the ones turned from it, each a plane across one axis (i): how far along the ray it is, and
+    // where along its other two axes (j, k), change evenly across a row of pixels.
+    const facing = away => [0, 1, 2].filter(i => Math.abs(r[i]) >= 1e-9).map(i => {
+      const [j, k] = [[1, 2], [0, 2], [0, 1]][i], ahead = (r[i] > 0) === away, side = ahead ? 1 : 0, dt = -stepX[i] / r[i];
+      return { i, side, j, k, at: ahead ? Math.max(lo[i], hi[i]) : Math.min(lo[i], hi[i]), dt, dj: stepX[j] + r[j] * dt, dk: stepX[k] + r[k] * dt,
+        loJ: Math.min(lo[j], hi[j]), hiJ: Math.max(lo[j], hi[j]), loK: Math.min(lo[k], hi[k]), hiK: Math.max(lo[k], hi[k]),
+        // Lit as seen: from inside, the face looks inwards.
+        lit: shade[i][m.inside ? 1 - side : side], painted: m.paint ? m.paint.face(i, side) : undefined };
+    }).filter(f => f.hiJ > f.loJ && f.hiK > f.loK);
     // Where the box lands on screen, in game pixels from the center, so pixels outside it skip the box.
     const corners = [0, 1, 2, 3, 4, 5, 6, 7].map(c => {
       const rel = placeBy(chain, [c & 1 ? hi[0] : lo[0], c & 2 ? hi[1] : lo[1], c & 4 ? hi[2] : lo[2]]).map((v, i) => v - center[i]);
-      return [dot(rel, right), dot(rel, down)];
+      return [dot(rel, right), dot(rel, down), dot(rel, dir)];
     });
     const span = k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))];
     return { lo, hi, color: m.color, glow: m.glow, over: m.over, inside: m.inside, glass: m.glass, culled: m.culled, buried: m.buried, beam: m.beam,
-      room: m.portal && doorwayRoom(m.beyond, light), eye: m.portal && placeBy(chain, lo.map((v, i) => (v + hi[i]) / 2)).map((v, i) => (i === 1 ? v : v - dir[i] / Math.hypot(dir[0], dir[2]) * DOORWAY_EYE)), o, stepX, stepY, r, shade, across: span(0), along: span(1) };
+      room: m.portal && doorwayRoom(m.beyond, light), eye: m.portal && placeBy(chain, lo.map((v, i) => (v + hi[i]) / 2)).map((v, i) => (i === 1 ? v : v - dir[i] / Math.hypot(dir[0], dir[2]) * DOORWAY_EYE)), o, stepX, stepY, r, shade, across: span(0), along: span(1),
+      // Its place among the boxes, how far off its nearest corner is, and whether it's one a pixel's ray only has to find the nearest of.
+      order, paint: m.paint, faces: facing(Boolean(m.inside)), backs: m.inside || m.culled ? [] : facing(true), cleared: false, nearest: Math.min(...corners.map(c => c[2])), plain: !m.glass && !m.beam && !m.portal,
+      // Whether a ray goes along each axis at all.
+      along0: Math.abs(r[0]) >= 1e-9, along1: Math.abs(r[1]) >= 1e-9, along2: Math.abs(r[2]) >= 1e-9 };
   });
   // Where each shadow lands on screen, the same way: [left, right, top, bottom] in game pixels from the center.
   const shadowSpans = shadows.map(([sx, sz, radius]) => {
@@ -224,43 +237,182 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
     }));
     return [0, 1].flatMap(k => [Math.min(...corners.map(c => c[k])), Math.max(...corners.map(c => c[k]))]);
   });
-  const out = new Uint8ClampedArray(width * height * 4), o = [0, 0, 0];
+  const out = new Uint8ClampedArray(width * height * 4);
+  // A ray's start in a box's own frame, and how far along one of its axes (0 to 1) it is, so far on.
+  let o0 = 0, o1 = 0, o2 = 0;
+  const frac = (m, i, t) => {
+    const lo = m.lo[i], size = m.hi[i] - lo;
+    return size > 0 ? Math.min(0.9999, Math.max(0, ((i === 0 ? o0 : i === 1 ? o1 : o2) + m.r[i] * t - lo) / size)) : 0;
+  };
+  // How far along a box's axis from lo to hi something is, 0 to 1.
+  const spot = (at, lo, hi) => {
+    if (hi <= lo) return 0;
+    const f = (at - lo) / (hi - lo);
+    return f < 0 ? 0 : f > 0.9999 ? 0.9999 : f;
+  };
+  // A row none of whose boxes are see-through, face by face over the pixels each covers there, the nearest boxes first, so that most
+  // of what's behind them needn't be colored; then, through see-through texels, the insides of the far faces of boxes that have some
+  // (the game draws both sides). It comes out as the pixel by pixel way below has it, where two faces meet too: of those the first
+  // box's shows, unless a later one goes over it (over, inside).
+  const rowT = new Float64Array(width), rowColor = new Int32Array(width), rowShade = new Float64Array(width), rowEmits = new Uint8Array(width), rowOrder = new Int32Array(width), rowOver = new Uint8Array(width);
+  const ROW_EDGE = 1e-7;
+  const plainFace = (m, f, back, b, from, to) => {
+    const { r, lo, hi, stepX, stepY, buried, glow, order, paint } = m, { i, j, k, side, at, dt, dj, dk, loJ, hiJ, loK, hiK, lit, painted } = f;
+    const start0 = m.o[0] + stepY[0] * b, start1 = m.o[1] + stepY[1] * b, start2 = m.o[2] + stepY[2] * b;
+    const t0 = (at - (i === 0 ? start0 : i === 1 ? start1 : start2)) / r[i], j0 = (j === 0 ? start0 : start1) + r[j] * t0, k0 = (k === 1 ? start1 : start2) + r[k] * t0;
+    // The stretch of the row it covers: where it's within the face both ways.
+    let left = -Infinity, rightmost = Infinity;
+    if (Math.abs(dj) > 1e-12) {
+      const a1 = (loJ - j0) / dj, a2 = (hiJ - j0) / dj;
+      left = Math.min(a1, a2);
+      rightmost = Math.max(a1, a2);
+    } else if (j0 < loJ || j0 > hiJ) return;
+    if (Math.abs(dk) > 1e-12) {
+      const a1 = (loK - k0) / dk, a2 = (hiK - k0) / dk;
+      left = Math.max(left, Math.min(a1, a2));
+      rightmost = Math.min(rightmost, Math.max(a1, a2));
+    } else if (k0 < loK || k0 > hiK) return;
+    if (left > rightmost) return;
+    const begin = Math.max(from, Math.ceil((left - ROW_EDGE) * scale + origin[0] - 0.5)), end = Math.min(to - 1, Math.floor((rightmost + ROW_EDGE) * scale + origin[0] - 0.5));
+    if (begin > end) return;
+    if (painted === null) {
+      m.cleared = true;
+      return;
+    }
+    const goesOver = !back && (m.over || m.inside) ? 1 : 0, [sx, sy, sz] = stepX, [rx, ry, rz] = r;
+    for (let px = begin; px <= end; px++) {
+      const a = (px + 0.5 - origin[0]) / scale, t = t0 + dt * a, bestT = rowT[px];
+      if (t > bestT) continue;
+      // Whether one this far off takes the pixel from what has it.
+      if (t === bestT && (back ? order >= rowOrder[px] || rowOver[px] : order > rowOrder[px] ? !goesOver : rowOver[px])) continue;
+      // What's in the ground (buried) only shows above it.
+      if (buried && t > (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1]) continue;
+      const fx = spot(start0 + sx * a + rx * t, lo[0], hi[0]), fy = spot(start1 + sy * a + ry * t, lo[1], hi[1]), fz = spot(start2 + sz * a + rz * t, lo[2], hi[2]);
+      let rgb = 0, emits = 0;
+      if (painted) {
+        let s = painted.across === 0 ? fx : fz, d = painted.down === 1 ? fy : fz;
+        if (painted.acrossFlip) s = 0.9999 - s;
+        if (painted.acrossMirror) s = 0.9999 - s;
+        if (painted.acrossBack) s = 1 - s;
+        if (painted.downFlip) d = 0.9999 - d;
+        if (painted.downBack) d = 1 - d;
+        if (painted.quarter) {
+          const s0 = s;
+          s = painted.quarter === 90 ? d : painted.quarter === 180 ? 1 - s : painted.quarter === 270 ? 1 - d : s;
+          d = painted.quarter === 90 ? 1 - s0 : painted.quarter === 180 ? 1 - d : painted.quarter === 270 ? s0 : d;
+        }
+        const { tex } = paint;
+        let tx = Math.floor((painted.u + s * painted.w) * paint.kx), ty = Math.floor((painted.v + d * painted.h) * paint.ky);
+        tx = tx < 0 ? 0 : tx >= tex.w ? tex.w - 1 : tx;
+        ty = ty < 0 ? 0 : ty >= tex.h ? tex.h - 1 : ty;
+        const n = (ty * tex.w + tx) * 4, alpha = tex.px[n + 3];
+        if (alpha < paint.least) {
+          m.cleared = true;
+          continue;
+        }
+        const bright = paint.emissive ? paint.light + (1 - paint.light) * (1 - alpha / 255) : paint.lit;
+        if (paint.dyed && alpha >= 128) rgb = Math.round(tex.px[n] * (paint.dyed[0] * bright)) << 16 | Math.round(tex.px[n + 1] * (paint.dyed[1] * bright)) << 8 | Math.round(tex.px[n + 2] * (paint.dyed[2] * bright));
+        else if (bright === 1) rgb = tex.px[n] << 16 | tex.px[n + 1] << 8 | tex.px[n + 2];
+        else rgb = Math.round(tex.px[n] * bright) << 16 | Math.round(tex.px[n + 1] * bright) << 8 | Math.round(tex.px[n + 2] * bright);
+        if (paint.emissive) emits = Math.round(255 * (1 - alpha / 255));
+      } else {
+        const color = m.color(i, side, fx, fy, fz);
+        if (color < 0) {
+          m.cleared = true;
+          continue;
+        }
+        emits = color >= EMITS ? Math.floor(color / EMITS) : 0;
+        rgb = color - emits * EMITS;
+      }
+      rowOrder[px] = order;
+      rowOver[px] = goesOver;
+      rowT[px] = t;
+      rowColor[px] = rgb;
+      rowEmits[px] = emits;
+      rowShade[px] = glow ? 1 : lit + (1 - lit) * emits / 255;
+    }
+  };
+  const plainRow = (row, py, b, from, to) => {
+    rowT.fill(Infinity, from, to);
+    rowColor.fill(-1, from, to);
+    rowEmits.fill(0, from, to);
+    rowOver.fill(0, from, to);
+    for (const m of row) {
+      m.cleared = false;
+      for (const f of m.faces) plainFace(m, f, false, b, from, to);
+    }
+    for (const m of row) if (m.cleared) for (const f of m.backs) plainFace(m, f, true, b, from, to);
+    for (let px = from; px < to; px++) {
+      const j = (py * width + px) * 4, color = rowColor[px];
+      if (depth) depth[py * width + px] = rowT[px];
+      if (color >= 0) {
+        const bright = rowShade[px];
+        out[j] = (color >> 16) * bright;
+        out[j + 1] = (color >> 8 & 255) * bright;
+        out[j + 2] = (color & 255) * bright;
+        out[j + 3] = 255;
+        if (emitted && rowEmits[px]) {
+          for (let k = 0; k < 3; k++) emitted[j + k] = out[j + k];
+          emitted[j + 3] = rowEmits[px];
+        }
+      } else if (shadows.length) {
+        const a = (px + 0.5 - origin[0]) / scale, groundT = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
+        const gx = start[0] + right[0] * a + down[0] * b + dir[0] * groundT, gz = start[2] + right[2] * a + down[2] * b + dir[2] * groundT;
+        let dark = 0;
+        for (const [sx, sz, radius] of shadows) dark = Math.max(dark, 1 - ((gx - sx) ** 2 + (gz - sz) ** 2) / radius ** 2);
+        out[j + 3] = 90 * dark;
+      }
+    }
+  };
+  const nearFirst = [...prepared].sort((m, n) => m.nearest - n.nearest);
   // The glass faces a pixel's ray meets: how far off, their colors and their light.
   const paneT = [], paneColor = [], paneShade = [], rayT = [], rayColor = [];
   for (let py = 0; py < height; py++) {
-    const b = (py + 0.5 - origin[1]) / scale, row = prepared.filter(m => b >= m.along[0] && b <= m.along[1]);
+    const b = (py + 0.5 - origin[1]) / scale;
+    const row = prepared.filter(m => b >= m.along[0] && b <= m.along[1]);
     // Most of the canvas is empty, so each row only works out the pixels a box or shadow can reach.
     let first = Infinity, last = -Infinity;
     for (const m of row) { first = Math.min(first, m.across[0]); last = Math.max(last, m.across[1]); }
     for (const s of shadowSpans) if (b >= s[2] && b <= s[3]) { first = Math.min(first, s[0]); last = Math.max(last, s[1]); }
     if (first > last) continue;
     const from = Math.max(0, Math.floor(origin[0] + first * scale) - 1), to = Math.min(width, Math.ceil(origin[0] + last * scale) + 1);
+    if (row.every(m => m.plain)) {
+      plainRow(nearFirst.filter(m => b >= m.along[0] && b <= m.along[1]), py, b, from, to);
+      continue;
+    }
     for (let px = from; px < to; px++) {
       const a = (px + 0.5 - origin[0]) / scale;
       let bestT = Infinity, bestColor = -1, bestShade = 0, bestEmits = 0, panes = 0, rays = 0;
       const groundT = (GROUND - start[1] - right[1] * a - down[1] * b) / dir[1];
       for (const m of row) {
         if (a < m.across[0] || a > m.across[1]) continue;
-        const r = m.r;
-        for (let i = 0; i < 3; i++) o[i] = m.o[i] + m.stepX[i] * a + m.stepY[i] * b;
+        const { r, lo, hi, stepX, stepY } = m;
+        o0 = m.o[0] + stepX[0] * a + stepY[0] * b;
+        o1 = m.o[1] + stepX[1] * a + stepY[1] * b;
+        o2 = m.o[2] + stepX[2] * a + stepY[2] * b;
         let near = -Infinity, far = Infinity, axis = 0, backAxis = 0;
-        for (let i = 0; i < 3; i++) {
-          if (Math.abs(r[i]) < 1e-9) {
-            if (o[i] < m.lo[i] || o[i] > m.hi[i]) far = -Infinity;
-            continue;
-          }
-          const t1 = (m.lo[i] - o[i]) / r[i], t2 = (m.hi[i] - o[i]) / r[i];
-          if (Math.min(t1, t2) > near) { near = Math.min(t1, t2); axis = i; }
-          if (Math.max(t1, t2) < far) { far = Math.max(t1, t2); backAxis = i; }
-        }
+        if (m.along0) {
+          const t1 = (lo[0] - o0) / r[0], t2 = (hi[0] - o0) / r[0];
+          near = t1 < t2 ? t1 : t2;
+          far = t1 < t2 ? t2 : t1;
+        } else if (o0 < lo[0] || o0 > hi[0]) far = -Infinity;
+        if (m.along1) {
+          const t1 = (lo[1] - o1) / r[1], t2 = (hi[1] - o1) / r[1], first = t1 < t2 ? t1 : t2, last = t1 < t2 ? t2 : t1;
+          if (first > near) { near = first; axis = 1; }
+          if (last < far) { far = last; backAxis = 1; }
+        } else if (o1 < lo[1] || o1 > hi[1]) far = -Infinity;
+        if (m.along2) {
+          const t1 = (lo[2] - o2) / r[2], t2 = (hi[2] - o2) / r[2], first = t1 < t2 ? t1 : t2, last = t1 < t2 ? t2 : t1;
+          if (first > near) { near = first; axis = 2; }
+          if (last < far) { far = last; backAxis = 2; }
+        } else if (o2 < lo[2] || o2 > hi[2]) far = -Infinity;
         // Where two faces meet, the first box's shows, but an overlay's (over) shows over what's under it.
         if (near > far || (m.inside ? far : near) > bestT || (near === bestT && !m.over)) continue;
         // What's in the ground (buried) only shows above it.
         if (m.buried && near > groundT) continue;
-        const frac = (i, t) => (m.hi[i] > m.lo[i] ? Math.min(0.9999, Math.max(0, (o[i] + r[i] * t - m.lo[i]) / (m.hi[i] - m.lo[i]))) : 0);
         // A box drawn from inside only (inside: the game culls its outsides) shows its far faces.
         if (m.inside) {
-          const backSide = r[backAxis] > 0 ? 1 : 0, back = far <= bestT ? m.color(backAxis, backSide, frac(0, far), frac(1, far), frac(2, far)) : -1;
+          const backSide = r[backAxis] > 0 ? 1 : 0, back = far <= bestT ? m.color(backAxis, backSide, frac(m, 0, far), frac(m, 1, far), frac(m, 2, far)) : -1;
           // Lit as seen: from inside, the face looks inwards.
           if (back >= 0) {
             bestT = far;
@@ -285,7 +437,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
           for (let pass = 0; pass < 2; pass++) {
             const t = pass ? far : near, i = pass ? backAxis : axis;
             if (t > groundT) continue;
-            const color = m.color(i, pass ? (r[backAxis] > 0 ? 1 : 0) : side, frac(0, t), frac(1, t), frac(2, t));
+            const color = m.color(i, pass ? (r[backAxis] > 0 ? 1 : 0) : side, frac(m, 0, t), frac(m, 1, t), frac(m, 2, t));
             if (color < 0) continue;
             rayT[rays] = t;
             rayColor[rays++] = color;
@@ -295,7 +447,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
         if (m.glass) {
           for (let pass = 0; pass < (m.culled ? 1 : 2); pass++) {
             const t = pass ? far : near, i = pass ? backAxis : axis, on = pass ? (r[backAxis] > 0 ? 1 : 0) : side;
-            const color = m.color(i, on, frac(0, t), frac(1, t), frac(2, t));
+            const color = m.color(i, on, frac(m, 0, t), frac(m, 1, t), frac(m, 2, t));
             if (color < 0) continue;
             // Kept farthest first.
             let k = panes++;
@@ -304,7 +456,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
           }
           continue;
         }
-        const color = m.color(axis, side, frac(0, near), frac(1, near), frac(2, near));
+        const color = m.color(axis, side, frac(m, 0, near), frac(m, 1, near), frac(m, 2, near));
         if (color >= 0) {
           bestT = near;
           bestColor = color % EMITS;
@@ -312,7 +464,7 @@ function renderScene(boxes, { width, height, shadows = [], emitted = null, depth
           bestShade = shadeOf(m, m.shade[axis][side], color);
         } else if (far < bestT && !m.culled && !(m.buried && far > groundT)) {
           // Through a see-through texel, the inside of the box's far face shows: the game draws both sides.
-          const backSide = r[backAxis] > 0 ? 1 : 0, back = m.color(backAxis, backSide, frac(0, far), frac(1, far), frac(2, far));
+          const backSide = r[backAxis] > 0 ? 1 : 0, back = m.color(backAxis, backSide, frac(m, 0, far), frac(m, 1, far), frac(m, 2, far));
           if (back >= 0) {
             bestT = far;
             bestColor = back % EMITS;

@@ -35,6 +35,8 @@ function filePixels(img) {
 // Decoded textures by MOB_SKINS name: { w, h, px } with px RGBA, or null when the pack lacks one.
 const mobTextures = {};
 function mobTexture(name) {
+  // One of the page's own 16×16 textures (art:<its ART name>): a tool's picture, in the player's hand.
+  if (!mobTextures[name] && name.startsWith("art:")) mobTextures[name] = Promise.resolve(ART[name.slice(4)] ? { w: 16, h: 16, px: Uint8ClampedArray.from(atob(ART[name.slice(4)]), c => c.charCodeAt(0)) } : null);
   if (!mobTextures[name]) mobTextures[name] = new Promise(done => {
     if (typeof MOB_SKINS === "undefined" || !MOB_SKINS[name]) return done(null);
     const img = new Image();
@@ -100,26 +102,8 @@ function faceRect(uv, size, face) {
     default: return [u + d + w, v, w, d];
   }
 }
-// A face's own entry can turn its texture clockwise (a fifth item, 90, 180 or 270 degrees): where a 0-1 spot across
-// and down the face finds its texel then.
-function turnedSpot([s, t], turn) {
-  switch (turn) {
-    case 90: return [t, 1 - s];
-    case 180: return [1 - s, 1 - t];
-    case 270: return [1 - t, s];
-    default: return [s, t];
-  }
-}
-// How far across and down its face a 0-1 spot in the box is, as seen from outside (skinTexel's layout).
-function faceSpot(face, fx, fy, fz) {
-  switch (face) {
-    case "right": return [1 - fz, fy];
-    case "front": return [fx, fy];
-    case "left": return [fz, fy];
-    case "back": return [1 - fx, fy];
-    default: return [fx, 1 - fz];
-  }
-}
+// A face's own entry can turn its texture clockwise (a fifth item, 90, 180 or 270 degrees). How far across and down its face a 0-1
+// spot in the box is, as seen from outside (skinTexel's layout), and where on the texture that is, is in modelBoxes' color.
 
 // One layer of a look as scene boxes. The model stands with its feet on the ground at at, size times its own
 // size. Its bones turn about their pivots, then their parents', y flipped as VILLAGER_MODEL's is, and pose moves,
@@ -251,8 +235,29 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
       // negative, inflating it draws it in (the Eye endermite's pink jelly sits inside its dark one).
       const flipped = inside ? [0, 1, 2].map(k => hi[k] < lo[k]) : [false, false, false];
       for (const k of [0, 1, 2]) if (flipped[k]) [lo[k], hi[k]] = [hi[k] + 2 * g, lo[k] - 2 * g];
+      // Each face's part of the texture, worked out once; and what its texels are multiplied by, as they're lit and as they're dyed.
+      const rects = {}, lit = emissive ? 0 : light, dyed = dye ? dye.color.map(c => c / 255) : null;
+      const cutSheer = Boolean(flags.sheer), sliding = scroll && clock, shimmers = Boolean(flags.glint), wraps = Boolean(flags.wrap);
+      // The same as color does, for a whole face at once, where its texture just lies on it: renderScene then reads the texels
+      // itself, which is much quicker (paint: what they're multiplied by, and by a face's axis and side which part of the texture
+      // it shows and which way round).
+      const paint = beam || glass || cutSheer || sliding || shimmers || wraps ? null : {
+        tex, kx, ky, least: dye ? 1 : least, emissive, light, lit, dyed,
+        face(axis, side) {
+          if (flipped[axis]) side = 1 - side;
+          const face = FACES[axis][mirror && axis === 0 ? 1 - side : side];
+          let rect = rects[face];
+          if (rect === undefined) rect = rects[face] = faceRect(uv, dims, face);
+          if (!rect) return null;
+          // Across by one axis and down by the other: turned round (turned, in a box seen from inside or a mirrored one) or not, then from its far end or not.
+          const across = face === "right" || face === "left" ? 2 : 0, downBy = axis === 1 ? 2 : 1;
+          return { u: rect[0] - (rect[2] < 0 ? 1e-4 : 0), v: rect[1] - (rect[3] < 0 ? 1e-4 : 0), w: rect[2], h: rect[3], quarter: rect[4] || 0,
+            across, acrossFlip: flipped[across], acrossMirror: mirror && across === 0, acrossBack: face === "right" || face === "back",
+            down: downBy, downFlip: flipped[downBy], downBack: axis === 1 };
+        },
+      };
       out.push({
-        lo, hi, glow: glow || Boolean(flags.rim) || Boolean(flags.bare), rim: Boolean(flags.rim), room: flags.room ? model : null, portal: Boolean(flags.portal), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), buried: Boolean(flags.buried), beam: Boolean(beam), bones: [...own, ...chainOf(i), ...upsideDown],
+        lo, hi, glow: glow || Boolean(flags.rim) || Boolean(flags.bare), rim: Boolean(flags.rim), room: flags.room ? model : null, portal: Boolean(flags.portal), shell, inside, glass, culled, over: Boolean(flags.over), held: Boolean(flags.held), buried: Boolean(flags.buried), beam: Boolean(beam), bones: [...own, ...chainOf(i), ...upsideDown], paint,
         color(axis, side, fx, fy, fz) {
           if (flipped[axis]) side = 1 - side;
           if (flipped[0]) fx = 0.9999 - fx;
@@ -263,34 +268,41 @@ function modelBoxes(model, tex, rules, { size = 1, at = [0, 0, 0], pose = {}, fl
             fx = 0.9999 - fx;
             if (axis === 0) face = FACES[0][1 - side];
           }
-          const rect = faceRect(uv, dims, face);
+          let rect = rects[face];
+          if (rect === undefined) rect = rects[face] = faceRect(uv, dims, face);
           if (!rect) return -1;
-          const [s, t] = turnedSpot(faceSpot(face, fx, fy, fz), rect[4]);
+          // How far across and down the face it is, then as the face turns its texture: written out, as it's done for every pixel.
+          let s = face === "right" ? 1 - fz : face === "left" ? fz : face === "back" ? 1 - fx : fx, t = axis === 1 ? 1 - fz : fy;
+          const turned = rect[4];
+          if (turned) {
+            const s0 = s;
+            s = turned === 90 ? t : turned === 180 ? 1 - s : turned === 270 ? 1 - t : s;
+            t = turned === 90 ? 1 - s0 : turned === 180 ? 1 - t : turned === 270 ? s0 : t;
+          }
           // A face drawn backwards (negative width or height) starts from the far edge of its texels.
           let u = rect[0] + s * rect[2] - (rect[2] < 0 ? 1e-4 : 0), v = rect[1] + t * rect[3] - (rect[3] < 0 ? 1e-4 : 0);
           // Its color and its strength both fade out along it.
           if (beam) return (shine[0] << 16 | shine[1] << 8 | shine[2]) + Math.round(255 * (v - 0.5) ** 2) * EMITS;
-          if (scroll && clock) {
+          if (sliding) {
             u = (((u / tw + scroll[0] * clock.t) % 1) + 1) % 1 * tw;
             v = (((v / th + scroll[1] * clock.t) % 1) + 1) % 1 * th;
           }
-          if (flags.wrap) {
+          if (wraps) {
             u = ((u % tw) + tw) % tw;
             v = ((v % th) + th) % th;
           }
           const px = Math.min(tex.w - 1, Math.max(0, Math.floor(u * kx))), py = Math.min(tex.h - 1, Math.max(0, Math.floor(v * ky)));
           const k = (py * tex.w + px) * 4, alpha = tex.px[k + 3];
           if (glass) return alpha ? (tex.px[k] << 16 | tex.px[k + 1] << 8 | tex.px[k + 2]) + alpha * EMITS : -1;
-          if (flags.sheer ? alpha === 0 || (alpha < 128 && (Math.floor(u * kx * SHEER_FINE) + Math.floor(v * ky * SHEER_FINE)) & 1) : dye ? alpha === 0 : alpha < least) return -1;
-          const bright = emissive ? light + (1 - light) * (1 - alpha / 255) : light;
-          const mul = dye && alpha >= 128 ? dye.color.map(c => c / 255 * bright) : [bright, bright, bright];
-          if (flags.glint) {
-            const shine = glintOf(px, py, glintAt);
-            const lit = c => Math.min(255, Math.round(tex.px[k + c] * mul[c] + GLINT_COLOR[c] * shine));
-            return lit(0) << 16 | lit(1) << 8 | lit(2);
+          if (cutSheer ? alpha === 0 || (alpha < 128 && (Math.floor(u * kx * SHEER_FINE) + Math.floor(v * ky * SHEER_FINE)) & 1) : dye ? alpha === 0 : alpha < least) return -1;
+          const bright = emissive ? light + (1 - light) * (1 - alpha / 255) : lit, dyes = dyed && alpha >= 128;
+          const m0 = dyes ? dyed[0] * bright : bright, m1 = dyes ? dyed[1] * bright : bright, m2 = dyes ? dyed[2] * bright : bright;
+          if (shimmers) {
+            const glint = glintOf(px, py, glintAt);
+            return Math.min(255, Math.round(tex.px[k] * m0 + GLINT_COLOR[0] * glint)) << 16 | Math.min(255, Math.round(tex.px[k + 1] * m1 + GLINT_COLOR[1] * glint)) << 8 | Math.min(255, Math.round(tex.px[k + 2] * m2 + GLINT_COLOR[2] * glint));
           }
           // An emissive texel's own light (as much as it glows) isn't shaded by the face it's on (EMITS).
-          const rgb = Math.round(tex.px[k] * mul[0]) << 16 | Math.round(tex.px[k + 1] * mul[1]) << 8 | Math.round(tex.px[k + 2] * mul[2]);
+          const rgb = Math.round(tex.px[k] * m0) << 16 | Math.round(tex.px[k + 1] * m1) << 8 | Math.round(tex.px[k + 2] * m2);
           return emissive ? rgb + Math.round(255 * (1 - alpha / 255)) * EMITS : rgb;
         },
       });
@@ -367,9 +379,9 @@ function landed(boxes, drop = boxes && boxes.length ? landing(boxes) : null) {
   const moved = m => ({ ...m, bones: [...(m.bones || []), ...drop], ...(m.beyond ? { beyond: m.beyond.map(moved) } : {}) });
   return Object.assign(boxes.map(moved), { soft: (boxes.soft || []).map(moved) });
 }
-// A mob's looks (MOB_LOOKS key), or a prop's one look and its variants ("prop:" and its item, a PROP_LOOKS key).
+// A mob's looks (MOB_LOOKS key), a prop's one look and its variants ("prop:" and its item, a PROP_LOOKS key), or the player's one (playerLook).
 const propLooks = look => (look ? [look, ...(look.variants || []).map(v => ({ ...look, ...v }))] : []);
-const looksOf = key => (key.startsWith("prop:") ? propLooks(PROP_LOOKS[key.slice(5)]) : MOB_LOOKS[key] || []);
+const looksOf = key => (key.startsWith("prop:") ? propLooks(PROP_LOOKS[key.slice(5)]) : key.startsWith("player:") ? [playerLooks[key]] : MOB_LOOKS[key] || []);
 
 // A prop drawn on its own, size pixels square, as a PNG data URL, or null without its textures.
 async function propPicture(item, size) {
@@ -405,11 +417,16 @@ function layerBones(pose, bones, frameAt, weight = 1) {
   }
 }
 // A mob's animation t seconds in, as bone poses: its loops layered, each between its nearest two frames, weight times
-// as strong (a loop that keeps going under the acts, keep, always at full strength).
+// as strong (a loop that keeps going under the acts, keep, always at full strength). One that plays once (a sword being drawn)
+// starts at its at, and stays at its end.
 function motionPose(loops, t, weight = 1) {
   const pose = {};
-  for (const { length, bones, keep } of loops) {
+  for (const { length, bones, keep, once, at: start = -Infinity } of loops) {
     layerBones(pose, bones, frames => {
+      if (once) {
+        const at = Math.max(0, Math.min(1, (t - start) / length)) * (frames.length - 1), i = Math.floor(at);
+        return [frames[i], frames[Math.min(i + 1, frames.length - 1)], at - i];
+      }
       const at = ((t % length) / length) * frames.length, i = Math.floor(at);
       return [frames[i], frames[(i + 1) % frames.length], at - i];
     }, keep ? 1 : weight);
@@ -879,10 +896,12 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // What it wears can have loops of its own, played over the mob's (a harness's wings beating).
       const kinds = armor && MOB_ARMOR[armor.kind] && MOB_ARMOR[armor.kind].kinds, wornLoops = (kinds && kinds[armor.type] && kinds[armor.type].motions) || null;
       const loops = wornLoops ? [...(ownLoops || []), ...wornLoops] : ownLoops;
-      const nextAct_ = kind ? kind.acts : look.motions ? null : setKey ? MOB_ACTS[setKey] || null : mooded ? mooded.act : (climated && climated.act) || MOB_ACTS[mob] || null;
+      const nextAct_ = kind ? kind.acts : look.motions ? look.acts || null : setKey ? MOB_ACTS[setKey] || null : mooded ? mooded.act : (climated && climated.act) || MOB_ACTS[mob] || null;
       // A look's boxes as it starts, and the space it moves through as it animates: its bounds and, for a swimmer, the
       // corners of what shows of its boxes at each moment (spots).
+      // One that's framed itself (the player, whatever they wear) always takes up the same space.
       const reachOf = async (shape, options) => {
+        if (shape.framed) return { boxes: await lookBoxes(shape, { ...options, moving: motionPose(loops, calmMotion() ? 0 : performance.now() / 1000) }), bounds: [...shape.framed], spots: [] };
         const moves = Boolean(loops && loops.length), longest = moves ? Math.max(...loops.map(l => l.length)) : 0;
         const moments = moves ? Array.from({ length: MOTION_SAMPLES }, (_, i) => motionPose(loops, (i / MOTION_SAMPLES) * longest)) : [look.gaze ? looking({}, look.gaze) : null];
         const all = [];
@@ -968,7 +987,7 @@ function mobScene(canvas, tag, { onTurn = () => {}, yaw: startYaw = 0.6 } = {}) 
       // A look bigger than the mob's usual one (a balloon, a rider) gets room of its own; a swimmer's, below it too (a sea
       // monster's tentacles).
       const own = reach.bounds ? fitOf(reach.bounds) : f;
-      fit = look.ownFit ? own : f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), swim ? f[1].map((v, i) => Math.max(v, own[1][i])) : f[1]], { radius: Math.max(f.radius, own.radius) });
+      fit = look.framed ? look.framed : look.ownFit ? own : f && Object.assign([f[0].map((v, i) => Math.min(v, own[0][i])), swim ? f[1].map((v, i) => Math.max(v, own[1][i])) : f[1]], { radius: Math.max(f.radius, own.radius) });
       // A kind whose act goes up out of it (a present's toy) is framed to this height instead (its reach), and so is a look
       // whose particles do (the chimney's smoke).
       const up = look.reach || (kind && kind.reach);

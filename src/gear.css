@@ -7,6 +7,26 @@
 /* Numbers in the body font: the pixel font's 2 and 8, and 5 and S, look alike. */
 #view-equipment .mob-stat:not(.text) .stat-value { font: 800 22px/1.05 var(--font-body); font-variant-numeric: tabular-nums; }
 #view-equipment .item-count { font: 800 16px/1 var(--font-body); font-variant-numeric: tabular-nums; }
+/* The stage: the player, with what they wear in slots down the left and what they hold on the right, as the game's inventory has
+   them. An empty slot shows what goes there. The slots' names come out to the side, as the stage cuts off what's over it. */
+#gear-stage { height: 384px; }
+.gear-slots { position: absolute; z-index: 2; left: 10px; top: 50%; transform: translateY(-50%); display: grid; gap: 6px; }
+.gear-slots.hands { left: auto; right: 10px; top: auto; bottom: 60px; transform: none; }
+.gear-slots .slot-btn { box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi), 0 0 0 2px rgba(0, 0, 0, .35); }
+.gear-slots .slot-btn[aria-pressed="true"] { box-shadow: inset 0 0 0 3px var(--white), inset 0 0 0 5px var(--edge), 0 0 0 2px rgba(0, 0, 0, .35); }
+.gear-slots .slot-btn.hand-empty .ico { opacity: .28; filter: grayscale(1) brightness(.4); }
+.gear-slots .slot-btn[data-name]:hover::after, .gear-slots .slot-btn[data-name]:focus-visible::after { bottom: auto; top: 50%; left: calc(100% + 8px); transform: translateY(-50%); }
+.gear-slots.hands .slot-btn[data-name]:hover::after, .gear-slots.hands .slot-btn[data-name]:focus-visible::after { left: auto; right: calc(100% + 8px); }
+@media (hover: none) { .gear-slots .slot-btn[data-name]:hover::after { content: none; } }
+#gear-wear-label b { color: var(--ink); }
+/* What's worn, in the picker. */
+#gear-picker .slot-btn.worn:not([aria-pressed="true"]) { background: var(--picked); }
+.gear-skins { margin-top: 10px; }
+.gear-skins .slot-btn .ico { width: 36px; height: 36px; }
+/* The set: a row for each slot, which opens what's in it. */
+.set-list { display: grid; gap: 6px; }
+.set-list .search-hit { width: 100%; }
+.set-list .slot .ico { width: 28px; height: 28px; }
 .gear-label { margin: 14px 0 6px !important; }
 .gear-none { margin-top: 10px; }
 .curse-name { color: var(--bad-ink); }

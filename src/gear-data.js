@@ -62,6 +62,21 @@ const MATERIALS = {
   netherite: { n: "Netherite", part: "netherite", tool: "Diamond, upgraded. As an item it floats on lava and doesn’t burn.", armor: "Diamond, upgraded. Each piece also takes 10% off knockback, and as an item it floats on lava and doesn’t burn." },
 };
 
+// The pack's costumes: what leather armor with one of these trims on looks like there (texts/en_US.lang; it doesn’t name the hazmat
+// suit, the last). from: where the trim's template is (Bedrock's own loot tables: the pack's list has the Host trim elsewhere).
+const COSTUMES = {
+  host: { n: "Party Set", trim: "Host", from: "Trail ruins: suspicious gravel, 8.3%" },
+  spire: { n: "Cherry Blossom Dress", trim: "Spire", from: "End cities: chests, 6.7%" },
+  wild: { n: "Elf Attire", trim: "Wild", from: "Jungle temples: chests, 33.3%" },
+  bolt: { n: "Maid Uniform", trim: "Bolt", from: "Trial chambers: vaults, 6.3%" },
+  tide: { n: "Pirate Outfit", trim: "Tide", from: "Elder guardians, 20%" },
+  shaper: { n: "Rana Puffer Coat", trim: "Shaper", from: "Trail ruins: suspicious gravel, 8.3%" },
+  snout: { n: "Santa Getup", trim: "Snout", from: "Bastion remnants: chests, 8.3%" },
+  rib: { n: "Viking Armor", trim: "Rib", from: "Nether fortresses: chests, 6.7%" },
+  eye: { n: "Wildflower Dress", trim: "Eye", from: "Strongholds: altar chests, 10%" },
+  silence: { n: "Hazmat Suit", trim: "Silence", from: "Ancient cities: chests, 1.3%" },
+};
+
 // Items without materials: durability and enchantability (none: the enchanting table won't take it).
 const GEAR_USES = {
   turtle_shell: [275, 9], elytra: [432, 0], mace: [500, 15], trident: [250, 1], bow: [384, 1], crossbow: [465, 1], fishing_rod: [64, 1], shears: [238, 0],

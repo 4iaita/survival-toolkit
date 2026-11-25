@@ -1,18 +1,29 @@
   <section id="view-equipment" aria-label="Equipment">
-    <p class="view-intro">Every piece of armor, weapon and tool you can enchant. Pick one and its material to see how good it is, which enchantments go on it, how to make, mend and find it, and the cheapest anvil order for the enchantments you want.</p>
+    <p class="view-intro">Every piece of armor, weapon and tool you can enchant. Put a set together on the stage and see how good it is; for each piece, which enchantments go on it, how to make, mend and find it, and the cheapest anvil order for the enchantments you want.</p>
 
     <section class="panel villager-panel mob-panel" aria-label="Equipment">
       <div class="villager-scene">
-        <div class="stage prop-stage" id="gear-stage" data-biome="plains">
+        <div class="stage prop-stage gear-stage" id="gear-stage" data-biome="plains">
           <canvas class="stage-scene" id="gear-art" tabindex="0" role="img"></canvas>
+          <span class="nametag" id="gear-tag" hidden></span>
+          <div class="gear-slots" id="gear-armor" role="group" aria-label="Armor"></div>
+          <div class="gear-slots hands" id="gear-hands" role="group" aria-label="Hands"></div>
           <span class="stage-hint" aria-hidden="true">
             <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
             Drag to turn
           </span>
         </div>
+        <div class="try-bar" id="gear-wear-bar">
+          <span class="cat-label" id="gear-wear-label" aria-live="polite"></span>
+          <div class="try-tags" id="gear-wear" role="group" aria-labelledby="gear-wear-label"></div>
+        </div>
         <div class="try-bar" id="gear-mat-bar">
           <span class="cat-label" id="gear-mat-label">Material</span>
           <div class="try-tags" id="gear-mat" role="group" aria-labelledby="gear-mat-label"></div>
+        </div>
+        <div class="try-bar" id="gear-costume-bar">
+          <span class="cat-label" id="gear-costume-label">Costume</span>
+          <div class="try-tags" id="gear-costume" role="group" aria-labelledby="gear-costume-label"></div>
         </div>
       </div>
 
@@ -27,6 +38,7 @@
           </select>
         </div>
         <div class="cats" id="gear-picker" role="group" aria-label="Equipment"></div>
+        <div class="cats gear-skins" id="gear-skins" role="group" aria-label="Player"></div>
       </div>
     </section>
 

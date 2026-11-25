@@ -231,14 +231,17 @@ Was the Brewing Guide (`#brewing` still opens its Brewing section). It's laid ou
 
 ## The Equipment tab
 
-Was the Anvil Planner (`#anvil` still opens its Anvil plan section). It's laid out as the Potions tab is, on the same stage. The user chose it
-to be about items (a sword, in any material), over a tab about enchantments, as the plan is made for one item.
+Was the Anvil Planner (`#anvil` still opens its Anvil plan section). It's laid out as the Potions tab is. The user chose it
+to be about items (a sword, in any material), over a tab about enchantments, as the plan is made for one item. On the stage the player wears the
+set (2026-11-25: not the item's icon anymore); see "The player on the stage".
 
 - `src/solver.js`: the items (`ITEMS`: all that can be enchanted), the enchantments and the plan's search. `src/gear-data.js`: everything else, from the
   Minecraft Wiki, by edition where they differ. `src/gear-ui.js`: the tab; `src/anvil-ui.js`: its Anvil plan section. They load last, as they use
   `mob-ui.js`'s and `potion-ui.js`'s helpers.
-- The picked item is the plan's (`state.item` in `src/ui.js`, saved with the edition under the planner's old key, so saved choices live on). The material
-  (`gear.mat`) goes through every section; an item without it shows in diamond and the pick is kept for the next one.
+- The picked item is the plan's (`state.item` in `src/ui.js`, saved with the edition under the planner's old key, so saved choices live on). Picking an item
+  puts it on (`gear.set`: a slot -> an item and its own material); a slot on the stage opens what's in it, or puts on what usually goes there. `gear.mat` is the
+  material picked last, for what's put on next. Each item keeps its own plan, by edition (`gear.plans`).
+- Your set (`gearSet`) adds up what's worn from `gearStats`, so a new stat there goes into it by its label.
 - Every section of Equipment, Potions and Mobs keeps the same column, with the search beside it: the user didn't want the anvil plan wider than the
   others. So it's stacked: the books as cards (two columns where there's room), the options, then the plan. Make a new tool fit the column too.
 - Villagers' and the wandering trader's sales in Where to find come from their trades (`gearSales`), so they aren't in `GEAR_FOUND`.
@@ -249,8 +252,8 @@ to be about items (a sword, in any material), over a tab about enchantments, as 
 - From the wiki only: mobs' 8.5% drops, the taiga village's armor stands, the ancient city's furnace, Bedrock's damage numbers and enchantment levels,
   and the mace's smash. Not checked: what a hit costs a hoe in Bedrock (left out).
 - 26.4 lowers the ancient city's chances (diamond hoe and leggings 15.9%, iron leggings 23%).
-- The shield has no item picture in the pack: its icon and stage are its model (the game's: a plate and a handle) in the pack's `entity/shield`
-  (`SHIELD_CUBES` in `src/icons5.js`; an icon with a `model` is shown as that on the stage). Don't go back to the drawn one.
+- The shield has no item picture in the pack: its icon is its model (the game's: a plate and a handle) in the pack's `entity/shield`
+  (`SHIELD_CUBES` in `src/icons5.js`). Don't go back to the drawn one.
 - Banners (trades, Armor Stands) have no item picture either. The user chose the pack's own banner in the hand (`attachables/gvu.json`, painted per dye,
   16 pixels tall; `import_banners`) over the inventory's big model (`entity/banner/banner_base`), which is a plain plate at icon size. No trade or
   equipment icon is hand-drawn now but the arrow between slots.
@@ -265,6 +268,33 @@ to be about items (a sword, in any material), over a tab about enchantments, as 
 - To check a change here: render every item, material, section and edition (`gearSections`, `renderGear`) and look for errors, "undefined" and "NaN", and
   compare the plans (`renderPlan`) with the committed page's. Compare pages with a fresh browser profile each, as they share saved settings.
 - Told to the user and left: the planner's rules still end with "Icons are original pixel art drawn for this page", the tab still says "Changes coming".
+
+### The player on the stage
+
+- `src/player.js` makes up a look (`playerLook`) that `mobScene` draws as it draws a mob (its key is `player:<skin>/<things>`). `src/player-models.js` and
+  `art/mobs/player_*.png` are written by `import_player.py`; its header says how the game places an attachable (bound bones, parentless ones 24 down, texture
+  meshes in y-down axes), worked out from Mojang's bedrock-samples (its `geometry.shield`, `geometry.humanoid.custom`) and checked by looking. Read it first.
+- Skins and Morphs are two groups in the picker (the user asked for it; Rana and Lucy are in both), one list in `PLAYER_SKINS`: the same in both editions but for the 12 Morphs (the player entity, `entity/dtr.json`, its setting `pntihm`, `v.tnlxsa`), which Bedrock adds. The
+  pack's Steve and Alex are in both, as the user asked (the game's own were tried and the user had them removed: don't bring them back). In Java a Morph falls back
+  to Steve, and the pick is kept.
+- A Morph's drawn on bones of its own (`egjh9` + a bone's name, "morph"), and what's worn on the plain skeleton, which the pack moves to fit. The pack says which armor
+  each hides (`off`) and what of it a helmet or chestplate hides (`hides`). Materials by the words in its bones' names (`BONE_MATERIALS`); `entity_emissive` without
+  `_alpha` ignores alpha, so clear texels shine in full (`shine`). Ash, Iris, Rusty and Echo are drawn twice, from two textures (`GLOWING`).
+- The pack's own skins are in `../textures/skins` (the user added them 2026-11-25; they aren't in the resource pack): 11 of them, in both editions (`SKINS` in
+  `import_player.py`). Its 22 `example_skin_N` (one purple figure with each kind of eyes) are left out. Cooper, Nugget, Gary and others from its changelog aren't there.
+- Expressions: the pack draws a face over a skin's own from texels the game doesn't use (`FACE` in `import_player.py`, the layer after the skin's): eyes, brows, and lids as it
+  blinks. Steve and Alex have nothing there. The eyes only wander in the idle fidgets (`bjmscc`, 12 of them, after walking and then standing 3 seconds), which aren't in.
+- Costumes (`COSTUMES` in `src/gear-data.js`, `costumes()` in `import_player.py`): leather armor with one of ten trims on, in Bedrock only, piece by piece (`trim` in
+  `gear.set`, a row under Material; Java keeps the pick). The trims' textures are masks over the leather's sheet (`cdq`, alpha 127 hides), and the cubes are the leather
+  models' own. The pack doesn't name the Silence one (the hazmat suit), and its list has the Host trim in the wrong place. Other trims aren't drawn.
+- Stances: the pack's own third person controllers (njvelc for what's held, knoyhk for a spear), at a standstill: `this` is 0, `q.modified_move_speed` 0. What's keyframed
+  plays once as it's taken in hand (a loop's `once` and `at`) and holds its end; armor pops on (`GEAR_POPS`). The pack's stances and armor are used in Java too.
+- Tools are the game's flat pictures: the pack's 3D ones are a setting that starts off. Not done, and told to the user: the enchanted shimmer, the pack's armor shimmer,
+  and the 3D tools. The elytra (Java's ElytraModel) and the rod (Java's handheld_rod) aren't in the pack as models; leather is baked in its undyed color.
+- The stage always frames the player the same (`PLAYER_FRAME`, a look's `framed`), whatever they wear.
+- `renderScene` draws rows without glass, beams or doorways face by face (`plainRow`, `plainFace`), reading the texels itself where a box has `paint` (`modelBoxes`): 5 to 7
+  times as fast as a ray for each pixel (an iron golem at 2×: 186 ms to 28), and the same to the pixel (670 looks, two views each, compared 2026-11-25). A change to
+  `modelBoxes`' `color` must go in `paint` too, and the other way round.
 
 ## Finding what's unused
 

@@ -25,7 +25,7 @@ function itemBoxes(px, up) {
 const ITEM_FPS = 30, ITEM_MAX_SCALE = 9, ITEM_UP = 5, ITEM_BOB = 1.2, ITEM_SWAY = 0.4, ITEM_YAW = 0.2, SWIRLS = 9, SWIRL_SECONDS = 1.6;
 function itemScene(canvas, { onTurn = () => {}, swirl: swirlSrc } = {}) {
   const ctx = canvas.getContext("2d"), swirls = new Image(), tintedSwirls = {};
-  let px = null, model = null, tall = 16, color = null, yaw = ITEM_YAW, frame = 0, dragX = null, last = 0, clock = 0;
+  let px = null, color = null, yaw = ITEM_YAW, frame = 0, dragX = null, last = 0, clock = 0;
   if (swirlSrc) {
     swirls.onload = () => redraw();
     swirls.src = swirlSrc;
@@ -51,12 +51,12 @@ function itemScene(canvas, { onTurn = () => {}, swirl: swirlSrc } = {}) {
     const dpr = dragX !== null ? 1 : Math.max(1, Math.min(2, Math.round(window.devicePixelRatio || 1)));
     canvas.width = w * dpr;
     canvas.height = h * dpr;
-    if (!px && !model) return;
+    if (!px) return;
     const still = calmMotion(), t = still ? 0 : clock;
     const up = ITEM_UP + (1 + Math.sin(t * 1.8)) * ITEM_BOB, turned = yaw + (dragX === null ? Math.sin(t * 0.9) * ITEM_SWAY : 0);
-    const scale = Math.min(ITEM_MAX_SCALE * 16 / tall, (h - MOB_FEET_UP - 24) / (tall + ITEM_UP + 2 * ITEM_BOB), (w - 40) / 18);
+    const scale = Math.min(ITEM_MAX_SCALE, (h - MOB_FEET_UP - 24) / (16 + ITEM_UP + 2 * ITEM_BOB), (w - 40) / 18);
     const view = { yaw: turned, pitch: STAGE_PITCH, scale: scale * dpr, center: [0, GROUND, 0], origin: [canvas.width / 2, canvas.height - MOB_FEET_UP * dpr] };
-    const out = renderScene(model ? model(up, ITEM_LIT) : itemBoxes(px, up), { ...view, width: canvas.width, height: canvas.height, shadows: [[0, 0, 5.5 - (up - ITEM_UP) * 0.4]] });
+    const out = renderScene(itemBoxes(px, up), { ...view, width: canvas.width, height: canvas.height, shadows: [[0, 0, 5.5 - (up - ITEM_UP) * 0.4]] });
     ctx.putImageData(new ImageData(out, canvas.width, canvas.height), 0, 0);
     const sheet = color && !still && swirlsIn(color);
     if (!sheet) return;
@@ -73,7 +73,7 @@ function itemScene(canvas, { onTurn = () => {}, swirl: swirlSrc } = {}) {
   const redraw = () => { if (!frame) frame = requestAnimationFrame(draw); };
   const step = now => {
     requestAnimationFrame(step);
-    if (!canvas.clientWidth || document.hidden || !(px || model) || calmMotion() || now - last < 1000 / ITEM_FPS - 2) return;
+    if (!canvas.clientWidth || document.hidden || !px || calmMotion() || now - last < 1000 / ITEM_FPS - 2) return;
     clock += Math.min(0.1, (now - last) / 1000);
     last = now;
     redraw();
@@ -100,12 +100,10 @@ function itemScene(canvas, { onTurn = () => {}, swirl: swirlSrc } = {}) {
     turnBy(by);
   });
   return {
-    // name: the item's icon (its picture must be 16×16, or it has a model: the shield); swirl: the color of the swirls round it, or none.
+    // name: the item's icon (its picture must be 16×16); swirl: the color of the swirls round it, or none.
     show(name, swirl = null) {
       const spec = ICONS[name];
-      model = spec.model || null;
-      tall = spec.tall || 16;
-      const pixels = model ? [] : spec.gen ? spec.gen() : spec.layers ? artPixels(spec) : fromTemplate(spec);
+      const pixels = spec.gen ? spec.gen() : spec.layers ? artPixels(spec) : fromTemplate(spec);
       px = pixels.length === 256 ? pixels : null;
       color = swirl;
       redraw();

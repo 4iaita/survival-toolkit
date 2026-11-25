@@ -98,14 +98,14 @@ for (const metal of ["Iron", "Chainmail", "Diamond", "Stone", "Golden"]) {
   }
 }
 
-// The shield has no item picture: the game draws its model (a 12×22 plate and its handle) in the inventory as well, so its icon and
-// its stage (model, tall: how high it is) come from the model's texture, in art/ as 16×16 pieces (SHIELD_PIECES in import_textures.py).
-// As scene boxes (villager.js), its lowest pixel up over the ground. lit: light of its own, as item-stage.js gives its items.
+// The shield has no item picture: the game draws its model (a 12×22 plate and its handle) in the inventory as well, so its icon
+// comes from the model's texture, in art/ as 16×16 pieces (SHIELD_PIECES in import_textures.py).
+// As scene boxes (villager.js). lit: light of its own, as item-stage.js gives its items.
 const SHIELD_CUBES = [{ lo: [-6, 0, -0.5], hi: [6, 22, 0.5], uv: [0, 0] }, { lo: [-1, 8, 0.5], hi: [1, 14, 6.5], uv: [26, 0] }];
 const shieldTexel = (s, t) => { const px = art(`shield_${s >> 4}_${t >> 4}`); return px && px[(t & 15) * 16 + (s & 15)]; };
-function shieldBoxes(up = 0, lit = 0) {
+function shieldBoxes(lit) {
   return SHIELD_CUBES.map(({ lo, hi, uv }) => {
-    const place = ([x, y, z]) => [x, y + GROUND - up - 22, z], size = hi.map((v, i) => v - lo[i]);
+    const place = ([x, y, z]) => [x, y + GROUND - 22, z], size = hi.map((v, i) => v - lo[i]);
     return { lo: place(lo), hi: place(hi), color: (axis, side, fx, fy, fz) => {
       const k = skinTexel(uv, size, FACES[axis][side], fx, fy, fz) / 4, p = shieldTexel(k % 64, Math.floor(k / 64));
       return p ? lit + (p[0] << 16 | p[1] << 8 | p[2]) : -1;
@@ -115,10 +115,10 @@ function shieldBoxes(up = 0, lit = 0) {
 // The icon, turned about as the game's inventory turns it.
 const SHIELD_ICON = 64;
 function shieldIcon() {
-  const px = renderScene(shieldBoxes(0, 170 * EMITS), { yaw: 0.44, pitch: 0.26, scale: SHIELD_ICON / 24, center: [0, GROUND - 11, 1], origin: [SHIELD_ICON / 2, SHIELD_ICON / 2], width: SHIELD_ICON, height: SHIELD_ICON });
+  const px = renderScene(shieldBoxes(170 * EMITS), { yaw: 0.44, pitch: 0.26, scale: SHIELD_ICON / 24, center: [0, GROUND - 11, 1], origin: [SHIELD_ICON / 2, SHIELD_ICON / 2], width: SHIELD_ICON, height: SHIELD_ICON });
   return Array.from({ length: SHIELD_ICON * SHIELD_ICON }, (_, i) => (px[i * 4 + 3] ? [px[i * 4], px[i * 4 + 1], px[i * 4 + 2]] : null));
 }
-if (hasArt("shield_0_0", "shield_1_0", "shield_2_0", "shield_0_1", "shield_1_1")) ICONS.shield = { gen: shieldIcon, model: shieldBoxes, tall: 22 };
+if (hasArt("shield_0_0", "shield_1_0", "shield_2_0", "shield_0_1", "shield_1_1")) ICONS.shield = { gen: shieldIcon };
 
 // Job site blocks, by the block names in VILLAGERS. Hollow blocks fill their top with the inside texture;
 // the lectern, grindstone and stonecutter are box models whose faces line up with the pack's model textures.
