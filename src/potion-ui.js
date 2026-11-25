@@ -1,11 +1,10 @@
 /* ---------- Potions ---------- */
 // The picked potion and its version (mod: base, long or strong; form: drink, splash, lingering or arrow), how many bottles the
 // brewing plan makes, and which of the potion's sections shows (POTION_SECTIONS).
-const brew = { potion: "swiftness", mod: "base", form: "drink", count: 3, order: "kind", section: "about", query: "" };
+const brew = { potion: "swiftness", mod: "base", form: "drink", count: 3, section: "about", query: "" };
 const BREW_KEY = "potions-v1";
 try { Object.assign(brew, JSON.parse(localStorage.getItem(BREW_KEY) || "{}")); } catch (_) {}
 if (!potionByKey(brew.potion)) brew.potion = "swiftness";
-if (!["kind", "az"].includes(brew.order)) brew.order = "kind";
 
 const ROMAN_FX = ["", "I", "II", "III", "IV", "V", "VI"];
 const CAT_LABEL = { Helpful: "Helpful", Harmful: "Harmful", Trial: "Tricky Trials", Base: "Base bottles" };
@@ -71,10 +70,7 @@ function renderVersions() {
 function renderPotionPicker() {
   const slots = list => `<div class="slot-grid">${list.map(x =>
     `<button type="button" class="slot slot-btn" id="potion-${x.k}" data-potion="${x.k}" data-name="${esc(potionShort(x))}" aria-label="${esc(potionTitle(x.k))}" aria-pressed="${x.k === brew.potion}">${iconImg(potionIcon("drink", x.color))}</button>`).join("")}</div>`;
-  $("potion-order").value = brew.order;
-  $("potion-picker").innerHTML = brew.order === "az"
-    ? slots([...ALL_POTIONS].sort((a, b) => potionShort(a).localeCompare(potionShort(b))))
-    : Object.keys(CAT_LABEL).map(c => `
+  $("potion-picker").innerHTML = Object.keys(CAT_LABEL).map(c => `
     <div>
       <div class="cat-label">${CAT_LABEL[c]}</div>
       ${slots(ALL_POTIONS.filter(x => x.cat === c))}
@@ -310,7 +306,6 @@ $("potion-results").addEventListener("click", e => {
   pickPotion(b.dataset.potion);
   refocus(`#potion-results button[data-potion="${brew.potion}"]`);
 });
-$("potion-order").addEventListener("change", e => { brew.order = e.target.value; renderPotionPicker(); saveBrew(); });
 $("potion-search").addEventListener("input", e => { brew.query = e.target.value; renderPotionSearch(); saveBrew(); });
 // The version buttons, wherever they are (the stage's, the Versions table's, which pick both at once, and the plan's).
 for (const id of ["potion-mod", "potion-form", "potion-result"]) $(id).addEventListener("click", e => {

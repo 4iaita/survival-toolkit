@@ -3,14 +3,15 @@
  * (src/player.js); each one's anvil plan is one of its sections (src/anvil-ui.js). The picked item is the plan's (state.item), so
  * both are always about the same one.
  */
-// The material picked last (an item without it comes in diamond), the picker's order, which section shows (GEAR_SECTIONS), what's
+// The material picked last (an item without it comes in diamond), which section shows (GEAR_SECTIONS), what's
 // put on (set: a slot -> an item, its material and its costume's trim), who wears it (a PLAYER_SKINS key) and the enchantments picked for the items
 // that aren't the plan's now (plans).
-const gear = { mat: "diamond", order: "kind", section: "about", query: "", who: "steve", set: null, plans: {} };
-const GEAR_KEY = "equipment-v1";
-try { Object.assign(gear, JSON.parse(localStorage.getItem(GEAR_KEY) || "{}")); } catch (_) {}
+const gear = { mat: "diamond", section: "about", query: "", who: "steve", set: null, plans: {} };
+const GEAR_KEY = "equipment-v2";
+// The set used to start full, so one saved back then (equipment-v1) may be nobody's pick: it starts over, the rest is kept.
+const savedGear = key => { try { return JSON.parse(localStorage.getItem(key)); } catch (_) { return null; } };
+Object.assign(gear, savedGear(GEAR_KEY) || { ...savedGear("equipment-v1"), set: null });
 if (!MATERIALS[gear.mat]) gear.mat = "diamond";
-if (!["kind", "az"].includes(gear.order)) gear.order = "kind";
 if (!PLAYER_SKINS[gear.who]) gear.who = "steve";
 if (!gear.plans || typeof gear.plans !== "object") gear.plans = {};
 const saveGear = () => { try { localStorage.setItem(GEAR_KEY, JSON.stringify(gear)); } catch (_) {} };
@@ -25,11 +26,10 @@ const gearItem = k => ITEMS.find(i => i.k === k);
 const isWorn = item => Boolean(gear.set[slotOf(item)] && gear.set[slotOf(item)].k === item.k);
 const usualMat = (k, mat = gear.mat) => (!GEAR_MATS[k] ? null : GEAR_MATS[k].includes(mat) ? mat : "diamond");
 const gearMat = item => (isWorn(item) ? gear.set[slotOf(item)].mat : usualMat(item.k));
-// A first set, or a saved one without what isn't there anymore: armor all of a kind, and the picked item.
-if (!gear.set || typeof gear.set !== "object" || Array.isArray(gear.set)) {
-  gear.set = Object.fromEntries(ARMOR_PIECES.map(k => [SLOT_OF[k], { k, mat: usualMat(k) }]));
-  gear.set[slotOf(currentItem())] = { k: state.item, mat: usualMat(state.item) };
-}
+// With nothing on, no item is picked: the tab shows the player alone until something's put on.
+const nothingOn = () => !Object.keys(gear.set).length;
+// A first set (nothing), or a saved one without what isn't there anymore.
+if (!gear.set || typeof gear.set !== "object" || Array.isArray(gear.set)) gear.set = {};
 for (const [slot, w] of Object.entries(gear.set)) {
   if (!w || !gearItem(w.k) || slotOf(gearItem(w.k)) !== slot || (w.mat || null) !== usualMat(w.k, w.mat)) delete gear.set[slot];
   else if (w.trim && !(COSTUMES[w.trim] && w.mat === "leather")) delete w.trim;
@@ -50,7 +50,7 @@ const gearIcon = (item, mat = gearMat(item)) => (mat ? `g:${mat}_${item.k}` : it
 const costumeOf = w => (w && w.trim && packOn() ? w.trim : null);
 // A worn thing's name, with its costume.
 const wornName = w => `${gearName(gearItem(w.k), w.mat)}${costumeOf(w) ? ` (${COSTUMES[w.trim].n})` : ""}`;
-const canDress = item => packOn() && isArmor(item) && gearMat(item) === "leather";
+const canDress = item => packOn() && !nothingOn() && isArmor(item) && gearMat(item) === "leather";
 const isArmor = item => ARMOR_PIECES.includes(item.k);
 // Durability in the edition picked, and enchantability (0: the enchanting table won't take it).
 function gearUses(item, mat = gearMat(item)) {
@@ -75,7 +75,7 @@ const gearStage = $("gear-stage");
 const GEAR_YAW = -0.35;
 const gearView = mobScene($("gear-art"), $("gear-tag"), { onTurn: () => gearStage.classList.add("turned"), yaw: GEAR_YAW });
 gearStage.style.setProperty("--ground", `url('${groundArt("plains")}')`);
-// Who stands there: the pack's Morphs are Bedrock's, so in Java it's Steve instead.
+// Who stands there: the pack's skins and Morphs are Bedrock's, so in Java it's Steve instead.
 const shownSkin = () => (!PLAYER_SKINS[gear.who].pack || packOn() ? gear.who : "steve");
 // A worn thing's GEAR_WORN key.
 const wornKey = w => (w ? `${w.mat ? `${w.mat}_` : ""}${w.k}${costumeOf(w) ? `_${w.trim}` : ""}` : null);
@@ -100,13 +100,15 @@ function renderSlots() {
   $("gear-armor").innerHTML = GEAR_SLOTS.slice(0, 4).map(button).join("");
   $("gear-hands").innerHTML = GEAR_SLOTS.slice(4).map(button).join("");
   // Under the stage: where the picked item goes, and putting it on or taking it off.
+  $("gear-wear-bar").hidden = nothingOn();
+  if (nothingOn()) return;
   const item = currentItem(), slot = slotOf(item), mat = gearMat(item), on = isWorn(item), other = gear.set[slot], trim = on ? costumeOf(other) : null;
   $("gear-wear-label").innerHTML = `${slotName(slot)}: <b>${esc(other ? wornName(other) : "empty")}</b>`;
   const chip = (act, text) => `<button type="button" class="name-chip" data-wear="${act}">${text}</button>`;
   $("gear-wear").innerHTML = [
     on ? chip("off", slot === "main" || slot === "off" ? "Put it away" : "Take it off") : chip("on", `Put on the ${esc(gearName(item, mat).toLowerCase())}`),
     isArmor(item) && ARMOR_PIECES.some(k => wornKey(gear.set[SLOT_OF[k]]) !== wornKey({ k, mat, trim })) ? chip("all", `Full ${esc(trim ? COSTUMES[trim].n : `${MATERIALS[mat].n.toLowerCase()} armor`)}`) : "",
-    Object.keys(gear.set).length ? chip("none", "Take everything off") : "",
+    chip("none", "Take everything off"),
   ].join("");
 }
 
@@ -126,13 +128,13 @@ async function drawSkins() {
 }
 const skinName = who => { const { n, what } = PLAYER_SKINS[who]; return what ? `${n}: ${what}` : n; };
 function renderSkins() {
-  const on = shownSkin(), all = Object.keys(PLAYER_SKINS);
+  const on = shownSkin(), all = Object.keys(PLAYER_SKINS).filter(who => !PLAYER_SKINS[who].pack || packOn());
   const group = (label, list) => (list.length ? `
     <div role="group" aria-label="${label}">
       <div class="cat-label">${label}</div>
       <div class="slot-grid">${list.map(who => `<button type="button" class="slot slot-btn" id="skin-${who}" data-who="${who}" data-name="${esc(skinName(who))}" aria-label="${esc(skinName(who))}" aria-pressed="${who === on}"><img class="ico" data-skin="${who}" src="${skinPictures[who] || icon("ui:armor_stand")}" alt="" width="36" height="36"></button>`).join("")}</div>
     </div>` : "");
-  const picker = group("Skins", all.filter(who => !PLAYER_SKINS[who].pack)) + group("Morphs", all.filter(who => PLAYER_SKINS[who].pack && packOn()));
+  const picker = group("Skins", all.filter(who => !PLAYER_SKINS[who].morph)) + group("Morphs", all.filter(who => PLAYER_SKINS[who].morph));
   const off = PLAYER_SKINS[on].off || [];
   const bare = off.length === 4 ? "armor" : off.map(slot => ({ head: "helmet", chest: "chestplate", legs: "leggings", feet: "boots" }[slot])).join(" or ");
   $("gear-skins").innerHTML = picker
@@ -142,7 +144,7 @@ function renderSkins() {
 
 function renderMats() {
   const item = currentItem(), mats = GEAR_MATS[item.k];
-  $("gear-mat-bar").hidden = !mats;
+  $("gear-mat-bar").hidden = !mats || nothingOn();
   $("gear-mat").innerHTML = (mats || []).map(m => `<button type="button" class="name-chip" data-mat="${m}" aria-pressed="${m === gearMat(item)}">${iconImg(gearIcon(item, m))}${MATERIALS[m].n}</button>`).join("");
 }
 
@@ -156,16 +158,13 @@ function renderCostumes() {
 
 function renderGearPicker() {
   const slots = list => `<div class="slot-grid">${list.map(i =>
-    `<button type="button" class="slot slot-btn${isWorn(i) ? " worn" : ""}" id="item-${i.k}" data-item="${i.k}" data-name="${esc(i.n)}" aria-label="${esc(i.n)}" aria-pressed="${i.k === state.item}">${iconImg(gearIcon(i))}</button>`).join("")}</div>`;
-  $("gear-order").value = gear.order;
-  $("gear-picker").innerHTML = gear.order === "az"
-    ? slots([...ITEMS].sort((a, b) => a.n.localeCompare(b.n)))
-    : [...new Set(ITEMS.map(i => i.cat))].map(c => `
+    `<button type="button" class="slot slot-btn${isWorn(i) ? " worn" : ""}" id="item-${i.k}" data-item="${i.k}" data-name="${esc(i.n)}" aria-label="${esc(i.n)}" aria-pressed="${!nothingOn() && i.k === state.item}">${iconImg(gearIcon(i))}</button>`).join("")}</div>`;
+  $("gear-picker").innerHTML = [...new Set(ITEMS.map(i => i.cat))].map(c => `
     <div>
       <div class="cat-label">${c}</div>
       ${slots(ITEMS.filter(i => i.cat === c))}
     </div>`).join("");
-  $("gear-name").textContent = gearName(currentItem());
+  $("gear-name").textContent = nothingOn() ? "Nothing equipped" : gearName(currentItem());
 }
 
 /* The sections */
@@ -339,6 +338,10 @@ function gearFind(item, mat) {
 }
 
 function renderGearResult() {
+  if (nothingOn()) {
+    $("gear-result").innerHTML = `<div class="mob-section"><p class="mob-lead">Nothing equipped. Pick a piece of equipment, or a slot on the stage, to put it on.</p></div>`;
+    return;
+  }
   const item = currentItem(), mat = gearMat(item), on = shownGearSection(item), name = gearName(item);
   const body = { set: gearSet, about: gearAbout, materials: gearMaterials, enchants: gearEnchants, craft: gearCraft, repair: gearRepair, find: gearFind,
     anvil: () => `${gearHead("anvil", item, `${state.edition === "java" ? "Java" : "Bedrock"} Edition`)}${anvilSection()}` }[on](item, mat);
@@ -376,7 +379,7 @@ function renderGearSearch() {
   }).sort((a, b) => a.rank - b.rank);
   box.innerHTML = hits.length
     ? hits.map(({ item, mat, trim, why }) => `
-      <button type="button" class="search-hit" data-item="${item.k}" data-mat="${mat || ""}"${trim ? ` data-trim="${trim}"` : ""}${item.k === state.item && mat === gearMat(item) && (!trim || (isWorn(item) && costumeOf(gear.set[slotOf(item)]) === trim)) ? ' aria-current="true"' : ""}>
+      <button type="button" class="search-hit" data-item="${item.k}" data-mat="${mat || ""}"${trim ? ` data-trim="${trim}"` : ""}${!nothingOn() && item.k === state.item && mat === gearMat(item) && (!trim || (isWorn(item) && costumeOf(gear.set[slotOf(item)]) === trim)) ? ' aria-current="true"' : ""}>
         <span class="slot sm">${iconImg(gearIcon(item, mat))}</span>
         <span><span class="who">${esc(gearName(item, mat))}</span><span class="deal">${esc(why)}</span></span>
       </button>`).join("")
@@ -449,7 +452,7 @@ $("gear-wear").addEventListener("click", e => {
   }
   if (act === "none") gear.set = {};
   renderGear();
-  refocus("#gear-wear button");
+  refocus(nothingOn() ? `#gear-slot-${slot}` : "#gear-wear button");
 });
 $("gear-skins").addEventListener("click", e => {
   const b = e.target.closest("button[data-who]");
@@ -466,7 +469,6 @@ $("gear-results").addEventListener("click", e => {
   pickGear(b.dataset.item, b.dataset.mat, b.dataset.trim);
   refocus(`#gear-results button[data-item="${state.item}"][data-mat="${b.dataset.mat}"]${b.dataset.trim ? `[data-trim="${b.dataset.trim}"]` : ""}`);
 });
-$("gear-order").addEventListener("change", e => { gear.order = e.target.value; renderGearPicker(); saveGear(); });
 $("gear-search").addEventListener("input", e => { gear.query = e.target.value; renderGearSearch(); saveGear(); });
 // The material buttons, under the stage and in the Materials table.
 for (const id of ["gear-mat", "gear-result"]) $(id).addEventListener("click", e => {
@@ -519,6 +521,7 @@ function openAnvil() {
   history.replaceState(null, "", "#equipment");
   showView();
   gear.section = "anvil";
+  if (nothingOn()) return pickGear(state.item);
   renderGearResult();
   saveGear();
 }

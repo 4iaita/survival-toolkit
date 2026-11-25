@@ -333,8 +333,8 @@ def has_face(g, texture):
 
 
 def skins():
-    """PLAYER_SKINS: who can stand on the stage, the pack's Steve and Alex and its skins (both editions'), then its Morphs (pack:
-    Bedrock's)."""
+    """PLAYER_SKINS: who can stand on the stage, the pack's Steve and Alex (both editions'), then its skins and its Morphs
+    (pack: only in Bedrock; morph)."""
     face = geos[player["geometry"]["pfsswq"]]
     models[FACE] = im.model({**face, "bones": [{**b, "name": b["name"].lower()} for b in face["bones"]]})
     out = {
@@ -346,7 +346,7 @@ def skins():
         img = textures[texture] = Image.open(im.textures / "skins" / f"{key}.png").convert("RGBA")
         assert img.size == (64, 64), key
         # Slim arms are 3 wide: what would be the fourth pixel's back is clear.
-        out[f"skin_{key}"] = {"n": name, "what": what, "body": "wide" if max(img.getchannel("A").crop((54, 20, 56, 32)).tobytes()) else "slim", "texture": texture}
+        out[f"skin_{key}"] = {"n": name, "what": what, "pack": 1, "body": "wide" if max(img.getchannel("A").crop((54, 20, 56, 32)).tobytes()) else "slim", "texture": texture}
     for skin in out.values():
         any_face, lids = has_face(face, skin["texture"])
         if any_face:
@@ -360,7 +360,7 @@ def skins():
             "rusty": "redstone golem", "echo": "sculk whisperer", "goober": "slime", "sully": "sulfur cube", "russell": "bushling"}
     settings = morph_settings()
     for i, (key, geo, tex) in MORPHS.items():
-        skin = {"n": names[key], "what": what[key], "pack": 1}
+        skin = {"n": names[key], "what": what[key], "pack": 1, "morph": 1}
         mine = settings.get(i, {})
         off = [slot for piece, slot in SLOTS.items() if mine.get(f"oreville_{piece}_armor_layer_hidden")]
         if off:

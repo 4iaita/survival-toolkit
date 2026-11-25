@@ -239,7 +239,8 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   Minecraft Wiki, by edition where they differ. `src/gear-ui.js`: the tab; `src/anvil-ui.js`: its Anvil plan section. They load last, as they use
   `mob-ui.js`'s and `potion-ui.js`'s helpers.
 - The picked item is the plan's (`state.item` in `src/ui.js`, saved with the edition under the planner's old key, so saved choices live on). Picking an item
-  puts it on (`gear.set`: a slot -> an item and its own material); a slot on the stage opens what's in it, or puts on what usually goes there. `gear.mat` is the
+  puts it on (`gear.set`: a slot -> an item and its own material); a slot on the stage opens what's in it, or puts on what usually goes there. It starts with nothing on, and with
+  nothing on (`nothingOn`) no item is picked: what's under the stage is hidden and the panel below only says so (the user's wish). `gear.mat` is the
   material picked last, for what's put on next. Each item keeps its own plan, by edition (`gear.plans`).
 - Your set (`gearSet`) adds up what's worn from `gearStats`, so a new stat there goes into it by its label.
 - Every section of Equipment, Potions and Mobs keeps the same column, with the search beside it: the user didn't want the anvil plan wider than the
@@ -274,13 +275,13 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
 - `src/player.js` makes up a look (`playerLook`) that `mobScene` draws as it draws a mob (its key is `player:<skin>/<things>`). `src/player-models.js` and
   `art/mobs/player_*.png` are written by `import_player.py`; its header says how the game places an attachable (bound bones, parentless ones 24 down, texture
   meshes in y-down axes), worked out from Mojang's bedrock-samples (its `geometry.shield`, `geometry.humanoid.custom`) and checked by looking. Read it first.
-- Skins and Morphs are two groups in the picker (the user asked for it; Rana and Lucy are in both), one list in `PLAYER_SKINS`: the same in both editions but for the 12 Morphs (the player entity, `entity/dtr.json`, its setting `pntihm`, `v.tnlxsa`), which Bedrock adds. The
-  pack's Steve and Alex are in both, as the user asked (the game's own were tried and the user had them removed: don't bring them back). In Java a Morph falls back
+- Skins and Morphs are two groups in the picker (the user asked for it; Rana and Lucy are in both), one list in `PLAYER_SKINS`: Steve and Alex in both editions, and only in Bedrock the pack's 11 skins (the user says so) and its 12 Morphs (the player entity, `entity/dtr.json`, its setting `pntihm`, `v.tnlxsa`). The
+  pack's Steve and Alex are in both, as the user asked (the game's own were tried and the user had them removed: don't bring them back). In Java both fall back
   to Steve, and the pick is kept.
 - A Morph's drawn on bones of its own (`egjh9` + a bone's name, "morph"), and what's worn on the plain skeleton, which the pack moves to fit. The pack says which armor
   each hides (`off`) and what of it a helmet or chestplate hides (`hides`). Materials by the words in its bones' names (`BONE_MATERIALS`); `entity_emissive` without
   `_alpha` ignores alpha, so clear texels shine in full (`shine`). Ash, Iris, Rusty and Echo are drawn twice, from two textures (`GLOWING`).
-- The pack's own skins are in `../textures/skins` (the user added them 2026-11-25; they aren't in the resource pack): 11 of them, in both editions (`SKINS` in
+- The pack's own skins are in `../textures/skins` (the user added them 2026-11-25; they aren't in the resource pack): 11 of them, only in Bedrock (`SKINS` in
   `import_player.py`). Its 22 `example_skin_N` (one purple figure with each kind of eyes) are left out. Cooper, Nugget, Gary and others from its changelog aren't there.
 - Expressions: the pack draws a face over a skin's own from texels the game doesn't use (`FACE` in `import_player.py`, the layer after the skin's): eyes, brows, and lids as it
   blinks. Steve and Alex have nothing there. The eyes only wander in the idle fidgets (`bjmscc`, 12 of them, after walking and then standing 3 seconds), which aren't in.
