@@ -417,11 +417,12 @@ def import_cuts(out):
 # frame (see src/backdrop-motion.js).
 FRAMES = {"lava_still": ("blocks/lava_still", None), "lava_flow": ("blocks/lava_flow", None), "fire": ("blocks/fire_0", None), "sculk": ("blocks/sculk", None),
           "gold_ore": ("blocks/gold_ore", None), "diamond_ore": ("blocks/diamond_ore", None), "redstone_ore": ("blocks/redstone_ore", None),
-          "lantern_block": ("blocks/lantern", None),
+          "lantern_block": ("blocks/lantern", None), "soul_lantern_block": ("blocks/soul_lantern", None),
           "leaf_tinted": ("full-pack/subpacks/SP2/textures/particle/biome_tinted_leaves_atlas", None), "leaf_pale_oak": ("full-pack/subpacks/SP2/textures/particle/pale_oak_leaves_atlas", None),
           "leaf_orange": ("full-pack/subpacks/SP2/textures/particle/orange_poplar_leaves_atlas", None), "leaf_red": ("full-pack/subpacks/SP2/textures/particle/red_poplar_leaves_atlas", None), "leaf_gold": ("full-pack/subpacks/SP2/textures/particle/yellow_poplar_leaves_atlas", None),
           "lava_pop": ("full-pack/subpacks/SP2/textures/particle/particles", (8, 24, 16, 32)),
-          "flame": ("full-pack/subpacks/SP2/textures/particle/particles", (0, 24, 8, 32))}
+          "flame": ("full-pack/subpacks/SP2/textures/particle/particles", (0, 24, 8, 32)),
+          "candle_flame": ("full-pack/subpacks/SP2/textures/particle/particles", (64, 64, 72, 72))}
 
 
 # The pack's lapis ore doesn't glint as its gold and diamonds do: the same white star, coming and going on three of its stones.

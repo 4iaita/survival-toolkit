@@ -8,27 +8,21 @@
 .stage[data-biome="cave"] { --sky: #0b0b10; --haze: #0d0d13; }
 /* The mineshaft's cave: as dark as the cave, no clouds. */
 .stage[data-biome="mineshaft"] { --sky: #0b0b10; --haze: #0d0d13; }
-.stage[data-biome="mineshaft"]::before { display: none; }
 /* Inside a woodland mansion: no sky, a dim haze over the far wall, and a dark oak floor in the torchlight. */
 .stage[data-biome="mansion"] { --sky: #120c08; --haze: #1a120b; }
 .stage[data-biome="mansion"]::after { filter: brightness(.7); }
-.stage[data-biome="mansion"]::before { display: none; }
 /* A trial chamber: no sky, a warm dim haze over the tuff, and a tuff brick floor in the bulbs' light. */
 .stage[data-biome="trial_chamber"] { --sky: #16110d; --haze: #2b241e; }
 .stage[data-biome="trial_chamber"]::after { filter: brightness(.75); }
-.stage[data-biome="trial_chamber"]::before { display: none; }
 /* A stronghold: no sky, a cold dark haze over the stone bricks, and a stone brick floor in the torchlight. */
 .stage[data-biome="stronghold"] { --sky: #0d0d10; --haze: #18181d; }
 .stage[data-biome="stronghold"]::after { filter: brightness(.6); }
-.stage[data-biome="stronghold"]::before { display: none; }
 /* The deep dark: no sky, a cold blue-gray haze over the deepslate (kept light enough for the near-black Bacteria to
    stand out),, and an ancient city's deepslate tile floor lit by soul lanterns. */
 .stage[data-biome="deep_dark"] { --sky: #060a0c; --haze: #0c1418; }
 .stage[data-biome="deep_dark"]::after { filter: brightness(.55); }
-.stage[data-biome="deep_dark"]::before { display: none; }
 /* A biome at night (the plains'): a deep blue sky, lighter toward the horizon, dim clouds, and the grass in the dark (not black:
    the mob still has to be seen against it). */
-.stage[data-biome$="_night"]::before { opacity: .18; }
 .stage[data-biome$="_night"]::after { filter: brightness(.62) saturate(.8) hue-rotate(8deg); }
 .stage[data-biome="plains_night"] { --sky: #0b1430; --haze: #33467a; }
 /* The other biomes' nights: the swamp's murky, the desert's a little warmer at the horizon, the snowy village's bright
@@ -40,7 +34,6 @@
 .stage[data-biome="snowy_night"] { --sky: #101a3c; --haze: #4c5d92; }
 .stage[data-biome="snowy_night"]::after { filter: brightness(.72) saturate(.85); }
 .stage[data-biome="ocean_night"] { --sky: #0d3157; --haze: #031427; }
-.stage[data-biome="ocean_night"]::before { display: none; }
 .stage[data-biome="ocean_night"]::after { filter: brightness(.42) saturate(.6); }
 /* The pale garden's, where the creaking stands: its gray mist gone a cold blue-gray. */
 .stage[data-biome="pale_garden_night"] { --sky: #0e1424; --haze: #46505e; }
@@ -50,10 +43,8 @@
    dappled forest's soft autumn haze, the sulfur caves' murky green fog. */
 .stage[data-biome="cherry_grove"] { --sky: #78a8e8; --haze: #f3d7e4; }
 .stage[data-biome="pale_garden"] { --sky: #a9aeab; --haze: #d9dcd7; }
-.stage[data-biome="pale_garden"]::before { opacity: .35; }
 .stage[data-biome="dappled_forest"] { --sky: #7fa6d6; --haze: #ecd2ad; }
 .stage[data-biome="sulfur_caves"] { --sky: #141a07; --haze: #3a4a14; }
-.stage[data-biome="sulfur_caves"]::before { display: none; }
 .stage[data-biome="sulfur_caves"]::after { filter: brightness(.62); }
 /* The End: a dark violet void, and end stone in the dim light it gets there. */
 .stage[data-biome="end_city"], .stage[data-biome="end_island"] { --sky: #120c20; --haze: #2a2140; }
@@ -70,7 +61,6 @@
 /* The tadpole's swamp water: murky green, lighter toward the lily pads overhead, over a dim mud bottom. */
 .stage[data-biome="swamp_water"] { --sky: #5d7a4c; --haze: #2a3c22; }
 .stage[data-biome="swamp_water"]::after { filter: brightness(.68) saturate(.8); }
-.stage[data-biome="swamp_water"]::before, .stage[data-biome="cave"]::before, .stage[data-biome="nether"]::before, .stage[data-biome="end_city"]::before, .stage[data-biome="end_island"]::before, .stage[data-biome="ocean"]::before, .stage[data-biome="lush_pool"]::before, .stage[data-biome="flooded_cave"]::before { display: none; }
 /* The goat's jagged peaks in a cold white haze; the striped wolf's wooded badlands in warm dust. */
 .stage[data-biome="peaks"] { --sky: #8db3ec; --haze: #eef3fb; }
 .stage[data-biome="badlands"] { --sky: #87b3ea; --haze: #f1c9a2; }

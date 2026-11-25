@@ -52,8 +52,8 @@ const lanternTex = name => ({ parts: [[name, [0, 2, 6, 9], [5, 9]], [name, [1, 0
 // A lit candle standing on the block below, from its block texture as the game's model cuts it up: its body, the cap on
 // it and the wick, with a small flame drawn over the wick (the game's is a particle, not in the texture).
 const CANDLE = { parts: [["candle_lit", [0, 8, 2, 14], [7, 10]], ["candle_lit", [0, 6, 2, 8], [7, 8]], ["candle_lit", [0, 5, 1, 6], [8, 7]]],
-  // The flame, a pixel wide and three tall over the wick: orange at its tip, pale yellow at its heart.
-  rects: [[8, 4, 9, 5, "#ff9d2e"], [8, 5, 9, 7, "#ffe9a0"]], cap: false };
+  // The flame, a pixel wide and three tall over the wick: orange at its tip, pale yellow at its heart (flame: left out where it moves).
+  flame: [[8, 4, 9, 5, "#ff9d2e"], [8, 5, 9, 7, "#ffe9a0"]], cap: false };
 // Sea pickles, two in a cluster, from their block texture as the game's model cuts it up: each one's side, a frond on top.
 const SEA_PICKLE = { parts: [["sea_pickle", [0, 10, 4, 16], [3, 10]], ["sea_pickle", [1, 0, 3, 5], [4, 5]],
   ["sea_pickle", [4, 9, 8, 16], [9, 9]], ["sea_pickle", [13, 0, 15, 5], [10, 4]]], cap: false };
@@ -985,7 +985,7 @@ const BACKDROPS = {
   // The deep dark, the warden's (it comes out of the ground there, summoned by shriekers): an ancient city's pillars and
   // the frame of its portal in the deepslate, sculk spread over it all, lit by soul lanterns.
   deep_dark: () => ({
-    moves: ["sculk"],
+    moves: ["sculk", "soul_lantern_block", "light", "candles"],
     mist: { far: 0.3, near: 0.05 },
     wall: { rock: ["deepslate", "deepslate", "deepslate", "sculk", "deepslate", "deepslate_tiles"], ores: ["sculk", "sculk", "sculk_catalyst"], alone: ["sculk_catalyst"], dim: "rgba(4, 8, 10, .55)" },
     ceiling: { rock: ["deepslate", "sculk", "deepslate", "deepslate"], drip: [], shade: 0.55 },
@@ -1045,6 +1045,7 @@ const BACKDROPS = {
     const blossom = () => plant(open ? "eyeblossom_open" : "eyeblossom");
     const blossoms = [-19, 12, 18];
     return {
+      clouds: 0.35,
       leaves: 12,
       mist: { far: 0.5, near: 0.16 },
       hills: { top: blockTex("pale_moss_block"), fill: blockTex("pale_moss_block"), base: 3, rise: 3, trees: Array.from({ length: 22 }, (_, i) => [smallPaleOak(), i / 21 - 0.02]) },
@@ -1163,7 +1164,8 @@ function drawBlock(ctx, spec, left, top, size) {
     if (tex) ctx.drawImage(tex, x0, y0, x1 - x0, y1 - y0, Math.round(left + (x / 16) * size), Math.round(top + (y / 16) * size), (w / 16) * size, (h / 16) * size);
   }
   // Flat-colored boxes over the layers, in texels: [x0, y0, x1, y1, color] (a rail seen from the side, a minecart).
-  for (const [x0, y0, x1, y1, color] of spec.rects || []) {
+  if (spec.flame && standIns && standIns.candle_flame) standIns.candle_flame(left, top, size);
+  for (const [x0, y0, x1, y1, color] of [...(spec.rects || []), ...(spec.flame && !(standIns && standIns.candle_flame) ? spec.flame : [])]) {
     ctx.fillStyle = color;
     ctx.fillRect(left + (x0 / 16) * size, top + (y0 / 16) * size, ((x1 - x0) / 16) * size, ((y1 - y0) / 16) * size);
   }
@@ -1510,7 +1512,7 @@ const fireMotion = (paint, width, height, dpr) => ({ ...movingCells(paint, "fire
 const SHEETS = {
   gold_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, diamond_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, lapis_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.6 },
   redstone_ore: { ticks: 6, glow: 0.9, shine: 0.4 },
-  lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.5 },
+  lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.5 }, soul_lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.7 },
 };
 function sheetMotion(paint, names, width, height, dpr) {
   const { parts } = movingCells(paint, names, width, height, dpr);
@@ -1518,6 +1520,37 @@ function sheetMotion(paint, names, width, height, dpr) {
 }
 // Sculk that glimmers.
 const sculkMotion = (paint, width, height, dpr) => ({ ...movingCells(paint, "sculk", width, height, dpr).parts, frames: ART_FRAMES.sculk });
+
+// What a sky's clouds go behind: how much of the sky each pixel of the still picture covers, over the strip the clouds cross, small
+// gaps filled in (or they'd speckle through leaves). top and tall: the strip, in CSS pixels.
+const CLOUDS_TOP = 20, CLOUDS_TALL = 56;
+function cloudFront(canvas, dpr) {
+  const w = canvas.width, top = CLOUDS_TOP * dpr, h = CLOUDS_TALL * dpr, pad = 4 * dpr, reach = 4 * dpr;
+  const H = h + 2 * pad, data = canvas.getContext("2d").getImageData(0, top - pad, w, H);
+  let a = new Uint8Array(w * H), any = 0;
+  for (let i = 0; i < a.length; i++) any |= a[i] = data.data[i * 4 + 3];
+  // Widened, then narrowed back by as much, across and then down: the biggest (or smallest) within reach, worked out in runs of
+  // 2 * reach + 1 from both ends, so it takes the same however far that is.
+  const n = 2 * reach + 1, longest = Math.max(w, H) + 2 * n, line = new Uint8Array(longest), fore = new Uint8Array(longest), back = new Uint8Array(longest);
+  const pass = (max, count, step, lines, next) => {
+    const total = count + 2 * reach;
+    for (let l = 0; l < lines; l++) {
+      const from = l * next;
+      for (let i = 0; i < total; i++) line[i] = a[from + Math.min(count - 1, Math.max(0, i - reach)) * step];
+      for (let i = 0; i < total; i++) fore[i] = i % n === 0 ? line[i] : max ? (fore[i - 1] > line[i] ? fore[i - 1] : line[i]) : fore[i - 1] < line[i] ? fore[i - 1] : line[i];
+      for (let i = total - 1; i >= 0; i--) back[i] = i === total - 1 || i % n === n - 1 ? line[i] : max ? (back[i + 1] > line[i] ? back[i + 1] : line[i]) : back[i + 1] < line[i] ? back[i + 1] : line[i];
+      for (let i = 0; i < count; i++) {
+        const u = back[i], v = fore[i + n - 1];
+        a[from + i * step] = max ? (u > v ? u : v) : u < v ? u : v;
+      }
+    }
+  };
+  if (any) for (const max of [true, false]) pass(max, w, 1, H, w), pass(max, H, w, w, 1);
+  const cv = Object.assign(document.createElement("canvas"), { width: w, height: h }), out = new ImageData(w, h);
+  for (let i = 0; i < w * h; i++) out.data[i * 4 + 3] = a[i + pad * w];
+  cv.getContext("2d").putImageData(out, 0, 0);
+  return cv.toDataURL();
+}
 
 // The leaves that fall from a tree's crown: the pack's particles (art/frames/, 7x7 texels each), by its leaves' block and tint.
 // The dappled forest's are its poplar leaves, by their colors; the cherry's, which the pack has none of, the tinted leaves in pink.
@@ -1661,11 +1694,11 @@ function backdropView(canvas) {
     // moves: what of the scene moves, on the canvas over it; what's LEFT_OUT isn't in the still picture. also: more stand-ins.
     const moves = scene.moves || [];
     const paint = (ctx, also) => {
-      standIns = { ...Object.fromEntries(LEFT_OUT.filter(name => moves.includes(name)).map(name => [name, () => null])), ...also };
+      standIns = { ...(moves.includes("candles") && { candle_flame: () => null }), ...Object.fromEntries(LEFT_OUT.filter(name => moves.includes(name)).map(name => [name, () => null])), ...also };
       try { paintScene(ctx); } finally { standIns = null; }
     };
     // The crowns leaves fall from, and trial spawners and vaults, found as they're painted.
-    const crowns = [], watched = [...(scene.leaves ? LEAF_BLOCKS : []), ...(moves.includes("spawners") ? ["trial_spawner", "mob_spawner"] : []), ...(moves.includes("vaults") ? ["vault"] : []), ...(moves.includes("torches") ? ["torch"] : []), ...(moves.includes("rods") ? ["end_rod"] : [])], found = name => (left, top, size, flows, tint) => {
+    const crowns = [], watched = [...(scene.leaves ? LEAF_BLOCKS : []), ...(moves.includes("spawners") ? ["trial_spawner", "mob_spawner"] : []), ...(moves.includes("vaults") ? ["vault"] : []), ...(moves.includes("torches") ? ["torch"] : []), ...(moves.includes("rods") ? ["end_rod"] : []), ...(moves.includes("candles") ? ["candle_flame"] : [])], found = name => (left, top, size, flows, tint) => {
       if (left > -size && left < canvas.width) crowns.push({ name, left, top, size, tint });
       return textureCanvas(name, tint);
     };
@@ -1712,6 +1745,11 @@ function backdropView(canvas) {
     const spawners = moves.includes("spawners") && { at: [...placed("trial_spawner"), ...placed("mob_spawner")], flame: ART_FRAMES.flame }, vaults = moves.includes("vaults") && { at: placed("vault") };
     // Torches burn.
     const torches = moves.includes("torches") && { at: placed("torch"), flame: ART_FRAMES.flame };
+    // Clouds cross an open sky, behind the scene (clouds: how strong they are, if not fully; faint at night).
+    const open = scene.hills && !scene.water && !scene.sky && !scene.ceiling;
+    const clouds = open && { width: w, top: CLOUDS_TOP, tall: CLOUDS_TALL, strength: scene.night ? 0.18 : scene.clouds ?? 1, front: cloudFront(canvas, dpr) };
+    // Candles burn.
+    const candles = moves.includes("candles") && { at: placed("candle_flame"), flame: ART_FRAMES.candle_flame };
     // Specks drift off the end rods (a rod is drawn in parts, found once each).
     const rods = moves.includes("rods") && { at: placed("end_rod").filter(([x, y], i, all) => all.findIndex(o => o[0] === x && o[1] === y) === i) };
     // End crystals, [middle, bottom, a block's size] (in CSS pixels): they aren't in the still picture.
@@ -1726,7 +1764,7 @@ function backdropView(canvas) {
     const leaves = scene.leaves && leafMotion(crowns, scene.leaves, h - GROUND_STRIP - (scene.leavesLand || 0) * NEAR, dpr, [[haze, mist.near], ...(scene.night ? [[scene.night.shade, 1]] : [])]);
     // And stars twinkle at night.
     const stars = twinkling.length > 0 && twinkling.map(([x, y, side, bright]) => [x / dpr, y / dpr, side / dpr, Number(bright.toFixed(2))]);
-    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || torches || crystals || rods ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }) } : null, dpr);
+    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || torches || crystals || rods || candles || clouds ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }), ...(candles && { candles }), ...(clouds && { clouds }) } : null, dpr);
   };
   new ResizeObserver(draw).observe(canvas);
   return {

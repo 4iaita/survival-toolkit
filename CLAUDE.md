@@ -79,7 +79,7 @@ rows (`MOB_ROWS`), and on name tags in `src/tag-data*.js`.
 - `src/backdrop-motion.js`: what moves in a background, drawn on a canvas of its own (`.stage-motion`) over the still picture.
   See "What moves in a background".
 - `src/mob.css`: each stage's `--sky` and `--haze` colors, and the ground strip's brightness, by `data-biome`.
-- `src/trade.css`: the clouds (`.stage::before`), shared by every stage; the jungle has its own placement.
+- `src/trade.css`: the stage itself. Its CSS clouds are only the armor stands' stage's (`.prop-stage::before`); a backdrop's are `drawClouds`.
 - `src/villager.js`: the ground strip's texture for each biome (`groundArt`).
 - `art/`: the 16×16 textures the page embeds (a taller one is animation frames; the first frame is used). Add one by
   copying it from `../textures/blocks/` and registering it in `import_textures.py` (`FILES`) so a re-import keeps it.
@@ -126,8 +126,10 @@ Every background has an animation, added one by one and approved by the user (20
 - Snow (`drawSnow`, "not too much"): 6, 27. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
 - Calm sand (`drawSand`): 4, 21, 13. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
 - Lava (`drawLava`): 32, 30. Fire (`drawFire`): 32. Torches (`drawTorches`): 22, 28. Spawner flames (`drawSpawners`): 20, 30. Vault
-  sparks (`drawVaults`): 20. Lights that wax and wane (`drawLight`): 2, 22, 28, 30, 34.
-- Ores and the lantern (`drawSheets`): 2. Drips (`drawDrips`): 2, 22. Sculk (`drawSculk`): 31. Wheat (`drawSway`): 18.
+  sparks (`drawVaults`): 20. Lights that wax and wane (`drawLight`): 2, 22, 28, 30, 31, 34.
+- Clouds (`drawClouds`), slowly right and back, in every outdoor scene (19 of them), in the same places everywhere; the jungle's crowns hide
+  most of its own, and the user chose to leave it.
+- Ores and the lantern (`drawSheets`): 2; soul lanterns too: 31. Candle (`drawCandles`): 31. Drips (`drawDrips`): 2, 22. Sculk (`drawSculk`): 31. Wheat (`drawSway`): 18.
 - End crystals (`drawCrystals`): 33. End rods (`drawRods`): 34.
 
 Left still: the End's sky, the nether's magma and light.
@@ -145,6 +147,9 @@ Left still: the End's sky, the nether's magma and light.
   ones need no cutting out; at 0 seconds (reduced motion) all shine in full.
 - Plants that sway: their texture in `LEFT_OUT` and `SWAYS`, and in the scene's `moves`.
 - Something that moves behind what stands near (mist): `front` is the near props alone, as a picture, cut out of it.
+- Clouds go behind the scene: `cloudFront` is what the still picture covers of their strip, with small gaps filled in (or they'd speckle
+  through leaves). An outdoor scene has `hills` and no `water`, `sky` or `ceiling`; `clouds` makes them fainter (the pale garden).
+- Chrome saves power on a low battery: 30 frames a second even for a blank page. Time the drawing itself before blaming the page.
 - Leaves: a scene's `leaves` is how many at most (`leavesLand`: blocks over the floor they land, the swamp's water). `leafMotion` finds the
   crowns as they're painted and picks the pack's leaf particle by block and tint (`leafSheet`); the pack has no cherry petal (`CHERRY_PETAL`).
 - Blocks that simply play their texture's frames: an entry in `SHEETS` and its name in the scene's `moves` (`sheetMotion`, `drawSheets`); `"light"` in

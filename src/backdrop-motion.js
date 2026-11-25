@@ -424,6 +424,28 @@ function drawRods(ctx, { at }, seconds, scale) {
   });
   ctx.globalAlpha = 1;
 }
+// Candles' flames: the pack's candle flame on each candle (its middle at 8, 8 in its block), always there, stretching and leaning a little, in a
+// small warm glow. at: the blocks' left edges and tops.
+// How far across its picture the flame's own middle is.
+const CANDLE_MIDDLE = 4.5 / 8;
+function drawCandles(ctx, candles, seconds, scale) {
+  const pic = picturesOf(candles, ["flame"]);
+  if (!loaded(pic)) return false;
+  ctx.imageSmoothingEnabled = false;
+  candles.at.forEach(([x, y], i) => {
+    const t = seconds + i * 1.3, wave = 0.5 + 0.3 * Math.sin(t * 4.3) + 0.2 * Math.sin(t * 9.1 + 1), lean = 0.7 * Math.sin(t * 1.7) + 0.4 * Math.sin(t * 5.3);
+    const px = (x + 8) * scale, bottom = (y + 8) * scale, wide = Math.round(5.5 * scale), tall = Math.round((6 + 2 * wave) * scale), r = (15 + 2 * wave) * scale;
+    const glow = ctx.createRadialGradient(px, bottom - tall / 2, 0, px, bottom - tall / 2, r);
+    glow.addColorStop(0, `rgba(255, 214, 130, ${(0.26 + 0.1 * wave).toFixed(3)})`);
+    glow.addColorStop(1, "rgba(255, 214, 130, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(px - r, bottom - tall / 2 - r, 2 * r, 2 * r);
+    // In two halves, the upper leaning.
+    ctx.drawImage(pic.flame, 0, 4, 8, 4, Math.round(px - wide * CANDLE_MIDDLE), Math.round(bottom - tall / 2), wide, Math.round(tall / 2));
+    ctx.drawImage(pic.flame, 0, 0, 8, 4, Math.round(px - wide * CANDLE_MIDDLE + lean * scale * 0.6), Math.round(bottom - tall), wide, Math.round(tall / 2));
+  });
+  return true;
+}
 // Vaults' sparks: blue specks rising slowly round the block and over it, twinkling.
 function drawVaults(ctx, { at }, seconds, scale) {
   at.forEach(([x, y], s) => {
@@ -570,10 +592,35 @@ function drawLeaves(ctx, leaves, seconds, scale) {
   ctx.globalAlpha = 1;
   return true;
 }
+// Clouds, two of them, flat and blocky, drifting slowly to the right and back, each as far (by) and in its own time (there and back, in
+// seconds), gently turning at the ends; behind the scene
+// (front: how much of the strip they cross it covers). Boxes: [x, y, w, h] from the cloud's corner.
+const CLOUDS = [{ at: 0.08, x: -2, y: 24, boxes: [[0, 8, 44, 12], [20, 0, 44, 12]], alpha: 0.78, by: 90, time: 96 }, { at: 0.08, x: 234, y: 44, boxes: [[0, 8, 44, 12], [26, 0, 44, 12]], alpha: 0.62, by: 70, time: 84 }];
+function drawClouds(ctx, clouds, seconds, scale) {
+  const pic = picturesOf(clouds, ["front"]);
+  if (!loaded(pic)) return false;
+  const { width, height } = ctx.canvas, cv = motionLayers[2] || (motionLayers[2] = document.createElement("canvas")), lc = cv.getContext("2d");
+  if (cv.width !== width || cv.height !== height) Object.assign(cv, { width, height });
+  lc.clearRect(0, 0, width, height);
+  lc.imageSmoothingEnabled = false;
+  for (const { at, x, y, boxes, alpha, by, time } of CLOUDS) {
+    const left = at * (clouds.width + 4) + x + (by / 2) * (1 - Math.cos((2 * Math.PI * seconds) / time));
+    lc.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    for (const [bx, by, bw, bh] of boxes) lc.fillRect(Math.round((left + bx) * scale), Math.round((y + by) * scale), Math.round(bw * scale), Math.round(bh * scale));
+  }
+  lc.globalCompositeOperation = "destination-out";
+  lc.drawImage(pic.front, 0, Math.round(clouds.top * scale), width, Math.round(clouds.tall * scale));
+  lc.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = clouds.strength;
+  ctx.drawImage(cv, 0, 0);
+  ctx.globalAlpha = 1;
+  return true;
+}
 // A backdrop's motion at a moment; scale is the canvas's pixels for each CSS pixel. False if it's still to load.
 function drawMotion(ctx, motion, seconds, scale) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  let drawn = !motion.lava || drawLava(ctx, motion.lava, seconds, scale);
+  let drawn = !motion.clouds || drawClouds(ctx, motion.clouds, seconds, scale);
+  if (motion.lava) drawn = drawLava(ctx, motion.lava, seconds, scale) && drawn;
   if (motion.sculk) drawn = drawSculk(ctx, motion.sculk, seconds, scale) && drawn;
   if (motion.sheets) drawn = drawSheets(ctx, motion.sheets, seconds, scale) && drawn;
   if (motion.light) drawLight(ctx, motion.light, seconds, scale);
@@ -583,6 +630,7 @@ function drawMotion(ctx, motion, seconds, scale) {
   if (motion.spawners) drawn = drawSpawners(ctx, motion.spawners, seconds, scale) && drawn;
   if (motion.torches) drawn = drawTorches(ctx, motion.torches, seconds, scale) && drawn;
   if (motion.crystals) drawCrystals(ctx, motion.crystals, seconds, scale);
+  if (motion.candles) drawn = drawCandles(ctx, motion.candles, seconds, scale) && drawn;
   if (motion.rods) drawRods(ctx, motion.rods, seconds, scale);
   if (motion.vaults) drawVaults(ctx, motion.vaults, seconds, scale);
   if (motion.leaves) drawn = drawLeaves(ctx, motion.leaves, seconds, scale) && drawn;
