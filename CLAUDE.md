@@ -242,6 +242,9 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   puts it on (`gear.set`: a slot -> an item and its own material); a slot on the stage opens what's in it, or puts on what usually goes there. It starts with nothing on, and with
   nothing on (`nothingOn`) no item is picked: what's under the stage is hidden and the panel below only says so (the user's wish). `gear.mat` is the
   material picked last, for what's put on next. Each item keeps its own plan, by edition (`gear.plans`).
+- The panel under the stage is a block for each thing on, in two groups (Armor, and Weapons and tools for both hands), each the last put on first (`on` in `gear.set`, kept while only its material or costume
+  changes), each with its own sections (`gear.sections`, by slot), as the user asked; Your set (`gearSet`) is over them all. Picking a block's section picks its
+  item. There's one anvil plan, so only the picked item's block shows it.
 - Your set (`gearSet`) adds up what's worn from `gearStats`, so a new stat there goes into it by its label.
 - Every section of Equipment, Potions and Mobs keeps the same column, with the search beside it: the user didn't want the anvil plan wider than the
   others. So it's stacked: the books as cards (two columns where there's room), the options, then the plan. Make a new tool fit the column too.

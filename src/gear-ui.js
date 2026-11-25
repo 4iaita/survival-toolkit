@@ -3,10 +3,10 @@
  * (src/player.js); each one's anvil plan is one of its sections (src/anvil-ui.js). The picked item is the plan's (state.item), so
  * both are always about the same one.
  */
-// The material picked last (an item without it comes in diamond), which section shows (GEAR_SECTIONS), what's
-// put on (set: a slot -> an item, its material and its costume's trim), who wears it (a PLAYER_SKINS key) and the enchantments picked for the items
+// The material picked last (an item without it comes in diamond), which section each worn thing shows (sections: a slot ->
+// a GEAR_SECTIONS key), what's put on (set: a slot -> an item, its material, its costume's trim and when it went on), who wears it (a PLAYER_SKINS key) and the enchantments picked for the items
 // that aren't the plan's now (plans).
-const gear = { mat: "diamond", section: "about", query: "", who: "steve", set: null, plans: {} };
+const gear = { mat: "diamond", sections: {}, query: "", who: "steve", set: null, plans: {} };
 const GEAR_KEY = "equipment-v2";
 // The set used to start full, so one saved back then (equipment-v1) may be nobody's pick: it starts over, the rest is kept.
 const savedGear = key => { try { return JSON.parse(localStorage.getItem(key)); } catch (_) { return null; } };
@@ -14,6 +14,7 @@ Object.assign(gear, savedGear(GEAR_KEY) || { ...savedGear("equipment-v1"), set: 
 if (!MATERIALS[gear.mat]) gear.mat = "diamond";
 if (!PLAYER_SKINS[gear.who]) gear.who = "steve";
 if (!gear.plans || typeof gear.plans !== "object") gear.plans = {};
+if (!gear.sections || typeof gear.sections !== "object") gear.sections = {};
 const saveGear = () => { try { localStorage.setItem(GEAR_KEY, JSON.stringify(gear)); } catch (_) {} };
 
 // Where things go: each slot, its name, and what an empty one puts on when it's picked.
@@ -168,16 +169,22 @@ function renderGearPicker() {
 }
 
 /* The sections */
-const GEAR_SECTIONS = [["set", "Your set"], ["about", "Overview"], ["materials", "Materials"], ["enchants", "Enchantments"], ["anvil", "Anvil plan"], ["craft", "Crafting"], ["repair", "Repair"], ["find", "Where to find"]];
+const GEAR_SECTIONS = [["about", "Overview"], ["materials", "Materials"], ["enchants", "Enchantments"], ["anvil", "Anvil plan"], ["craft", "Crafting"], ["repair", "Repair"], ["find", "Where to find"]];
 const gearSections = item => GEAR_SECTIONS.filter(([s]) => s !== "materials" || GEAR_MATS[item.k]);
-const shownGearSection = item => (gearSections(item).some(([s]) => s === gear.section) ? gear.section : "about");
+// Each worn thing shows a section of its own; the anvil plan only for the item it's about (state.item), as there's one.
+const shownGearSection = (item, slot = slotOf(item)) => {
+  const s = gear.sections[slot];
+  return gearSections(item).some(([k]) => k === s) && (s !== "anvil" || item.k === state.item) ? s : "about";
+};
 const gearSectionIcon = (s, item) => ({ set: "ui:armor_stand", about: gearIcon(item), materials: "part:iron", enchants: "ui:enchant", anvil: "ui:anvil", craft: "ui:crafting", repair: "site:Grindstone", find: "src:chest" }[s]);
-const gearHead = (s, item, note = "") => sectionHead("gear-section-title", gearSectionIcon(s, item), GEAR_SECTIONS.find(([k]) => k === s)[1], note);
+// The worn thing whose sections are being drawn (renderGearResult), so that each one's names are its own.
+let drawingSlot = "main";
+const gearHead = (s, item, note = "") => sectionHead(`gear-${drawingSlot}-title`, gearSectionIcon(s, item), GEAR_SECTIONS.find(([k]) => k === s)[1], note);
 const gearRow = (slot, name, sub, end = "") => `<li class="item-row">${slot}<span class="item-name">${name}${sub ? `<span class="sub">${sub}</span>` : ""}</span>${end}</li>`;
 const partRow = (k, count = 0) => gearRow(plainSlot(`part:${k}`, "sm"), esc(GEAR_PARTS[k].n), esc(GEAR_PARTS[k].from), count ? `<span class="item-count">${count}</span>` : "");
 
-// Your set: what it comes to, then each slot, which opens what's in it.
-function gearSet(picked) {
+// Your set: what everything worn comes to, over each of them.
+function gearSet() {
   const worn = GEAR_SLOTS.map(([slot, label]) => ({ slot, label, w: gear.set[slot], item: gear.set[slot] && gearItem(gear.set[slot].k) }));
   const statOf = ({ item, w }, label) => (item ? gearStats(item, w.mat).find(([l]) => l === label) : null);
   const sum = label => worn.filter(x => x.slot !== "main").reduce((n, x) => n + Number((statOf(x, label) || [0, 0])[1]), 0);
@@ -189,17 +196,10 @@ function gearSet(picked) {
     ["Knockback", steady ? `−${steady}%` : "Full", steady ? "From your netherite armor" : "Netherite armor takes some off"],
     hit ? ["Attack damage", forEdition(hit[1]), gearName(main.item, main.w.mat)] : ["Attack damage", "1", main.item ? "As with a bare hand" : "With a bare hand"],
   ];
-  const row = ({ slot, label, w, item }) => `
-    <button type="button" class="search-hit" data-slot="${slot}"${item && item.k === state.item ? ' aria-current="true"' : ""}>
-      <span class="slot sm">${iconImg(item ? gearIcon(item, w.mat) : `slot:${slot}`)}</span>
-      <span><span class="who">${esc(item ? wornName(w) : "Nothing")}</span><span class="deal">${esc(item ? `${label} · ${gearStats(item, w.mat).map(([l, v]) => `${l} ${String(forEdition(v)).toLowerCase()}`).join(" · ")}` : label)}</span></span>
-    </button>`;
   const mats = [...new Set(worn.filter(x => x.item && isArmor(x.item)).map(x => x.w.mat))];
-  return `${gearHead("set", picked, plural(Object.keys(gear.set).length, "piece"))}
+  return `<section class="mob-section gear-set" aria-labelledby="gear-set-title">${sectionHead("gear-set-title", "ui:armor_stand", "Your set", plural(Object.keys(gear.set).length, "piece"))}
     <div class="mob-stats">${boxes.map(statBox).join("")}</div>
-    <div class="cat-label gear-label">What’s in it</div>
-    <div class="set-list">${worn.map(row).join("")}</div>
-    ${mats.length ? `<dl class="fact-list">${mats.map(m => potionFact(`${MATERIALS[m].n} armor`, MATERIALS[m].armor)).join("")}</dl>` : ""}`;
+    ${mats.length ? `<dl class="fact-list">${mats.map(m => potionFact(`${MATERIALS[m].n} armor`, MATERIALS[m].armor)).join("")}</dl>` : ""}</section>`;
 }
 
 // Overview: four boxes, then the facts.
@@ -342,21 +342,35 @@ function renderGearResult() {
     $("gear-result").innerHTML = `<div class="mob-section"><p class="mob-lead">Nothing equipped. Pick a piece of equipment, or a slot on the stage, to put it on.</p></div>`;
     return;
   }
-  const item = currentItem(), mat = gearMat(item), on = shownGearSection(item), name = gearName(item);
-  const body = { set: gearSet, about: gearAbout, materials: gearMaterials, enchants: gearEnchants, craft: gearCraft, repair: gearRepair, find: gearFind,
-    anvil: () => `${gearHead("anvil", item, `${state.edition === "java" ? "Java" : "Bedrock"} Edition`)}${anvilSection()}` }[on](item, mat);
-  $("gear-result").innerHTML = `
-    <div class="res-top">
-      <div class="res-title"><span class="slot">${iconImg(gearIcon(item))}</span>
-        <div><h2>${esc(name)}</h2><div class="res-sub">${slotName(slotOf(item))}${isWorn(item) ? "" : ", not worn"} · ${state.edition === "java" ? "Java" : "Bedrock"} Edition</div></div>
+  // What's on, the last put on first (then in the slots' order).
+  const worn = GEAR_SLOTS.map(([slot], i) => ({ slot, i, w: gear.set[slot] })).filter(x => x.w).sort((a, b) => (b.w.on || 0) - (a.w.on || 0) || a.i - b.i);
+  const edition = `${state.edition === "java" ? "Java" : "Bedrock"} Edition`;
+  const block = ({ slot, w }) => {
+    const item = gearItem(w.k), mat = w.mat, on = shownGearSection(item, slot), name = wornName(w);
+    drawingSlot = slot;
+    const body = { about: gearAbout, materials: gearMaterials, enchants: gearEnchants, craft: gearCraft, repair: gearRepair, find: gearFind,
+      anvil: () => `${gearHead("anvil", item, edition)}${anvilSection()}` }[on](item, mat);
+    return `
+    <article class="gear-block" data-block="${slot}" aria-labelledby="gear-${slot}-name"${item.k === state.item ? ' aria-current="true"' : ""}>
+      <div class="res-top">
+        <div class="res-title"><span class="slot">${iconImg(gearIcon(item, mat))}</span>
+          <div><h2 id="gear-${slot}-name">${esc(name)}</h2><div class="res-sub">${slotName(slot)} · ${edition}</div></div>
+        </div>
       </div>
-    </div>
-    <div class="mob-tabs" role="tablist" aria-label="${esc(name)}">
-      ${gearSections(item).map(([k, title]) => `<button type="button" class="mob-tab" role="tab" id="gear-tab-${k}" data-section="${k}"
-        aria-selected="${k === on}" aria-controls="gear-section" tabindex="${k === on ? 0 : -1}">${iconImg(gearSectionIcon(k, item))}${title}</button>`).join("")}
-    </div>
-    <section class="mob-section" id="gear-section" role="tabpanel" aria-labelledby="gear-tab-${on}">${body}</section>`;
-  if (on === "anvil") renderAnvil();
+      <div class="mob-tabs" role="tablist" aria-label="${esc(name)}">
+        ${gearSections(item).map(([k, title]) => `<button type="button" class="mob-tab" role="tab" id="gear-${slot}-tab-${k}" data-section="${k}"
+          aria-selected="${k === on}" aria-controls="gear-${slot}-section" tabindex="${k === on ? 0 : -1}">${iconImg(gearSectionIcon(k, item))}${title}</button>`).join("")}
+      </div>
+      <section class="mob-section" id="gear-${slot}-section" role="tabpanel" aria-labelledby="gear-${slot}-tab-${on}">${body}</section>
+    </article>`;
+  };
+  // In two groups, each the last put on first: what's worn, and what's in the hands.
+  const group = (label, slots) => {
+    const list = worn.filter(x => slots.includes(x.slot));
+    return list.length ? `<div class="gear-group" role="group" aria-label="${label}"><h3 class="gear-group-head">${label}</h3>${list.map(block).join("")}</div>` : "";
+  };
+  $("gear-result").innerHTML = gearSet() + group("Armor", ["head", "chest", "legs", "feet"]) + group("Weapons and tools", ["main", "off"]);
+  if (worn.some(({ slot, w }) => w.k === state.item && shownGearSection(gearItem(w.k), slot) === "anvil")) renderAnvil();
 }
 
 // Search: items by name (with a material or without), or by an enchantment that goes on them.
@@ -415,14 +429,14 @@ function pickGear(k, mat, trim) {
   const item = gearItem(k);
   if (!item) return;
   if (mat && MATERIALS[mat]) gear.mat = mat;
-  const now = gear.set[slotOf(item)], w = { k, mat: mat ? usualMat(k, mat) : gearMat(item) };
+  const now = gear.set[slotOf(item)], w = { k, mat: mat ? usualMat(k, mat) : gearMat(item), on: now && now.k === k ? now.on : Date.now() };
   const dress = trim === undefined ? now && now.k === k && now.trim : trim;
   if (dress && w.mat === "leather") w.trim = dress;
   gear.set[slotOf(item)] = w;
   openGear(k);
   renderGear();
 }
-// A slot on the stage, or its row in the set: what's in it, or for an empty one what usually goes there.
+// A slot on the stage: what's in it, or for an empty one what usually goes there.
 function pickSlot(slot) {
   if (!gear.set[slot]) return pickGear(GEAR_SLOTS.find(([s]) => s === slot)[2]);
   openGear(gear.set[slot].k);
@@ -448,7 +462,8 @@ $("gear-wear").addEventListener("click", e => {
   if (act === "off") delete gear.set[slot];
   if (act === "all") {
     const { mat, trim } = { mat: gearMat(item), trim: isWorn(item) && gear.set[slot].trim };
-    for (const k of ARMOR_PIECES) gear.set[SLOT_OF[k]] = { k, mat, ...(trim ? { trim } : {}) };
+    const at = Date.now(), was = k => gear.set[SLOT_OF[k]];
+    for (const k of ARMOR_PIECES) gear.set[SLOT_OF[k]] = { k, mat, ...(trim ? { trim } : {}), on: was(k) && was(k).k === k ? was(k).on : at };
   }
   if (act === "none") gear.set = {};
   renderGear();
@@ -472,10 +487,10 @@ $("gear-results").addEventListener("click", e => {
 $("gear-search").addEventListener("input", e => { gear.query = e.target.value; renderGearSearch(); saveGear(); });
 // The material buttons, under the stage and in the Materials table.
 for (const id of ["gear-mat", "gear-result"]) $(id).addEventListener("click", e => {
-  const b = e.target.closest("button[data-mat]");
+  const b = e.target.closest("button[data-mat]"), block = e.target.closest("[data-block]");
   if (!b) return;
-  pickGear(state.item, b.dataset.mat);
-  refocus(`#${id} button[data-mat="${b.dataset.mat}"]`);
+  pickGear(block ? gear.set[block.dataset.block].k : state.item, b.dataset.mat);
+  refocus(block ? `#gear-${block.dataset.block}-section button[data-mat="${b.dataset.mat}"]` : `#${id} button[data-mat="${b.dataset.mat}"]`);
 });
 $("gear-costume").addEventListener("click", e => {
   const b = e.target.closest("button[data-trim]");
@@ -483,29 +498,26 @@ $("gear-costume").addEventListener("click", e => {
   pickGear(state.item, "leather", b.dataset.trim);
   refocus(`#gear-costume button[data-trim="${b.dataset.trim}"]`);
 });
-const pickGearSection = k => {
-  gear.section = k;
-  renderGearResult();
-  saveGear();
-  refocus(`#gear-tab-${k}`);
+// A section of something worn: that's the item picked now.
+const pickGearSection = (slot, k) => {
+  gear.sections[slot] = k;
+  openGear(gear.set[slot].k);
+  renderGear();
+  refocus(`#gear-${slot}-tab-${k}`);
 };
 $("gear-result").addEventListener("click", e => {
-  const tab = e.target.closest("button[data-section]"), row = e.target.closest("button[data-slot]");
-  if (tab) pickGearSection(tab.dataset.section);
-  // A row of the set opens the piece itself.
-  if (row) {
-    gear.section = "about";
-    pickSlot(row.dataset.slot);
-    refocus("#gear-tab-about");
-  }
+  const tab = e.target.closest("button[data-section]");
+  if (tab) pickGearSection(tab.closest("[data-block]").dataset.block, tab.dataset.section);
 });
 $("gear-result").addEventListener("keydown", e => {
-  if (!e.target.closest("[role=tab]")) return;
-  const list = gearSections(currentItem()), i = list.findIndex(([k]) => k === shownGearSection(currentItem())), n = list.length;
+  const tab = e.target.closest("[role=tab]");
+  if (!tab) return;
+  const slot = tab.closest("[data-block]").dataset.block, item = gearItem(gear.set[slot].k);
+  const list = gearSections(item), i = list.findIndex(([k]) => k === shownGearSection(item, slot)), n = list.length;
   const to = { ArrowRight: i + 1, ArrowLeft: i - 1 + n, Home: 0, End: n - 1 }[e.key];
   if (to === undefined) return;
   e.preventDefault();
-  pickGearSection(list[to % n][0]);
+  pickGearSection(slot, list[to % n][0]);
 });
 $("gear-result").addEventListener("toggle", e => { if (e.target.matches(".tag-rules")) anvilRulesOpen = e.target.open; }, true);
 $("edition").addEventListener("click", e => { if (e.target.closest("button[data-ed]")) renderGear(); });
@@ -520,10 +532,9 @@ function openAnvil() {
   if (location.hash !== "#anvil") return;
   history.replaceState(null, "", "#equipment");
   showView();
-  gear.section = "anvil";
-  if (nothingOn()) return pickGear(state.item);
-  renderGearResult();
-  saveGear();
+  gear.sections[slotOf(currentItem())] = "anvil";
+  if (!isWorn(currentItem())) return pickGear(state.item);
+  renderGear();
 }
 window.addEventListener("hashchange", openAnvil);
 openAnvil();
