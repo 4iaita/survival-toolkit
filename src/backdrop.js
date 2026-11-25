@@ -1454,8 +1454,7 @@ function drawNight(ctx, { shade, moon = 0.75, stars = true }, width, horizon, si
 const NIGHTS = {
   default: { night: { shade: "rgba(12, 20, 48, .45)", moon: 0.78 } },
   swamp: { night: { shade: "rgba(10, 22, 30, .5)", moon: 0.7 } },
-  // Clear: snow falling would be lost among the stars.
-  snowy: { night: { shade: "rgba(14, 24, 60, .38)", moon: 0.74 }, moves: [] },
+  snowy: { night: { shade: "rgba(14, 24, 60, .38)", moon: 0.74 } },
   ocean: { night: { shade: "rgba(4, 12, 36, .52)", stars: false }, water: { sun: true, shafts: 0.4, surface: "#3f6290" } },
 };
 
@@ -1722,7 +1721,7 @@ function backdropView(canvas) {
     // Grains of sand hang in the desert's and the badlands' air.
     const sand = moves.includes("sand") && { width: w, floor: h - GROUND_STRIP, color: scene.night ? "night" : scene.sandColor || "day" };
     // And a little snow falls.
-    const snow = moves.includes("snow") && { width: w, floor: h - GROUND_STRIP };
+    const snow = moves.includes("snow") && { width: w, floor: h - GROUND_STRIP, ...(scene.night && { night: true }) };
     // And leaves fall (leaves: how many, leavesLand: how many blocks over the floor the ground is).
     const leaves = scene.leaves && leafMotion(crowns, scene.leaves, h - GROUND_STRIP - (scene.leavesLand || 0) * NEAR, dpr, [[haze, mist.near], ...(scene.night ? [[scene.night.shade, 1]] : [])]);
     // And stars twinkle at night.

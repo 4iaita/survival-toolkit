@@ -493,15 +493,15 @@ function drawLava(ctx, lava, seconds, scale) {
   return true;
 }
 // A light snowfall: the pack's three flakes (its weather texture), two CSS pixels a texel, the bigger ones near and the specks
-// further off, slower and fainter; drifting a little as they fall and gone at the ground (floor).
+// further off, slower and fainter; drifting a little as they fall and gone at the ground (floor). Bluish at night.
 const FLAKES = [[[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], [[1, 0], [0, 1], [1, 1], [2, 1], [1, 2]], [[1, 1]]];
-function drawSnow(ctx, { width, floor }, seconds, scale) {
+function drawSnow(ctx, { width, floor, night }, seconds, scale) {
   for (let i = 0; i < Math.round(width / 16); i++) {
     const near = i % 2 === 0, speed = (near ? 20 : 13) + 5 * motionNoise(i, 31), rise = floor + 6, time = rise / speed;
     const clock = seconds + time * motionNoise(i, 32), trip = Math.floor(clock / time), age = clock - trip * time;
     const roll = n => motionNoise(i, trip, n);
     const y = speed * age - 4, x = roll(33) * (width + 40) - 4 * age + Math.sin(age * (0.7 + 0.6 * roll(34)) + roll(35) * 6.3) * (near ? 6 : 4);
-    ctx.fillStyle = `rgba(255, 255, 255, ${((near ? 0.95 : 0.75) * Math.min(1, Math.max(0, (floor - y) / 10))).toFixed(3)})`;
+    ctx.fillStyle = `rgba(${night ? "196, 208, 236" : "255, 255, 255"}, ${((near ? 0.95 : 0.75) * Math.min(1, Math.max(0, (floor - y) / 10))).toFixed(3)})`;
     const flake = FLAKES[near ? (roll(36) < 0.5 ? 0 : 1) : 2], left = Math.round(x * scale), top = Math.round(y * scale), px = Math.round((near ? 2 : 1.5) * scale);
     for (const [a, b] of flake) ctx.fillRect(left + a * px, top + b * px, px, px);
   }

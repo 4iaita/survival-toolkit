@@ -123,14 +123,14 @@ Every background has an animation, added one by one and approved by the user (20
 - Air bubbles (`drawBubbles`): 14, 15, 16, 17, 26. Gas off the sulfur pools (`drawGas`, `sulfurPool`'s `gas`): 24.
 - Twinkling stars (`drawStars`): 19, 21, 23, 27, 29. Falling leaves (`drawLeaves`): 7, 8, 23, 25, and a few in 1, 3, 5, 10, 19, 29; not
   from spruces or far trees.
-- Snow (`drawSnow`, "not too much"): 6. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
+- Snow (`drawSnow`, "not too much"): 6, 27. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
 - Calm sand (`drawSand`): 4, 21, 13. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
 - Lava (`drawLava`): 32, 30. Fire (`drawFire`): 32. Torches (`drawTorches`): 22, 28. Spawner flames (`drawSpawners`): 20, 30. Vault
   sparks (`drawVaults`): 20. Lights that wax and wane (`drawLight`): 2, 22, 28, 30, 34.
 - Ores and the lantern (`drawSheets`): 2. Drips (`drawDrips`): 2, 22. Sculk (`drawSculk`): 31. Wheat (`drawSway`): 18.
 - End crystals (`drawCrystals`): 33. End rods (`drawRods`): 34.
 
-Left still: snow in 27 (flakes would be lost among its stars; `NIGHTS.snowy` turns `moves` off), the End's sky, the nether's magma and light.
+Left still: the End's sky, the nether's magma and light.
 
 - `backdropView`'s `draw` ends by describing what moves (`setMotion`: plain data, in CSS pixels); `drawMotion` draws it from
   that and the seconds gone by, nothing else. A new kind of motion: a key in that description, and a line in `drawMotion`.
