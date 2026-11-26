@@ -29,3 +29,8 @@
 button.st-mob { flex: 1; width: 100%; text-align: left; cursor: pointer; border: 2px solid transparent; font: inherit; color: inherit; }
 button.st-mob:hover { border-color: var(--white); }
 .item-list.st-one { grid-template-columns: minmax(0, 1fr); }
+/* A dimension's mobs: a label for each group of biomes, the biomes under it. */
+.st-group { margin-top: 14px !important; }
+.st-section-title + .st-group, #st-section > .st-group:first-of-type { margin-top: 0 !important; }
+.st-biomes { margin: -2px 0 6px; font-size: 12.5px; font-weight: 600; line-height: 1.4; color: var(--ink-soft); }
+.st-group-note { margin: 0 0 4px; }

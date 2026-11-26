@@ -90,7 +90,8 @@ const DIM_SECTIONS = [["structures", "Structures"], ["mobs", "Mobs"]];
 const stSections = () => (st.k ? ST_SECTIONS : DIM_SECTIONS);
 const stSectionIcon = k => ({ loot: "ui:logo", mobs: "ui:mob", where: "st:compass", structures: "st:map" }[k]);
 const stHead = (k, note = "") => sectionHead("st-section-title", stSectionIcon(k), stSections().find(([s]) => s === k)[1], note);
-const stFact = (label, text) => (text ? `<div class="fact-row"><dt>${label}</dt><dd>${esc(byEdition(text, stEdition()))}</dd></div>` : "");
+// A fact only one edition has is both(text, "") or both("", text): no row in the other.
+const stFact = (label, text) => { const t = byEdition(text, stEdition()); return t ? `<div class="fact-row"><dt>${label}</dt><dd>${esc(t)}</dd></div>` : ""; };
 
 function lootSection(s) {
   const boxes = s.loot || [];
@@ -135,8 +136,120 @@ function structuresSection() {
   return `${stHead("structures", plural(list.length, "structure"))}
     ${list.length ? `<ul class="item-list wide st-mobs">${list.map(s => `<li><button type="button" class="item-row st-mob" data-pick="${s.k}">${plainSlot(s.icon, "sm")}<span class="item-name">${esc(s.n)}<span class="sub">${esc(s.say)}</span></span></button></li>`).join("")}</ul>` : '<p class="mob-lead">Coming soon.</p>'}`;
 }
+
+/* ---------- A dimension's own mobs ---------- */
+// What spawns in the open, by group of biomes (DIM_GROUPS), from src/dimension-spawns.js and the lines in DIM_HOW.
+const DIM_MOB_KEYS = { tropical_fish: "tropicalfish" };
+const DIM_EVERYWHERE_LABEL = { overworld: "Almost everywhere", nether: "In every biome" };
+const DIM_KIND_ORDER = { creature: 0, animal: 0, water_creature: 1, water: 1, water_ambient: 1, water_animal: 1, axolotls: 1, underground_water_creature: 1, ambient: 2, monster: 3 };
+// A biome's spawns in the edition picked: mob -> { kind, w, share, lo, hi, h }. Bedrock's zombies are split by their permute_type
+// (1 in 20 a zombie villager), and the first of a group of drowned that spawns riding brings a zombie nautilus.
+const biomeCache = {};
+function biomeSpawns(ed, b) {
+  const key = `${ed}/${b}`;
+  if (biomeCache[key]) return biomeCache[key];
+  const rows = [];
+  for (const [kind, mob, w, lo, hi, o = {}] of DIM_SPAWNS[ed][b] || []) {
+    let left = w;
+    for (const [m, pw] of o.p || []) { rows.push({ kind, mob: m, w: (w * pw) / 100, lo: 1, hi: 1 }); left -= (w * pw) / 100; }
+    const most = DIM_MOST_AT_ONCE[ed][mob] || hi;
+    rows.push({ kind, mob, w: left, lo: Math.min(lo, most), hi: Math.min(hi, most), h: o.h });
+    if (o.ride === "as_rider") rows.push({ kind, mob: "zombie_nautilus", w, lo: 1, hi: 1, h: o.h, rides: true });
+  }
+  const total = {};
+  for (const r of rows) if (!r.rides) total[r.kind] = (total[r.kind] || 0) + r.w;
+  const out = new Map();
+  for (const r of rows) {
+    const k = DIM_MOB_KEYS[r.mob] || r.mob, had = out.get(k), share = r.w / total[r.kind];
+    out.set(k, had ? { ...had, w: had.w + r.w, share: had.share + share, lo: Math.min(had.lo, r.lo), hi: Math.max(had.hi, r.hi),
+      h: had.h && r.h ? [Math.min(had.h[0], r.h[0]), Math.max(had.h[1], r.h[1])] : had.h || r.h } : { ...r, mob: k, share });
+  }
+  return (biomeCache[key] = out);
+}
+const dimBiomes = dim => DIM_GROUPS[dim].flatMap(([, bs]) => bs);
+const sharePct = p => { const v = p * 100; return v >= 10 ? `${Math.round(v)}` : v >= 1 ? `${+v.toFixed(1)}` : `${+v.toPrecision(1)}`; };
+const shareSpan = shares => { const a = sharePct(Math.min(...shares)), b = sharePct(Math.max(...shares)); return a === b ? `${a}%` : `${a}–${b}%`; };
+const groupSize = (lo, hi) => (hi === 1 ? "Alone" : lo === hi ? `Groups of ${lo}` : `${lo}–${hi} together`);
+const andList = (xs, and = "and") => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} ${and} ${xs[xs.length - 1]}`);
+const biomeName = b => DIM_BIOME_NAMES[b].toLowerCase();
+// Biomes by name, a whole group by its label, in lower case for a sentence.
+function placeNames(dim, biomes, and = "and") {
+  const set = new Set(biomes), out = [];
+  for (const [label, bs] of DIM_GROUPS[dim]) {
+    if (bs.length > 1 && bs.every(b => set.has(b))) out.push(label.toLowerCase());
+    else for (const b of bs) if (set.has(b)) out.push(biomeName(b));
+  }
+  return andList(out, and);
+}
+// One mob across some biomes: where it is, its shares there, its group sizes and Bedrock's heights.
+function spread(ed, biomes, mob) {
+  const at = biomes.map(b => [b, biomeSpawns(ed, b).get(mob)]).filter(([, r]) => r);
+  if (!at.length) return null;
+  const hs = at.map(([, r]) => r.h).filter(Boolean);
+  return { in: at.map(([b]) => b), shares: at.map(([, r]) => r.share), sizes: at.map(([, r]) => [r.lo, r.hi]), lo: Math.min(...at.map(([, r]) => r.lo)), hi: Math.max(...at.map(([, r]) => r.hi)),
+    h: hs.length ? [Math.min(...hs.map(h => h[0])), Math.max(...hs.map(h => h[1]))] : null, kind: at[0][1].kind };
+}
+const mostOf = xs => { const n = new Map(); xs.forEach(x => n.set(x, (n.get(x) || 0) + 1)); return [...n].sort((a, b) => b[1] - a[1])[0][0]; };
+// Where in a group a mob is, when not in all of it: the shorter of "Only in" and "Not in".
+function whereIn(dim, biomes, here) {
+  if (here.length === biomes.length) return "";
+  const not = biomes.filter(b => !here.includes(b));
+  return not.length < here.length ? `Not in ${placeNames(dim, not, "or")}` : `Only in ${placeNames(dim, here)}`;
+}
+const dimHow = (dim, mob) => byEdition((DIM_HOW[dim] || {})[mob], stEdition()) || "";
+const sayY = h => (h ? `At Y ${h[0]} to ${h[1]}.` : "");
+const sentence = parts => parts.filter(Boolean).map(x => (/[.!?]$/.test(x) ? x : `${x}.`)).join(" ");
+
+// The section's groups, each { label, biomes, rows: [{ mob, how, chance }], note }, for the edition picked.
+const layoutCache = {};
+function dimLayout(dim) {
+  const ed = stEdition(), key = `${dim}/${ed}`;
+  if (layoutCache[key]) return layoutCache[key];
+  const all = dimBiomes(dim), every = DIM_EVERYWHERE[dim] || [], groups = [];
+  const extras = (DIM_EXTRA[dim] || []).filter(x => !x.ed || x.ed === ed);
+  const everyRows = every.map(mob => {
+    const s = spread(ed, all, mob);
+    if (!s) return null;
+    // The share most of its biomes give it, and where it's far from that.
+    const usual = +mostOf(s.shares.map(p => p.toFixed(4))), size = mostOf(s.sizes.map(x => x.join("-"))).split("-").map(Number);
+    const fewer = s.in.filter((b, i) => s.shares[i] < usual * 0.6), more = s.in.filter((b, i) => s.shares[i] > usual * 1.6);
+    const missing = all.filter(b => !s.in.includes(b));
+    return { mob, chance: `${sharePct(usual)}%`, how: sentence([dimHow(dim, mob), ed === "bedrock" && sayY(s.h), groupSize(...size),
+      missing.length && `Not in ${placeNames(dim, missing, "or")}`, fewer.length && `Fewer in ${placeNames(dim, fewer)}`, more.length && `More in ${placeNames(dim, more)}`]) };
+  }).filter(Boolean);
+  if (everyRows.length) groups.push({ label: DIM_EVERYWHERE_LABEL[dim], rows: everyRows });
+  for (const [label, biomes] of DIM_GROUPS[dim]) {
+    const mobs = new Set(biomes.flatMap(b => [...biomeSpawns(ed, b).keys()]).filter(m => !every.includes(m)));
+    const rows = [...mobs].map(mob => ({ mob, s: spread(ed, biomes, mob) })).sort((a, b) =>
+      DIM_KIND_ORDER[a.s.kind] - DIM_KIND_ORDER[b.s.kind] || Math.max(...b.s.shares) - Math.max(...a.s.shares)).map(({ mob, s }) => ({
+      mob, chance: shareSpan(s.shares), how: sentence([dimHow(dim, mob), ed === "bedrock" && sayY(s.h), groupSize(s.lo, s.hi),
+        whereIn(dim, biomes, s.in)]) }));
+    for (const x of extras.filter(x => x.biomes && x.biomes.some(b => biomes.includes(b)))) {
+      const inHere = x.biomes.filter(b => biomes.includes(b));
+      rows.push({ mob: x.mob, chance: x.chance, how: sentence([byEdition(x.how, ed), whereIn(dim, biomes, inHere)]) });
+    }
+    const monsters = biomes.some(b => [...biomeSpawns(ed, b).values()].some(r => r.kind === "monster"));
+    const none = biomes.every(b => !biomeSpawns(ed, b).size);
+    groups.push({ label, biomes, rows, note: none ? "Nothing spawns here on its own." : !monsters && dim === "overworld" ? "No monsters spawn here." : "" });
+  }
+  const own = [...new Set(extras.filter(x => x.group).map(x => x.group))];
+  for (const label of own) groups.push({ label, rows: extras.filter(x => x.group === label).map(x => ({ mob: x.mob, chance: x.chance, how: byEdition(x.how, ed) })) });
+  for (const g of groups) g.rows = g.rows.filter(r => mobKey(r.mob));
+  return (layoutCache[key] = groups);
+}
+
 function dimMobsSection() {
-  return `${stHead("mobs")}<p class="mob-lead">Coming soon.</p>`;
+  const groups = dimLayout(st.dim), n = new Set(groups.flatMap(g => g.rows.map(r => r.mob))).size;
+  const biomeLine = g => {
+    if (!g.biomes || (g.biomes.length === 1 && biomeName(g.biomes[0]) === g.label.toLowerCase())) return "";
+    const t = andList(g.biomes.map(biomeName));
+    return `<p class="st-biomes">${esc(t[0].toUpperCase() + t.slice(1))}</p>`;
+  };
+  return `${stHead("mobs", plural(n, "mob"))}
+    ${groups.map(g => `<div class="cat-label potion-label st-group">${esc(g.label)}</div>${biomeLine(g)}
+      ${g.rows.length ? `<ul class="item-list wide st-mobs st-one">${g.rows.map(mobRow).join("")}</ul>` : ""}
+      ${g.note ? `<p class="st-note st-group-note">${esc(g.note)}</p>` : !g.rows.length ? '<p class="st-note st-group-note">Nothing else of its own.</p>' : ""}`).join("")}
+    <dl class="fact-list">${(DIM_FACTS[st.dim] || []).map(([l, t]) => stFact(l, t)).join("")}</dl>`;
 }
 
 function renderStResult() {
@@ -205,17 +318,28 @@ function stSearchHits(q) {
       }
     }
   }
+  // Each dimension's own mobs: where they spawn in the open.
+  for (const d of STRUCTURE_DIMS) {
+    const where = new Map();
+    for (const g of dimLayout(d.k)) for (const r of g.rows) if (!where.has(r.mob) || !where.get(r.mob).includes(g.label)) where.set(r.mob, [...(where.get(r.mob) || []), g.label]);
+    for (const [mob, labels] of where) if (mobName(mobOf(mob)).toLowerCase().includes(q)) hits.push({ dimMob: mob, dim: d, labels, p: 0.9 });
+  }
   return hits.sort((a, b) => b.p - a.p);
 }
 function renderStSearch() {
   const q = st.query.trim().toLowerCase(), box = $("st-results");
   if (!q) {
-    box.innerHTML = `<p class="choice-hint">Type an item (“saddle”, “trident”, “enchanted golden apple”) or a mob (“breeze”), and see every structure that has it, best chance first.</p>`;
+    box.innerHTML = `<p class="choice-hint">Type an item (“saddle”, “trident”, “enchanted golden apple”) or a mob (“breeze”, “strider”), and see every structure and dimension that has it.</p>`;
     return;
   }
   const hits = stSearchHits(q).slice(0, 60);
   box.innerHTML = hits.length
-    ? hits.map(h => h.item
+    ? hits.map(h => h.dimMob
+      ? `<button type="button" class="search-hit" data-dim="${h.dim.k}" data-section="mobs">
+          ${plainSlot(mobIcon(mobOf(h.dimMob)), "sm")}
+          <span><span class="who">${esc(mobName(mobOf(h.dimMob)))}</span><span class="deal">${esc(h.dim.n)}: ${esc(h.labels.slice(0, 3).join(", "))}${h.labels.length > 3 ? "…" : ""}</span></span>
+        </button>`
+      : h.item
       ? `<button type="button" class="search-hit" data-pick="${h.s.k}" data-kind="${h.kind ? h.kind.k : ""}" data-box="${h.box.k}">
           ${lootSlot(h.item[1] === "*" ? h.item[0] : h.item[0], h.item[1] === "*" ? "" : h.item[1])}
           <span><span class="who">${esc(h.item[1] === "*" ? STRUCTURE_NAMES.items[h.item[0]] : lootName(h.item[0], h.item[1]))}</span><span class="deal">${esc([h.s.n, h.kind && h.kind.n, h.box.n].filter(Boolean).join(" · "))}: ${pct(h.p)}${h.item[5] ? `, only in ${esc(titled(h.item[5].replace(/_/g, " ")))}` : ""}</span></span>
@@ -224,7 +348,7 @@ function renderStSearch() {
           ${plainSlot(mobIcon(mobOf(h.mob.mob)), "sm")}
           <span><span class="who">${esc(stMobName(h.mob))}</span><span class="deal">${esc([h.s.n, h.kind && h.kind.n].filter(Boolean).join(" · "))}${h.mob.chance ? `: ${esc(h.mob.chance)}` : ""}</span></span>
         </button>`).join("")
-    : `<p class="choice-hint">No structure has anything like “${esc(st.query.trim())}”.</p>`;
+    : `<p class="choice-hint">Nothing has anything like “${esc(st.query.trim())}”.</p>`;
 }
 
 function renderStructures() {
@@ -272,6 +396,14 @@ $("st-kinds").addEventListener("click", e => {
   refocus(`#st-kinds button[data-kind="${st.kind}"]`);
 });
 $("st-results").addEventListener("click", e => {
+  const d = e.target.closest("button[data-dim]");
+  if (d) {
+    st.dim = d.dataset.dim;
+    st.k = st.kind = st.box = "";
+    st.section = "mobs";
+    renderStructures();
+    return refocus(`#st-tab-mobs`);
+  }
   const b = e.target.closest("button[data-pick]");
   if (b) pickStructure(b.dataset.pick, { kind: b.dataset.kind, box: b.dataset.box, section: b.dataset.section });
 });
