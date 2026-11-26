@@ -6,9 +6,13 @@
 .bn-pic { display: block; width: 30px; height: 60px; image-rendering: pixelated; }
 .bn-pic.sm { width: 20px; height: 40px; }
 .bn-pic.xs { width: 10px; height: 20px; }
+/* A shield's front is 12×22 texels: 2.5, 2 and 1 times. */
+.sh-pic { display: block; width: 30px; height: 55px; image-rendering: pixelated; }
+.sh-pic.sm { width: 24px; height: 44px; }
+.sh-pic.xs { width: 12px; height: 22px; }
 .bn-slot.slot { width: 32px; height: 52px; }
 .mc-tooltip .bn-slot.slot { flex: none; }
-.search-hit .slot.sm:has(.bn-pic) { height: 48px; }
+.search-hit .slot.sm:has(.bn-pic, .sh-pic) { height: 48px; }
 
 /* The patterns to add, each over the banner's color in the dye picked. */
 .bn-tiles { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -28,7 +32,7 @@
 .bn-layer-acts { display: flex; gap: 4px; flex: none; }
 .bn-btn { min-width: 30px; padding: 4px 6px; font-size: 13px; }
 .bn-acts { margin-top: 8px; }
-.bn-acts .bn-pic { display: inline-block; margin-right: 6px; vertical-align: -5px; }
+.bn-acts .bn-pic, #banner-view .bn-pic, #banner-view .sh-pic { display: inline-block; margin-right: 6px; vertical-align: -5px; }
 
 /* The sections */
 .mc-tooltip li.bn-tip-layer { color: #aaaaaa; font-weight: 600; }

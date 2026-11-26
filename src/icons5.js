@@ -112,13 +112,14 @@ function shieldBoxes(lit) {
     } };
   });
 }
-// The icon, turned about as the game's inventory turns it.
-const SHIELD_ICON = 64;
-function shieldIcon() {
-  const px = renderScene(shieldBoxes(170 * EMITS), { yaw: 0.44, pitch: 0.26, scale: SHIELD_ICON / 24, center: [0, GROUND - 11, 1], origin: [SHIELD_ICON / 2, SHIELD_ICON / 2], width: SHIELD_ICON, height: SHIELD_ICON });
+// The icon, turned about as the game's inventory turns it; boxes: the shield's (with a banner on it: src/banner-art.js).
+// lit: as item-stage.js lights its items (EMITS is defined after this file, so it's worked out when it's drawn).
+const SHIELD_ICON = 64, shieldIconLit = () => 170 * EMITS;
+function shieldIcon(boxes = shieldBoxes(shieldIconLit())) {
+  const px = renderScene(boxes, { yaw: 0.44, pitch: 0.26, scale: SHIELD_ICON / 24, center: [0, GROUND - 11, 1], origin: [SHIELD_ICON / 2, SHIELD_ICON / 2], width: SHIELD_ICON, height: SHIELD_ICON });
   return Array.from({ length: SHIELD_ICON * SHIELD_ICON }, (_, i) => (px[i * 4 + 3] ? [px[i * 4], px[i * 4 + 1], px[i * 4 + 2]] : null));
 }
-if (hasArt("shield_0_0", "shield_1_0", "shield_2_0", "shield_0_1", "shield_1_1")) ICONS.shield = { gen: shieldIcon };
+if (hasArt("shield_0_0", "shield_1_0", "shield_2_0", "shield_0_1", "shield_1_1")) ICONS.shield = { gen: () => shieldIcon() };
 
 // Job site blocks, by the block names in VILLAGERS. Hollow blocks fill their top with the inside texture;
 // the lectern, grindstone and stonecutter are box models whose faces line up with the pack's model textures.

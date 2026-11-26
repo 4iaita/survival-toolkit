@@ -6,7 +6,7 @@
 // The material picked last (an item without it comes in diamond), which section each worn thing shows (sections: a slot ->
 // a GEAR_SECTIONS key), what's put on (set: a slot -> an item, its material, its trim (a TRIMS key; on leather in Bedrock one of the
 // COSTUMES is that costume) and the trim's material, its dye (leather's), whether it's enchanted (glint) and when it went on), who wears
-// it (a PLAYER_SKINS key), the trim material picked last (trimMat) and the enchantments picked for the items that aren't the plan's now (plans).
+// it (a PLAYER_SKINS key), and for a shield whether it has the Banners tab's banner on (banner: it follows that tab, as the user chose), the trim material picked last (trimMat) and the enchantments picked for the items that aren't the plan's now (plans).
 const gear = { mat: "diamond", sections: {}, query: "", who: "steve", set: null, plans: {}, trimMat: "gold" };
 const GEAR_KEY = "equipment-v2";
 // The set used to start full, so one saved back then (equipment-v1) may be nobody's pick: it starts over, the rest is kept.
@@ -48,6 +48,7 @@ for (const [slot, w] of Object.entries(gear.set)) {
   if (!w.trim) delete w.trimMat;
   if (w.dye && !(DYES[w.dye] && canDye(gearItem(w.k), w.mat))) delete w.dye;
   if (w.glint !== true) delete w.glint;
+  if (w.banner !== true || w.k !== "shield") delete w.banner;
 }
 
 // Icons: an item in each material, what it's made of, the empty slots' pictures, and the mobs it comes from (the other sources are potion-ui.js's).
@@ -65,13 +66,14 @@ const gearIcon = (item, mat = gearMat(item)) => (mat ? `g:${mat}_${item.k}` : it
 // The costume a worn thing is in (a COSTUMES key): leather armor with its trim, the pack's, so only in Bedrock (in Java it's that trim).
 const costumeOf = w => (w && w.trim && w.mat === "leather" && COSTUMES[w.trim] && packOn() ? w.trim : null);
 // A worn thing's name, with its costume.
-const wornName = w => `${gearName(gearItem(w.k), w.mat)}${costumeOf(w) ? ` (${COSTUMES[w.trim].n})` : ""}`;
+const wornName = w => (w.banner ? shieldName() : `${gearName(gearItem(w.k), w.mat)}${costumeOf(w) ? ` (${COSTUMES[w.trim].n})` : ""}`);
 // The palette its trim is drawn in (a TRIM_COLORS one): darker on armor of the trim's own material.
 const trimPalette = w => `${w.trimMat}${TRIM_MATERIALS[w.trimMat].own === w.mat ? "_darker" : ""}`;
 // What's on a worn thing, in words: its trim, dye and enchantment (a costume shows neither trim nor dye).
 const wornWords = w => [
   w.trim && !costumeOf(w) ? `${TRIMS[w.trim].n} trim in ${TRIM_MATERIALS[w.trimMat].n.toLowerCase()}` : "",
   w.dye && !costumeOf(w) ? `dyed ${w.dye}` : "",
+  w.banner ? `with the ${bannerName()} on it` : "",
   w.glint ? "enchanted" : "",
 ].filter(Boolean);
 const canDress = item => packOn() && !nothingOn() && isArmor(item) && gearMat(item) === "leather";
@@ -103,9 +105,14 @@ const shownSkin = () => (!PLAYER_SKINS[gear.who].pack || packOn() ? gear.who : "
 // A worn thing's GEAR_WORN key.
 const wornKey = w => (w ? `${w.mat ? `${w.mat}_` : ""}${w.k}${costumeOf(w) ? `_${w.trim}` : ""}` : null);
 // And as playerLook takes it (src/player.js): that key, with what's on it.
-const wornLook = w => (w ? [wornKey(w), w.trim && !costumeOf(w) ? `trim=${w.trim}.${trimPalette(w)}` : "", w.dye && !costumeOf(w) ? `dye=${w.dye}` : "", w.glint ? "glint" : ""].filter(Boolean).join("+") : null);
+const wornLook = w => (w ? [wornKey(w), w.trim && !costumeOf(w) ? `trim=${w.trim}.${trimPalette(w)}` : "", w.dye && !costumeOf(w) ? `dye=${w.dye}` : "", w.banner ? `banner=${shieldDesign()}` : "", w.glint ? "glint" : ""].filter(Boolean).join("+") : null);
+// A shield takes the Banners tab's banner as it is now (src/banner-art.js), in the edition picked.
+const canBanner = item => item.k === "shield";
+const shieldDesign = () => designKey(bnr, bnEdition());
+// A worn thing's picture: a shield with the banner on it as the game shows it.
+const wornIcon = w => (w.banner ? shieldIconOf(shieldDesign()) : gearIcon(gearItem(w.k), w.mat));
 // What of a worn thing goes on with it, as a full set's pieces take it: its trim, dye and enchantment.
-const setLook = w => Object.fromEntries(["trim", "trimMat", "dye", "glint"].filter(k => w[k]).map(k => [k, w[k]]));
+const setLook = w => Object.fromEntries(["trim", "trimMat", "dye", "banner", "glint"].filter(k => w[k]).map(k => [k, w[k]]));
 // A thing's picture, shimmering if it's enchanted (.glint in src/style.css): the picture in a span of its own that the shimmer fits
 // (.icon-glint in src/gear.css), whatever size it's drawn at, as a slot button's own ::after is its name.
 const shimmer = (w, pic) => (w && w.glint ? `<span class="glint icon-glint" style="--m:url('${icon(pic)}')">${iconImg(pic)}</span>` : iconImg(pic));
@@ -127,7 +134,7 @@ async function showGear() {
 function renderSlots() {
   const button = ([slot, label, usual]) => {
     const w = gear.set[slot], item = w && gearItem(w.k), name = item ? wornName(w) : label;
-    const pic = item ? gearIcon(item, w.mat) : `slot:${slot}`, said = item ? [name, ...wornWords(w)].join(", ") : "";
+    const pic = item ? wornIcon(w) : `slot:${slot}`, said = item ? [name, ...wornWords(w)].join(", ") : "";
     return `<button type="button" class="slot slot-btn" id="gear-slot-${slot}" data-slot="${slot}" data-name="${esc(name)}" aria-label="${esc(item ? `${label}: ${said}` : `${label}: nothing. Puts on ${gearName(gearItem(usual), usualMat(usual)).toLowerCase()}`)}" aria-pressed="${Boolean(item && item.k === state.item)}">${shimmer(w, pic)}</button>`;
   };
   $("gear-armor").innerHTML = GEAR_SLOTS.slice(0, 4).map(button).join("");
@@ -209,19 +216,25 @@ function renderLooks() {
   $("gear-dye-bar").hidden = !dyes;
   $("gear-dye-label").textContent = `Dye: ${w.dye ? titled(w.dye) : "Undyed"}`;
   $("gear-dye").innerHTML = !dyes ? "" : chip("dye", "", "Undyed", !w.dye) + COLLAR_COLORS.map(c => dyeSwatch("dye", c, c === w.dye)).join("");
+  const banners = !none && canBanner(item);
+  $("gear-banner-bar").hidden = !banners;
+  $("gear-banner-label").textContent = `Banner: ${w.banner ? bannerName() : "None"}`;
+  $("gear-banner").innerHTML = !banners ? "" : chip("banner", "", "None", !w.banner) + chip("banner", "on", `The Banners tab’s: ${bannerName()}`, Boolean(w.banner), shieldIconOf(shieldDesign()))
+    + `<a class="name-chip gear-banner-edit" href="#banners">Change it in the Banners tab</a>`;
   $("gear-glint-bar").hidden = none;
   $("gear-glint").innerHTML = none ? "" : chip("glint", "", "Not enchanted", !w.glint) + chip("glint", "on", "Enchanted", Boolean(w.glint));
 }
 
 function renderGearPicker() {
   const slots = list => `<div class="slot-grid">${list.map(i =>
-    `<button type="button" class="slot slot-btn${isWorn(i) ? " worn" : ""}" id="item-${i.k}" data-item="${i.k}" data-name="${esc(i.n)}" aria-label="${esc(i.n)}" aria-pressed="${!nothingOn() && i.k === state.item}">${shimmer(isWorn(i) && gear.set[slotOf(i)], gearIcon(i))}</button>`).join("")}</div>`;
+    `<button type="button" class="slot slot-btn${isWorn(i) ? " worn" : ""}" id="item-${i.k}" data-item="${i.k}" data-name="${esc(i.n)}" aria-label="${esc(i.n)}" aria-pressed="${!nothingOn() && i.k === state.item}">${shimmer(isWorn(i) && gear.set[slotOf(i)], isWorn(i) ? wornIcon(gear.set[slotOf(i)]) : gearIcon(i))}</button>`).join("")}</div>`;
   $("gear-picker").innerHTML = [...new Set(ITEMS.map(i => i.cat))].map(c => `
     <div>
       <div class="cat-label">${c}</div>
       ${slots(ITEMS.filter(i => i.cat === c))}
     </div>`).join("");
-  $("gear-name").textContent = nothingOn() ? "Nothing equipped" : gearName(currentItem());
+  const item = currentItem(), w = isWorn(item) && gear.set[slotOf(item)];
+  $("gear-name").textContent = nothingOn() ? "Nothing equipped" : w && w.banner ? shieldName() : gearName(item);
 }
 
 /* The sections */
@@ -290,6 +303,12 @@ function lookFacts(item, mat) {
     out.push(potionFact("Trim", `${t.n}, in ${m.n.toLowerCase()}${m.own === mat ? " (darker on armor of its own material)" : ""}. A smithing table puts it on, from its template and ${m.with}; it only changes how it looks, and Actions & Stuff makes it glow. The template: ${forEdition(t.from)}. Copy it with 7 diamonds and ${t.copy}, which makes two.`));
   } else if (canTrim(item) && !c) out.push(potionFact("Trims", "A smithing table puts a trim on any armor but the elytra, from a template (18 patterns, each found in a place of its own) and a material (11 colors). It only changes how it looks. Try them on under the stage."));
   if (canDye(item, mat)) out.push(potionFact("Dye", `${w.dye ? `${titled(w.dye)}.` : "Undyed, it’s brown."} ${forEdition(DYE_HOW)}`));
+  if (canBanner(item) && w.banner) {
+    const layers = ownOminous() ? "" : bnr.layers.length ? `: ${bnr.layers.map(layerName).join(", ")}` : ", with no patterns";
+    out.push(potionFact("Banner", `The ${bannerName()}${layers}, from the Banners tab: it changes as the banner does there. ${SHIELD_FACTS.name} ${SHIELD_FACTS.look}`));
+    if (bnr.ominous) out.push(potionFact("Ominous banner", forEdition(SHIELD_FACTS.ominous)));
+    out.push(potionFact("Putting it on", `${SHIELD_FACTS.apply} ${SHIELD_FACTS.only}`), potionFact("Repairs", SHIELD_FACTS.repair));
+  } else if (canBanner(item)) out.push(potionFact("Banners", `${SHIELD_FACTS.apply} ${SHIELD_FACTS.only} Try the Banners tab’s banner on it under the stage.`));
   if (w.glint) out.push(potionFact("Enchanted", "Everything enchanted shimmers. What can go on it is under Enchantments, and the cheapest order to put it on under Anvil plan."));
   return out.join("");
 }
@@ -419,7 +438,7 @@ function renderGearResult() {
     return `
     <article class="gear-block" data-block="${slot}" aria-labelledby="gear-${slot}-name"${item.k === state.item ? ' aria-current="true"' : ""}>
       <div class="res-top">
-        <div class="res-title"><span class="slot">${shimmer(w, gearIcon(item, mat))}</span>
+        <div class="res-title"><span class="slot">${shimmer(w, wornIcon(w))}</span>
           <div><h2 id="gear-${slot}-name">${esc(name)}</h2><div class="res-sub">${[slotName(slot), ...wornWords(w).map(x => x[0].toUpperCase() + x.slice(1)), edition].map(esc).join(" · ")}</div></div>
         </div>
       </div>
@@ -492,7 +511,7 @@ function openGear(k) {
   state.picked = { ...(gear.plans[`${state.edition}:${k}`] || {}) };
   if (!Object.keys(state.picked).length) state.picked = fullSet(currentItem(), state.edition);
 }
-// Picks an item, in a material if one is given, and puts it on, with what's changed of its look (look: trim, trimMat, dye, glint; ""
+// Picks an item, in a material if one is given, and puts it on, with what's changed of its look (look: trim, trimMat, dye, banner, glint; ""
 // or false takes it off). One that's on already keeps the rest of its look, but a dye on what isn't leather.
 function pickGear(k, mat, look = {}) {
   const item = gearItem(k);
@@ -504,6 +523,7 @@ function pickGear(k, mat, look = {}) {
   if (next.trim && canTrim(item)) Object.assign(w, { trim: next.trim, trimMat: next.trimMat || gear.trimMat });
   if (next.dye && canDye(item, w.mat)) w.dye = next.dye;
   if (next.glint) w.glint = true;
+  if (next.banner && canBanner(item)) w.banner = true;
   gear.set[slotOf(item)] = w;
   openGear(k);
   renderGear();
@@ -573,7 +593,7 @@ $("gear-costume").addEventListener("click", e => {
 });
 // The picked item's look: its trim, the trim's material, its dye and its enchantment.
 for (const [id, attr, change] of [["gear-trim", "pattern", v => ({ trim: v })], ["gear-trim-mat", "tmat", v => ({ trimMat: v })],
-  ["gear-dye", "dye", v => ({ dye: v })], ["gear-glint", "glint", v => ({ glint: Boolean(v) })]]) $(id).addEventListener("click", e => {
+  ["gear-dye", "dye", v => ({ dye: v })], ["gear-banner", "banner", v => ({ banner: Boolean(v) })], ["gear-glint", "glint", v => ({ glint: Boolean(v) })]]) $(id).addEventListener("click", e => {
   const b = e.target.closest(`button[data-${attr}]`);
   if (!b) return;
   pickGear(state.item, null, change(b.dataset[attr]));

@@ -3,17 +3,6 @@
  * the armor stands' stage (turning, its flag swaying as the game's does), and the sections under it say what it's called, how to
  * make it in a loom step by step, where the banner patterns come from and what else banners do. Laid out as the Potions tab is.
  */
-// The banner: its color (a DYES name), its layers ([pattern, dye], the first at the bottom), whether it's the ominous banner (which
-// a loom can't make), the dye the next layer is added in, which section shows and what the search has in it.
-const bnr = { base: "white", layers: [], ominous: false, ink: "red", section: "about", query: "" };
-const BANNER_KEY = "banners-v1";
-try { Object.assign(bnr, JSON.parse(localStorage.getItem(BANNER_KEY) || "{}")); } catch (_) {}
-if (!DYES[bnr.base]) bnr.base = "white";
-if (!DYES[bnr.ink]) bnr.ink = "red";
-bnr.layers = Array.isArray(bnr.layers) ? bnr.layers.filter(l => Array.isArray(l) && bannerPattern(l[0]) && DYES[l[1]]).slice(0, BANNER_MAX) : [];
-if (bnr.ominous) bnr.layers = OMINOUS_LAYERS.map(l => [...l]);
-const saveBanner = () => { try { localStorage.setItem(BANNER_KEY, JSON.stringify(bnr)); } catch (_) {} };
-
 // What the tab shows as icons.
 for (const [k, spec] of Object.entries({
   "bn:bricks": C("brick_block"), "bn:vine": L("vine_carried"), "bn:daisy": L("flower_oxeye_daisy"), "bn:gapple": L("golden_apple"),
@@ -24,60 +13,13 @@ for (const [k, spec] of Object.entries({
 const bnIcon = k => (ICONS[k] ? k : "bn:pattern");
 
 /* Names, as the game's tooltips have them */
-const bnEdition = () => (state.edition === "bedrock" ? "bedrock" : "java");
-const patternName = k => { const p = bannerPattern(k); return (bnEdition() === "bedrock" && p.be) || p.n; };
-const layerName = ([k, c]) => `${titled(c)} ${patternName(k)}`;
-const bannerName = (b = bnr) => (b.ominous ? "Ominous Banner" : `${titled(b.base)} Banner`);
 const patternItemName = k => `${BANNER_ITEMS[k].n} Banner Pattern`;
 const bannerFull = () => bnr.ominous || bnr.layers.length >= BANNER_MAX;
-// Bedrock's ominous banner is an item of its own, a picture with no layers.
-const ownOminous = () => bnr.ominous && bnEdition() === "bedrock";
 const lowerFirst = s => s[0].toLowerCase() + s.slice(1);
 
-/* The pictures: the pack's cloth (and ominous banner) and each edition's patterns, decoded once */
-const bannerArt = {};
-const bannerArtReady = Promise.all(Object.entries(typeof BANNER_ART === "undefined" ? {} : BANNER_ART).map(([k, src]) => new Promise(done => {
-  const img = new Image();
-  img.onload = () => { bannerArt[k] = { w: img.width, h: img.height, px: filePixels(img) }; done(); };
-  img.onerror = done;
-  img.src = src;
-})));
-// The flag's part of the texture, as import_banner_patterns.py keeps each pattern (BOX).
-const BANNER_BOX = [44, 42];
-const dyeRgb = c => [1, 3, 5].map(i => parseInt(DYES[c].slice(i, i + 2), 16));
-// The banner's texture (64×64, the pack's layout): each texel of the flag takes the base's color, then each layer's dye as solid as
-// the pattern is there, all shaded by the pack's cloth (white with its weave); the pole and the bar are the pack's. Bedrock's ominous
-// banner is the pack's own picture of it.
-const bannerTextures = new Map();
-function bannerTexture(b, edition = bnEdition()) {
-  const own = b.ominous && edition === "bedrock", key = own ? "ominous" : `${edition}|${b.base}|${b.layers.map(l => l.join(":")).join(",")}`;
-  if (bannerTextures.has(key)) return bannerTextures.get(key);
-  const cloth = bannerArt[own ? "ominous" : "cloth"], masks = bannerArt[edition];
-  if (!cloth || (!own && !masks)) return null;
-  const px = Uint8ClampedArray.from(cloth.px), [bw, bh] = BANNER_BOX;
-  if (!own) {
-    const layers = [["base", b.base], ...b.layers].map(([k, c]) => [BANNER_ROW[k] * bh, dyeRgb(c)]);
-    for (let y = 0; y < bh; y++) for (let x = 0; x < bw; x++) {
-      if (!masks.px[(y * bw + x) * 4]) continue;
-      let r = 0, g = 0, bl = 0;
-      for (const [row, [dr, dg, db]] of layers) {
-        const a = masks.px[((row + y) * bw + x) * 4] / 255;
-        if (!a) continue;
-        r += (dr - r) * a;
-        g += (dg - g) * a;
-        bl += (db - bl) * a;
-      }
-      const n = (y * 64 + x) * 4;
-      px[n] = r * px[n] / 255;
-      px[n + 1] = g * px[n + 1] / 255;
-      px[n + 2] = bl * px[n + 2] / 255;
-    }
-  }
-  const tex = { w: 64, h: 64, px };
-  if (bannerTextures.size > 400) bannerTextures.clear();
-  bannerTextures.set(key, tex);
-  return tex;
-}
+// What's shown: the banner, or the shield with it on.
+const shownTexture = (b, edition) => (onShield() ? shieldTexture(b, edition) : bannerTexture(b, edition));
+
 // The flag's front, flat (20×40), as a picture: for the picker, the layers and the plan.
 const bannerPics = new Map();
 function bannerPic(b) {
@@ -92,6 +34,22 @@ function bannerPic(b) {
   return url;
 }
 const bannerImg = (b, cls = "bn-pic") => `<img class="${cls}" src="${bannerPic(b)}" alt="" width="20" height="40">`;
+// The shield's front, flat (12×22, its rim and all), as a picture.
+const shieldPics = new Map();
+function shieldPic(b, edition = bnEdition()) {
+  const tex = shieldTexture(b, edition);
+  if (!tex) return "data:,";
+  if (shieldPics.has(tex)) return shieldPics.get(tex);
+  const cv = Object.assign(document.createElement("canvas"), { width: 12, height: 22 }), img = new ImageData(12, 22);
+  for (let y = 0; y < 22; y++) img.data.set(tex.px.subarray(((y + 1) * 64 + 1) * 4, ((y + 1) * 64 + 13) * 4), y * 48);
+  cv.getContext("2d").putImageData(img, 0, 0);
+  const url = cv.toDataURL();
+  shieldPics.set(tex, url);
+  return url;
+}
+const shieldImg = (b, cls = "sh-pic", edition) => `<img class="${cls}" src="${shieldPic(b, edition)}" alt="" width="12" height="22">`;
+// The banner, or the shield with it on, as the view picked has it: in the picker, the layers, the tooltip and the title.
+const designImg = (b, size = "") => (onShield() ? shieldImg(b, `sh-pic ${size}`) : bannerImg(b, `bn-pic ${size}`));
 const bannerUpTo = n => ({ base: bnr.base, layers: bnr.layers.slice(0, n), ominous: bnr.ominous && n >= bnr.layers.length });
 
 /* The stage: the banner standing, as the game's model has it (the flag 20×40×1 hung from a bar, in front of the pole), turning by
@@ -101,7 +59,7 @@ const BANNER_CUBES = [
   { lo: [-1, -42, -1], size: [2, 42, 2], uv: [44, 0] },
   { lo: [-10, -44, -1], size: [20, 2, 2], uv: [0, 42] },
 ];
-const BANNER_LIT = 60 * EMITS, BANNER_YAW = 0.35, BANNER_FPS = 20, BANNER_MAX_SCALE = 6;
+const BANNER_LIT = 60 * EMITS, BANNER_YAW = 0.35, BANNER_FPS = 20, BANNER_MAX_SCALE = 6, SHIELD_MAX_SCALE = 8;
 // How far the flag swings, by the time in seconds: the game's (-0.0125 + 0.01 cos) half turns, its sway taking 100 ticks.
 const bannerSwing = t => (-0.0125 + 0.01 * Math.cos(2 * Math.PI * t / 5)) * Math.PI;
 function bannerBoxes(tex, t) {
@@ -116,7 +74,7 @@ function bannerBoxes(tex, t) {
 }
 function bannerScene(canvas, { onTurn = () => {} } = {}) {
   const ctx = canvas.getContext("2d");
-  let tex = null, yaw = BANNER_YAW, frame = 0, dragX = null, last = 0, clock = 0;
+  let tex = null, shield = false, yaw = BANNER_YAW, frame = 0, dragX = null, last = 0, clock = 0;
   const draw = () => {
     frame = 0;
     const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -125,15 +83,16 @@ function bannerScene(canvas, { onTurn = () => {} } = {}) {
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     if (!tex) return;
-    const scale = Math.min(BANNER_MAX_SCALE, (h - MOB_FEET_UP - 18) / 46, (w - 40) / 26);
+    const scale = shield ? Math.min(SHIELD_MAX_SCALE, (h - MOB_FEET_UP - 18) / 26, (w - 40) / 20) : Math.min(BANNER_MAX_SCALE, (h - MOB_FEET_UP - 18) / 46, (w - 40) / 26);
     const view = { yaw, pitch: STAGE_PITCH, scale: scale * dpr, center: [0, GROUND, 0], origin: [canvas.width / 2, canvas.height - MOB_FEET_UP * dpr] };
-    const out = renderScene(bannerBoxes(tex, calmMotion() ? 0 : clock), { ...view, width: canvas.width, height: canvas.height, shadows: [[0, 0, 3]] });
+    const boxes = shield ? shieldModel(tex, BANNER_LIT) : bannerBoxes(tex, calmMotion() ? 0 : clock);
+    const out = renderScene(boxes, { ...view, width: canvas.width, height: canvas.height, shadows: [shield ? [0, 1, 7] : [0, 0, 3]] });
     ctx.putImageData(new ImageData(out, canvas.width, canvas.height), 0, 0);
   };
   const redraw = () => { if (!frame) frame = requestAnimationFrame(draw); };
   const step = now => {
     requestAnimationFrame(step);
-    if (!canvas.clientWidth || document.hidden || !tex || calmMotion() || now - last < 1000 / BANNER_FPS - 2) return;
+    if (!canvas.clientWidth || document.hidden || !tex || shield || calmMotion() || now - last < 1000 / BANNER_FPS - 2) return;
     clock += Math.min(0.1, (now - last) / 1000);
     last = now;
     redraw();
@@ -155,25 +114,31 @@ function bannerScene(canvas, { onTurn = () => {} } = {}) {
     e.preventDefault();
     turnBy(by);
   });
-  return { show(t) { tex = t; redraw(); } };
+  // A shield doesn't sway: it's drawn again only when it changes or turns.
+  return { show(t, onShield = false) { tex = t; shield = onShield; redraw(); } };
 }
 const bannerStage = $("banner-stage");
 const bannerView = bannerScene($("banner-art"), { onTurn: () => bannerStage.classList.add("turned") });
 bannerStage.style.setProperty("--ground", `url('${groundArt("plains")}')`);
 function showBanner() {
-  bannerView.show(bannerTexture(bnr));
-  $("banner-art").setAttribute("aria-label", `${bannerName()}${bnr.layers.length && !ownOminous() ? `: ${bnr.layers.map(layerName).join(", ")}` : ""}. Drag or use the arrow keys to turn it.`);
+  bannerView.show(shownTexture(bnr), onShield());
+  $("banner-art").setAttribute("aria-label", `${onShield() ? `${shieldName()}, with the ${bannerName()} on it` : bannerName()}${bnr.layers.length && !ownOminous() ? `: ${bnr.layers.map(layerName).join(", ")}` : ""}. Drag or use the arrow keys to turn it.`);
 }
 
 /* Under the stage: the banner's color, and its layers, each of which can be moved or taken off */
 const bnBtn = (attr, i, label, text, off = false) => `<button type="button" class="mc-btn sm bn-btn" data-${attr}="${i}" aria-label="${label}"${off ? " disabled" : ""}>${text}</button>`;
 function renderBannerLayers() {
+  $("banner-view-label").textContent = `Show: ${onShield() ? "Shield" : "Banner"}`;
+  $("banner-view").innerHTML = [["banner", "Banner", bannerImg(bnr, "bn-pic xs")], ["shield", "Shield", shieldImg(bnr, "sh-pic xs")]]
+    .map(([k, label, pic]) => `<button type="button" class="name-chip" data-view="${k}" aria-pressed="${k === bnr.view}">${pic}${label}</button>`).join("")
+    // On a shield, a way to the Equipment tab with it in the player's off hand (it follows this tab there).
+    + (onShield() ? `<button type="button" class="name-chip" data-equip="on">${iconImg("ui:armor_stand")}${gear.set.off && gear.set.off.banner ? "See it on the Equipment tab" : "Hold it on the Equipment tab"}</button>` : "");
   $("banner-base-label").textContent = `Banner: ${titled(bnr.base)}`;
   $("banner-base").innerHTML = BANNER_COLORS.map(c => dyeSwatch("base", c, c === bnr.base)).join("");
   const n = bnr.layers.length;
   $("banner-layers-label").textContent = ownOminous() ? "Layers: none" : bnr.ominous ? `Layers: ${n}, as the game has them` : `Layers: ${n} of ${BANNER_MAX}`;
   $("banner-layers").innerHTML = (ownOminous() ? `<p class="choice-hint">In Bedrock the ominous banner is an item of its own, drawn as one picture (this is the pack’s), with no layers.</p>` : n ? `<ol class="bn-layers">${bnr.layers.map((l, i) => `
-    <li class="bn-layer">${bannerImg(bannerUpTo(i + 1), "bn-pic sm")}
+    <li class="bn-layer">${designImg(bannerUpTo(i + 1), "sm")}
       <span class="bn-layer-name">${esc(layerName(l))}<span class="sub">${i + 1}. ${esc(bannerPattern(l[0]).say)}</span></span>
       ${bnr.ominous ? "" : `<span class="bn-layer-acts">${bnBtn("up", i, `Move ${esc(layerName(l))} down a layer`, "▲", i === 0)}${bnBtn("down", i, `Move ${esc(layerName(l))} up a layer`, "▼", i === n - 1)}${bnBtn("drop", i, `Take ${esc(layerName(l))} off`, "✕")}</span>`}
     </li>`).join("")}</ol>` : `<p class="choice-hint">No patterns yet: pick a dye and a pattern beside the banner to add one.</p>`) +
@@ -186,10 +151,10 @@ function renderBannerLayers() {
 
 /* Beside the stage: the dye for the next layer, then every pattern in it, over the banner's color */
 function renderBannerPicker() {
-  $("banner-name").textContent = bannerName();
+  $("banner-name").textContent = onShield() ? shieldName() : bannerName();
   const full = bannerFull(), why = bnr.ominous ? "The ominous banner can’t go in a loom" : `A loom adds ${BANNER_MAX} layers at most`;
   const tile = p => `<button type="button" class="bn-tile" id="bn-${p.k}" data-add="${p.k}" aria-label="Add ${esc(layerName([p.k, bnr.ink]))}" title="${esc(layerName([p.k, bnr.ink]))}${p.item ? ` (needs the ${esc(patternItemName(p.item))})` : ""}"${full ? ` disabled` : ""}>
-      ${bannerImg({ base: bnr.base, layers: [[p.k, bnr.ink]] })}</button>`;
+      ${designImg({ base: bnr.base, layers: [[p.k, bnr.ink]] })}</button>`;
   const groups = BANNER_GROUPS.filter(([g]) => g !== "corners").map(([g, title]) => {
     const list = BANNER_PATTERNS.filter(p => (g === "item" ? p.item : p.group === g || (g === "halves" && p.group === "corners")));
     return `<div><div class="cat-label">${title}</div><div class="bn-tiles">${list.map(tile).join("")}</div></div>`;
@@ -210,20 +175,25 @@ const bannerHead = (s, note = "") => sectionHead("banner-section-title", bannerS
 const bnFact = (label, text) => (text ? `<div class="fact-row"><dt>${label}</dt><dd>${esc(text)}</dd></div>` : "");
 const bnForEdition = v => byEdition(v, state.edition);
 const bnSlot = b => `<span class="slot bn-slot">${bannerImg(b, "bn-pic sm")}</span>`;
+const shSlot = b => `<span class="slot bn-slot">${shieldImg(b, "sh-pic sm")}</span>`;
+const shownSlot = b => (onShield() ? shSlot(b) : bnSlot(b));
 // What the layers need: each dye and how many, and each banner pattern.
 const bannerDyes = () => BANNER_COLORS.map(c => [c, bnr.layers.filter(l => l[1] === c).length]).filter(([, n]) => n);
 const bannerItemsUsed = () => [...new Set(bnr.layers.map(([k]) => bannerPattern(k).item).filter(Boolean))];
-// The game's tooltip: its name, then its layers (Java lists the first 6 only).
-function bannerTooltip() {
-  const shown = ownOminous() ? [] : bnEdition() === "java" ? bnr.layers.slice(0, 6) : bnr.layers;
-  return `<div class="mc-tooltip">${bnSlot(bnr)}<div>
-      <div class="tname ${bnr.ominous ? "bn-uncommon" : "plain"}">${esc(bannerName())}</div>
+// The game's tooltip: its name, then its layers (Java lists the first 6 only). On a shield the name is the shield's, plain (a shield is
+// common, the ominous banner uncommon), and Java lists the ominous banner's layers as any others (its name and rarity don't go on).
+function bannerTooltip(shield = onShield()) {
+  const own = ownOminous(), shown = own ? [] : bnEdition() === "java" ? bnr.layers.slice(0, 6) : bnr.layers;
+  return `<div class="mc-tooltip">${shield ? shSlot(bnr) : bnSlot(bnr)}<div>
+      <div class="tname ${bnr.ominous && !shield ? "bn-uncommon" : "plain"}">${esc(shield ? shieldName() : bannerName())}</div>
       <ul>${shown.map(l => `<li class="bn-tip-layer">${esc(layerName(l))}</li>`).join("")}${shown.length < bnr.layers.length ? `<li class="bn-tip-layer">…</li>` : ""}</ul>
-      <div class="foot">${ownOminous() ? "An item of its own, with no layers" : bnr.layers.length ? `${plural(bnr.layers.length, "layer")}, the first at the bottom` : "No patterns"}</div>
+      <div class="foot">${own ? (shield ? "The ominous banner’s own picture, with no layers" : "An item of its own, with no layers") : bnr.layers.length ? `${plural(bnr.layers.length, "layer")}, the first at the bottom` : shield ? "Only the banner’s color" : "No patterns"}</div>
     </div></div>`;
 }
 // Java's command for it; Bedrock's /give can't add patterns.
-const bannerCommand = () => `/give @s ${dyeId(bnr.base)}_banner[banner_patterns=[${bnr.layers.map(([k, c]) => `{pattern:"${k}",color:"${dyeId(c)}"}`).join(",")}]]`;
+// A shield takes the same patterns, and the banner's color as base_color.
+const bannerPatternsArg = () => `banner_patterns=[${bnr.layers.map(([k, c]) => `{pattern:"${k}",color:"${dyeId(c)}"}`).join(",")}]`;
+const bannerCommand = () => (onShield() ? `/give @s shield[base_color="${dyeId(bnr.base)}",${bannerPatternsArg()}]` : `/give @s ${dyeId(bnr.base)}_banner[${bannerPatternsArg()}]`);
 
 function bannerAbout() {
   const dyes = bannerDyes(), items = bannerItemsUsed(), n = bnr.layers.length;
@@ -233,25 +203,51 @@ function bannerAbout() {
       ${stat("Layers", ownOminous() ? "–" : bnr.ominous ? `${n}` : `${n} of ${BANNER_MAX}`, ownOminous() ? "An item of its own" : bnr.ominous ? "More than a loom adds" : n >= BANNER_MAX ? "Full" : `Room for ${BANNER_MAX - n} more`)}
       ${stat("Dyes", bnr.ominous ? "–" : `${n}`, bnr.ominous ? "Not made with dyes" : dyes.length ? esc(dyes.map(([c, k]) => `${k} ${titled(c)}`).join(", ")) : "None yet")}
       ${stat("Banner patterns", bnr.ominous ? "–" : `${items.length}`, items.length ? esc(items.map(k => BANNER_ITEMS[k].n).join(", ")) : "None needed")}
-      ${stat("Made in", bnr.ominous ? "No block" : "A loom", bnr.ominous ? "Carried by raid captains" : `${plural(n + 1, "step")}, with crafting the banner`)}
+      ${onShield() ? stat("Made in", bnr.ominous ? "A crafting grid" : "A loom, then a grid", bnr.ominous ? "With a raid captain’s banner" : `${plural(n + 2, "step")}, with the banner and the shield`)
+        : stat("Made in", bnr.ominous ? "No block" : "A loom", bnr.ominous ? "Carried by raid captains" : `${plural(n + 1, "step")}, with crafting the banner`)}
     </div>
     <div class="cat-label potion-label">How the game shows it</div>
     ${bannerTooltip()}
-    ${bnEdition() === "java" && !bnr.ominous ? `<div class="cat-label potion-label">Command</div>
+    ${bnEdition() === "java" && (!bnr.ominous || onShield()) ? `<div class="cat-label potion-label">Command</div>
       <div class="bn-command"><code id="banner-command">${esc(bannerCommand())}</code><button type="button" class="mc-btn sm" id="banner-copy">Copy</button></div>` : ""}
-    <dl class="fact-list">
+    ${onShield() ? `<dl class="fact-list">
+      ${bnr.ominous ? bnFact("Ominous banner", bnForEdition(SHIELD_FACTS.ominous)) : ""}
+      ${bnFact("On a shield", SHIELD_FACTS.look)}
+      ${bnFact("Its name", SHIELD_FACTS.name)}
+      ${bnFact("Took a wrong one?", SHIELD_FACTS.only)}
+      ${bnEdition() === "bedrock" ? bnFact("Command", bnForEdition(SHIELD_FACTS.command)) : ""}
+    </dl>` : `<dl class="fact-list">
       ${bnr.ominous ? bnFact("Ominous banner", bnForEdition(BANNER_FACTS.ominous)) : ""}
       ${bnFact("Layers", bnForEdition(BANNER_FACTS.limit))}
       ${bnFact("Took a wrong one?", BANNER_FACTS.wash)}
       ${bnEdition() === "bedrock" && !bnr.ominous ? bnFact("Command", "Bedrock’s /give can’t add patterns: make it in a loom.") : ""}
-    </dl>`;
+    </dl>`}`;
 }
 
 // Loom plan: what it takes, then each layer as the loom adds it.
 let bannerRulesOpen = false;
+// With the shield shown, a last step puts the banner on a shield in a crafting grid.
+function shieldStep(no) {
+  return `
+    <li class="step">
+      <div class="step-top"><span class="step-no">Step ${no}</span><span class="cost">Crafting table</span></div>
+      <div class="brew-row">${plainSlot("shield")}<span class="op">+</span>${bnSlot(bnr)}${iconImg("ui:arrow")}${shSlot(bnr)}</div>
+      <div class="what">
+        <div><span class="lbl">Craft:</span> a shield without patterns and the ${esc(bannerName())}, anywhere in the grid</div>
+        <div><span class="lbl">Makes:</span> ${esc(shieldName())} <span class="sub">(the banner is used up)</span></div>
+      </div>
+    </li>`;
+}
+const shieldNeed = need => need("shield", "Shield", 1, "× 1, without patterns: 6 planks and an iron ingot");
+const shieldRules = () => [SHIELD_FACTS.shield, SHIELD_FACTS.apply, SHIELD_FACTS.only, SHIELD_FACTS.repair];
 function bannerLoom() {
-  if (bnr.ominous) return `${bannerHead("loom")}<p class="mob-lead">The ominous banner can’t be made: ${esc(bnForEdition(BANNER_FACTS.ominous))}</p>`;
   const need = (icon, name, n, sub) => `<div class="need-item">${countSlot(icon, n)}<span>${esc(name)}<span class="sub">${sub}</span></span></div>`;
+  if (bnr.ominous) return onShield()
+    ? `${bannerHead("loom", "1 step")}<p class="mob-lead">The ominous banner can’t be made, only taken from a raid captain. ${esc(bnForEdition(SHIELD_FACTS.ominous))}</p>
+      <div class="need">${shieldNeed(need)}${need(bnIcon("bn:banner:white"), "Ominous Banner", 1, "× 1, from a raid captain")}</div>
+      <ol class="steps bn-steps">${shieldStep(1)}</ol>
+      <div class="final">${bannerTooltip()}</div>`
+    : `${bannerHead("loom")}<p class="mob-lead">The ominous banner can’t be made: ${esc(bnForEdition(BANNER_FACTS.ominous))}</p>`;
   const items = bannerItemsUsed();
   const steps = [`
     <li class="step">
@@ -270,19 +266,20 @@ function bannerLoom() {
         ${item ? `<div><span class="lbl">Banner pattern:</span> ${esc(patternItemName(item))} <span class="sub">(kept)</span></div>` : ""}
       </div>
     </li>`;
-  })].join("");
-  return `${bannerHead("loom", plural(bnr.layers.length + 1, "step"))}
+  }), ...(onShield() ? [shieldStep(bnr.layers.length + 2)] : [])].join("");
+  return `${bannerHead("loom", plural(bnr.layers.length + (onShield() ? 2 : 1), "step"))}
     <div class="need">
       ${need(bnIcon(`bn:wool:${bnr.base}`), `${titled(bnr.base)} Wool`, 6, "× 6, for the banner")}
       ${need("bn:stick", "Stick", 1, "× 1")}
       ${bannerDyes().map(([c, n]) => need(bnIcon(`bn:dye:${c}`), `${titled(c)} Dye`, n, `× ${n}, one a layer`)).join("")}
       ${items.map(k => need(bnIcon(`bn:item:${k}`), patternItemName(k), 1, "Not used up")).join("")}
+      ${onShield() ? shieldNeed(need) : ""}
     </div>
     <ol class="steps bn-steps">${steps}</ol>
     <div class="final">${bannerTooltip()}</div>
     <details class="rules tag-rules"${bannerRulesOpen ? " open" : ""}>
-      <summary>How the loom works</summary>
-      <ul>${[BANNER_FACTS.banner, BANNER_FACTS.loom, bnForEdition(BANNER_FACTS.how), bnForEdition(BANNER_FACTS.limit), BANNER_FACTS.wash].map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+      <summary>How the loom works${onShield() ? ", and the shield" : ""}</summary>
+      <ul>${[BANNER_FACTS.banner, BANNER_FACTS.loom, bnForEdition(BANNER_FACTS.how), bnForEdition(BANNER_FACTS.limit), BANNER_FACTS.wash, ...(onShield() ? shieldRules() : [])].map(t => `<li>${esc(t)}</li>`).join("")}</ul>
     </details>`;
 }
 
@@ -308,7 +305,8 @@ function bannerUses() {
   return `${bannerHead("uses")}
     <dl class="fact-list">
       ${bnFact("Copies", bnForEdition(BANNER_FACTS.copy))}
-      ${bnFact("Shields", BANNER_FACTS.shield)}
+      ${bnFact("Shields", `${SHIELD_FACTS.apply} ${SHIELD_FACTS.only}`)}
+      ${bnFact("Shield repairs", SHIELD_FACTS.repair)}
       ${bnFact("Washing", BANNER_FACTS.wash)}
       ${bnFact("Maps", bnForEdition(BANNER_FACTS.map))}
       ${bnFact("Placing", bnForEdition(BANNER_FACTS.place))}
@@ -323,8 +321,8 @@ function renderBannerResult() {
   const body = { about: bannerAbout, loom: bannerLoom, items: bannerItems, uses: bannerUses }[on]();
   $("banner-result").innerHTML = `
     <div class="res-top">
-      <div class="res-title">${bnSlot(bnr)}
-        <div><h2>${esc(bannerName())}</h2><div class="res-sub">${ownOminous() ? "Carried by raid captains" : bnr.layers.length ? esc(bnr.layers.map(layerName).join(" · ")) : "No patterns yet"}</div></div>
+      <div class="res-title">${shownSlot(bnr)}
+        <div><h2>${esc(onShield() ? shieldName() : bannerName())}</h2><div class="res-sub">${ownOminous() ? "Carried by raid captains" : bnr.layers.length ? esc(bnr.layers.map(layerName).join(" · ")) : "No patterns yet"}</div></div>
       </div>
     </div>
     <div class="mob-tabs" role="tablist" aria-label="Banner">
@@ -345,7 +343,7 @@ function renderBannerSearch() {
   box.innerHTML = hits.length
     ? hits.map(p => `
       <button type="button" class="search-hit" data-add="${p.k}"${bannerFull() ? " disabled" : ""}>
-        <span class="slot sm">${bannerImg({ base: bnr.base, layers: [[p.k, bnr.ink]] }, "bn-pic sm")}</span>
+        <span class="slot sm">${designImg({ base: bnr.base, layers: [[p.k, bnr.ink]] }, "sm")}</span>
         <span><span class="who">${esc(patternName(p.k))}</span><span class="deal">${esc(p.say)}${p.be && p.be !== patternName(p.k) ? ` · ${bnEdition() === "java" ? "Bedrock" : "Java"}: ${esc(bnEdition() === "java" ? p.be : p.n)}` : ""}${p.item ? ` · Needs the ${esc(patternItemName(p.item))}` : ""}</span></span>
       </button>`).join("")
     : `<p class="choice-hint">No pattern is called anything like “${esc(bnr.query.trim())}”.</p>`;
@@ -358,6 +356,8 @@ function renderBanner() {
   renderBannerSearch();
   showBanner();
   saveBanner();
+  // The Equipment tab's shield follows the banner.
+  if (gear.set.off && gear.set.off.banner) renderGear();
 }
 
 /* What the buttons do */
@@ -383,6 +383,22 @@ $("banner-results").addEventListener("click", e => {
   if (!add) return;
   addLayer(add.dataset.add);
   refocus(`#banner-results button[data-add="${add.dataset.add}"]`);
+});
+$("banner-view").addEventListener("click", e => {
+  if (e.target.closest("button[data-equip]")) {
+    if (!(gear.set.off && gear.set.off.banner)) pickGear("shield", null, { banner: true });
+    else openGear("shield");
+    location.hash = "equipment";
+    showView();
+    renderGear();
+    $("view-equipment").scrollIntoView();
+    return refocus("#gear-slot-off");
+  }
+  const b = e.target.closest("button[data-view]");
+  if (!b) return;
+  bnr.view = b.dataset.view;
+  renderBanner();
+  refocus(`#banner-view button[data-view="${bnr.view}"]`);
 });
 $("banner-base").addEventListener("click", e => {
   const b = e.target.closest("button[data-base]");

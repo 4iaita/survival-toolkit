@@ -95,10 +95,26 @@ const BANNER_FACTS = {
   wash: "Use the banner on a cauldron with water in it to wash off its last layer.",
   copy: both("Craft a banner with patterns and a blank banner of the same color to copy it. The one with patterns stays.",
     "Craft a banner with patterns and a blank banner of the same color to copy it; the one with patterns must be left of or above the blank one. It stays."),
-  shield: "Craft a shield with a banner to put its patterns on the shield. The banner is used up, and a shield that has patterns can’t take another.",
   map: both("Use a map on a placed banner to mark it on the map in the banner’s color, with its name if it has one. Use it again to take the mark off.", null),
   ominous: both("Raid captains carry it, and it’s found at pillager outposts. It’s a white banner with 8 layers, more than a loom adds: it can’t be copied until 2 are washed off in a cauldron, and the loom adds no more until 3 are.",
     "Raid captains carry it, and it’s found at pillager outposts. It’s an item of its own: it can’t go in a loom or be copied."),
   place: both("Place it standing (in 16 directions) or on a wall. It doesn’t burn.", "Place it standing (in 16 directions) or on a wall. It doesn’t burn, and it can be under water."),
   buy: "An expert shepherd may sell banners for 3 emeralds; cartographers sell some too.",
 };
+
+// A banner on a shield. From the games' files: Java's recipe (shield_decoration: any banner, onto a shield), both editions' shield
+// recipes and names ("<Color> Shield", from the banner's color), and their shield pattern textures (Java's entity/shield/, Bedrock's
+// entity/shield_patterns/, with an ominous one of its own). From the Minecraft Wiki (Shield): which shields take one, what's kept, washing
+// and repairs. How Java's ominous banner goes on is from its recipe and the banner's components (it's a white banner with 8 layers).
+const SHIELD_FACTS = {
+  shield: "Craft a shield from 6 planks of any wood and an iron ingot: planks, ingot, planks over a row of 3 planks, and one plank under the middle.",
+  apply: "Craft the shield with a banner of any color, both anywhere in the grid: the shield takes the banner’s color and patterns, and the banner is used up. The shield keeps its durability and enchantments.",
+  only: "Only a shield without patterns takes a banner. Unlike a banner’s, a shield’s patterns can’t be changed or washed off in a cauldron.",
+  repair: "An anvil keeps the patterns and the enchantments. Two shields crafted together come out plain; a grindstone keeps the top shield’s patterns.",
+  look: "The shield draws the patterns at half a banner’s size, 10 by 20, inside its rim, from pictures of its own: the same shapes, a little coarser.",
+  name: "It’s named for the banner’s color: a red banner makes a Red Shield, whatever its patterns.",
+  ominous: both("The ominous banner goes on as any white banner does, as its 8 layers: it makes a White Shield.",
+    "The ominous banner goes on as a picture of its own, the game’s ominous shield (this is the pack’s, which draws the whole shield)."),
+  command: both("Give one with the same patterns as a banner’s, and the banner’s color as base_color.", "Bedrock’s /give can’t add patterns: make it in a crafting grid."),
+};
+

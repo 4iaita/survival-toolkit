@@ -32,7 +32,7 @@ def build_page():
         body = body.replace(f"<!-- {part} -->\n", read(part))
     scripts = ["brew-data.js", "potion-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js", "gear-data.js",
                "villager.js", "backdrop-motion.js", "backdrop.js", "trade-data.js", "mob-models.js", "player-models.js", "particles.js", "mobs.js", "player.js", "mob-data.js", "mob-info.js", "tag-data.js", "tag-data-more.js", "prop-data.js", "prop-data-more.js",
-               "ui.js", "tabs.js", "trade-ui.js", "mob-ui.js", "item-stage.js", "potion-ui.js", "prop-ui.js", "anvil-ui.js", "gear-ui.js", "banner-data.js", "banner-ui.js", "firework-data.js", "firework-show.js", "firework-ui.js"]
+               "ui.js", "tabs.js", "trade-ui.js", "mob-ui.js", "item-stage.js", "potion-ui.js", "prop-ui.js", "anvil-ui.js", "banner-data.js", "banner-art.js", "gear-ui.js", "banner-ui.js", "firework-data.js", "firework-show.js", "firework-ui.js"]
     out = (head + read("style.css") + read("gear.css") + read("potion.css") + read("banner.css") + read("firework.css") + read("trade.css") + read("mob.css") + read("prop.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
            art_script() + "\n" + effects_script() + "\n" + frames_script() + "\n" + skins_script() + "\n" + mob_skins_script() + "\n" + banners_script() + "\n" + "\n".join(read(f) for f in scripts) +

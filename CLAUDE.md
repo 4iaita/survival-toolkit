@@ -232,7 +232,10 @@ Was the Brewing Guide (`#brewing` still opens its Brewing section). It's laid ou
 ## The Banners tab
 
 A banner designer (2026-11-26), laid out as the Potions tab is, with its stage (`.prop-stage`). `src/banner-data.js`: the patterns, the banner pattern
-items and the facts; `src/banner-ui.js`: the tab (the banner is `bnr`, saved as `banners-v1`). It loads last.
+items and the facts (`SHIELD_FACTS` for shields); `src/banner-art.js`: the banner being designed (`bnr`, saved as `banners-v1`), its names and its pictures,
+as a banner and on a shield; `src/banner-ui.js`: the tab. `banner-data.js` and `banner-art.js` load before the Equipment tab, which puts the design on its
+shield; `banner-ui.js` after it. All the scripts are one script: a `const` of a later file can't be read while an earlier one runs at load (the Equipment
+tab draws then), not even with `typeof`.
 
 - The pack has only the plain banner (`entity/banner/banner_base`: white cloth, pole, bar) and the ominous one (`banner_pattern_illager`, which it redraws:
   a gold cross on black). The patterns are the games' own: `import_banner_patterns.py` downloads Java's (misode/mcmeta, assets branch) and Bedrock's
@@ -250,7 +253,26 @@ items and the facts; `src/banner-ui.js`: the tab (the banner is `bnr`, saved as 
   Snout (bastion_other 9/89), Flow (ominous vault 0.75 × 2/10) and Guster (vault 0.25 × 2/12) chances, and the master cartographer's Globe (8 emeralds),
   the same in both editions. From the wiki only: Bedrock's crafting-table patterns (their recipes aren't in bedrock-samples, so the page doesn't list them),
   the layer limits, copying, washing, shields, maps and the ominous banner's rules.
-- Not done, and could be offered: the banner on a shield (Java has its own shield pattern textures, `entity/shield/`), Bedrock's crafting-table recipes.
+- Not done, and could be offered: Bedrock's crafting-table recipes.
+
+### On a shield (2026-11-26)
+
+- "Show: Banner / Shield" under the stage (`bnr.view`, `onShield`). Shield: the pack's shield (`SHIELD_CUBES`, standing on its edge, `shieldModel`) turning
+  as the banner does, without sway; the picker's tiles, the layers, the title and the tooltip show the shield (`designImg`, `shownSlot`), and the loom plan
+  ends with crafting it onto a shield (`shieldStep`). The ominous banner too: one step, as it can't be made.
+- In the Shield view, "Hold it on the Equipment tab" ("See it" once it's on) puts the shield with the banner in the off hand (`pickGear`, `banner: true`),
+  keeps the rest of the set, opens that tab (`showView`, as the hash changes later) and focuses the off-hand slot (the user asked for it).
+- Both games draw a shield's patterns from pictures of their own, not the banner's squeezed: Java's `entity/shield/<pattern>.png`, Bedrock's
+  `entity/shield_patterns/<pattern>.png`, 10×20 on the plate's front inside its one-texel rim (`SHIELD_AREA`). Their alpha is the same in both
+  editions once Bedrock's diagonal halves are mapped as `BEDROCK_SHAPES` maps its banners' (its shield files swap them the same way); their grays differ.
+  The game multiplies each layer's dye by the pattern's gray, so shields keep the gray (`shield_<edition>.png` is gray and alpha), where banners use the
+  pack's cloth: the pack has no cloth for a shield. The pack has only the plain shield and Bedrock's ominous one (`shield_patterns/illager`), which it
+  redraws as a whole shield (opaque everywhere), so in Bedrock that's drawn alone; Java's ominous banner goes on as its 8 layers.
+- Names: "<Color> Shield" from the banner's color in both languages' files; neither names an ominous shield (shown as White Shield). Java's command:
+  `shield[base_color=...,banner_patterns=[...]]`. Java's recipe is `shield_decoration` (any banner); Bedrock's isn't in bedrock-samples.
+- From the wiki's Shield page: only a shield without patterns takes one, it keeps durability and enchantments, it can't be washed, an anvil keeps the
+  patterns, two crafted together lose them, a grindstone keeps the top one's. The Ominous Banner page couldn't be read (the fetch was refused):
+  how each edition names and lists an ominous shield is from the files and the recipe, not checked.
 
 ## The Fireworks tab
 
@@ -379,6 +401,10 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   whole pad hidden, nor the stance changed.
 - The empty main hand's outline is the pack's smithing table sword (`import_slot_sword`), in the empty armor slots' color: the pack has no empty hand
   slot, and the faded iron sword it had before looked wrong to the user.
+- The shield's Banner row: None, or the Banners tab's banner, which it follows live (the user's choice over copying it once or saved designs). The worn
+  thing has `banner: true`; `wornLook` adds `banner=<designKey>` in the edition picked, so it's drawn again when the design changes (`renderBanner` calls
+  `renderGear` while it's on). `bannerShield` (`src/player.js`) makes its texture, `shieldIconOf` its icon (the plain icon's view, `shieldIcon(boxes)`),
+  `wornIcon` puts it in the slots, picker and block title, and it's named as the game names it (`shieldName`). Its facts are in `lookFacts`.
 - Enchant everything (every worn thing; Take every enchantment off once all are) is in the top row under the stage, beside Take everything off, as the
   user asked; shown with two or more on.
 - Echo's hood (a 9-wide cube round its head) showed through every helmet's top, as the pack leaves it; under a helmet that cube is left out

@@ -52,10 +52,10 @@ async function gearModel(body, key, texture) {
 }
 
 // A worn thing as playerLook takes it: its GEAR_WORN key, then what's on it, each after a "+": "trim=<trim>.<a TRIM_COLORS palette>",
-// "dye=<a DYES color>", and "glint" when it's enchanted.
+// "dye=<a DYES color>", "banner=<a designKey>" (the Banners tab's design, on a shield) and "glint" when it's enchanted.
 function wornParts(look) {
   const [key, ...more] = look.split("+"), part = name => (more.find(m => m.startsWith(`${name}=`)) || "").slice(name.length + 1) || null;
-  return { key, trim: part("trim"), dye: part("dye"), glint: more.includes("glint") };
+  return { key, trim: part("trim"), dye: part("dye"), banner: part("banner"), glint: more.includes("glint") };
 }
 // A texture the page makes from one of the pack's, kept with the rest (mobTextures) under its own name, which it returns.
 function madeTexture(name, from, make) {
@@ -84,6 +84,9 @@ function dyedLeather(dye) {
     return { w: t.w, h: t.h, px };
   });
 }
+
+// The shield with a banner's design on it (src/banner-ui.js draws it: the pack's shield, the patterns over its front).
+const bannerShield = design => madeTexture(`player_shield@${design}`, "player_shield", () => shieldOfDesign(design));
 
 // The pack takes a mace in both hands even with a shield in the other, which brings the shield across the chest, and its edge out
 // through the left shoulder pad's outer cube (the 6-wide shell round a 5-wide one): that cube is left out then, as the user asked;
@@ -134,9 +137,9 @@ async function playerLook(who, set, fresh = []) {
     const crossed = on.main.key === "mace" && on.off.key === "shield", padded = (slot, id) => (crossed && slot === "chest" ? unshelled(id) : id);
     for (const slot of PLAYER_SLOTS.filter(shows)) {
       // Leather in its dye, everything enchanted shimmering (flags.glint), and a trim drawn over the armor where they meet, glowing.
-      const { trim, dye, glint } = on[slot];
+      const { trim, dye, banner, glint } = on[slot];
       for (const [model, texture, flags] of worn(slot).layers) {
-        const tex = dye && texture === "player_armor_leather" ? dyedLeather(dye) : texture;
+        const tex = dye && texture === "player_armor_leather" ? dyedLeather(dye) : banner && texture === "player_shield" ? bannerShield(banner) : texture;
         const made = await gearModel(body, model, tex), id = made && await drawnModel(made, tex);
         if (!id) return null;
         layers.push([padded(slot, id), [tex], [], { ...flags, held: slot === "main" || slot === "off" ? 1 : 0, ...(glint ? { glint: 1 } : {}) }]);

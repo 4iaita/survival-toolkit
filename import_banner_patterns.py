@@ -12,6 +12,19 @@ Writes:
                                                   one under the next in PATTERNS' order, "base" (the whole cloth) first
   art/banners/cloth.png, art/banners/ominous.png  the pack's two banner textures, whole
 
+The same patterns on a shield are textures of their own in both games, at half a banner's size: 10×20, the shield's front
+less its one-texel rim (Java's assets/minecraft/textures/entity/shield/<pattern>.png, Bedrock's resource_pack/textures/entity/
+shield_patterns/<pattern>.png, both 64×64 on the shield's layout). Their shapes are the same in both editions once Bedrock's
+diagonal halves are mapped as its banner's are (BEDROCK_SHAPES: its shield files swap them the same way); their grays differ.
+The game multiplies each layer's dye by the pattern's own gray, so the shields keep it (the pack has no cloth for a shield).
+The pack has the plain shield (entity/shield) and redraws Bedrock's ominous one whole (entity/shield_patterns/illager: a shield
+of its own, opaque all over); Java's ominous banner goes on a shield as its 8 layers.
+  art/banners/shield_java.png, shield_bedrock.png   each pattern's gray and alpha over the shield's pattern area (SHIELD_AREA),
+                                                    one under the next in PATTERNS' order, "base" first
+  art/banners/shield.png, shield_ominous.png        the pack's shield and its ominous shield, whole
+
+    python3 -c "import import_banner_patterns as m; m.shields()"    the shields alone
+
     python3 import_banner_patterns.py [path/to/textures]
 Then run build.py.
 """
@@ -28,6 +41,10 @@ out = root / "art" / "banners"
 
 JAVA = "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/banner/{}.png"
 BEDROCK = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/banner/banner_{}.{}"
+SHIELD_JAVA = "https://raw.githubusercontent.com/misode/mcmeta/assets/assets/minecraft/textures/entity/shield/{}.png"
+SHIELD_BEDROCK = "https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/textures/entity/shield_patterns/{}.png"
+# Where the patterns lie on the shield's texture: the plate's front (12×22 at 1,1) less its rim.
+SHIELD_AREA = (2, 2, 12, 22)
 # The flag's part of the texture: its box (20×40×1 at uv 0,0) laid out as the game lays a box out.
 BOX = (44, 42)
 # In the loom's order (Java's tag banner_pattern/no_item_required, then the ones a banner pattern item gives). Must match
@@ -70,6 +87,25 @@ def atlas(load):
     return sheet
 
 
+def shield_atlas(url, edition):
+    w, h = SHIELD_AREA[2] - SHIELD_AREA[0], SHIELD_AREA[3] - SHIELD_AREA[1]
+    sheet = Image.new("LA", (w, h * len(PATTERNS)))
+    for i, name in enumerate(PATTERNS):
+        img = fetch(url.format(BEDROCK_SHAPES.get(name, name) if edition == "bedrock" else name))
+        assert img.size == (64, 64), (name, img.size)
+        assert img.getchannel("A").getbbox() is None or all(a <= b if k < 2 else a >= b for k, (a, b) in enumerate(zip(SHIELD_AREA, img.getchannel("A").getbbox()))), name
+        sheet.paste(img.crop(SHIELD_AREA).convert("LA"), (0, i * h))
+    sheet.save(out / f"shield_{edition}.png", optimize=True)
+
+
+def shields():
+    out.mkdir(parents=True, exist_ok=True)
+    shield_atlas(SHIELD_JAVA, "java")
+    shield_atlas(SHIELD_BEDROCK, "bedrock")
+    for name, src in (("shield", "shield"), ("shield_ominous", "shield_patterns/illager")):
+        Image.open(textures / f"entity/{src}.png").convert("RGBA").save(out / f"{name}.png", optimize=True)
+
+
 def main():
     out.mkdir(parents=True, exist_ok=True)
     # Java's base is the whole cloth; Bedrock's own (banner.tga) is bigger and isn't a pattern, so both take Java's.
@@ -78,6 +114,7 @@ def main():
     atlas(lambda n: base if n == "base" else bedrock(BEDROCK_SHAPES.get(n, n))).save(out / "bedrock.png", optimize=True)
     for name, src in (("cloth", "banner_base"), ("ominous", "banner_pattern_illager")):
         Image.open(textures / f"entity/banner/{src}.png").convert("RGBA").save(out / f"{name}.png", optimize=True)
+    shields()
     print("art/banners:", ", ".join(sorted(p.name for p in out.iterdir())))
 
 

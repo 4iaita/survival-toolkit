@@ -210,8 +210,7 @@ const GEAR_INFO = {
     stats: [["Wool", "0.25 s", "1.2 s by hand"], ["Leaves", "0.05 s", "0.35 s by hand"]] },
   shield: {
     good: "Blocking hits, arrows and blasts from the front.",
-    about: { java: "Works a quarter of a second after you raise it. An axe hit puts it out of use for 5 seconds, and Piercing arrows go through. Add a banner’s pattern by crafting the two together.",
-      bedrock: "Works a quarter of a second after you raise it. An axe hit puts it out of use for 5 seconds, and Piercing arrows go through." },
+    about: "Works a quarter of a second after you raise it. An axe hit puts it out of use for 5 seconds, and Piercing arrows go through.",
     wears: "1 more than the damage it blocks, if that’s 1½ hearts or more",
     stats: [["Blocks", "Front", "Nothing from behind"], ["Out of use", "5 s", "After an axe hit"]] },
   flint_and_steel: {
