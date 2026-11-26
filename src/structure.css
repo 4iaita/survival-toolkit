@@ -1,0 +1,31 @@
+/* ---------- Structures tab ---------- */
+#view-structures .name-chip .ico { width: 18px; height: 18px; }
+/* The dimensions over the structures beside the stage. */
+.st-dims { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.st-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: 4px; }
+.st-tile {
+  display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; min-width: 0; text-align: left; cursor: pointer;
+  font: 700 13.5px/1.2 var(--font-body); color: var(--ink);
+  background: var(--well); border: 2px solid transparent; box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.st-tile:hover { border-color: var(--white); }
+.st-tile[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -3px 0 var(--btn-on-lo); }
+.st-tile .ico { width: 28px; height: 28px; flex: none; }
+.st-say { padding: 0 18px; }
+/* A container: its chips, its block and where it is, then its finds by group. */
+.st-boxes { margin: 0 0 10px; }
+.st-box-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.st-box-head h4 { margin: 0; font: 600 17px/1.2 var(--font-pixel); color: var(--ink); }
+.st-box-head p { margin: 2px 0 0; font-size: 13.5px; font-weight: 600; line-height: 1.4; color: var(--ink-soft); }
+.st-loot .item-row { padding-right: 8px; }
+.st-count { flex: none; font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.st-loot .item-chance { min-width: 3.8em; }
+/* The best finds stand out: a gold edge. */
+.st-best-label { color: #7a5b00; }
+.item-row.st-best { outline: 2px solid #c9a227; outline-offset: -2px; }
+.st-note { margin: 10px 0 0; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+/* Mobs and structures listed as buttons that open them. */
+.st-mobs li { display: flex; min-width: 0; }
+button.st-mob { flex: 1; width: 100%; text-align: left; cursor: pointer; border: 2px solid transparent; font: inherit; color: inherit; }
+button.st-mob:hover { border-color: var(--white); }
+.item-list.st-one { grid-template-columns: minmax(0, 1fr); }

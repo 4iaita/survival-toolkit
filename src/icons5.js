@@ -24,7 +24,7 @@ const ART_ICONS = {
   "ui:table": { boxes: [{ b: [0, 0, 0, 16, 12, 16], faces: [["enchanting_table_side"], ["enchanting_table_top"], ["enchanting_table_side"]] }] },
   "ui:lapis": L("lapis_lazuli"), "ui:shelf": C("bookshelf", "oak_planks"),
   "ui:orb": L("experience_bottle"), "ui:command": C("command_block_front", "command_block_side"),
-  "ui:mob": L("egg_creeper"), "ui:name_tag": L("name_tag"), "ui:armor_stand": L("armor_stand"), "ui:banner": L("banner_red"), "ui:firework": L("firework_rocket"), "ui:pot": L("decorated_pot_side"),
+  "ui:mob": L("egg_creeper"), "ui:name_tag": L("name_tag"), "ui:armor_stand": L("armor_stand"), "ui:banner": L("banner_red"), "ui:firework": L("firework_rocket"), "ui:pot": L("decorated_pot_side"), "ui:structure": L("filled_map"),
 
   "b:dragon_breath": L("dragon_breath"), "b:nether_wart": L("nether_wart"), "b:sugar": L("sugar"), "b:rabbit_foot": L("rabbit_foot"),
   "b:glistering_melon": L("glistering_melon_slice"), "b:blaze_powder": L("blaze_powder"), "b:ghast_tear": L("ghast_tear"),

@@ -1,5 +1,5 @@
 /* ---------- Tool tabs ---------- */
-const VIEWS = ["equipment", "potions", "banners", "fireworks", "pots", "trading", "mobs", "armorstands"];
+const VIEWS = ["equipment", "potions", "banners", "fireworks", "pots", "trading", "mobs", "structures", "armorstands"];
 function showView() {
   const current = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "equipment";
   for (const v of VIEWS) {

@@ -47,6 +47,11 @@ FILES = {
                                                                   "guster", "heart", "howl", "miner", "mourner", "plenty", "prize", "scrape", "sheaf", "shelter", "skull", "snort")},
     "suspicious_sand": "blocks/suspicious_sand_0", "suspicious_gravel": "blocks/suspicious_gravel_0",
     # What a trial chamber's decorated pots hold, beside what art/ had
+    # The Structures tab's loot
+    "bucket": "items/bucket_empty", "cooked_beef": "items/beef_cooked", "honey_bottle": "items/honey_bottle", "honeycomb": "items/honeycomb",
+    "bamboo_planks": "blocks/bamboo_planks", "bamboo_hanging_sign": "items/bamboo_hanging_sign", "iron_block": "blocks/iron_block",
+    "gold_block": "blocks/gold_block", "music_disc_creator": "items/music_disc_creator", "music_disc_precipice": "items/music_disc_precipice",
+    "scaffolding_side": "blocks/scaffolding_side", "scaffolding_top": "blocks/scaffolding_top",
     "trial_key": "items/trial_key", "music_disc_creator_music_box": "items/music_disc_creator_music_box", "emerald_block": "blocks/emerald_block", "diamond_block": "blocks/diamond_block",
     "glowstone_dust": "items/glowstone_dust", "gold_ingot": "items/gold_ingot", "golden_carrot": "items/carrot_golden",
     "gunpowder": "items/gunpowder", "ink_sac": "items/dye_powder_black", "iron_ingot": "items/iron_ingot",
