@@ -410,7 +410,8 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   isn't committed yet. Better: import it as a module and call only the function needed (`import_banners(out)`).
 - To check a change here: render every item, material, section and edition (`gearSections`, `renderGear`) and look for errors, "undefined" and "NaN", and
   compare the plans (`renderPlan`) with the committed page's. Compare pages with a fresh browser profile each, as they share saved settings.
-- Told to the user and left: the planner's rules still end with "Icons are original pixel art drawn for this page", the tab still says "Changes coming".
+- Told to the user and left: the planner's rules still end with "Icons are original pixel art drawn for this page".
+- The tabs' "Changes coming" and "Under construction" labels were taken off at the user's wish (2026-11-26): don't put labels on the tabs.
 
 ### The player on the stage
 
