@@ -245,6 +245,8 @@ FILES = {
     "sapling_acacia": "blocks/sapling_acacia", "sapling_birch": "blocks/sapling_birch", "sapling_cherry": "blocks/cherry_sapling", "sapling_dark_oak": "blocks/sapling_roofed_oak",
     "sapling_jungle": "blocks/sapling_jungle", "mangrove_propagule": "items/mangrove_propagule", "sapling_oak": "blocks/sapling_oak", "sapling_pale_oak": "blocks/pale_oak_sapling",
     "sapling_spruce": "blocks/sapling_spruce", "sapling_poplar": "blocks/poplar_sapling", "iron_nautilus_armor": "items/nautilus_armor/iron_nautilus_armor", "bowl": "items/bowl", "iron_horse_armor": "items/iron_horse_armor",
+    # The nether fortress's chests.
+    "golden_horse_armor": "items/gold_horse_armor", "copper_horse_armor": "items/copper_horse_armor", "diamond_horse_armor": "items/diamond_horse_armor",
     "bundle": "items/bundle",
     # The armor stand props' items (the ones nothing else has).
     "bucket_powder_snow": "items/bucket_powder_snow", "mangrove_boat": "items/mangrove_boat", "cocoa_beans": "items/dye_powder_brown",

@@ -14,11 +14,13 @@ const STRUCTURE_DIMS = [
 
 // Which background each dimension and structure (or kind of one) stands on: a scene of the Mobs tab's (BACKDROPS in
 // src/backdrop.js). plug(...) marks one that hasn't a scene of its own yet and borrows another; giving it its own scene is
-// adding that scene to BACKDROPS and changing its line here to the scene's name.
+// adding that scene to BACKDROPS and changing its line here to the scene's name. Still on a plug: fortress (the Nether's plain
+// background until its own scene is built; nothing on the page says so).
 const plug = biome => ({ biome, plug: true });
 const STRUCTURE_SCENES = {
   overworld: "plains", nether: "nether", end: "end_city",
   trial_chambers: "trial_chamber",
+  fortress: plug("nether"),
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -86,6 +88,39 @@ const STRUCTURES = [
       often: "One in every 34 by 34 chunks (544 blocks square), at least 12 chunks from the next. They’re in the same places in both editions.",
       find: "A Trial Chambers map: 2 in 3 journeyman cartographers sell one for 12 emeralds and a compass. An abandoned camp’s secret chest can have one too. Underground, look for tuff and copper.",
       danger: "Breezes knock you back and off ledges, and turn your arrows aside. Arrow traps wait on tripwires in the corridors. In an ominous trial lingering potions and arrows fall on you every 8 seconds.",
+    },
+  },
+  {
+    k: "fortress", n: "Nether Fortress", dim: "nether", icon: "st:nether_bricks",
+    say: "Nether brick bridges and halls strung out over the lava seas, home to blazes and wither skeletons.",
+    loot: [
+      { k: "chest", n: "Chests", block: "chest", table: "chests/nether_bridge",
+        where: "In the corner of a turn in the indoor corridors: a fortress has up to 20 turns, and each has a chest 1 time in 3." },
+    ],
+    mobs: [
+      { mob: "blaze", how: both("Anywhere in the fortress, 2 or 3 together, in light 11 or less; and from its blaze spawners, up to 2 a fortress, each on a fenced platform up three steps.",
+        "Anywhere in the fortress, 1 or 2 together, in light 11 or less; and from its blaze spawners, up to 2 a fortress, each on a fenced platform up three steps."), chance: "36%" },
+      { mob: "wither_skeleton", how: both("Anywhere in the fortress, 5 together, in light 7 or less.", "Anywhere in the fortress, 2 or 3 together, in light 7 or less."), chance: "29%" },
+      { mob: "zombified_piglin", how: both("Anywhere in the fortress, 4 together, in light 11 or less.", "Anywhere in the fortress, alone, in light 11 or less."), chance: "18%" },
+      { mob: "magma_cube", how: both("Anywhere in the fortress, 4 together.", "Anywhere in the fortress, 2 or 3 together."), chance: "11%" },
+      { mob: "skeleton", how: both("Anywhere in the fortress, 5 together, in light 7 or less.", "Anywhere in the fortress, 2 or 3 together, in light 7 or less."), chance: "7%" },
+    ],
+    mobFacts: [
+      ["The share", "Of the fortress’s spawns: each try picks one of these five by weight, whatever the biome it stands in."],
+      ["Where", both("Anywhere inside one of its pieces, on any block; and on nether bricks (not slabs) anywhere within the outline of the whole fortress, so a floor of them built there spawns its mobs too.",
+        "Only at the fortress’s own spawn spots, in lines 4 to 11 blocks apart across it, on any block a mob can stand on.")],
+      ["Blaze spawners", "Blazes come within 4 blocks of the spawner, in light 11 or less: light 15 on every side of it stops them."],
+      ["Faster", both("A fortress in a soul sand valley or a warped forest spawns its mobs much faster.", "")],
+    ],
+    where: {
+      biomes: "Every Nether biome.",
+      height: "At about Y 48 to 70, often with some of it over a lava sea. Netherrack can bury parts of it, leaving the inside clear.",
+      often: both("The Nether is split into regions of 27 by 27 chunks (432 blocks square), each with a fortress or a bastion remnant, not within 4 chunks of the region’s south and east edges. 2 in 5 are fortresses, and every one in a basalt delta, where bastions don’t generate.",
+        "The Nether is split into regions of 30 by 30 chunks (480 blocks square), each with a fortress or a bastion remnant, not within 4 chunks of the region’s south and east edges. 1 in 3 are fortresses, and every one in a basalt delta, where bastions don’t generate."),
+      find: "Look across the lava seas for dark red brick bridges and walls; the fog hides anything more than about 12 chunks off, so be ready to go several hundred blocks each way. The four regions around the Nether’s middle (0, 0) each hold a fortress or a bastion: finding a bastion rules out a fortress in that region.",
+      danger: "Wither skeletons’ Wither drains your health and can kill; they’re 2.4 blocks tall, so a gap 2 blocks high stops them. Blazes’ fireballs set you on fire (Fire Resistance stops them, not their punches). The bridges’ low walls don’t stop a fall: a blast or a hit can knock you into the lava, which burns everything you carry. Ghasts can spawn in the fortress itself.",
+      about: both("A wither skeleton drops its skull 2.5% of the times you kill it, 1% more for each level of Looting: three make the Wither. A blaze drops a blaze rod half the times you kill it, more often with Looting: you need them to brew and for eyes of ender. Nether wart grows on soul sand at the foot of the big stairways, up to two gardens a fortress.",
+        "A wither skeleton drops its skull 2.5% of the times you kill it, 2% more for each level of Looting: three make the Wither. A blaze drops a blaze rod half the times you kill it; Looting gives more at once, not more often. You need them to brew and for eyes of ender. Nether wart grows on soul sand at the foot of the big stairways, up to two gardens a fortress."),
     },
   },
 ];
@@ -173,7 +208,7 @@ const DIM_HOW = {
   nether: {
     strider: both("On lava, in any light.", "On lava."),
     ghast: both("Wherever it fits, but only 1 in 20 of its tries succeeds.", "Wherever it fits; at most 2 near a player."),
-    zombified_piglin: both("Not on nether wart blocks.", "In light 11 or less, not on nether wart blocks or shroomlight."),
+    zombified_piglin: both("In light 11 or less, not on nether wart blocks.", "In light 11 or less, not on nether wart blocks or shroomlight."),
     piglin: both("Not on nether wart blocks.", "Not on nether wart blocks or shroomlight."),
     hoglin: both("Not on nether wart blocks.", "Not on nether wart blocks or shroomlight. Counted with the animals."),
     magma_cube: both("", "Not on nether wart blocks or shroomlight."),
@@ -215,7 +250,7 @@ const DIM_FACTS = {
     ["The share", "Of that biome’s spawns of the same kind: monsters with monsters, animals with animals, fish with fish, and so on. Where one mob’s share is a range, it differs between the group’s biomes."],
   ],
   nether: [
-    ["Monsters", both("In light 7 or less; a torch counts. None on Peaceful.", "In any light, but zombie pigmen only in 11 or less. Piglins and hoglins come on Peaceful too.")],
+    ["Monsters", both("Skeletons and endermen in light 7 or less (a torch counts), zombified piglins in 11 or less, the rest in any light. None on Peaceful.", "In any light, but zombie pigmen only in 11 or less. Piglins and hoglins come on Peaceful too.")],
     ["Fewer at once", both("In soul sand valleys and warped forests every mob uses up some of the area’s room for spawning, so they stay sparse.", "")],
     ["The share", "Of that biome’s spawns of the same kind: monsters with monsters, animals with animals."],
   ],
@@ -226,7 +261,7 @@ const DIM_FACTS = {
 
 // The icons this tab uses for blocks.
 const ST_ART = {
-  "st:map": L("filled_map"), "st:compass": L("compass"), "st:netherrack": C("netherrack"), "st:end_stone": C("end_stone"), "st:barrel": C("barrel_side", "barrel_top"),
+  "st:map": L("filled_map"), "st:nether_bricks": C("nether_brick"), "st:compass": L("compass"), "st:netherrack": C("netherrack"), "st:end_stone": C("end_stone"), "st:barrel": C("barrel_side", "barrel_top"),
   "st:vault": C("vault"), "st:trial_spawner": C("trial_spawner"), "st:dispenser": C("dispenser_front_horizontal", "furnace_top", "furnace_side"),
 };
 for (const [k, spec] of Object.entries(ST_ART)) if (artReady(spec)) ICONS[k] = spec;
@@ -263,7 +298,7 @@ function lootGroup(id, kind) {
 // Blocks drawn as cubes: [side, top] textures, if not the block's own name for both.
 const LOOT_CUBES = {
   tuff: [], moss_block: [], diamond_block: [], emerald_block: [], iron_block: [], gold_block: [], bamboo_planks: [], oak_planks: [],
-  acacia_planks: ["planks_acacia"], scaffolding: ["scaffolding_side", "scaffolding_top"], heavy_core: [],
+  acacia_planks: ["planks_acacia"], obsidian: [], scaffolding: ["scaffolding_side", "scaffolding_top"], heavy_core: [],
 };
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map" };
