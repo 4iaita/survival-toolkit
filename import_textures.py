@@ -39,6 +39,9 @@ FILES = {
     "fermented_spider_eye": "items/spider_eye_fermented", "fishing_rod": "items/fishing_rod_uncast", "flint": "items/flint",
     "flint_and_steel": "items/flint_and_steel", "ghast_tear": "items/ghast_tear", "glass_bottle": "items/potion_bottle_empty",
     "glistering_melon_slice": "items/melon_speckled", "globe_banner_pattern": "items/globe_banner_pattern",
+    # The Banners tab's pattern items (the globe's, above, came first, for the cartographer's trade)
+    **{f"{k}_banner_pattern": f"items/{k}_banner_pattern" for k in ("bordure_indented", "creeper", "field_masoned", "flow", "flower", "guster", "mojang", "piglin", "skull")},
+    "banner_pattern": "items/banner_pattern",
     "glowstone_dust": "items/glowstone_dust", "gold_ingot": "items/gold_ingot", "golden_carrot": "items/carrot_golden",
     "gunpowder": "items/gunpowder", "ink_sac": "items/dye_powder_black", "iron_ingot": "items/iron_ingot",
     "item_frame": "items/item_frame", "lantern": "items/lantern", "lapis_lazuli": "items/dye_powder_blue",

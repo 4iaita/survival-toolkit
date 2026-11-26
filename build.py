@@ -13,7 +13,7 @@ head = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Survival Toolkit</title>
-<meta name="description" content="Equipment guide with an anvil enchanting planner, potion guide with brewing plans, villager trade guide, mobs and name tag secrets, and armor stand props for Minecraft, Java and Bedrock.">
+<meta name="description" content="Equipment guide with an anvil enchanting planner, potion guide with brewing plans, banner designer with loom plans, villager trade guide, mobs and name tag secrets, and armor stand props for Minecraft, Java and Bedrock.">
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -28,14 +28,14 @@ body { margin: 0; }
 
 def build_page():
     body = read("body.html")
-    for part in ("gear.html", "potion.html", "trade.html", "mob.html", "prop.html"):
+    for part in ("gear.html", "potion.html", "banner.html", "trade.html", "mob.html", "prop.html"):
         body = body.replace(f"<!-- {part} -->\n", read(part))
     scripts = ["brew-data.js", "potion-data.js", "art.js", "icons.js", "icons2.js", "icons3.js", "icons4.js", "icons5.js", "gear-data.js",
                "villager.js", "backdrop-motion.js", "backdrop.js", "trade-data.js", "mob-models.js", "player-models.js", "particles.js", "mobs.js", "player.js", "mob-data.js", "mob-info.js", "tag-data.js", "tag-data-more.js", "prop-data.js", "prop-data-more.js",
-               "ui.js", "tabs.js", "trade-ui.js", "mob-ui.js", "item-stage.js", "potion-ui.js", "prop-ui.js", "anvil-ui.js", "gear-ui.js"]
-    out = (head + read("style.css") + read("gear.css") + read("potion.css") + read("trade.css") + read("mob.css") + read("prop.css") + "</style>\n</head>\n<body>\n" + body +
+               "ui.js", "tabs.js", "trade-ui.js", "mob-ui.js", "item-stage.js", "potion-ui.js", "prop-ui.js", "anvil-ui.js", "gear-ui.js", "banner-data.js", "banner-ui.js"]
+    out = (head + read("style.css") + read("gear.css") + read("potion.css") + read("banner.css") + read("trade.css") + read("mob.css") + read("prop.css") + "</style>\n</head>\n<body>\n" + body +
            '\n<script id="solver">\n' + read("solver.js") + "</script>\n<script>\n" +
-           art_script() + "\n" + effects_script() + "\n" + frames_script() + "\n" + skins_script() + "\n" + mob_skins_script() + "\n" + "\n".join(read(f) for f in scripts) +
+           art_script() + "\n" + effects_script() + "\n" + frames_script() + "\n" + skins_script() + "\n" + mob_skins_script() + "\n" + banners_script() + "\n" + "\n".join(read(f) for f in scripts) +
            "</script>\n</body>\n</html>\n")
     (root / "index.html").write_text(out)
     print(f"index.html: {len(out)} bytes")
@@ -131,6 +131,13 @@ def effects_script():
     files = sorted((root / "art" / "effects").glob("*.png"))
     entries = ",".join(f'"{f.stem}":"data:image/png;base64,{base64.b64encode(f.read_bytes()).decode()}"' for f in files)
     return f"const EFFECT_ART = {{{entries}}};"
+
+
+def banners_script():
+    """The banner patterns and the pack's banners from art/banners/ (import_banner_patterns.py), kept as PNG data URLs like SKINS."""
+    files = sorted((root / "art" / "banners").glob("*.png"))
+    entries = ",".join(f'"{f.stem}":"data:image/png;base64,{base64.b64encode(f.read_bytes()).decode()}"' for f in files)
+    return f"const BANNER_ART = {{{entries}}};"
 
 
 def mob_skins_script():

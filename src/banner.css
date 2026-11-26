@@ -1,0 +1,45 @@
+
+/* ---------- Banners ---------- */
+/* The tab is laid out as the Potions tab is (mob.css); this is what only banners have. Banners are drawn flat, 20×40 texels, at
+   whole or half steps so their texels stay even. */
+#view-banners .name-chip .ico { width: 18px; height: 18px; }
+.bn-pic { display: block; width: 30px; height: 60px; image-rendering: pixelated; }
+.bn-pic.sm { width: 20px; height: 40px; }
+.bn-pic.xs { width: 10px; height: 20px; }
+.bn-slot.slot { width: 32px; height: 52px; }
+.mc-tooltip .bn-slot.slot { flex: none; }
+.search-hit .slot.sm:has(.bn-pic) { height: 48px; }
+
+/* The patterns to add, each over the banner's color in the dye picked. */
+.bn-tiles { display: flex; flex-wrap: wrap; gap: 4px; }
+.bn-tile {
+  position: relative; padding: 4px; cursor: pointer; border: 0; background: var(--slot);
+  box-shadow: inset 2px 2px 0 var(--slot-lo), inset -2px -2px 0 var(--slot-hi);
+}
+.bn-tile:hover:not(:disabled)::before { content: ""; position: absolute; inset: 2px; background: rgba(255, 255, 255, .35); }
+.bn-tile:disabled { cursor: not-allowed; opacity: .45; }
+.bn-full { margin: -2px 0 0 !important; }
+
+/* The layers, under the stage: the banner so far, its name, and buttons to move it or take it off. */
+.bn-layers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.bn-layer { display: flex; align-items: center; gap: 10px; padding: 4px 6px; background: var(--well); box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi); }
+.bn-layer-name { flex: 1; min-width: 0; font-weight: 700; font-size: 14px; }
+.bn-layer-name .sub { display: block; font-weight: 500; font-size: 12.5px; color: var(--ink-soft); }
+.bn-layer-acts { display: flex; gap: 4px; flex: none; }
+.bn-btn { min-width: 30px; padding: 4px 6px; font-size: 13px; }
+.bn-acts { margin-top: 8px; }
+.bn-acts .bn-pic { display: inline-block; margin-right: 6px; vertical-align: -5px; }
+
+/* The sections */
+.mc-tooltip li.bn-tip-layer { color: #aaaaaa; font-weight: 600; }
+.mc-tooltip .tname.bn-uncommon { color: #ffff55; }
+.bn-command { display: flex; gap: 8px; align-items: flex-start; }
+.bn-command code {
+  flex: 1; min-width: 0; overflow-wrap: anywhere; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, monospace;
+  background: var(--well); padding: 8px 10px; box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
+}
+.bn-steps .brew-row { flex-wrap: wrap; }
+.bn-recipe { display: flex; align-items: center; gap: 2px; flex: none; }
+.bn-used { background: var(--picked); }
+#view-banners .item-list.wide { grid-template-columns: minmax(0, 1fr); }
+#view-banners .item-list.wide .item-chance { min-width: 4.6em; }

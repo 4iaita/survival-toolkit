@@ -1,8 +1,8 @@
-# Survival Toolkit: working on the Mobs, Equipment, Potions and Armor Stands tabs
+# Survival Toolkit: working on the Mobs, Equipment, Potions, Banners and Armor Stands tabs
 
 Most of this is about the Mobs tab's stage backgrounds; the rest of that tab is at the end ("The Mobs tab's controls and facts",
-"Finding what's unused"). For the Equipment tab, read "The Equipment tab"; for the Potions tab, "The Potions tab"; for the Armor Stands
-tab, "Armor Stands, section by section".
+"Finding what's unused"). For the Equipment tab, read "The Equipment tab"; for the Potions tab, "The Potions tab"; for the Banners tab, "The Banners
+tab"; for the Armor Stands tab, "Armor Stands, section by section".
 
 The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
@@ -229,6 +229,29 @@ Was the Brewing Guide (`#brewing` still opens its Brewing section). It's laid ou
   in `art/`; `POTIONS` in `import_textures.py`). Effects' icons and the swirls are in `art/effects/` (`EFFECT_ART`).
 - Left out: Luck and Decay (can't be brewed) and Freezing (2026's last drop; the pack has no bottle for it yet).
 
+## The Banners tab
+
+A banner designer (2026-11-26), laid out as the Potions tab is, with its stage (`.prop-stage`). `src/banner-data.js`: the patterns, the banner pattern
+items and the facts; `src/banner-ui.js`: the tab (the banner is `bnr`, saved as `banners-v1`). It loads last.
+
+- The pack has only the plain banner (`entity/banner/banner_base`: white cloth, pole, bar) and the ominous one (`banner_pattern_illager`, which it redraws:
+  a gold cross on black). The patterns are the games' own: `import_banner_patterns.py` downloads Java's (misode/mcmeta, assets branch) and Bedrock's
+  (Mojang/bedrock-samples) and keeps only their alpha, one atlas per edition (`art/banners/java.png`, `bedrock.png`, 44×42 each: the flag's box UV, front and
+  back), and copies the pack's two banners. `build.py` embeds them as `BANNER_ART`.
+- `bannerTexture` colors the flag: each layer's dye as solid as the pattern there, over the base's, times the pack's cloth (its weave). Java's own patterns
+  have a grain in their grays; it's dropped, so both editions share the pack's cloth.
+- Patterns are kept by shape under Java's ids. The editions' shapes differ a little (Bedrock's edges are sharper, the gradients differ), so each edition
+  draws its own. Bedrock's four diagonal halves have each other's names and textures (its banner_diagonal_left is Java's diagonal_up_left): the importer maps
+  them (`BEDROCK_SHAPES`) and `be` in `BANNER_PATTERNS` names them. Bedrock also calls stripe_bottom and stripe_top Base Fess and Chief Fess. Names come from
+  both games' language files.
+- The stage is the game's banner model (`BANNER_CUBES`: the flag 20×40×1 hung in front of the pole), its flag swaying as Java's does (`bannerSwing`).
+- The ominous banner: in Java eight layers on white (`OMINOUS_LAYERS`); in Bedrock an item of its own, drawn as the pack's picture with no layers (`ownOminous`).
+- Checked against the games' files: names, the pattern items' recipes, which patterns need an item (Java's tag `banner_pattern/no_item_required`), the
+  Snout (bastion_other 9/89), Flow (ominous vault 0.75 × 2/10) and Guster (vault 0.25 × 2/12) chances, and the master cartographer's Globe (8 emeralds),
+  the same in both editions. From the wiki only: Bedrock's crafting-table patterns (their recipes aren't in bedrock-samples, so the page doesn't list them),
+  the layer limits, copying, washing, shields, maps and the ominous banner's rules.
+- Not done, and could be offered: the banner on a shield (Java has its own shield pattern textures, `entity/shield/`), Bedrock's crafting-table recipes.
+
 ## The Equipment tab
 
 Was the Anvil Planner (`#anvil` still opens its Anvil plan section). It's laid out as the Potions tab is. The user chose it
@@ -236,7 +259,7 @@ to be about items (a sword, in any material), over a tab about enchantments, as 
 set (2026-11-25: not the item's icon anymore); see "The player on the stage".
 
 - `src/solver.js`: the items (`ITEMS`: all that can be enchanted), the enchantments and the plan's search. `src/gear-data.js`: everything else, from the
-  Minecraft Wiki, by edition where they differ. `src/gear-ui.js`: the tab; `src/anvil-ui.js`: its Anvil plan section. They load last, as they use
+  Minecraft Wiki, by edition where they differ. `src/gear-ui.js`: the tab; `src/anvil-ui.js`: its Anvil plan section. They load after the Potions tab, as they use
   `mob-ui.js`'s and `potion-ui.js`'s helpers.
 - The picked item is the plan's (`state.item` in `src/ui.js`, saved with the edition under the planner's old key, so saved choices live on). Picking an item
   puts it on (`gear.set`: a slot -> an item and its own material); a slot on the stage opens what's in it, or puts on what usually goes there. It starts with nothing on, and with

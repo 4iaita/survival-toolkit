@@ -1,0 +1,45 @@
+  <section id="view-banners" aria-label="Banners" hidden>
+    <p class="view-intro">Design a banner as a loom makes one: pick its color, then add patterns in any dye, up to the loom’s six layers. See what the game calls it, a loom plan step by step, where the banner patterns come from, and what else banners do.</p>
+
+    <section class="panel villager-panel mob-panel" aria-label="Banner">
+      <div class="villager-scene">
+        <div class="stage prop-stage" id="banner-stage" data-biome="plains">
+          <canvas class="stage-scene" id="banner-art" tabindex="0" role="img"></canvas>
+          <span class="stage-hint" aria-hidden="true">
+            <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
+            Drag to turn
+          </span>
+        </div>
+        <div class="try-bar">
+          <span class="cat-label" id="banner-base-label">Banner</span>
+          <div class="try-tags" id="banner-base" role="group" aria-labelledby="banner-base-label"></div>
+        </div>
+        <div class="try-bar">
+          <span class="cat-label" id="banner-layers-label">Layers</span>
+          <div id="banner-layers" role="group" aria-labelledby="banner-layers-label"></div>
+        </div>
+      </div>
+
+      <div class="villager-pick">
+        <div class="panel-head">
+          <h2 id="banner-name"></h2>
+        </div>
+        <div class="cats" id="banner-picker" role="group" aria-label="Add a pattern"></div>
+      </div>
+    </section>
+
+    <div class="trade-grid">
+      <article class="panel result mob-result" id="banner-result"></article>
+
+      <div class="trade-side">
+        <section class="panel">
+          <h2><label for="banner-search">Find a pattern</label></h2>
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 8 8" width="16" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7z"/></svg>
+            <input type="search" class="mc-input" id="banner-search" placeholder="Bordure, stripe, creeper…" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="search-results" id="banner-results" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+  </section>
