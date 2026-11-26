@@ -245,12 +245,6 @@ function fwRocketTooltip() {
       <div class="foot">${fw.stars.length ? plural(fw.stars.length, "star") : "No stars: it doesn’t explode"}</div>
     </div></div>`;
 }
-// Java's commands for them (colors as the games keep them, one number each); Bedrock's /give can't add stars.
-const fwInts = cs => `[I;${cs.map(c => parseInt(FW_COLORS[c].slice(1), 16)).join(",")}]`;
-const fwExplosion = s => `{shape:"${s.shape}"${s.colors.length ? `,colors:${fwInts(s.colors)}` : ""}${s.fades.length ? `,fade_colors:${fwInts(s.fades)}` : ""}${s.trail ? ",has_trail:true" : ""}${s.twinkle ? ",has_twinkle:true" : ""}}`;
-const fwRocketCommand = () => `/give @s firework_rocket[fireworks={flight_duration:${fw.flight}${fw.stars.length ? `,explosions:[${fw.stars.map(fwExplosion).join(",")}]` : ""}}]`;
-const fwStarCommand = s => `/give @s firework_star[firework_explosion=${fwExplosion(s)}]`;
-const fwCommand = (id, text) => `<div class="bn-command fw-command"><code id="${id}">${esc(text)}</code><button type="button" class="mc-btn sm" data-copy="${id}">Copy</button></div>`;
 
 function fireworkAbout() {
   const n = fw.stars.length, f = FW_FLIGHT[fw.flight], [lo, hi] = fwCrossbow(n);
@@ -265,12 +259,9 @@ function fireworkAbout() {
     <div class="cat-label potion-label">How the game shows it</div>
     ${fwRocketTooltip()}
     ${fw.stars.map((x, i) => `<div class="cat-label potion-label">Star ${i + 1}</div>${fwStarTooltip(x)}`).join("")}
-    ${fwEd() === "java" ? `<div class="cat-label potion-label">${fw.stars.length ? "Commands: the rocket, then each star" : "Command"}</div>
-      ${fwCommand("firework-command", fwRocketCommand())}${fw.stars.map((x, i) => fwCommand(`firework-star-command-${i}`, fwStarCommand(x))).join("")}` : ""}
     <dl class="fact-list">
       ${fwFact("Flight duration", FW_FACTS.height)}
       ${fwFact("Stacking", FW_FACTS.stack)}
-      ${fwFact("Command", fwForEdition(FW_FACTS.command))}
     </dl>`;
 }
 
@@ -513,12 +504,8 @@ const pickFireworkSection = k => {
   refocus(`#firework-tab-${k}`);
 };
 $("firework-result").addEventListener("click", e => {
-  const tab = e.target.closest("button[data-section]"), copy = e.target.closest("button[data-copy]");
+  const tab = e.target.closest("button[data-section]");
   if (tab) pickFireworkSection(tab.dataset.section);
-  if (copy) {
-    const code = $(copy.dataset.copy);
-    if (code && navigator.clipboard) navigator.clipboard.writeText(code.textContent).then(() => { copy.textContent = "Copied"; }, () => {});
-  }
 });
 $("firework-result").addEventListener("keydown", e => {
   if (!e.target.closest("[role=tab]")) return;

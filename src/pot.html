@@ -1,0 +1,46 @@
+  <section id="view-pots" aria-label="Decorated Pots" hidden>
+    <p class="view-intro">Design a decorated pot: give each of its four sides a pottery sherd or leave it plain brick, and turn it to see it all round. See what the game calls it, which crafting slot puts each sherd on which side, where every sherd is found, and what else pots do.</p>
+
+    <section class="panel villager-panel mob-panel" aria-label="Decorated pot">
+      <div class="villager-scene">
+        <div class="stage prop-stage" id="pot-stage" data-biome="plains">
+          <canvas class="stage-scene" id="pot-art" tabindex="0" role="img"></canvas>
+          <span class="stage-hint" aria-hidden="true">
+            <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
+            Drag to turn, click a side to pick it
+          </span>
+        </div>
+        <div class="try-bar">
+          <span class="cat-label" id="pot-sides-label">Side</span>
+          <div class="try-tags" id="pot-sides" role="group" aria-labelledby="pot-sides-label"></div>
+        </div>
+        <div class="try-bar">
+          <span class="cat-label" id="pot-acts-label">Pot</span>
+          <div class="try-tags" id="pot-acts" role="group" aria-labelledby="pot-acts-label"></div>
+        </div>
+      </div>
+
+      <div class="villager-pick">
+        <div class="panel-head">
+          <h2 id="pot-name"></h2>
+        </div>
+        <div class="cats" id="pot-picker" role="group" aria-label="Put on the side"></div>
+      </div>
+    </section>
+
+    <div class="trade-grid">
+      <article class="panel result mob-result" id="pot-result"></article>
+
+      <div class="trade-side">
+        <section class="panel">
+          <h2><label for="pot-search">Find a sherd</label></h2>
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 8 8" width="16" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7z"/></svg>
+            <input type="search" class="mc-input" id="pot-search" placeholder="Archer, desert, trail ruins…" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="search-results" id="pot-results" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+

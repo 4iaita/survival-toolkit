@@ -190,10 +190,6 @@ function bannerTooltip(shield = onShield()) {
       <div class="foot">${own ? (shield ? "The ominous banner’s own picture, with no layers" : "An item of its own, with no layers") : bnr.layers.length ? `${plural(bnr.layers.length, "layer")}, the first at the bottom` : shield ? "Only the banner’s color" : "No patterns"}</div>
     </div></div>`;
 }
-// Java's command for it; Bedrock's /give can't add patterns.
-// A shield takes the same patterns, and the banner's color as base_color.
-const bannerPatternsArg = () => `banner_patterns=[${bnr.layers.map(([k, c]) => `{pattern:"${k}",color:"${dyeId(c)}"}`).join(",")}]`;
-const bannerCommand = () => (onShield() ? `/give @s shield[base_color="${dyeId(bnr.base)}",${bannerPatternsArg()}]` : `/give @s ${dyeId(bnr.base)}_banner[${bannerPatternsArg()}]`);
 
 function bannerAbout() {
   const dyes = bannerDyes(), items = bannerItemsUsed(), n = bnr.layers.length;
@@ -208,19 +204,15 @@ function bannerAbout() {
     </div>
     <div class="cat-label potion-label">How the game shows it</div>
     ${bannerTooltip()}
-    ${bnEdition() === "java" && (!bnr.ominous || onShield()) ? `<div class="cat-label potion-label">Command</div>
-      <div class="bn-command"><code id="banner-command">${esc(bannerCommand())}</code><button type="button" class="mc-btn sm" id="banner-copy">Copy</button></div>` : ""}
     ${onShield() ? `<dl class="fact-list">
       ${bnr.ominous ? bnFact("Ominous banner", bnForEdition(SHIELD_FACTS.ominous)) : ""}
       ${bnFact("On a shield", SHIELD_FACTS.look)}
       ${bnFact("Its name", SHIELD_FACTS.name)}
       ${bnFact("Took a wrong one?", SHIELD_FACTS.only)}
-      ${bnEdition() === "bedrock" ? bnFact("Command", bnForEdition(SHIELD_FACTS.command)) : ""}
     </dl>` : `<dl class="fact-list">
       ${bnr.ominous ? bnFact("Ominous banner", bnForEdition(BANNER_FACTS.ominous)) : ""}
       ${bnFact("Layers", bnForEdition(BANNER_FACTS.limit))}
       ${bnFact("Took a wrong one?", BANNER_FACTS.wash)}
-      ${bnEdition() === "bedrock" && !bnr.ominous ? bnFact("Command", "Bedrock’s /give can’t add patterns: make it in a loom.") : ""}
     </dl>`}`;
 }
 
@@ -436,10 +428,6 @@ $("banner-result").addEventListener("click", e => {
   const tab = e.target.closest("button[data-section]"), act = e.target.closest("button[data-act]");
   if (tab) pickBannerSection(tab.dataset.section);
   if (act) bannerAct(act.dataset.act);
-  if (e.target.closest("#banner-copy")) {
-    const done = () => { const b = $("banner-copy"); if (b) b.textContent = "Copied"; };
-    if (navigator.clipboard) navigator.clipboard.writeText(bannerCommand()).then(done, () => {});
-  }
 });
 $("banner-result").addEventListener("keydown", e => {
   if (!e.target.closest("[role=tab]")) return;

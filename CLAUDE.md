@@ -1,8 +1,8 @@
-# Survival Toolkit: working on the Mobs, Equipment, Potions, Banners, Fireworks and Armor Stands tabs
+# Survival Toolkit: working on the Mobs, Equipment, Potions, Banners, Fireworks, Decorated Pots and Armor Stands tabs
 
 Most of this is about the Mobs tab's stage backgrounds; the rest of that tab is at the end ("The Mobs tab's controls and facts",
 "Finding what's unused"). For the Equipment tab, read "The Equipment tab"; for the Potions tab, "The Potions tab"; for the Banners tab, "The Banners
-tab"; for the Fireworks tab, "The Fireworks tab"; for the Armor Stands tab, "Armor Stands, section by section".
+tab"; for the Fireworks tab, "The Fireworks tab"; for the Decorated Pots tab, "The Decorated Pots tab"; for the Armor Stands tab, "Armor Stands, section by section".
 
 The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
@@ -268,8 +268,7 @@ tab draws then), not even with `typeof`.
   The game multiplies each layer's dye by the pattern's gray, so shields keep the gray (`shield_<edition>.png` is gray and alpha), where banners use the
   pack's cloth: the pack has no cloth for a shield. The pack has only the plain shield and Bedrock's ominous one (`shield_patterns/illager`), which it
   redraws as a whole shield (opaque everywhere), so in Bedrock that's drawn alone; Java's ominous banner goes on as its 8 layers.
-- Names: "<Color> Shield" from the banner's color in both languages' files; neither names an ominous shield (shown as White Shield). Java's command:
-  `shield[base_color=...,banner_patterns=[...]]`. Java's recipe is `shield_decoration` (any banner); Bedrock's isn't in bedrock-samples.
+- Names: "<Color> Shield" from the banner's color in both languages' files; neither names an ominous shield (shown as White Shield). Java's recipe is `shield_decoration` (any banner); Bedrock's isn't in bedrock-samples.
 - From the wiki's Shield page: only a shield without patterns takes one, it keeps durability and enchantments, it can't be washed, an anvil keeps the
   patterns, two crafted together lose them, a grindstone keeps the top one's. The Ominous Banner page couldn't be read (the fetch was refused):
   how each edition names and lists an ominous shield is from the files and the recipe, not checked.
@@ -277,8 +276,8 @@ tab draws then), not even with `typeof`.
 ## The Fireworks tab
 
 A firework designer (2026-11-26), laid out as the Banners tab is, with its stage (`.prop-stage`). `src/firework-data.js`: the colors, shapes, words,
-limits and facts; `src/firework-ui.js`: the tab (the rocket is `fw`, saved as `fireworks-v1`). It loads after the Banners tab and uses its `bnBtn` and
-`.bn-command`, and the Potions tab's `countSlot`.
+limits and facts; `src/firework-ui.js`: the tab (the rocket is `fw`, saved as `fireworks-v1`). It loads after the Banners tab and uses its `bnBtn`, and the
+Potions tab's `countSlot`.
 
 - A rocket is `fw.stars` (each `colors`, `fades`, `shape`, `trail`, `twinkle`), `fw.flight` (1 to 3) and `fw.pick`, the star the designer beside the stage
   edits. The grid's 9 slots are the limits: a star's dyes are 8 less its other ingredients (`fwMaxDyes`), a rocket's stars 8 less its gunpowder
@@ -318,7 +317,56 @@ limits and facts; `src/firework-ui.js`: the tab (the rocket is `fw`, saved as `f
 - Tooltips: Java's are as its code writes them (the shape, then each line; in a rocket, a star's lines set in under its shape). Not checked: the order
   of `multiple_stars`' "%s x %s" (shown as "Creeper-shaped x 2", as "%s x%s" is name then count elsewhere) and whether Java groups only stars next
   to each other (all the same ones are grouped). Bedrock's layout isn't documented: the same layout in its words, one line per star.
-- Java's commands: `fireworks` (`flight_duration`, `explosions`) and `firework_explosion`, colors as int arrays. Bedrock's /give can't set them.
+
+## The Decorated Pots tab
+
+A pot designer (2026-11-26), laid out as the Banners tab is, with its stage (`.prop-stage`). `src/pot-data.js`: the sides, the sherds, where
+they're found and the facts; `src/pot-ui.js`: the tab (the pot is `pot`, saved as `pots-v1`: each side's `brick` or a sherd's k, and the side picked).
+It loads last and uses the Banners tab's `.bn-steps`, and the Potions tab's `countSlot`.
+
+- The model is the game's (Java's DecoratedPotRenderer, and the pack's own held pot, `geometry.oreville_ans.cdgesc`: the same shape): a body
+  14×16×14, a neck 6×1×6 and a lip 8×3×8 (`potBoxes`). Its textures are the pack's (`import_pots.py` into `art/pots/`, embedded as `POT_ART`, decoded
+  as the banners' are): `decorated_pot_base` 32×32 (the lip at 0,0 and the neck at 0,5, both upside down as the game turns them, so the lip's top
+  is its box's bottom, the dark opening at 16,0; the body's top at 0,13, its bottom at 14,13), and each side 14×16 from columns 1 to 14 of
+  `decorated_pot_side` or `<k>_pottery_pattern` (their outer columns are clear). Nothing came from the games' files: the pack has it all.
+- Its front faces the camera at rest (low z), its left is the camera's left (low x); each side upright and not mirrored from outside
+  (`potAcross`). Checked by drawing all four sides with different sherds.
+- A click (not a drag: under 4 pixels) picks the side under it: the scene is drawn again with each side a flat unshaded color (`pick`, `sideAt`).
+  The buttons turn the pot to the side (`face`, eased; at once with less motion). The picked side isn't marked on the pot: a lighter edge looked
+  like a flaw in the texture, so it was taken out.
+- The tab's button starts with `ui:pot` (the plain side, in `icons5.js`) and gets the pot's own icon once `POT_ART` is in. Don't give it an
+  ICONS key defined in `pot-ui.js`: `ui.js` fills the nav first, and `icon()` would cache the book under that name for good.
+- From the games' files (Java 26.3, Bedrock 1.26.60): the names (the same in both), the recipes (`crafting_decorated_pot` names back, left,
+  right, front; `decorated_pot_simple`, 4 bricks), the tags (`decorated_pot_ingredients`, `breaks_decorated_pots`: swords, axes, pickaxes,
+  shovels, hoes, trident, mace; `prevents_decorated_pot_shattering`: Silk Touch), the block's loot table (`cracked` drops the sherds), every
+  archaeology table (identical in both editions), the trail ruins' processors (a house has up to 6 common and 3 rare suspicious gravel; the roads
+  and tower tops only common), the trial chambers' decor pool (pots 10 plain to 1 each of flow, guster, scrape: 1 in 13, the sherd on the
+  back) and their pots' loot (`pots/trial_chambers/corridor`, the same in both), the components (`pot_decorations` as {back:{id}, ...}; sherds
+  uncommon, `provides_pottery_pattern`), and the advancements. Java 26.3 made the patterns a registry (`decorated_pot_pattern/<k>`).
+- Not in any file, and told to the user: which grid slot is which side (Java's code: top middle back, middle left left, middle right right,
+  bottom middle front, left as you face the front; recalled, not read), Java's tooltip (back, left, right, front in gray after a blank line,
+  bricks as Brick; nothing for an all-brick pot; recalled), Java's two wobbles (a lean when an item goes in, a shake when it can't; recalled).
+  Bedrock's recipe isn't in bedrock-samples and the wiki doesn't give its slots, and Bedrock's tooltip isn't documented: both are shown as
+  Java's, with no note (see "No commands, no notes on missing Bedrock info"). The wiki's Decorated Pot page has none of these either (read 2026-11-26, up to about 80k characters).
+- From the wiki only: storing (one stack, hoppers, droppers, crafters in; breaking or a hopper out), comparators, the vibration (11), what
+  shatters it (the projectiles, a rocket-boosted elytra), pistons and explosions (drop the pot), waterlogging, Bedrock having no `cracked` state,
+  26.4's mobs breaking pots, Bedrock's achievement.
+- The pack has no wobble or light for the placed pot (its MER files glow nowhere; its attachable `gll.json` only poses the held pot): the user
+  chose to leave it still (2026-11-26). Don't offer the game's wobble again.
+- The sherds' pictures are described by looking at them (`say`); the wiki doesn't describe them.
+- New icons in `FILES` (copied alone): the 22 sherds heartbreak's didn't cover, `suspicious_sand` and `suspicious_gravel` (the pack's `_0`), and
+  the trial pots' finds art/ lacked (`trial_key`, `music_disc_creator_music_box`, `emerald_block`, `diamond_block`). A prefix match on
+  `suspicious_` also caught `suspicious_stew` when copying: check `git status` on `art/` after copying by a pattern.
+- Eight tabs make the tab bar wrap to two rows at about 1300 pixels wide.
+
+## No commands, no notes on missing Bedrock info
+
+The user had the Command rows (Java's `/give` to copy, and Bedrock's "/give can't" notes) taken out of the Banners, Fireworks and Decorated
+Pots tabs (2026-11-26): don't add one to a tab.
+
+Where Bedrock's facts can't be found (not in its files, not on the wiki), show Java's text for Bedrock as it is, with no note that it's
+missing or assumed ("isn't documented", "as in Java", "taken to be the same"): the user doesn't want such phrases on any tab (2026-11-26).
+Say what's unchecked here, in CLAUDE.md, and to the user, not on the page.
 
 ## The Equipment tab
 

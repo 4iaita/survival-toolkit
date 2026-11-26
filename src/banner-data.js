@@ -115,6 +115,5 @@ const SHIELD_FACTS = {
   name: "It’s named for the banner’s color: a red banner makes a Red Shield, whatever its patterns.",
   ominous: both("The ominous banner goes on as any white banner does, as its 8 layers: it makes a White Shield.",
     "The ominous banner goes on as a picture of its own, the game’s ominous shield (this is the pack’s, which draws the whole shield)."),
-  command: both("Give one with the same patterns as a banner’s, and the banner’s color as base_color.", "Bedrock’s /give can’t add patterns: make it in a crafting grid."),
 };
 

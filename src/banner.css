@@ -37,11 +37,6 @@
 /* The sections */
 .mc-tooltip li.bn-tip-layer { color: #aaaaaa; font-weight: 600; }
 .mc-tooltip .tname.bn-uncommon { color: #ffff55; }
-.bn-command { display: flex; gap: 8px; align-items: flex-start; }
-.bn-command code {
-  flex: 1; min-width: 0; overflow-wrap: anywhere; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, monospace;
-  background: var(--well); padding: 8px 10px; box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
-}
 .bn-steps .brew-row { flex-wrap: wrap; }
 .bn-recipe { display: flex; align-items: center; gap: 2px; flex: none; }
 .bn-used { background: var(--picked); }

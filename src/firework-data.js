@@ -88,5 +88,4 @@ const FW_FACTS = {
   portal: "A rocket that flies into a nether portal goes through and explodes on the other side.",
   plate: "A rocket launched by hand onto a wooden pressure plate presses it; a stone one it doesn’t.",
   sounds: "The large ball has a bigger bang. Twinkling stars crackle after they burst.",
-  command: both(null, "Bedrock’s /give can’t add stars or a flight duration: craft it."),
 };

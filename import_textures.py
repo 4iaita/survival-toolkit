@@ -42,6 +42,12 @@ FILES = {
     # The Banners tab's pattern items (the globe's, above, came first, for the cartographer's trade)
     **{f"{k}_banner_pattern": f"items/{k}_banner_pattern" for k in ("bordure_indented", "creeper", "field_masoned", "flow", "flower", "guster", "mojang", "piglin", "skull")},
     "banner_pattern": "items/banner_pattern",
+    # The Decorated Pots tab's sherds (heartbreak's, below, came first, for the Armor Stands' prop) and the blocks they're brushed out of
+    **{f"{k}_pottery_sherd": f"items/{k}_pottery_sherd" for k in ("angler", "archer", "arms_up", "blade", "brewer", "burn", "danger", "explorer", "flow", "friend",
+                                                                  "guster", "heart", "howl", "miner", "mourner", "plenty", "prize", "scrape", "sheaf", "shelter", "skull", "snort")},
+    "suspicious_sand": "blocks/suspicious_sand_0", "suspicious_gravel": "blocks/suspicious_gravel_0",
+    # What a trial chamber's decorated pots hold, beside what art/ had
+    "trial_key": "items/trial_key", "music_disc_creator_music_box": "items/music_disc_creator_music_box", "emerald_block": "blocks/emerald_block", "diamond_block": "blocks/diamond_block",
     "glowstone_dust": "items/glowstone_dust", "gold_ingot": "items/gold_ingot", "golden_carrot": "items/carrot_golden",
     "gunpowder": "items/gunpowder", "ink_sac": "items/dye_powder_black", "iron_ingot": "items/iron_ingot",
     "item_frame": "items/item_frame", "lantern": "items/lantern", "lapis_lazuli": "items/dye_powder_blue",
