@@ -215,7 +215,7 @@ const DIM_FACTS = {
     ["The share", "Of that biome’s spawns of the same kind: monsters with monsters, animals with animals, fish with fish, and so on. Where one mob’s share is a range, it differs between the group’s biomes."],
   ],
   nether: [
-    ["Monsters", both("In light 7 or less; a torch counts. None on Peaceful.", "In any light, but zombified piglins only in 11 or less. Piglins and hoglins come on Peaceful too.")],
+    ["Monsters", both("In light 7 or less; a torch counts. None on Peaceful.", "In any light, but zombie pigmen only in 11 or less. Piglins and hoglins come on Peaceful too.")],
     ["Fewer at once", both("In soul sand valleys and warped forests every mob uses up some of the area’s room for spawning, so they stay sparse.", "")],
     ["The share", "Of that biome’s spawns of the same kind: monsters with monsters, animals with animals."],
   ],
