@@ -81,7 +81,7 @@ FILES = {
     "leather_leggings": "items/leather_leggings", "leather_boots": "items/leather_boots",
     "leather_horse_armor": "items/leather_horse_armor", "name_tag": "items/name_tag", "armor_stand": "items/armor_stand",
     # Blocks
-    "andesite": "blocks/stone_andesite", "anvil": "blocks/anvil_base", "anvil_top": "blocks/anvil_top_damaged_0", "bedrock": "blocks/bedrock", "bookshelf": "blocks/bookshelf",
+    "andesite": "blocks/stone_andesite", "anvil": "blocks/anvil_base", "anvil_top": "blocks/anvil_top_damaged_0", "bedrock": "blocks/bedrock", "bookshelf": "blocks/bookshelf", "enchanting_table_top": "blocks/enchanting_table_top", "enchanting_table_side": "blocks/enchanting_table_side",
     "cactus_side": "blocks/cactus_side", "cactus_top": "blocks/cactus_top",
     "chest_front": "blocks/chest_front", "chest_side": "blocks/chest_side", "chest_top": "blocks/chest_top",
     "command_block_front": "blocks/command_block_front_mipmap", "command_block_side": "blocks/command_block_side_mipmap",

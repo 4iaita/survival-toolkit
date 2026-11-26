@@ -1,6 +1,6 @@
 /* ---------- Equipment ----------
  * Every item the enchantments go on (ITEMS in src/solver.js), in any material it comes in, put on the player on the stage
- * (src/player.js); each one's anvil plan is one of its sections (src/anvil-ui.js). The picked item is the plan's (state.item), so
+ * (src/player.js); each one's anvil plan is one of its sections (src/anvil-ui.js), and what the enchanting table offers it another (src/table-ui.js). The picked item is the plan's (state.item), so
  * both are always about the same one.
  */
 // The material picked last (an item without it comes in diamond), which section each worn thing shows (sections: a slot ->
@@ -238,14 +238,14 @@ function renderGearPicker() {
 }
 
 /* The sections */
-const GEAR_SECTIONS = [["about", "Overview"], ["materials", "Materials"], ["enchants", "Enchantments"], ["anvil", "Anvil plan"], ["craft", "Crafting"], ["repair", "Repair"], ["find", "Where to find"]];
+const GEAR_SECTIONS = [["about", "Overview"], ["materials", "Materials"], ["enchants", "Enchantments"], ["table", "Enchanting table"], ["anvil", "Anvil plan"], ["craft", "Crafting"], ["repair", "Repair"], ["find", "Where to find"]];
 const gearSections = item => GEAR_SECTIONS.filter(([s]) => s !== "materials" || GEAR_MATS[item.k]);
 // Each worn thing shows a section of its own; the anvil plan only for the item it's about (state.item), as there's one.
 const shownGearSection = (item, slot = slotOf(item)) => {
   const s = gear.sections[slot];
   return gearSections(item).some(([k]) => k === s) && (s !== "anvil" || item.k === state.item) ? s : "about";
 };
-const gearSectionIcon = (s, item) => ({ set: "ui:armor_stand", about: gearIcon(item), materials: "part:iron", enchants: "ui:enchant", anvil: "ui:anvil", craft: "ui:crafting", repair: "site:Grindstone", find: "src:chest" }[s]);
+const gearSectionIcon = (s, item) => ({ set: "ui:armor_stand", about: gearIcon(item), materials: "part:iron", enchants: "ui:enchant", table: "ui:table", anvil: "ui:anvil", craft: "ui:crafting", repair: "site:Grindstone", find: "src:chest" }[s]);
 // The worn thing whose sections are being drawn (renderGearResult), so that each one's names are its own.
 let drawingSlot = "main";
 const gearHead = (s, item, note = "") => sectionHead(`gear-${drawingSlot}-title`, gearSectionIcon(s, item), GEAR_SECTIONS.find(([k]) => k === s)[1], note);
@@ -433,7 +433,7 @@ function renderGearResult() {
   const block = ({ slot, w }) => {
     const item = gearItem(w.k), mat = w.mat, on = shownGearSection(item, slot), name = wornName(w);
     drawingSlot = slot;
-    const body = { about: gearAbout, materials: gearMaterials, enchants: gearEnchants, craft: gearCraft, repair: gearRepair, find: gearFind,
+    const body = { about: gearAbout, materials: gearMaterials, enchants: gearEnchants, table: tableSection, craft: gearCraft, repair: gearRepair, find: gearFind,
       anvil: () => `${gearHead("anvil", item, edition)}${anvilSection()}` }[on](item, mat);
     return `
     <article class="gear-block" data-block="${slot}" aria-labelledby="gear-${slot}-name"${item.k === state.item ? ' aria-current="true"' : ""}>

@@ -77,3 +77,16 @@
 
 /* The link to the Banners tab, in the shield's Banner row, as a chip. */
 a.name-chip.gear-banner-edit { text-decoration: none; }
+
+/* The Enchanting table section (src/table-ui.js): its choices side by side, and the three slots as boxes to pick. */
+.table-choices { flex-direction: row; flex-wrap: wrap; gap: 14px 32px; margin: 12px 0 4px; }
+.table-choices .cat-label { margin: 0 0 6px; }
+.table-slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+button.table-slot { font: inherit; color: inherit; text-align: left; border: 2px solid transparent; cursor: pointer; }
+button.table-slot:hover { border-color: var(--white); }
+button.table-slot[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -2px 0 var(--btn-on-lo); border-color: var(--edge); }
+button.table-slot[aria-pressed="true"] .stat-label, button.table-slot[aria-pressed="true"] .stat-value, button.table-slot[aria-pressed="true"] .sub { color: var(--white); }
+.table-levels { margin-bottom: 4px; }
+.table-want { margin-bottom: 10px; }
+.table-anvil { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; }
+.table-anvil .ico { width: 20px; height: 20px; }

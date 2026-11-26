@@ -374,7 +374,7 @@ Was the Anvil Planner (`#anvil` still opens its Anvil plan section). It's laid o
 to be about items (a sword, in any material), over a tab about enchantments, as the plan is made for one item. On the stage the player wears the
 set (2026-11-25: not the item's icon anymore); see "The player on the stage".
 
-- `src/solver.js`: the items (`ITEMS`: all that can be enchanted), the enchantments and the plan's search. `src/gear-data.js`: everything else, from the
+- `src/solver.js`: the items (`ITEMS`: all that can be enchanted), the enchantments and the plan's search. The Enchanting table section is its own: see "The Enchanting table section". `src/gear-data.js`: everything else, from the
   Minecraft Wiki, by edition where they differ. `src/gear-ui.js`: the tab; `src/anvil-ui.js`: its Anvil plan section. They load after the Potions tab, as they use
   `mob-ui.js`'s and `potion-ui.js`'s helpers.
 - The picked item is the plan's (`state.item` in `src/ui.js`, saved with the edition under the planner's old key, so saved choices live on). Picking an item
@@ -412,6 +412,44 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   compare the plans (`renderPlan`) with the committed page's. Compare pages with a fresh browser profile each, as they share saved settings.
 - Told to the user and left: the planner's rules still end with "Icons are original pixel art drawn for this page".
 - The tabs' "Changes coming" and "Under construction" labels were taken off at the user's wish (2026-11-26): don't put labels on the tabs.
+
+### The Enchanting table section (2026-11-26)
+
+- A section of each worn thing beside Anvil plan (the user chose it over a tab of its own). `src/table-data.js`: the maths and the facts
+  (`TABLE_FACTS`); `src/table-ui.js`: the section (`tbl`, saved as `table-v1`: bookshelves, item or book, the slot looked at, its level, and the
+  enchantment wanted for each item). `table-data.js` and `table-book.js` load after `gear-data.js`, `table-ui.js` after `anvil-ui.js`.
+- "How the table works" shows only the edition picked, never one compared with the other (the user had a "Java and Bedrock" fact taken out,
+  2026-11-26): a fact that only one edition has is `both(text, "")`, which `potionFact` leaves out.
+- The stage keeps the player for this section too: offered the table with its floating book and bookshelves (the pack has the textures, the
+  book's texture and its glyph particle `epv.json`, but no book model), the user chose to keep the player (2026-11-26). Don't offer it again.
+- The maths is Java's code (EnchantmentMenu, EnchantmentHelper's getEnchantmentCost and selectEnchantment), from memory, and Java 26.3's data
+  (misode/mcmeta `26.3-data`: `enchantment/*.json` weight, min_cost, max_cost; the tags `in_enchanting_table` = `non_treasure`, `treasure`,
+  `exclusive_set/*`; enchantability from `26.3-summary` `item_components`, the same as `gear-data.js`'s). What the table gives each item is
+  `enchantFrom` (Java's `primary_items` tags agree with `BOOK_ONLY_JAVA`). `TABLE_SETS` are Java's exclusive sets, which put Impaling with
+  Sharpness (it matters only for books); the anvil's `CONFLICTS` don't, and were left alone.
+- Exact, not sampled: the slots' bases are summed; the ±15% is done in floats as Java does (`Math.fround`), and as its result only depends on the
+  two floats' sum and grows with it, each rounded level's chance is counted exactly (`tableJitter`); the picks are walked over the sets picked so
+  far, a clique of clashing enchantments as one unit (`tableResult`). A book's 36 candidates take about 8 s an edition, so they're worked out once:
+  `node tools/table-book.js` writes `src/table-book.js` (run it after changing `TABLE_ENCH`, `TABLE_SETS` or `ENCH`). Paths under 1e-15 are
+  dropped: at most 2e-9 of a book's chance is left out.
+- Facts the code gives that the wiki leaves out: a slot under its number (1, 2, 3) is empty (the middle at 0 to 1 bookshelves, the bottom at 0 to
+  1, now and then); a hint is a uniform pick from what the slot gives, after a book loses one, so a book's hint is never the one it loses; the
+  ±15% can reach a level the wiki's rounding wouldn't (35 from 30, at about 1e-13).
+- Checked: a simulation of Java's algorithm (every chance within its noise); the wiki's slot level table (the same, but for the empty slots);
+  the wiki's power ranges; SeeYou-Man/Minecraft-Enchantment-Probabilities' simulated tables (the wiki links it): the diamond sword, diamond tools
+  and trident within 0.4 points at every level, its book not (its own data has Breach IV and Density at costs Java 26.3 doesn't, and about twice
+  Java's Unbreaking).
+- Bedrock: bedrock-samples has only the enchantments' names, so Bedrock is drawn with Java's numbers and steps, its own items (`enchantFrom`)
+  and its bookshelf rule (air at the table's height and above, from the wiki). Unchecked for Bedrock, and shown as Java's with no note: its
+  slot and enchanting levels, weights, cost ranges, enchantability, books losing one, the seed and rerolling. The wiki's Enchanting table
+  mechanics page has no Bedrock numbers, and the Enchanting Table page (read whole 2026-11-26, its Bedrock history too) none of these. From that
+  page and Chiseled Bookshelf: chiseled bookshelves don't power a table (not edition-labelled, so both); in Bedrock a slot charges as many levels
+  as its lapis (1 to 3) and needs its level shown, as Java; its example (a level 10 slot can give a pickaxe Efficiency II) fits Java's maths.
+  The rest can only be checked in the game (the user was given a test plan: shown levels at 0 and 15 bookshelves, taking the item out and back,
+  a golden against a diamond sword for Sharpness V, how many of 30 books come with two).
+- To check it: render `tableSection(item, mat)` for every item, material, 0 to 15 bookshelves, slot, level, item or book and edition, and
+  `tableGet` for every enchantment and level (47,552 renders, about 100 s headless); strip the enchantment name Infinity before looking for
+  "Infinity" as an error. A first render of a new item and bookshelf count can take up to about 300 ms; after that it's cached.
 
 ### The player on the stage
 
