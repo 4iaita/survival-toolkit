@@ -288,9 +288,11 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   `import_player.py`). Its 22 `example_skin_N` (one purple figure with each kind of eyes) are left out. Cooper, Nugget, Gary and others from its changelog aren't there.
 - Expressions: the pack draws a face over a skin's own from texels the game doesn't use (`FACE` in `import_player.py`, the layer after the skin's): eyes, brows, and lids as it
   blinks. Steve and Alex have nothing there. The eyes only wander in the idle fidgets (`bjmscc`, 12 of them, after walking and then standing 3 seconds), which aren't in.
-- Costumes (`COSTUMES` in `src/gear-data.js`, `costumes()` in `import_player.py`): leather armor with one of ten trims on, in Bedrock only, piece by piece (`trim` in
-  `gear.set`, a row under Material; Java keeps the pick). The trims' textures are masks over the leather's sheet (`cdq`, alpha 127 hides), and the cubes are the leather
-  models' own. The pack doesn't name the Silence one (the hazmat suit), and its list has the Host trim in the wrong place. Other trims aren't drawn.
+- Costumes (`COSTUMES` in `src/gear-data.js`, `costumes()` in `import_player.py`): leather armor with one of ten trims on, in Bedrock only, piece by piece. A costume is
+  the worn thing's `trim` (the same as the Trim row's; the Costume row is a second way to pick it, and its None only takes a costume's trim off). In Java that trim is
+  drawn as a plain trim. The trims' textures are masks over the leather's sheet (`cdq`, alpha 127 hides), and the cubes are the leather models' own. The pack doesn't
+  name the Silence one (the hazmat suit), and its list has the Host trim in the wrong place. Where its templates are is `TRIMS`' (the costumes had their own before;
+  the Eye's was missing the stronghold library, where every chest has one).
 - Stances: the pack's own third person controllers (njvelc for what's held, knoyhk for a spear), at a standstill: `this` is 0, `q.modified_move_speed` 0. What's keyframed
   plays once as it's taken in hand (a loop's `once` and `at`) and holds its end; armor pops on (`GEAR_POPS`). The pack's stances and armor are used in Java too.
 - Tools are the game's flat pictures: the pack's 3D ones are a setting that starts off. Not done, and told to the user: the pack's armor shimmer
@@ -312,9 +314,21 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   user asked; shown with two or more on.
 - Echo's hood (a 9-wide cube round its head) showed through every helmet's top, as the pack leaves it; under a helmet that cube is left out
   (`UNDER_HELMET`, `hooded` in `src/player.js`), as the user asked.
-- Dyed leather: `dyedLeather` colors the raw sheet (`player_armor_leather_dye`) as `leather_texture` does undyed. The leather icons stay brown.
-- Enchanted: the page's own shimmer (`flags.glint`, the Mobs tab's) on everything of the item, not its trim; its slots get `.glint` in a span of its own, as a
-  slot button's `::after` is its name. The pack's own enchanted look (a colored outline and glint, its Enchantment Effect Colour setting) isn't drawn. The elytra (Java's ElytraModel) and the rod (Java's handheld_rod) aren't in the pack as models; leather is baked in its undyed color.
+- Dyed leather: `dyedLeather` colors the raw sheet (`player_armor_leather_dye`) as `leather_texture` does undyed. The leather icons stay brown. How each edition
+  dyes it (`DYE_HOW`) was checked on the wiki: Java in a crafting grid, Bedrock in a cauldron of dyed water; plain water washes it out.
+- Textures the page makes as it draws (a trim in a material, dyed leather) go in `mobTextures` under names of their own (`madeTexture`). A trim's texels are
+  at alpha 7 (lit), so `drawnModel` takes the faintest that shows (`least`), or it drops every cube.
+- Saved sets from before trims: a costume's `trim` stays, and gets the usual trim material (`gear.trimMat`, the one picked last).
+- The new icons (the 8 templates the costumes didn't have, the amethyst shard, the resin brick) are in `FILES` in `import_textures.py`; they were copied alone, not by
+  running it whole.
+- To look at the player up close: in a headless Chrome (as `capture.mjs` starts one), `playerLook(who, {slot: wornLook})`, then `lookBoxes` (with
+  `moving: motionPose(look.motions, t)` for the stance) and `renderScene` at a big scale, saved as a PNG. After a change to the player, hash every
+  `GEAR_WORN` thing alone on a few bodies on the new page and the committed one (`git show HEAD:index.html`): they should be the same.
+- Enchanted: the page's own shimmer (`flags.glint`, the Mobs tab's) on everything of the item, not its trim. Its icons (stage slots, picker, block titles) are
+  wrapped by `shimmer` in a span the shimmer fits exactly (`.icon-glint` in `src/gear.css`): a fixed 32px one was bigger than the slots' 30px icons and pushed them
+  up, which the user saw; and a slot button's own `::after` is its name. The pack's own enchanted look (a colored outline and glint, its Enchantment Effect Colour
+  setting) isn't drawn.
+- The elytra (Java's ElytraModel) and the rod (Java's handheld_rod) aren't in the pack as models. Leather is baked in its undyed color; dyed, it's `dyedLeather`.
 - The stage always frames the player the same (`PLAYER_FRAME`, a look's `framed`), whatever they wear.
 - `renderScene` draws rows without glass, beams or doorways face by face (`plainRow`, `plainFace`), reading the texels itself where a box has `paint` (`modelBoxes`): 5 to 7
   times as fast as a ray for each pixel (an iron golem at 2×: 186 ms to 28), and the same to the pixel (670 looks, two views each, compared 2026-11-25). A change to
