@@ -4,9 +4,10 @@
  * both are always about the same one.
  */
 // The material picked last (an item without it comes in diamond), which section each worn thing shows (sections: a slot ->
-// a GEAR_SECTIONS key), what's put on (set: a slot -> an item, its material, its costume's trim and when it went on), who wears it (a PLAYER_SKINS key) and the enchantments picked for the items
-// that aren't the plan's now (plans).
-const gear = { mat: "diamond", sections: {}, query: "", who: "steve", set: null, plans: {} };
+// a GEAR_SECTIONS key), what's put on (set: a slot -> an item, its material, its trim (a TRIMS key; on leather in Bedrock one of the
+// COSTUMES is that costume) and the trim's material, its dye (leather's), whether it's enchanted (glint) and when it went on), who wears
+// it (a PLAYER_SKINS key), the trim material picked last (trimMat) and the enchantments picked for the items that aren't the plan's now (plans).
+const gear = { mat: "diamond", sections: {}, query: "", who: "steve", set: null, plans: {}, trimMat: "gold" };
 const GEAR_KEY = "equipment-v2";
 // The set used to start full, so one saved back then (equipment-v1) may be nobody's pick: it starts over, the rest is kept.
 const savedGear = key => { try { return JSON.parse(localStorage.getItem(key)); } catch (_) { return null; } };
@@ -15,6 +16,7 @@ if (!MATERIALS[gear.mat]) gear.mat = "diamond";
 if (!PLAYER_SKINS[gear.who]) gear.who = "steve";
 if (!gear.plans || typeof gear.plans !== "object") gear.plans = {};
 if (!gear.sections || typeof gear.sections !== "object") gear.sections = {};
+if (!TRIM_MATERIALS[gear.trimMat]) gear.trimMat = "gold";
 const saveGear = () => { try { localStorage.setItem(GEAR_KEY, JSON.stringify(gear)); } catch (_) {} };
 
 // Where things go: each slot, its name, and what an empty one puts on when it's picked.
@@ -23,6 +25,10 @@ const SLOT_OF = { helmet: "head", turtle_shell: "head", chestplate: "chest", ely
 const slotOf = item => SLOT_OF[item.k] || "main";
 const slotName = slot => GEAR_SLOTS.find(([s]) => s === slot)[1];
 const gearItem = k => ITEMS.find(i => i.k === k);
+const isArmor = item => ARMOR_PIECES.includes(item.k);
+// What can be trimmed (all armor but the elytra), and dyed (leather armor).
+const canTrim = item => isArmor(item) || item.k === "turtle_shell";
+const canDye = (item, mat) => isArmor(item) && mat === "leather";
 // An item's material if it's worn, or the one it would come in.
 const isWorn = item => Boolean(gear.set[slotOf(item)] && gear.set[slotOf(item)].k === item.k);
 const usualMat = (k, mat = gear.mat) => (!GEAR_MATS[k] ? null : GEAR_MATS[k].includes(mat) ? mat : "diamond");
@@ -32,27 +38,43 @@ const nothingOn = () => !Object.keys(gear.set).length;
 // A first set (nothing), or a saved one without what isn't there anymore.
 if (!gear.set || typeof gear.set !== "object" || Array.isArray(gear.set)) gear.set = {};
 for (const [slot, w] of Object.entries(gear.set)) {
-  if (!w || !gearItem(w.k) || slotOf(gearItem(w.k)) !== slot || (w.mat || null) !== usualMat(w.k, w.mat)) delete gear.set[slot];
-  else if (w.trim && !(COSTUMES[w.trim] && w.mat === "leather")) delete w.trim;
+  if (!w || !gearItem(w.k) || slotOf(gearItem(w.k)) !== slot || (w.mat || null) !== usualMat(w.k, w.mat)) {
+    delete gear.set[slot];
+    continue;
+  }
+  // A saved costume is its trim, so it stays one; one saved before trims had a material gets the usual.
+  if (w.trim && !(TRIMS[w.trim] && canTrim(gearItem(w.k)))) delete w.trim;
+  if (w.trim && !TRIM_MATERIALS[w.trimMat]) w.trimMat = gear.trimMat;
+  if (!w.trim) delete w.trimMat;
+  if (w.dye && !(DYES[w.dye] && canDye(gearItem(w.k), w.mat))) delete w.dye;
+  if (w.glint !== true) delete w.glint;
 }
 
 // Icons: an item in each material, what it's made of, the empty slots' pictures, and the mobs it comes from (the other sources are potion-ui.js's).
 const setIcon = (key, spec, fallback) => { ICONS[key] = artReady(spec) ? spec : ICONS[fallback]; };
 for (const [k, mats] of Object.entries(GEAR_MATS)) for (const m of mats) setIcon(`g:${m}_${k}`, L(m === "diamond" && k === "spear" ? "spear" : `${m}_${k}`), k);
 for (const [k, part] of Object.entries(GEAR_PARTS)) setIcon(`part:${k}`, part.icon, "ui:book");
-for (const [slot, , k] of GEAR_SLOTS) setIcon(`slot:${slot}`, L(slot === "main" ? "iron_sword" : `slot_${k}`), k);
-for (const k of Object.keys(COSTUMES)) setIcon(`trim:${k}`, L(`${k}_armor_trim_smithing_template`), "ui:book");
+for (const [slot, , k] of GEAR_SLOTS) setIcon(`slot:${slot}`, L(slot === "main" ? "slot_sword" : `slot_${k}`), k);
+for (const k of Object.keys(TRIMS)) setIcon(`trim:${k}`, L(`${k}_armor_trim_smithing_template`), "ui:book");
+for (const [k, m] of Object.entries(TRIM_MATERIALS)) setIcon(`tmat:${k}`, L(m.item), "ui:book");
 setIcon("ui:crafting", C("crafting_table_front", "crafting_table_top", "crafting_table_side"), "ui:book");
 for (const m of ["zombie", "skeleton", "drowned", "pillager", "vindicator", "piglin_brute", "wither_skeleton", "zombified_piglin"]) setIcon(`src:${m}`, L(`egg_${m}`), "ui:mob");
 
 const gearName = (item, mat = gearMat(item)) => (!mat ? item.n : GEAR_NAMES[`${mat}_${item.k}`] || `${MATERIALS[mat].n} ${item.n}`);
 const gearIcon = (item, mat = gearMat(item)) => (mat ? `g:${mat}_${item.k}` : item.k);
-// The costume a worn thing is in (a COSTUMES key): the pack's, so only in Bedrock; the pick is kept meanwhile.
-const costumeOf = w => (w && w.trim && packOn() ? w.trim : null);
+// The costume a worn thing is in (a COSTUMES key): leather armor with its trim, the pack's, so only in Bedrock (in Java it's that trim).
+const costumeOf = w => (w && w.trim && w.mat === "leather" && COSTUMES[w.trim] && packOn() ? w.trim : null);
 // A worn thing's name, with its costume.
 const wornName = w => `${gearName(gearItem(w.k), w.mat)}${costumeOf(w) ? ` (${COSTUMES[w.trim].n})` : ""}`;
+// The palette its trim is drawn in (a TRIM_COLORS one): darker on armor of the trim's own material.
+const trimPalette = w => `${w.trimMat}${TRIM_MATERIALS[w.trimMat].own === w.mat ? "_darker" : ""}`;
+// What's on a worn thing, in words: its trim, dye and enchantment (a costume shows neither trim nor dye).
+const wornWords = w => [
+  w.trim && !costumeOf(w) ? `${TRIMS[w.trim].n} trim in ${TRIM_MATERIALS[w.trimMat].n.toLowerCase()}` : "",
+  w.dye && !costumeOf(w) ? `dyed ${w.dye}` : "",
+  w.glint ? "enchanted" : "",
+].filter(Boolean);
 const canDress = item => packOn() && !nothingOn() && isArmor(item) && gearMat(item) === "leather";
-const isArmor = item => ARMOR_PIECES.includes(item.k);
 // Durability in the edition picked, and enchantability (0: the enchanting table won't take it).
 function gearUses(item, mat = gearMat(item)) {
   if (state.edition === "bedrock" && BEDROCK_USES[item.k]) return BEDROCK_USES[item.k];
@@ -80,12 +102,21 @@ gearStage.style.setProperty("--ground", `url('${groundArt("plains")}')`);
 const shownSkin = () => (!PLAYER_SKINS[gear.who].pack || packOn() ? gear.who : "steve");
 // A worn thing's GEAR_WORN key.
 const wornKey = w => (w ? `${w.mat ? `${w.mat}_` : ""}${w.k}${costumeOf(w) ? `_${w.trim}` : ""}` : null);
-const wornNames = () => GEAR_SLOTS.filter(([slot]) => gear.set[slot]).map(([slot]) => wornName(gear.set[slot]));
+// And as playerLook takes it (src/player.js): that key, with what's on it.
+const wornLook = w => (w ? [wornKey(w), w.trim && !costumeOf(w) ? `trim=${w.trim}.${trimPalette(w)}` : "", w.dye && !costumeOf(w) ? `dye=${w.dye}` : "", w.glint ? "glint" : ""].filter(Boolean).join("+") : null);
+// What of a worn thing goes on with it, as a full set's pieces take it: its trim, dye and enchantment.
+const setLook = w => Object.fromEntries(["trim", "trimMat", "dye", "glint"].filter(k => w[k]).map(k => [k, w[k]]));
+// A thing's picture, shimmering if it's enchanted (.glint in src/style.css): the picture in a span of its own that the shimmer fits
+// (.icon-glint in src/gear.css), whatever size it's drawn at, as a slot button's own ::after is its name.
+const shimmer = (w, pic) => (w && w.glint ? `<span class="glint icon-glint" style="--m:url('${icon(pic)}')">${iconImg(pic)}</span>` : iconImg(pic));
+const wornNames = () => GEAR_SLOTS.filter(([slot]) => gear.set[slot]).map(([slot]) => [wornName(gear.set[slot]), ...wornWords(gear.set[slot])].join(", "));
 let shownSet = null, gearShows = 0;
 async function showGear() {
-  const set = Object.fromEntries(GEAR_SLOTS.map(([slot]) => [slot, wornKey(gear.set[slot])])), mine = ++gearShows;
-  // What's just been put on comes in as the game has it (nothing has at first: it was all on already).
-  const fresh = shownSet ? Object.keys(set).filter(slot => set[slot] && set[slot] !== shownSet[slot]) : [];
+  const set = Object.fromEntries(GEAR_SLOTS.map(([slot]) => [slot, wornLook(gear.set[slot])])), mine = ++gearShows;
+  // What's just been put on comes in as the game has it (nothing has at first: it was all on already). A new trim, dye or
+  // enchantment on the same thing isn't put on again.
+  const base = look => look && look.split("+")[0];
+  const fresh = shownSet ? Object.keys(set).filter(slot => set[slot] && base(set[slot]) !== base(shownSet[slot])) : [];
   shownSet = set;
   const names = wornNames();
   $("gear-art").setAttribute("aria-label", `${PLAYER_SKINS[shownSkin()].n}${names.length ? ` with ${names.join(", ")}` : ", with nothing on"}. Drag or use the arrow keys to turn.`);
@@ -96,7 +127,8 @@ async function showGear() {
 function renderSlots() {
   const button = ([slot, label, usual]) => {
     const w = gear.set[slot], item = w && gearItem(w.k), name = item ? wornName(w) : label;
-    return `<button type="button" class="slot slot-btn${item ? "" : slot === "main" ? " hand-empty" : ""}" id="gear-slot-${slot}" data-slot="${slot}" data-name="${esc(name)}" aria-label="${esc(item ? `${label}: ${name}` : `${label}: nothing. Puts on ${gearName(gearItem(usual), usualMat(usual)).toLowerCase()}`)}" aria-pressed="${Boolean(item && item.k === state.item)}">${iconImg(item ? gearIcon(item, w.mat) : `slot:${slot}`)}</button>`;
+    const pic = item ? gearIcon(item, w.mat) : `slot:${slot}`, said = item ? [name, ...wornWords(w)].join(", ") : "";
+    return `<button type="button" class="slot slot-btn" id="gear-slot-${slot}" data-slot="${slot}" data-name="${esc(name)}" aria-label="${esc(item ? `${label}: ${said}` : `${label}: nothing. Puts on ${gearName(gearItem(usual), usualMat(usual)).toLowerCase()}`)}" aria-pressed="${Boolean(item && item.k === state.item)}">${shimmer(w, pic)}</button>`;
   };
   $("gear-armor").innerHTML = GEAR_SLOTS.slice(0, 4).map(button).join("");
   $("gear-hands").innerHTML = GEAR_SLOTS.slice(4).map(button).join("");
@@ -106,10 +138,14 @@ function renderSlots() {
   const item = currentItem(), slot = slotOf(item), mat = gearMat(item), on = isWorn(item), other = gear.set[slot], trim = on ? costumeOf(other) : null;
   $("gear-wear-label").innerHTML = `${slotName(slot)}: <b>${esc(other ? wornName(other) : "empty")}</b>`;
   const chip = (act, text) => `<button type="button" class="name-chip" data-wear="${act}">${text}</button>`;
+  // A full set is the picked piece's look on all four.
+  const look = k => ({ ...setLook(on ? other : {}), k, mat });
   $("gear-wear").innerHTML = [
     on ? chip("off", slot === "main" || slot === "off" ? "Put it away" : "Take it off") : chip("on", `Put on the ${esc(gearName(item, mat).toLowerCase())}`),
-    isArmor(item) && ARMOR_PIECES.some(k => wornKey(gear.set[SLOT_OF[k]]) !== wornKey({ k, mat, trim })) ? chip("all", `Full ${esc(trim ? COSTUMES[trim].n : `${MATERIALS[mat].n.toLowerCase()} armor`)}`) : "",
+    isArmor(item) && ARMOR_PIECES.some(k => wornLook(gear.set[SLOT_OF[k]]) !== wornLook(look(k))) ? chip("all", `Full ${esc(trim ? COSTUMES[trim].n : `${MATERIALS[mat].n.toLowerCase()} armor`)}`) : "",
     chip("none", "Take everything off"),
+    // Everything worn enchanted at once, or none of it once all are.
+    Object.keys(gear.set).length > 1 ? `<button type="button" class="name-chip" data-all="${Object.values(gear.set).every(x => x.glint) ? "" : "on"}">${Object.values(gear.set).every(x => x.glint) ? "Take every enchantment off" : "Enchant everything"}</button>` : "",
   ].join("");
 }
 
@@ -157,9 +193,29 @@ function renderCostumes() {
     .map(([k, n]) => `<button type="button" class="name-chip" data-trim="${k}" aria-pressed="${k === (on || "")}">${k ? iconImg(`trim:${k}`) : ""}${esc(n)}</button>`).join("");
 }
 
+// How the picked item looks: its trim and the trim's material (armor), its dye (leather) and whether it's enchanted (anything). Each
+// is the worn one's; picking one puts the item on.
+function renderLooks() {
+  const item = currentItem(), mat = gearMat(item), w = (isWorn(item) && gear.set[slotOf(item)]) || {}, none = nothingOn();
+  const chip = (attr, value, label, pressed, pic = "") => `<button type="button" class="name-chip" data-${attr}="${value}" aria-pressed="${pressed}">${pic ? iconImg(pic) : ""}${esc(label)}</button>`;
+  const trims = !none && canTrim(item), dyes = !none && canDye(item, mat);
+  $("gear-trim-bar").hidden = !trims;
+  $("gear-trim-mat-row").hidden = !trims || !w.trim;
+  $("gear-trim-label").textContent = `Trim: ${w.trim ? TRIMS[w.trim].n : "None"}`;
+  $("gear-trim").innerHTML = !trims ? "" : chip("pattern", "", "None", !w.trim) + Object.entries(TRIMS).map(([k, t]) => chip("pattern", k, t.n, k === w.trim, `trim:${k}`)).join("");
+  const tmat = w.trimMat || gear.trimMat;
+  $("gear-trim-mat-label").textContent = `Trim material: ${TRIM_MATERIALS[tmat].n}`;
+  $("gear-trim-mat").innerHTML = !trims || !w.trim ? "" : Object.entries(TRIM_MATERIALS).map(([k, m]) => chip("tmat", k, m.n, k === tmat, `tmat:${k}`)).join("");
+  $("gear-dye-bar").hidden = !dyes;
+  $("gear-dye-label").textContent = `Dye: ${w.dye ? titled(w.dye) : "Undyed"}`;
+  $("gear-dye").innerHTML = !dyes ? "" : chip("dye", "", "Undyed", !w.dye) + COLLAR_COLORS.map(c => dyeSwatch("dye", c, c === w.dye)).join("");
+  $("gear-glint-bar").hidden = none;
+  $("gear-glint").innerHTML = none ? "" : chip("glint", "", "Not enchanted", !w.glint) + chip("glint", "on", "Enchanted", Boolean(w.glint));
+}
+
 function renderGearPicker() {
   const slots = list => `<div class="slot-grid">${list.map(i =>
-    `<button type="button" class="slot slot-btn${isWorn(i) ? " worn" : ""}" id="item-${i.k}" data-item="${i.k}" data-name="${esc(i.n)}" aria-label="${esc(i.n)}" aria-pressed="${!nothingOn() && i.k === state.item}">${iconImg(gearIcon(i))}</button>`).join("")}</div>`;
+    `<button type="button" class="slot slot-btn${isWorn(i) ? " worn" : ""}" id="item-${i.k}" data-item="${i.k}" data-name="${esc(i.n)}" aria-label="${esc(i.n)}" aria-pressed="${!nothingOn() && i.k === state.item}">${shimmer(isWorn(i) && gear.set[slotOf(i)], gearIcon(i))}</button>`).join("")}</div>`;
   $("gear-picker").innerHTML = [...new Set(ITEMS.map(i => i.cat))].map(c => `
     <div>
       <div class="cat-label">${c}</div>
@@ -221,11 +277,21 @@ const statBox = ([label, value, sub]) => {
   const v = String(forEdition(value));
   return `<div class="mob-stat${v.length > 9 ? " text" : ""}"><span class="stat-label">${label}</span><span class="stat-value">${esc(v)}</span>${sub ? `<span class="sub">${esc(forEdition(sub))}</span>` : ""}</div>`;
 };
-function costumeFact(item) {
-  if (!canDress(item)) return "";
-  const c = COSTUMES[isWorn(item) && costumeOf(gear.set[slotOf(item)])];
-  return c ? potionFact("Costume", `${c.n}: leather armor with the ${c.trim} trim, put on at a smithing table, with Actions & Stuff. Its template: ${c.from}. The trim’s material and the dye don’t show.`)
-    : potionFact("Costumes", "With Actions & Stuff, leather armor with some trims turns into a costume, piece by piece. Try them on under the stage.");
+// How leather is dyed, and washed.
+const DYE_HOW = both("Dye it in a crafting grid, with one dye or several to mix their colors; a cauldron of water washes it out.",
+  "Dye it in a cauldron of dyed water (dyes mixed in the water mix their colors); a cauldron of plain water washes it out.");
+// What's on it, or could be: its costume or trim, its dye and its enchantment.
+function lookFacts(item, mat) {
+  const w = (isWorn(item) && gear.set[slotOf(item)]) || {}, c = canDress(item) && COSTUMES[costumeOf(w)], out = [];
+  if (c) out.push(potionFact("Costume", `${c.n}: leather armor with the ${c.trim} trim, with Actions & Stuff. Its template: ${forEdition(TRIMS[w.trim].from)}. The trim’s material and the dye don’t show.`));
+  else if (canDress(item)) out.push(potionFact("Costumes", "With Actions & Stuff, leather armor with some trims turns into a costume, piece by piece. Try them on under the stage."));
+  if (canTrim(item) && w.trim && !c) {
+    const t = TRIMS[w.trim], m = TRIM_MATERIALS[w.trimMat];
+    out.push(potionFact("Trim", `${t.n}, in ${m.n.toLowerCase()}${m.own === mat ? " (darker on armor of its own material)" : ""}. A smithing table puts it on, from its template and ${m.with}; it only changes how it looks, and Actions & Stuff makes it glow. The template: ${forEdition(t.from)}. Copy it with 7 diamonds and ${t.copy}, which makes two.`));
+  } else if (canTrim(item) && !c) out.push(potionFact("Trims", "A smithing table puts a trim on any armor but the elytra, from a template (18 patterns, each found in a place of its own) and a material (11 colors). It only changes how it looks. Try them on under the stage."));
+  if (canDye(item, mat)) out.push(potionFact("Dye", `${w.dye ? `${titled(w.dye)}.` : "Undyed, it’s brown."} ${forEdition(DYE_HOW)}`));
+  if (w.glint) out.push(potionFact("Enchanted", "Everything enchanted shimmers. What can go on it is under Enchantments, and the cheapest order to put it on under Anvil plan."));
+  return out.join("");
 }
 function gearAbout(item, mat) {
   const info = GEAR_INFO[item.k];
@@ -234,7 +300,7 @@ function gearAbout(item, mat) {
     <dl class="fact-list">
       ${potionFact("Good for", forEdition(info.good))}
       ${mat ? potionFact(MATERIALS[mat].n, MATERIALS[mat][isArmor(item) ? "armor" : "tool"]) : ""}
-      ${costumeFact(item)}
+      ${lookFacts(item, mat)}
       ${item.k === "pickaxe" ? potionFact("Mines", TOOL_TIERS[mat].mines) : ""}
       ${item.k === "axe" ? potionFact("Mining speed", `${TOOL_TIERS[mat].speed} times as fast as by hand`) : ""}
       ${item.k === "spear" ? potionFact("Charge", `The damage grows with your speed toward the target, times ${SPEAR_CHARGE[TOOL_ORDER.indexOf(mat)]}${state.edition === "java" ? ". Under 4.6 blocks a second it does none" : ""}`) : ""}
@@ -353,8 +419,8 @@ function renderGearResult() {
     return `
     <article class="gear-block" data-block="${slot}" aria-labelledby="gear-${slot}-name"${item.k === state.item ? ' aria-current="true"' : ""}>
       <div class="res-top">
-        <div class="res-title"><span class="slot">${iconImg(gearIcon(item, mat))}</span>
-          <div><h2 id="gear-${slot}-name">${esc(name)}</h2><div class="res-sub">${slotName(slot)} · ${edition}</div></div>
+        <div class="res-title"><span class="slot">${shimmer(w, gearIcon(item, mat))}</span>
+          <div><h2 id="gear-${slot}-name">${esc(name)}</h2><div class="res-sub">${[slotName(slot), ...wornWords(w).map(x => x[0].toUpperCase() + x.slice(1)), edition].map(esc).join(" · ")}</div></div>
         </div>
       </div>
       <div class="mob-tabs" role="tablist" aria-label="${esc(name)}">
@@ -388,12 +454,14 @@ function renderGearSearch() {
     const named = mats.filter(m => has(gearName(item, m)));
     const dressed = packOn() && isArmor(item) ? Object.keys(COSTUMES).filter(t => has(COSTUMES[t].n)) : [];
     if (dressed.length) return dressed.map(t => ({ item, mat: "leather", trim: t, rank: 1, why: `${COSTUMES[t].n} · ${item.cat}` }));
+    const trimmed = canTrim(item) ? Object.keys(TRIMS).filter(t => has(`${TRIMS[t].n} trim`)) : [];
+    if (trimmed.length) return trimmed.map(t => ({ item, mat, trim: t, rank: 1, why: `${TRIMS[t].n} trim · ${item.cat}` }));
     if (named.length) return named.map(m => ({ item, mat: m, rank: 1, why: item.cat }));
     return ench ? [{ item, mat, rank: 2, why: `Can have ${ENCH[ench].n}` }] : [];
   }).sort((a, b) => a.rank - b.rank);
   box.innerHTML = hits.length
     ? hits.map(({ item, mat, trim, why }) => `
-      <button type="button" class="search-hit" data-item="${item.k}" data-mat="${mat || ""}"${trim ? ` data-trim="${trim}"` : ""}${!nothingOn() && item.k === state.item && mat === gearMat(item) && (!trim || (isWorn(item) && costumeOf(gear.set[slotOf(item)]) === trim)) ? ' aria-current="true"' : ""}>
+      <button type="button" class="search-hit" data-item="${item.k}" data-mat="${mat || ""}"${trim ? ` data-trim="${trim}"` : ""}${!nothingOn() && item.k === state.item && mat === gearMat(item) && (!trim || (isWorn(item) && gear.set[slotOf(item)].trim === trim)) ? ' aria-current="true"' : ""}>
         <span class="slot sm">${iconImg(gearIcon(item, mat))}</span>
         <span><span class="who">${esc(gearName(item, mat))}</span><span class="deal">${esc(why)}</span></span>
       </button>`).join("")
@@ -406,6 +474,7 @@ function renderGear() {
   renderSlots();
   renderMats();
   renderCostumes();
+  renderLooks();
   renderSkins();
   renderGearResult();
   renderGearSearch();
@@ -423,15 +492,18 @@ function openGear(k) {
   state.picked = { ...(gear.plans[`${state.edition}:${k}`] || {}) };
   if (!Object.keys(state.picked).length) state.picked = fullSet(currentItem(), state.edition);
 }
-// Picks an item, in a material if one is given, and puts it on; leather armor in a costume if one is ("": in none). One that's on
-// already in leather keeps the costume it's in.
-function pickGear(k, mat, trim) {
+// Picks an item, in a material if one is given, and puts it on, with what's changed of its look (look: trim, trimMat, dye, glint; ""
+// or false takes it off). One that's on already keeps the rest of its look, but a dye on what isn't leather.
+function pickGear(k, mat, look = {}) {
   const item = gearItem(k);
   if (!item) return;
   if (mat && MATERIALS[mat]) gear.mat = mat;
-  const now = gear.set[slotOf(item)], w = { k, mat: mat ? usualMat(k, mat) : gearMat(item), on: now && now.k === k ? now.on : Date.now() };
-  const dress = trim === undefined ? now && now.k === k && now.trim : trim;
-  if (dress && w.mat === "leather") w.trim = dress;
+  if (look.trimMat) gear.trimMat = look.trimMat;
+  const now = gear.set[slotOf(item)], same = now && now.k === k ? now : null;
+  const w = { k, mat: mat ? usualMat(k, mat) : gearMat(item), on: same ? same.on : Date.now() }, next = { ...(same ? setLook(same) : {}), ...look };
+  if (next.trim && canTrim(item)) Object.assign(w, { trim: next.trim, trimMat: next.trimMat || gear.trimMat });
+  if (next.dye && canDye(item, w.mat)) w.dye = next.dye;
+  if (next.glint) w.glint = true;
   gear.set[slotOf(item)] = w;
   openGear(k);
   renderGear();
@@ -461,9 +533,9 @@ $("gear-wear").addEventListener("click", e => {
   if (act === "on") return pickGear(item.k), refocus("#gear-wear button");
   if (act === "off") delete gear.set[slot];
   if (act === "all") {
-    const { mat, trim } = { mat: gearMat(item), trim: isWorn(item) && gear.set[slot].trim };
+    const mat = gearMat(item), look = setLook(isWorn(item) ? gear.set[slot] : {});
     const at = Date.now(), was = k => gear.set[SLOT_OF[k]];
-    for (const k of ARMOR_PIECES) gear.set[SLOT_OF[k]] = { k, mat, ...(trim ? { trim } : {}), on: was(k) && was(k).k === k ? was(k).on : at };
+    for (const k of ARMOR_PIECES) gear.set[SLOT_OF[k]] = { k, mat, ...look, on: was(k) && was(k).k === k ? was(k).on : at };
   }
   if (act === "none") gear.set = {};
   renderGear();
@@ -481,7 +553,7 @@ $("gear-skins").addEventListener("click", e => {
 $("gear-results").addEventListener("click", e => {
   const b = e.target.closest("button[data-item]");
   if (!b) return;
-  pickGear(b.dataset.item, b.dataset.mat, b.dataset.trim);
+  pickGear(b.dataset.item, b.dataset.mat, b.dataset.trim ? { trim: b.dataset.trim } : {});
   refocus(`#gear-results button[data-item="${state.item}"][data-mat="${b.dataset.mat}"]${b.dataset.trim ? `[data-trim="${b.dataset.trim}"]` : ""}`);
 });
 $("gear-search").addEventListener("input", e => { gear.query = e.target.value; renderGearSearch(); saveGear(); });
@@ -492,11 +564,31 @@ for (const id of ["gear-mat", "gear-result"]) $(id).addEventListener("click", e 
   pickGear(block ? gear.set[block.dataset.block].k : state.item, b.dataset.mat);
   refocus(block ? `#gear-${block.dataset.block}-section button[data-mat="${b.dataset.mat}"]` : `#${id} button[data-mat="${b.dataset.mat}"]`);
 });
+// A costume is its trim; None takes off a costume's, not another trim.
 $("gear-costume").addEventListener("click", e => {
   const b = e.target.closest("button[data-trim]");
-  if (!b) return;
-  pickGear(state.item, "leather", b.dataset.trim);
+  if (!b || (!b.dataset.trim && !(isWorn(currentItem()) && costumeOf(gear.set[slotOf(currentItem())])))) return;
+  pickGear(state.item, "leather", { trim: b.dataset.trim });
   refocus(`#gear-costume button[data-trim="${b.dataset.trim}"]`);
+});
+// The picked item's look: its trim, the trim's material, its dye and its enchantment.
+for (const [id, attr, change] of [["gear-trim", "pattern", v => ({ trim: v })], ["gear-trim-mat", "tmat", v => ({ trimMat: v })],
+  ["gear-dye", "dye", v => ({ dye: v })], ["gear-glint", "glint", v => ({ glint: Boolean(v) })]]) $(id).addEventListener("click", e => {
+  const b = e.target.closest(`button[data-${attr}]`);
+  if (!b) return;
+  pickGear(state.item, null, change(b.dataset[attr]));
+  refocus(`#${id} button[data-${attr}="${b.dataset[attr]}"]`);
+});
+// Everything worn enchanted, or none of it.
+$("gear-wear").addEventListener("click", e => {
+  const b = e.target.closest("button[data-all]");
+  if (!b) return;
+  for (const w of Object.values(gear.set)) {
+    if (b.dataset.all) w.glint = true;
+    else delete w.glint;
+  }
+  renderGear();
+  refocus("#gear-wear button[data-all]");
 });
 // A section of something worn: that's the item picked now.
 const pickGearSection = (slot, k) => {

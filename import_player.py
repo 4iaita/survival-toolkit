@@ -490,6 +490,9 @@ def armor():
         w, h = math.ceil(box[2] / 16) * 16, math.ceil(box[3] / 16) * 16
         # The sheets are mostly empty: what's used is in the corner (the rest is for the pack's costumes).
         textures[f"player_armor_{mat}"] = img.crop((0, 0, w, h))
+        # Leather to be dyed as the page draws it (src/player.js): the pack's sheet as it is, which leather_texture colors brown.
+        if mat == "leather":
+            textures["player_armor_leather_dye"] = Image.open(im.texture_file(path)).convert("RGBA").crop((0, 0, w, h))
         for m in used:
             assert (m[0], m[1]) == img.size, mat
             m[0], m[1] = w, h
@@ -548,6 +551,63 @@ def costumes():
             gear_model(key, g, ARMOR_BONES)
             visor = any(b[0] == VISOR and b[4] for b in gear_models[key][2])
             worn[key] = {"slot": SLOTS[piece], "layers": [[key, f"player_costume_{trim}", *([{"glassBones": [f"*{VISOR}"]}] if visor else [])]]}
+
+
+# ---------- Trims and dyes ----------
+# Armor trims, as the pack draws them (its controller for v.has_trim: oaozfh, and tvjlvq on leather): the trim's texture (trims/<trim>,
+# or <trim>_leggings on leggings; laid out on the pack's big armor sheets) on a model of its own (the attachable's ttywjo: mostly the
+# armor's, a little off on some; leather's in tvjlvq, as the costumes are off). The texture is in grays, each of the game's key palette taking the color at the same place in the
+# trim material's palette (trims/color_palettes; the game's key, trim_palette, is from Mojang's bedrock-samples: it isn't in the pack).
+# On armor of its own material the material's _darker palette is used. The pack's palettes are at alpha 7 and its material is
+# emissive (avltwh), so its trims glow ("Emissive armour trims!"); copper_darker isn't in the pack, so the game's is used, unlit.
+# src/player.js recolors them as it draws, so the textures here are the grays and TRIM_PALETTES the colors. Costumes have no trim drawn.
+TRIMS = ("sentry", "dune", "coast", "wild", "ward", "eye", "vex", "tide", "snout", "rib", "spire", "wayfinder", "shaper", "silence", "raiser", "host", "flow", "bolt")
+TRIM_KEY = (224, 192, 160, 128, 96, 64, 32, 0)
+TRIM_PALETTES = ("amethyst", "copper", "diamond", "diamond_darker", "emerald", "gold", "gold_darker", "iron", "iron_darker", "lapis",
+                 "netherite", "netherite_darker", "quartz", "redstone", "resin")
+# The game's own (bedrock-samples, resource_pack/textures/trims/color_palettes/copper_darker.png), at full alpha.
+COPPER_DARKER = ((123, 65, 53), (107, 54, 40), (89, 42, 25), (76, 36, 22), (64, 30, 17), (54, 25, 15), (41, 20, 12), (27, 14, 8))
+
+
+def trims():
+    models_of, rects = {}, []
+    for key in [f"{mat}_{piece}" for mat in ARMOR for piece in SLOTS] + ["turtle_shell"]:
+        w = worn[key]
+        d = atts["minecraft:turtle_helmet.player" if key == "turtle_shell" else f"minecraft:{key}.player"]
+        # Leather's has a second (mocaaj) for when the pack's costumes are off: the other leaves the costumes' trims out, as they're
+        # costumes there. The page has costumes only in Bedrock, where a costume is drawn instead, so it's this one (the same for the rest).
+        g = geos[d["geometry"]["mocaaj" if key.startswith("leather_") else "ttywjo"]]
+        rects += [r for b in g["bones"] for c in b.get("cubes", []) for r in cube_rects(c)]
+        gear_model("trim", g, ARMOR_BONES)
+        made = gear_models.pop("trim")
+        # The same model for several armors is kept once.
+        name = next((k for k, m in models_of.items() if m == made), None)
+        if not name:
+            name = f"trim_{len(models_of)}"
+            models_of[name] = made
+        w["trim"] = name
+    # Every trim model on one texture, cut down to what they use.
+    w, h = (math.ceil(max(r[i] for r in rects) / 16) * 16 for i in (2, 3))
+    for name, m in models_of.items():
+        m[0], m[1] = w, h
+        gear_models[name] = m
+    keep = lambda p: p if p[3] == 255 and p[:3] in [(v, v, v) for v in TRIM_KEY] else (0, 0, 0, 0)
+    for trim in TRIMS:
+        for legs in ("", "_leggings"):
+            img = Image.open(im.texture_file(f"textures/trims/{trim}{legs}")).convert("RGBA")
+            assert img.size == (384, 256), trim
+            img = img.crop((0, 0, w, h))
+            img.putdata([keep(p) for p in img.getdata()])
+            # The leggings' own only where it's another (the shaper's).
+            if legs and img.tobytes() == textures[f"player_trim_{trim}"].tobytes():
+                continue
+            textures[f"player_trim_{trim}{legs}"] = img
+    palettes = {}
+    for name in TRIM_PALETTES:
+        img = Image.open(im.texture_file(f"textures/trims/color_palettes/{name}")).convert("RGBA")
+        palettes[name] = ["#%02x%02x%02x%02x" % p for p in img.getdata()]
+    palettes["copper_darker"] = ["#%02x%02x%02xff" % p for p in COPPER_DARKER]
+    return {"key": list(TRIM_KEY), "palettes": palettes}
 
 
 def posed(att, keys, slot="main_hand"):
@@ -670,6 +730,7 @@ def main():
     people = skins()
     armor()
     costumes()
+    trimmed = trims()
     held()
     # Only the bones the bodies and the Morphs have.
     known = {b[0].lower() for m in models.values() for b in m[2]}
@@ -687,7 +748,8 @@ def main():
           f"const PLAYER_STANCES = {ip.dump(stances)};",
           f"const GEAR_POPS = {ip.dump(pops)};",
           f"const GEAR_MODELS = {ip.dump(gear_models)};",
-          f"const GEAR_WORN = {ip.dump(worn)};", ""]
+          f"const GEAR_WORN = {ip.dump(worn)};",
+          f"const TRIM_COLORS = {ip.dump(trimmed)};", ""]
     text = "\n".join(js)
     print(f"{OUT.name}: {len(text)} bytes, {len(textures)} textures, {len(worn)} things worn")
     if WRITE:

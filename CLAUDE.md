@@ -293,8 +293,28 @@ set (2026-11-25: not the item's icon anymore); see "The player on the stage".
   models' own. The pack doesn't name the Silence one (the hazmat suit), and its list has the Host trim in the wrong place. Other trims aren't drawn.
 - Stances: the pack's own third person controllers (njvelc for what's held, knoyhk for a spear), at a standstill: `this` is 0, `q.modified_move_speed` 0. What's keyframed
   plays once as it's taken in hand (a loop's `once` and `at`) and holds its end; armor pops on (`GEAR_POPS`). The pack's stances and armor are used in Java too.
-- Tools are the game's flat pictures: the pack's 3D ones are a setting that starts off. Not done, and told to the user: the enchanted shimmer, the pack's armor shimmer,
-  and the 3D tools. The elytra (Java's ElytraModel) and the rod (Java's handheld_rod) aren't in the pack as models; leather is baked in its undyed color.
+- Tools are the game's flat pictures: the pack's 3D ones are a setting that starts off. Not done, and told to the user: the pack's armor shimmer
+  and the 3D tools.
+- Trims, dye and enchantment (2026-11-26) are a worn thing's `trim` (a `TRIMS` key) and `trimMat`, `dye` and `glint`, set in the rows under the stage
+  (`renderLooks`) for the picked item; `wornLook` passes them to `playerLook` as `key+trim=<trim>.<palette>+dye=<color>+glint` (`wornParts`). A costume is just
+  leather with that trim in Bedrock (`costumeOf`); it draws no trim or dye. In Java the same trim is drawn as a trim.
+- Trims (`trims()` in `import_player.py`): the pack's grays on its big armor sheets, recolored as they're drawn (`trimTexture`) from the game's key palette
+  (bedrock-samples' `trim_palette`, not in the pack) to the material's (`TRIM_COLORS`); `_darker` on armor of the trim's own material. The pack's palettes
+  are at alpha 7 with an emissive material, so trims glow (`lit`); `copper_darker` isn't in the pack, so the game's is used, unlit. Each armor has its own
+  trim model (`ttywjo`; leather's costumes-off one, `mocaaj`, as the other leaves the costumes' trims out). The pack's Shaper has nothing on the netherite
+  chestplate. Templates' chances are from both editions' loot tables (they differ only for the vaults').
+- The pack takes a mace in both hands even with a shield in the other (only the axe has a one-handed hold), so the shield's edge came out through the
+  left shoulder pad. With both, the pad's outer 6-wide cube is left out (`unshelled` in `src/player.js`); the 5-wide one inside stays. The user didn't want the
+  whole pad hidden, nor the stance changed.
+- The empty main hand's outline is the pack's smithing table sword (`import_slot_sword`), in the empty armor slots' color: the pack has no empty hand
+  slot, and the faded iron sword it had before looked wrong to the user.
+- Enchant everything (every worn thing; Take every enchantment off once all are) is in the top row under the stage, beside Take everything off, as the
+  user asked; shown with two or more on.
+- Echo's hood (a 9-wide cube round its head) showed through every helmet's top, as the pack leaves it; under a helmet that cube is left out
+  (`UNDER_HELMET`, `hooded` in `src/player.js`), as the user asked.
+- Dyed leather: `dyedLeather` colors the raw sheet (`player_armor_leather_dye`) as `leather_texture` does undyed. The leather icons stay brown.
+- Enchanted: the page's own shimmer (`flags.glint`, the Mobs tab's) on everything of the item, not its trim; its slots get `.glint` in a span of its own, as a
+  slot button's `::after` is its name. The pack's own enchanted look (a colored outline and glint, its Enchantment Effect Colour setting) isn't drawn. The elytra (Java's ElytraModel) and the rod (Java's handheld_rod) aren't in the pack as models; leather is baked in its undyed color.
 - The stage always frames the player the same (`PLAYER_FRAME`, a look's `framed`), whatever they wear.
 - `renderScene` draws rows without glass, beams or doorways face by face (`plainRow`, `plainFace`), reading the texels itself where a box has `paint` (`modelBoxes`): 5 to 7
   times as fast as a ray for each pixel (an iron golem at 2×: 186 ms to 28), and the same to the pixel (670 looks, two views each, compared 2026-11-25). A change to

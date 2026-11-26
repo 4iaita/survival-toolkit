@@ -62,19 +62,58 @@ const MATERIALS = {
   netherite: { n: "Netherite", part: "netherite", tool: "Diamond, upgraded. As an item it floats on lava and doesn’t burn.", armor: "Diamond, upgraded. Each piece also takes 10% off knockback, and as an item it floats on lava and doesn’t burn." },
 };
 
+// Armor trims: a smithing table puts one on any armor but the elytra (the turtle shell too), from a template and a material, in both
+// editions. Each template's place, by the games' own loot tables (misode/mcmeta 26.3-data, Mojang's bedrock-samples): the
+// chance a chest, mob or block has one. Each is copied with 7 diamonds and copy (what the template's made of), in the order the game lists them.
+const TRIMS = {
+  sentry: { n: "Sentry", from: "Pillager outposts: chests, 25%", copy: "cobblestone" },
+  vex: { n: "Vex", from: "Woodland mansions: chests, 50%", copy: "cobblestone" },
+  wild: { n: "Wild", from: "Jungle temples: chests, 33.3%", copy: "mossy cobblestone" },
+  coast: { n: "Coast", from: "Shipwrecks: chests, 16.7%", copy: "cobblestone" },
+  dune: { n: "Dune", from: "Desert pyramids: chests, 14.3%", copy: "sandstone" },
+  wayfinder: { n: "Wayfinder", from: "Trail ruins: suspicious gravel, 8.3%", copy: "terracotta" },
+  raiser: { n: "Raiser", from: "Trail ruins: suspicious gravel, 8.3%", copy: "terracotta" },
+  shaper: { n: "Shaper", from: "Trail ruins: suspicious gravel, 8.3%", copy: "terracotta" },
+  host: { n: "Host", from: "Trail ruins: suspicious gravel, 8.3%", copy: "terracotta" },
+  ward: { n: "Ward", from: "Ancient cities: chests, 5%", copy: "cobbled deepslate" },
+  silence: { n: "Silence", from: "Ancient cities: chests, 1.3%", copy: "cobbled deepslate" },
+  tide: { n: "Tide", from: "Elder guardians, 20%", copy: "prismarine" },
+  snout: { n: "Snout", from: "Bastion remnants: chests, 8.3%", copy: "blackstone" },
+  rib: { n: "Rib", from: "Nether fortresses: chests, 6.7%", copy: "netherrack" },
+  eye: { n: "Eye", from: "Strongholds: every library chest; 10% of altar chests", copy: "end stone" },
+  spire: { n: "Spire", from: "End cities: chests, 6.7%", copy: "a purpur block" },
+  flow: { n: "Flow", from: both("Trial chambers: ominous vaults, 30%", "Trial chambers: ominous vaults, 22.5%"), copy: "a breeze rod" },
+  bolt: { n: "Bolt", from: both("Trial chambers: vaults, 25%", "Trial chambers: vaults, 6.3%"), copy: "a copper block" },
+};
+// What a trim can be made of (with: the item the smithing table takes), each in its own colors (TRIM_COLORS in src/player-models.js:
+// its palette). On armor of the same material it's darker (own: that material).
+const TRIM_MATERIALS = {
+  quartz: { n: "Quartz", item: "quartz", with: "nether quartz" },
+  iron: { n: "Iron", item: "iron_ingot", with: "an iron ingot", own: "iron" },
+  netherite: { n: "Netherite", item: "netherite_ingot", with: "a netherite ingot", own: "netherite" },
+  redstone: { n: "Redstone", item: "redstone", with: "redstone dust" },
+  copper: { n: "Copper", item: "copper_ingot", with: "a copper ingot", own: "copper" },
+  gold: { n: "Gold", item: "gold_ingot", with: "a gold ingot", own: "golden" },
+  emerald: { n: "Emerald", item: "emerald", with: "an emerald" },
+  diamond: { n: "Diamond", item: "diamond", with: "a diamond", own: "diamond" },
+  lapis: { n: "Lapis", item: "lapis_lazuli", with: "lapis lazuli" },
+  amethyst: { n: "Amethyst", item: "amethyst_shard", with: "an amethyst shard" },
+  resin: { n: "Resin", item: "resin_brick", with: "a resin brick" },
+};
+
 // The pack's costumes: what leather armor with one of these trims on looks like there (texts/en_US.lang; it doesn’t name the hazmat
-// suit, the last). from: where the trim's template is (Bedrock's own loot tables: the pack's list has the Host trim elsewhere).
+// suit, the last). Their templates are TRIMS'.
 const COSTUMES = {
-  host: { n: "Party Set", trim: "Host", from: "Trail ruins: suspicious gravel, 8.3%" },
-  spire: { n: "Cherry Blossom Dress", trim: "Spire", from: "End cities: chests, 6.7%" },
-  wild: { n: "Elf Attire", trim: "Wild", from: "Jungle temples: chests, 33.3%" },
-  bolt: { n: "Maid Uniform", trim: "Bolt", from: "Trial chambers: vaults, 6.3%" },
-  tide: { n: "Pirate Outfit", trim: "Tide", from: "Elder guardians, 20%" },
-  shaper: { n: "Rana Puffer Coat", trim: "Shaper", from: "Trail ruins: suspicious gravel, 8.3%" },
-  snout: { n: "Santa Getup", trim: "Snout", from: "Bastion remnants: chests, 8.3%" },
-  rib: { n: "Viking Armor", trim: "Rib", from: "Nether fortresses: chests, 6.7%" },
-  eye: { n: "Wildflower Dress", trim: "Eye", from: "Strongholds: altar chests, 10%" },
-  silence: { n: "Hazmat Suit", trim: "Silence", from: "Ancient cities: chests, 1.3%" },
+  host: { n: "Party Set", trim: "Host" },
+  spire: { n: "Cherry Blossom Dress", trim: "Spire" },
+  wild: { n: "Elf Attire", trim: "Wild" },
+  bolt: { n: "Maid Uniform", trim: "Bolt" },
+  tide: { n: "Pirate Outfit", trim: "Tide" },
+  shaper: { n: "Rana Puffer Coat", trim: "Shaper" },
+  snout: { n: "Santa Getup", trim: "Snout" },
+  rib: { n: "Viking Armor", trim: "Rib" },
+  eye: { n: "Wildflower Dress", trim: "Eye" },
+  silence: { n: "Hazmat Suit", trim: "Silence" },
 };
 
 // Items without materials: durability and enchantability (none: the enchanting table won't take it).

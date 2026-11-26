@@ -213,7 +213,7 @@ FILES = {
     "lantern_block": "blocks/lantern", "soul_lantern_block": "blocks/soul_lantern", "bell_body": "blocks/bell_side",
     "candle_lit": "blocks/candles/candle_lit",
     # The Mobs tab's drops and breeding foods.
-    "glow_ink_sac": "items/dye_powder_glow", "shulker_shell": "items/shulker_shell", "nether_star": "items/nether_star", "dragon_egg": "blocks/dragon_egg", "totem_of_undying": "items/totem", "gold_nugget": "items/gold_nugget", "copper_ingot": "items/copper_ingot", "prismarine_shard": "items/prismarine_shard", "prismarine_crystals": "items/prismarine_crystals", "wet_sponge": "blocks/sponge_wet", "snowball": "items/snowball", "bamboo": "items/bamboo", "bone_meal": "items/dye_powder_white", "music_disc_cat": "items/record_cat", "egg": "items/egg", "glow_berries": "items/glow_berries", "wheat_seeds": "items/seeds_wheat", "golden_apple": "items/apple_golden", "hay_block_side": "blocks/hay_block_side", "hay_block_top": "blocks/hay_block_top", "tropical_fish_bucket": "items/bucket_tropical", "warped_fungus": "blocks/warped_fungus", "torchflower_seeds": "items/torchflower_seeds", "ominous_bottle": "items/ominous_bottle", "tide_armor_trim_smithing_template": "items/tide_armor_trim_smithing_template", "bolt_armor_trim_smithing_template": "items/bolt_armor_trim_smithing_template", "eye_armor_trim_smithing_template": "items/eye_armor_trim_smithing_template", "host_armor_trim_smithing_template": "items/host_armor_trim_smithing_template", "rib_armor_trim_smithing_template": "items/rib_armor_trim_smithing_template", "shaper_armor_trim_smithing_template": "items/shaper_armor_trim_smithing_template", "silence_armor_trim_smithing_template": "items/silence_armor_trim_smithing_template", "snout_armor_trim_smithing_template": "items/snout_armor_trim_smithing_template", "spire_armor_trim_smithing_template": "items/spire_armor_trim_smithing_template", "wild_armor_trim_smithing_template": "items/wild_armor_trim_smithing_template", "pufferfish_bucket": "items/bucket_pufferfish", "golden_dandelion": "blocks/golden_dandelion", "melon_seeds": "items/seeds_melon", "pumpkin_seeds": "items/seeds_pumpkin", "beetroot_seeds": "items/seeds_beetroot", "pitcher_pod": "items/pitcher_pod", "harness": "items/harness/harness_white", "milk_bucket": "items/bucket_milk",
+    "glow_ink_sac": "items/dye_powder_glow", "shulker_shell": "items/shulker_shell", "nether_star": "items/nether_star", "dragon_egg": "blocks/dragon_egg", "totem_of_undying": "items/totem", "gold_nugget": "items/gold_nugget", "copper_ingot": "items/copper_ingot", "prismarine_shard": "items/prismarine_shard", "prismarine_crystals": "items/prismarine_crystals", "wet_sponge": "blocks/sponge_wet", "snowball": "items/snowball", "bamboo": "items/bamboo", "bone_meal": "items/dye_powder_white", "music_disc_cat": "items/record_cat", "egg": "items/egg", "glow_berries": "items/glow_berries", "wheat_seeds": "items/seeds_wheat", "golden_apple": "items/apple_golden", "hay_block_side": "blocks/hay_block_side", "hay_block_top": "blocks/hay_block_top", "tropical_fish_bucket": "items/bucket_tropical", "warped_fungus": "blocks/warped_fungus", "torchflower_seeds": "items/torchflower_seeds", "ominous_bottle": "items/ominous_bottle", "tide_armor_trim_smithing_template": "items/tide_armor_trim_smithing_template", "bolt_armor_trim_smithing_template": "items/bolt_armor_trim_smithing_template", "eye_armor_trim_smithing_template": "items/eye_armor_trim_smithing_template", "host_armor_trim_smithing_template": "items/host_armor_trim_smithing_template", "rib_armor_trim_smithing_template": "items/rib_armor_trim_smithing_template", "shaper_armor_trim_smithing_template": "items/shaper_armor_trim_smithing_template", "silence_armor_trim_smithing_template": "items/silence_armor_trim_smithing_template", "snout_armor_trim_smithing_template": "items/snout_armor_trim_smithing_template", "spire_armor_trim_smithing_template": "items/spire_armor_trim_smithing_template", "wild_armor_trim_smithing_template": "items/wild_armor_trim_smithing_template", "sentry_armor_trim_smithing_template": "items/sentry_armor_trim_smithing_template", "dune_armor_trim_smithing_template": "items/dune_armor_trim_smithing_template", "coast_armor_trim_smithing_template": "items/coast_armor_trim_smithing_template", "ward_armor_trim_smithing_template": "items/ward_armor_trim_smithing_template", "vex_armor_trim_smithing_template": "items/vex_armor_trim_smithing_template", "wayfinder_armor_trim_smithing_template": "items/wayfinder_armor_trim_smithing_template", "raiser_armor_trim_smithing_template": "items/raiser_armor_trim_smithing_template", "flow_armor_trim_smithing_template": "items/flow_armor_trim_smithing_template", "amethyst_shard": "items/amethyst_shard", "resin_brick": "items/resin_brick", "pufferfish_bucket": "items/bucket_pufferfish", "golden_dandelion": "blocks/golden_dandelion", "melon_seeds": "items/seeds_melon", "pumpkin_seeds": "items/seeds_pumpkin", "beetroot_seeds": "items/seeds_beetroot", "pitcher_pod": "items/pitcher_pod", "harness": "items/harness/harness_white", "milk_bucket": "items/bucket_milk",
     # The piglin's barters.
     "iron_nugget": "items/iron_nugget", "crying_obsidian": "blocks/crying_obsidian", "blackstone_top": "blocks/blackstone_top", "nether_brick_item": "items/netherbrick",
     # The wandering trader's trades.
@@ -457,6 +457,15 @@ def import_leather_tunic(out):
     img.save(out / "leather_chestplate.png")
 
 
+# The empty main hand's outline: the pack has none of its own, so it's the sword from the smithing table's (its second frame), in the
+# color of the armor slots' and the shield's outlines.
+def import_slot_sword(out):
+    from PIL import Image
+    img = Image.open(pack / "full-pack/subpacks/SP2/textures/ui/armors_and_tools_slot_overlay.png").convert("RGBA").crop((16, 0, 32, 16))
+    img.putdata([(25, 32, 34, 255) if p[3] else (0, 0, 0, 0) for p in img.getdata()])
+    img.save(out / "slot_sword.png")
+
+
 # Whole animated textures (art/frames/), as [file in the pack, the piece to cut out of it]: the moving backdrops draw every
 # frame (see src/backdrop-motion.js).
 FRAMES = {"lava_still": ("blocks/lava_still", None), "lava_flow": ("blocks/lava_flow", None), "fire": ("blocks/fire_0", None), "sculk": ("blocks/sculk", None),
@@ -551,6 +560,7 @@ def main():
     import_cuts(out)
     import_banners(out)
     import_leather_tunic(out)
+    import_slot_sword(out)
     import_dried_ghast(out)
     import_effects(out)
     import_item_pictures(out)
