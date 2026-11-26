@@ -69,6 +69,7 @@ FILES = {
     "echo_shard": "items/echo_shard", "bone": "items/bone", "blaze_rod": "items/blaze_rod", "iron_spear": "items/spear/iron_spear",
     "ominous_trial_key": "items/ominous_trial_key", "wind_charge": "items/wind_charge", "slime_ball": "items/slimeball",
     "crossbow_firework": "items/crossbow_firework", "crossbow_arrow": "items/crossbow_arrow", "lead": "items/lead",
+    "firework_rocket": "items/fireworks",
     "heart_of_the_sea": "items/heartofthesea_closed", "chain": "items/chain",
     "leather_helmet": "items/leather_helmet", "leather_chestplate": "items/leather_chestplate",
     "leather_leggings": "items/leather_leggings", "leather_boots": "items/leather_boots",
@@ -510,6 +511,33 @@ def import_effects(out):
     Image.open(textures / "particle/particles.png").convert("RGBA").crop((0, 64, 64, 72)).save(out / "effects" / "swirl.png")
 
 
+# The fireworks' particles, from the pack's particle atlas (the one Bedrock's fireworks draw from): the spark's 8 frames (row 12, the same as
+# Java's spark_0 to spark_7, smallest first) and the flash (the 32×32 glow). The pack hides the rocket itself as it flies (its entity/fireworks.png
+# is one clear texel), so only its trail shows.
+def import_firework_particles(out):
+    from PIL import Image
+    (out / "effects").mkdir(exist_ok=True)
+    atlas = Image.open(pack / "full-pack/subpacks/SP2/textures/particle/particles.png").convert("RGBA")
+    atlas.crop((0, 96, 64, 104)).save(out / "effects" / "firework_spark.png")
+    atlas.crop((32, 16, 64, 48)).save(out / "effects" / "firework_flash.png")
+
+
+# The firework star: the pack has it as one TGA (items/fireworks_charge), its gray ball at alpha 3 and the middle the game colors at
+# alpha 255, as Java's firework_star and firework_star_overlay are two textures. art/ drops texels under alpha 64, so it's split in two,
+# each solid: the Fireworks tab multiplies the overlay by the star's color (Java's item model tints it with the colors' average).
+def import_firework_star(out):
+    from PIL import Image
+    star = Image.open(pack / "items/fireworks_charge.tga").convert("RGBA")
+    ball, middle = Image.new("RGBA", star.size), Image.new("RGBA", star.size)
+    for y in range(star.height):
+        for x in range(star.width):
+            r, g, b, a = star.getpixel((x, y))
+            if a:
+                (middle if a == 255 else ball).putpixel((x, y), (r, g, b, 255))
+    ball.save(out / "firework_star.png")
+    middle.save(out / "firework_star_overlay.png")
+
+
 # The pack's lapis ore doesn't glint as its gold and diamonds do: the same white star, coming and going on three of its stones.
 def lapis_frames(first):
     from PIL import Image
@@ -566,6 +594,8 @@ def main():
     import_slot_sword(out)
     import_dried_ghast(out)
     import_effects(out)
+    import_firework_star(out)
+    import_firework_particles(out)
     import_item_pictures(out)
     import_villagers()
 

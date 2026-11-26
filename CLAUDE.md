@@ -1,8 +1,8 @@
-# Survival Toolkit: working on the Mobs, Equipment, Potions, Banners and Armor Stands tabs
+# Survival Toolkit: working on the Mobs, Equipment, Potions, Banners, Fireworks and Armor Stands tabs
 
 Most of this is about the Mobs tab's stage backgrounds; the rest of that tab is at the end ("The Mobs tab's controls and facts",
 "Finding what's unused"). For the Equipment tab, read "The Equipment tab"; for the Potions tab, "The Potions tab"; for the Banners tab, "The Banners
-tab"; for the Armor Stands tab, "Armor Stands, section by section".
+tab"; for the Fireworks tab, "The Fireworks tab"; for the Armor Stands tab, "Armor Stands, section by section".
 
 The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
@@ -251,6 +251,52 @@ items and the facts; `src/banner-ui.js`: the tab (the banner is `bnr`, saved as 
   the same in both editions. From the wiki only: Bedrock's crafting-table patterns (their recipes aren't in bedrock-samples, so the page doesn't list them),
   the layer limits, copying, washing, shields, maps and the ominous banner's rules.
 - Not done, and could be offered: the banner on a shield (Java has its own shield pattern textures, `entity/shield/`), Bedrock's crafting-table recipes.
+
+## The Fireworks tab
+
+A firework designer (2026-11-26), laid out as the Banners tab is, with its stage (`.prop-stage`). `src/firework-data.js`: the colors, shapes, words,
+limits and facts; `src/firework-ui.js`: the tab (the rocket is `fw`, saved as `fireworks-v1`). It loads after the Banners tab and uses its `bnBtn` and
+`.bn-command`, and the Potions tab's `countSlot`.
+
+- A rocket is `fw.stars` (each `colors`, `fades`, `shape`, `trail`, `twinkle`), `fw.flight` (1 to 3) and `fw.pick`, the star the designer beside the stage
+  edits. The grid's 9 slots are the limits: a star's dyes are 8 less its other ingredients (`fwMaxDyes`), a rocket's stars 8 less its gunpowder
+  (`fwMaxStars`); fades up to 8. Two of a dye count twice, as in the game.
+- A new star has no color (the user's wish): it's made once it has a dye (`fwMade`), and only then is it on the stage beside the rocket and in
+  the launch; until then it's on the stage as the plain gray star, and its row says to pick a dye.
+- The stage (`fireworkScene`): the rocket and every star as `itemBoxes`, in a row (`FW_APART`), each turning on its own bone; the user wanted
+  them all, not only the picked one. The rocket stands apart on the left (`FW_ROCKET_GAP`), the stars on the right, one alone in the
+  middle of that side; more than 2 stars go in two lines (the user's choice), the first half further back and higher (`FW_BACK`, `FW_LIFT`), with
+  no shadows (they'd fall in the sky, behind the ground strip), the rocket half way up beside them. Launch it (a button
+  with the stars) and it goes off instead, then they come back; changing the rocket stops it. With less motion it's drawn still, 12 ticks after it bursts. It plays on the day stage: offered a night sky,
+  the user chose to keep it by day (2026-11-26).
+- The show (`src/firework-show.js`): `fireworkShow` works it out tick by tick as Java's code does (FireworkRocketEntity's climb, Starter's shapes one
+  star every other tick, SparkParticle's slowing, fall, fade out, fade color, trail and twinkle, the flash). Its numbers are from memory of Java's
+  code, checked against the wiki's particle counts (98, 386, 121, 265, 70). It's played through once first with the same seed (`extent`, `aim`,
+  `face`) to frame it: the burst true to scale (`fireworkFrame`), the climb squeezed to reach it from the ground, sideways drift as much, and the
+  view turned to face the first creeper's face (its angle is random in the game). The burst is never lower than half way up: a
+  burst goes on up with half the rocket's speed (about 15 blocks at flight 3), and fitting that by bursting lower left no climb to see. Sparks are drawn twice the game's size (`FW_GROW`).
+- Its textures are the pack's own: `particles.png` row 12 is the spark (frame for frame Java's spark_0 to 7; Bedrock's particle files use rows 9 to
+  11, not 12, so its code-driven fireworks do) and the 32×32 glow at 32,16 the flash (`import_firework_particles`, into `art/effects/`). The pack
+  hides the flying rocket (its `entity/fireworks.png` is one clear texel), so only its trail shows.
+- New sparks made while the others move (trails) must join after, not during the `filter`, or they're lost (they were, at first).
+- A heavy rocket (five large balls with trails) is about 25,000 sparks: 23 ms to draw a frame at 1000×600, 60 ms to work out its frame at launch.
+- To look at frames: in a headless Chrome, `calmMotion = () => true`, then `fireworkView.frameAt(stars, flight, seed, ticks)` and screenshot
+  `#firework-stage` (its rect plus the scroll: the clip is in page coordinates).
+- Icons: the pack's rocket (`items/fireworks`, `firework_rocket` in `FILES`) and star. The pack's star is one TGA, its gray ball at alpha 3 and the middle
+  the game colors at alpha 255; `art/` drops texels under alpha 64, so `import_firework_star` splits it into `firework_star` and
+  `firework_star_overlay`. The middle is multiplied by the colors' average (`fwTint`; Java's item model `items/firework_star.json` tints it with
+  `minecraft:firework`, default -7697782 when it has none).
+- From the games' files: Java's recipes (`firework_star`: its `shapes`, `trail`, `twinkle`; `firework_star_fade`; `firework_rocket`, 3 a craft), the tags
+  `skulls` (any head makes a creeper) and `dyes`, both language files' words (Bedrock's shapes are "Small ball explosion" and so on, and its light gray
+  key is `silver`). No loot table or trade in either game has a firework (26.3's abandoned camps had them in a snapshot, not now). Bedrock's firework
+  recipes aren't in bedrock-samples.
+- From the wiki only (they're in the games' code): the explosion colors (the Dye page's firework colors, one for both editions, not the dyes' own),
+  the lifetime and heights, dispenser and crossbow distances, the explosion's (5 + 2 per star) and a crossbow hit's damage, elytra boosting, Bedrock's
+  bone meal, lapis, cocoa and ink sac stars, Creative's rockets, raids, water, portals, pressure plates.
+- Tooltips: Java's are as its code writes them (the shape, then each line; in a rocket, a star's lines set in under its shape). Not checked: the order
+  of `multiple_stars`' "%s x %s" (shown as "Creeper-shaped x 2", as "%s x%s" is name then count elsewhere) and whether Java groups only stars next
+  to each other (all the same ones are grouped). Bedrock's layout isn't documented: the same layout in its words, one line per star.
+- Java's commands: `fireworks` (`flight_duration`, `explosions`) and `firework_explosion`, colors as int arrays. Bedrock's /give can't set them.
 
 ## The Equipment tab
 

@@ -1,0 +1,45 @@
+  <section id="view-fireworks" aria-label="Fireworks" hidden>
+    <p class="view-intro">Design a firework as a crafting table makes one: its stars, each in up to eight colors with a shape, a fade, a trail and a twinkle, then the rocket that holds them and how far it flies. See what the game calls it, every craft it takes, and what else rockets do.</p>
+
+    <section class="panel villager-panel mob-panel" aria-label="Firework">
+      <div class="villager-scene">
+        <div class="stage prop-stage" id="firework-stage" data-biome="plains">
+          <canvas class="stage-scene" id="firework-art" tabindex="0" role="img"></canvas>
+          <span class="stage-hint" aria-hidden="true">
+            <svg viewBox="0 0 11 5" width="22" height="10" shape-rendering="crispEdges"><path fill="currentColor" d="M2 0h1v1H2zM1 1h1v1H1zM0 2h11v1H0zM1 3h1v1H1zM2 4h1v1H2zM8 0h1v1H8zM9 1h1v1H9zM9 3h1v1H9zM8 4h1v1H8z"/></svg>
+            Drag to turn
+          </span>
+        </div>
+        <div class="try-bar">
+          <span class="cat-label" id="firework-flight-label">Flight duration</span>
+          <div class="try-tags" id="firework-flight" role="group" aria-labelledby="firework-flight-label"></div>
+        </div>
+        <div class="try-bar">
+          <span class="cat-label" id="firework-stars-label">Stars</span>
+          <div id="firework-stars" role="group" aria-labelledby="firework-stars-label"></div>
+        </div>
+      </div>
+
+      <div class="villager-pick">
+        <div class="panel-head">
+          <h2 id="firework-name"></h2>
+        </div>
+        <div class="cats" id="firework-picker" role="group" aria-label="The star"></div>
+      </div>
+    </section>
+
+    <div class="trade-grid">
+      <article class="panel result mob-result" id="firework-result"></article>
+
+      <div class="trade-side">
+        <section class="panel">
+          <h2><label for="firework-search">Find a color or shape</label></h2>
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 8 8" width="16" height="16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7z"/></svg>
+            <input type="search" class="mc-input" id="firework-search" placeholder="Creeper, trail, feather, lime…" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="search-results" id="firework-results" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+  </section>
