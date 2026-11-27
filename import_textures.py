@@ -259,7 +259,11 @@ FILES = {
     "furnace_front": "blocks/furnace_front_off", "furnace_side": "blocks/furnace_side", "furnace_top": "blocks/furnace_top", "soul_lantern": "items/soul_lantern",
     "white_candle": "items/candles/white_candle", "orange_candle": "items/candles/orange_candle", "rail_carried": "blocks/carried/rail_carried", "heartbreak_pottery_sherd": "items/heartbreak_pottery_sherd",
     "rose_bush_carried": "blocks/carried/rose_bush_carried", "beehive_front": "blocks/beehive_front", "beehive_side": "blocks/beehive_side", "beehive_top": "blocks/beehive_top",
-    "spyglass": "items/spyglass", "web_carried": "blocks/carried/web_carried", "copper_bulb": "blocks/copper_bulb", "copper_lantern": "items/copper_lantern",
+    "spyglass": "items/spyglass", "web_carried": "blocks/carried/web_carried",
+    # The mineshaft's (the Structures tab)
+    "powered_rail_carried": "blocks/carried/powered_rail_carried", "detector_rail_carried": "blocks/carried/detector_rail_carried",
+    "activator_rail_carried": "blocks/carried/activator_rail_carried", "chest_minecart": "items/minecart_chest",
+    "music_disc_bounce": "items/music_disc_bounce", "mineshaft_explorer_map": "items/map_mineshaft", "copper_bulb": "blocks/copper_bulb", "copper_lantern": "items/copper_lantern",
     "soul_campfire": "items/soul_campfire", "glow_item_frame": "items/glow_item_frame", "boat_spruce": "items/boat_spruce", "target_side": "blocks/target_side", "target_top": "blocks/target_top",
     "spruce_trapdoor": "blocks/spruce_trapdoor", "pale_oak_trapdoor": "blocks/pale_oak_trapdoor",
     # The Equipment tab: the spears the other tabs don't have (the diamond one is "spear"), and what gear is made with.

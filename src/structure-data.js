@@ -24,6 +24,7 @@ const STRUCTURE_SCENES = {
   end_city: "end_city",
   ancient_city: "deep_dark",
   stronghold: "stronghold",
+  mineshaft: "mineshaft",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -31,6 +32,7 @@ const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "
 const ST_BLOCKS = {
   chest: "ui:logo", barrel: "st:barrel", vault: "st:vault", ominous_vault: "st:vault", dispenser: "st:dispenser", pot: "ui:pot",
   spawner: "st:trial_spawner", ominous_spawner: "st:trial_spawner",
+  chest_minecart: "st:chest_minecart", rail: "st:rail",
   item_frame: "st:item_frame", dragon_head: "st:dragon_head", brewing_stand: "st:brewing_stand", furnace: "st:furnace",
 };
 
@@ -195,6 +197,56 @@ const STRUCTURES = [
       danger: "Silverfish: the spawner on the portal room’s stairs, and the infested stone bricks, which let one out when mined: mine its walls with Silk Touch, or not at all. Getting lost: about 150 rooms over 130 blocks, on several levels; mark your way. Lava in the portal room, by its stairs and under the portal. Caves and mineshafts cut through it, bringing their monsters, cave spiders from a mineshaft’s spawners, and lava. And the portal: go in only ready to fight the ender dragon, as the way back is killing it, or dying.",
       about: both("The End: the only end portal in the Overworld, its 12 frames waiting for eyes of ender. Each already has one 1 time in 10: about 1.2 a stronghold; 28% have none, 38% one, 23% two, 11% three or more, and all 12, the portal open, one in a trillion. The Eye armor trim: in every library chest (about 3.6 a stronghold) and 1 corridor chest in 10, and nowhere else. Enchanted books at level 30, in 2 library chests in 3. Ender pearls in 1 corridor chest in 4. About 440 bookshelves for an enchanting table. And Music Disc Otherside (also in dungeons and ancient cities).",
         "The End: the only end portal in the Overworld, its 12 frames waiting for eyes of ender. Each already has one 1 time in 10: about 1.2 a stronghold; 28% have none, 38% one, 23% two, 11% three or more, and all 12, the portal open, one in a trillion. The Eye armor trim: in every library chest (about 3.6 a stronghold) and 1 corridor chest in 10, and nowhere else. Enchanted books at level 30, in nearly 3 library chests in 4. Ender pearls in 1 corridor chest in 4. About 440 bookshelves for an enchanting table. And Music Disc Otherside (also in dungeons and ancient cities)."),
+    },
+  },
+  {
+    // How many of each: from Java's MineshaftPieces (tools/structure-pieces.py --mineshaft builds 5000 mineshafts as it does, as if in
+    // solid stone); the chest minecarts' loot from each edition's own table (the same but for the order). The badlands kind (Java's
+    // mineshaft_mesa, Bedrock's surface_mineshaft biomes) has the same pieces, loot and spawners, so it's told in facts, not as a kind
+    // (the user's choice). Bedrock's layout isn't in its files: it's shown as Java's.
+    k: "mineshaft", n: "Mineshaft", dim: "overworld", icon: "st:rail",
+    say: "Abandoned tunnels propped up with wooden supports, branching for 150 blocks underground, with rails, chest minecarts, and cobwebs hiding cave spider spawners.",
+    loot: [
+      { k: "minecart", n: "Chest minecarts", block: "chest_minecart", table: "chests/abandoned_mineshaft",
+        where: "About 5 a mineshaft (1 to 10 in 9 mineshafts in 10; 1 in 40 has none), along the corridors: beside each support, 1 time in 100 on either side, each on a rail of its own. In sulfur caves a Music Disc Bounce takes some of its rails’ and torches’ rolls: there rails come in 70% of them, torches 58%, powered rails 23%." },
+      { k: "corridors", n: "Along the corridors", block: "rail",
+        rows: [["rail", "", 126, 495, 0.999], ["torch", "", 7, 32, 0.999], ["cobweb", "", 94, 472, 0.999], ["oak_fence", "", 464, 1592, 0.999], ["oak_planks", "", 476, 1752, 0.999]],
+        where: "About 1,240 blocks of corridor a mineshaft, in about 90 corridors, 25 crossings and 10 stairs round the room it starts from. 1 corridor in 3 has rails, along 7 in 10 of its middle blocks. Every 5 blocks a support of two fences and a beam of planks, now and then with a torch on it; a pillar of planks in each corner of a crossing; and cobwebs round the supports and filling the spider corridors.",
+        note: "Placed with it, not rolled: × is how many a mineshaft has, 9 in 10 between these, and the chance is that one has any. Fewer where caves or the open air cut through it. In the badlands they’re dark oak fences and planks." },
+    ],
+    lootFacts: [
+      ["Cave spider spawners", "About 2.6 a mineshaft (0 to 12; 9 in 10 have one), one in each spider corridor. A spawner can’t be taken, even with Silk Touch: mined with a pickaxe it gives 15 to 43 experience."],
+      ["String", "A sword breaks a cobweb into 1 string; shears keep the cobweb. About 260 cobwebs a mineshaft."],
+      ["Over caves", "Where a corridor crosses a cave or a ravine its floor is filled with planks, held up by logs down to the ground or iron chains from the roof."],
+      ["The badlands kind", "Built of dark oak: dark oak fences, planks and logs where any other mineshaft has oak. Its loot, rails and spawners are the same."],
+    ],
+    mobs: [
+      { mob: "cave_spider", how: both("From the spawners in its spider corridors, in complete darkness: up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And where it’s in sulfur caves, in the dark, alone: 1 in 16 of their monster spawns.",
+        "From the spawners in its spider corridors, in complete darkness: up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And where it’s in sulfur caves, in the dark, alone: 1 in 22 of their monster spawns."), chance: "Spawners" },
+      { mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
+      { mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
+      { mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { mob: "spider", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4. Not in sulfur caves.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone. Not in sulfur caves."), chance: "Common" },
+      { mob: "bat", how: both("In its dark corridors below sea level, as in any cave: in light 3 or less (7 around Halloween), on stone, deepslate or tuff.", "In its dark corridors, as in any cave: in light 4 or less, on stone, deepslate or tuff."), chance: "Caves" },
+      { mob: "slime", how: both("Only where the mineshaft is in a slime chunk (1 in 10), below Y 40, in any light.", "Only where the mineshaft is in a slime chunk, below Y 40, in any light."), chance: "Slime chunks" },
+      { mob: "sulfur_cube", how: both("Where it’s in sulfur caves, in the dark: about 1 in 3 of their monster spawns, 2 to 4 together.", "Where it’s in sulfur caves, in any light, on Peaceful too: about 1 in 3 of their monster spawns, 2 to 4 together."), chance: "Sulfur caves" },
+      { mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
+      { mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
+      { mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
+      { mob: "drowned", how: "In water, in the dark, where the mineshaft is in dripstone caves: 1 in 6 of their monster spawns.", chance: "Dripstone caves" },
+    ],
+    mobFacts: [
+      ["No spawns of its own", "The mineshaft doesn’t change what spawns: the biome round it, often a cave biome at that depth, spawns its monsters in the dark of its corridors, as in any cave. Where it reaches the deep dark nothing does."],
+      ["Spider corridors", "1 corridor in 35 (1 in 23 of those without rails): 3 in 5 of its lower blocks are cobwebs, about 44, and a cave spider spawner sits in the middle of its floor. Its spiders only spawn in complete darkness, so one torch beside it stops it; or break it with a pickaxe."],
+      ["Cave spiders", "Their bite poisons you on Normal (7 seconds) and Hard (15 seconds), down to half a heart; not on Easy. They fit through gaps a block wide and half a block high, and climb walls."],
+    ],
+    where: {
+      biomes: "Every Overworld biome but the deep dark: the biome at Y 50 in the chunk where it starts must be one, so a cave biome there counts, and it runs on under oceans, rivers and mountains. In the badlands, eroded badlands and wooded badlands it’s the badlands kind, of dark oak.",
+      height: "Underground: its top is at Y 52 at most, usually between Y −17 and 29, and its lowest corridors can reach Y −62. It’s about 22 blocks high (14 to 31) and 150 across (110 to 180), and the room it starts from is usually between Y −29 and 17. The badlands kind is moved up instead: its middle anywhere from sea level (Y 63) up to the ground there, so it’s often half in the open, its corridors sticking out of the hillsides.",
+      often: "Each chunk has a 4 in 1,000 chance of one starting in it: about one for every 16 by 16 chunks (256 blocks square). Nothing keeps them apart, so two can start side by side and run into each other, and they cut through caves, strongholds and other structures.",
+      find: "Explore caves and ravines: look for wooden fences and planks in their walls, rails and cobwebs; ravines often cut through one. In the badlands look for dark oak supports sticking out of the hills. An abandoned camp’s secret chest has a Buried Mineshaft Map 1 time in 7, which leads to one (never a badlands one). No eye or compass leads to one.",
+      danger: "Cave spiders: their spawners hide in cobwebs, which slow you to a crawl, and their poison takes you down to half a heart. Cut the webs with a sword or shears, then light up or break the spawner. Caves and ravines cut through it, so floors end over long drops, with lava and water from the caves below. Getting lost: about 90 corridors over 150 blocks, on several levels; mark your way. And the biome’s monsters in its dark corridors.",
+      about: "Name tags: in 42% of its chest minecarts, so 5 mineshafts in 6 have one: the best place to find them. Golden apples (28% of the minecarts) and enchanted golden apples (1.4%, so about 1 mineshaft in 15). Rails: about 300 on its tracks to take with any tool, and powered, detector and activator rails in its minecarts. String: about 260 cobwebs, a string each with a sword. Music Disc Bounce, only in mineshafts in sulfur caves, in 42% of their minecarts. And about 1,000 fences and 1,000 planks.",
     },
   },
   {
@@ -520,7 +572,7 @@ const ST_ART = {
   "st:blackstone": C("blackstone", "blackstone_top"), "st:gilded_blackstone": C("gilded_blackstone"), "st:polished_blackstone_bricks": C("polished_blackstone_bricks"),
   "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
   "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
-  "st:reinforced_deepslate": C("reinforced_deepslate"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
+  "st:reinforced_deepslate": C("reinforced_deepslate"), "st:chest_minecart": L("chest_minecart"), "st:rail": L("rail_carried"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
   // The end portal frame: 13 texels tall, its sides' top 3 rows clear.
   "st:end_portal_frame": { boxes: [{ b: [0, 0, 0, 16, 13, 16], faces: [["end_portal_frame"], ["end_portal_frame_top"], ["end_portal_frame"]] }] },
 };
@@ -586,8 +638,14 @@ function lootGroup(id, kind) {
   if (LOOT_GEAR.test(id)) return "gear";
   if (LOOT_FOOD.has(id)) return "food";
   if (LOOT_MATERIALS.has(id) || /_dye$|_ingot$/.test(id)) return "materials";
-  return LOOT_CUBES[id] ? "blocks" : "other";
+  return LOOT_CUBES[id] || LOOT_BLOCKS.has(id) || LOOT_MODELS[id] ? "blocks" : "other";
 }
+// Blocks drawn as their item's picture, not as cubes.
+const LOOT_BLOCKS = new Set(["rail", "powered_rail", "detector_rail", "activator_rail", "torch", "cobweb"]);
+// Blocks drawn as their own model: the fence as the inventory shows it (two posts and two bars).
+const LOOT_MODELS = {
+  oak_fence: { boxes: [[6, 0, 0, 10, 16, 4], [6, 0, 12, 10, 16, 16], [7, 12, 4, 9, 15, 12], [7, 6, 4, 9, 9, 12]].map(b => ({ b, faces: [["oak_planks"], ["oak_planks"], ["oak_planks"]] })) },
+};
 // Blocks drawn as cubes: [side, top] textures, if not the block's own name for both.
 const LOOT_CUBES = {
   tuff: [], moss_block: [], diamond_block: [], emerald_block: [], iron_block: [], gold_block: [], bamboo_planks: [], oak_planks: [],
@@ -598,9 +656,11 @@ const LOOT_CUBES = {
 };
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
-  netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain", soul_torch: "soul_torch_carried" };
+  netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain", soul_torch: "soul_torch_carried",
+  rail: "rail_carried", powered_rail: "powered_rail_carried", detector_rail: "detector_rail_carried", activator_rail: "activator_rail_carried",
+  buried_mineshaft_map: "mineshaft_explorer_map" };
 // What's placed with a structure and isn't in any loot table (a box's rows), named as Java's en_us.json names it.
-Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head", wooden_shovel: "Wooden Shovel", deepslate: "Deepslate" });
+Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head", wooden_shovel: "Wooden Shovel", deepslate: "Deepslate", oak_fence: "Oak Fence" });
 const LOOT_SHINES = new Set(["enchanted_book", "enchanted_golden_apple", "experience_bottle"]);
 // Potions' colors (the Potions tab's), by their potion id without strong_ or long_.
 const lootPotion = v => (v.match(/(?:^|\+)potion:(?:strong_|long_)?([a-z_]+)/) || [])[1];
@@ -611,7 +671,7 @@ function lootIcon(id, kind) {
   if (id === "shield" && ICONS.shield) return "shield";
   const key = `st:${id}`;
   if (!ICONS[key]) {
-    const cube = LOOT_CUBES[id], spec = cube ? C(cube[0] || id, cube[1] || cube[0] || id) : L(LOOT_ART[id] || id);
+    const cube = LOOT_CUBES[id], spec = LOOT_MODELS[id] || (cube ? C(cube[0] || id, cube[1] || cube[0] || id) : L(LOOT_ART[id] || id));
     ICONS[key] = artReady(spec) ? spec : ICONS["ui:book"];
   }
   return key;

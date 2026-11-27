@@ -3,6 +3,8 @@ mobs (the entities saved in the piece), its notable blocks, and the pools its ji
 
     python3 tools/structure-pieces.py <java data> <start pool> [--counts <structure> [how many]]
     python3 tools/structure-pieces.py <java data> --end-city [how many]
+    python3 tools/structure-pieces.py --stronghold [how many]
+    python3 tools/structure-pieces.py --mineshaft [how many]
 
 <java data> is misode/mcmeta's `26.3-data` tag unpacked (see tools/structure-loot.py's header); <start pool> is a template pool's id
 without "minecraft:", such as bastion/starts or trial_chambers/chamber/end. Each element of the start pool is a kind of the structure
@@ -15,6 +17,9 @@ and how often it has at least one. The game's own random numbers aren't used, so
 
 --end-city builds that many end cities (20000) as Java's EndCityPieces does (see EndCity), and counts the data markers in its pieces
 (chests, shulkers, the elytra) and the ship.
+
+--stronghold and --mineshaft build that many (5000) as Java's StrongholdPieces and MineshaftPieces do, from memory of that code (see
+their sections), and count what's in them. They need no files.
 """
 import gzip
 import io
@@ -857,7 +862,283 @@ def stronghold_counts(n, seed=1):
             print(f"      middle half {s[n // 4]:g}–{s[3 * n // 4]:g}, 5% {s[n // 20]:g}, 95% {s[19 * n // 20]:g}")
 
 
+# ---------- The mineshaft: Java's MineshaftPieces ----------
+# The mineshaft has no templates: every piece is built in code (26.3's MineshaftStructure and MineshaftPieces, from memory of them). Its
+# layout is ported as it is, random calls in the same order; what each piece holds is counted from its postProcess (also from memory),
+# drawing the same random numbers for each block, as if every piece were in solid stone:
+#   - the start is a room (MineShaftRoom) 8 to 13 blocks each way and 5 to 10 high, at Y 50 (genDepth 0). Along each of its four walls in
+#     turn, from one end: step on a random 0 to (the wall's length − 1); stop once that leaves under 3 blocks; else a piece out of the wall
+#     at a random height 1 to (its height − 4) over its floor, then step 4 more.
+#   - a piece (generateAndAddPiece): past depth 8, or more than 80 blocks (x or z) from the room's corner, nothing. Else a roll of 100:
+#     80 and over a crossing, 70 to 79 stairs, under 70 a corridor; if its box overlaps a piece already placed, nothing (no second try).
+#     Each piece adds its own children at once, depth first.
+#   - a corridor: 2 to 4 sections of 5 blocks (fewer while the longer overlaps, nothing if even 1 does), 3 wide, 3 high. Rails 1 in 3;
+#     without rails, a spider corridor 1 in 23. On from its end: 1 in 2 straight on, 1 in 4 left, 1 in 4 right (at its far end's last
+#     4 blocks for a side turn), each 1 lower to 1 higher. Under depth 8, out of each side every 5 blocks (from its 4th): 1 in 5 left,
+#     1 in 5 right, at depth + 2.
+#   - a crossing: 5 by 5, 3 high, or 7 high 1 in 4 (two floors). Out of its three other sides, and from the upper floor of a tall one out
+#     of all four, each 1 in 2.
+#   - stairs: 9 long, 3 wide, going down 5; one piece on from its foot.
+#   - then the whole is moved down so its top is at a random Y from its height − 63 up to 52 (moveBelowSeaLevel, as the stronghold). A
+#     badlands mineshaft (MineshaftStructure.Type.MESA) is moved instead so its middle is at a random Y from sea level (63) up to the
+#     ground there: that isn't modelled.
+# What a corridor holds (postProcess): each section has a support 2 blocks in (two fences 2 high, and a beam of 3 planks, or 1 in 4 only
+# its 2 ends with a torch 1 in 20 on each side of the beam); round it 8 cobwebs at the ceiling's corners (4 at 1 in 10, 4 at 1 in 20);
+# a chest minecart on its rail 1 in 100 on either side of it (only where the block is still air: in a spider corridor its cobwebs
+# take 3 in 5 of them). A spider corridor is filled with cobwebs 3 in 5 of its lower two layers before that, and has one cave spider
+# spawner in the middle of its floor. A corridor with rails has one 7 in 10 of its floor's middle blocks. A crossing has a pillar of
+# planks in each corner, 3 or 7 high. A room and stairs hold nothing (the room's dirt floor was taken out in 1.18).
+# Not modelled, as it's the land's: a piece touching water or lava isn't built (isInInvalidLocation); where a corridor's floor is over
+# a cave it gets planks under it and logs down to the ground or chains up to the roof, and where it's open to the sky no cobwebs, chest
+# minecarts or rails; caves carved later cut through it all.
+MS_N, MS_E, MS_S, MS_W = "north", "east", "south", "west"
+
+
+class MSPiece:
+    def __init__(self, kind, box, d, depth):
+        self.kind, self.box, self.d, self.depth, self.attrs = kind, box, d, depth, {}
+
+
+class Mineshaft:
+    def __init__(self, rng):
+        self.rng = rng
+
+    def collision(self, box):
+        return next((p for p in self.pieces if overlaps(p.box, box)), None)
+
+    def corridor_box(self, x, y, z, d):
+        for i in range(self.rng.randrange(3) + 2, 0, -1):
+            n = i * 5
+            b = {MS_N: (0, 0, -(n - 1), 2, 2, 0), MS_S: (0, 0, 0, 2, 2, n - 1), MS_W: (-(n - 1), 0, 0, 0, 2, 2), MS_E: (0, 0, 0, n - 1, 2, 2)}[d]
+            b = (b[0] + x, b[1] + y, b[2] + z, b[3] + x, b[4] + y, b[5] + z)
+            if self.collision(b) is None:
+                return b
+        return None
+
+    def crossing_box(self, x, y, z, d):
+        h = 6 if self.rng.randrange(4) == 0 else 2
+        b = {MS_N: (-1, 0, -4, 3, h, 0), MS_S: (-1, 0, 0, 3, h, 4), MS_W: (-4, 0, -1, 0, h, 3), MS_E: (0, 0, -1, 4, h, 3)}[d]
+        b = (b[0] + x, b[1] + y, b[2] + z, b[3] + x, b[4] + y, b[5] + z)
+        return None if self.collision(b) else b
+
+    def stairs_box(self, x, y, z, d):
+        b = {MS_N: (0, -5, -8, 2, 2, 0), MS_S: (0, -5, 0, 2, 2, 8), MS_W: (-8, -5, 0, 0, 2, 2), MS_E: (0, -5, 0, 8, 2, 2)}[d]
+        b = (b[0] + x, b[1] + y, b[2] + z, b[3] + x, b[4] + y, b[5] + z)
+        return None if self.collision(b) else b
+
+    def random_piece(self, x, y, z, d, depth):
+        rng, r = self.rng, self.rng.randrange(100)
+        if r >= 80:
+            b = self.crossing_box(x, y, z, d)
+            if b:
+                p = MSPiece("crossing", b, d, depth)
+                p.attrs = {"tall": b[4] - b[1] + 1 > 3}
+                return p
+        elif r >= 70:
+            b = self.stairs_box(x, y, z, d)
+            if b:
+                return MSPiece("stairs", b, d, depth)
+        else:
+            b = self.corridor_box(x, y, z, d)
+            if b:
+                p = MSPiece("corridor", b, d, depth)
+                rails = rng.randrange(3) == 0
+                spider = not rails and rng.randrange(23) == 0
+                span = (b[5] - b[2] + 1) if d in (MS_N, MS_S) else (b[3] - b[0] + 1)
+                p.attrs = {"rails": rails, "spider": spider, "sections": span // 5}
+                return p
+        return None
+
+    def add(self, x, y, z, d, depth):
+        if depth > 8:
+            return None
+        s = self.start.box
+        if abs(x - s[0]) <= 80 and abs(z - s[2]) <= 80:
+            p = self.random_piece(x, y, z, d, depth + 1)
+            if p:
+                self.pieces.append(p)
+                self.children(p)
+            return p
+        return None
+
+    def children(self, p):
+        rng, b, k, depth = self.rng, p.box, p.kind, p.depth
+        if k == "room":
+            xs, zs = b[3] - b[0] + 1, b[5] - b[2] + 1
+            ys = max(b[4] - b[1] + 1 - 4, 1)
+            for wall in (MS_N, MS_S, MS_W, MS_E):
+                span, i = (xs if wall in (MS_N, MS_S) else zs), 0
+                while i < span:
+                    i += rng.randrange(span)
+                    if i + 3 > span:
+                        break
+                    y = b[1] + rng.randrange(ys) + 1
+                    at = {MS_N: (b[0] + i, y, b[2] - 1), MS_S: (b[0] + i, y, b[5] + 1), MS_W: (b[0] - 1, y, b[2] + i), MS_E: (b[3] + 1, y, b[2] + i)}[wall]
+                    self.add(*at, wall, depth)
+                    i += 4
+        elif k == "corridor":
+            r, d = rng.randrange(4), p.d
+            y = b[1] - 1 + rng.randrange(3)
+            if d == MS_N:
+                [lambda: self.add(b[0], y, b[2] - 1, d, depth), lambda: self.add(b[0] - 1, y, b[2], MS_W, depth), lambda: self.add(b[3] + 1, y, b[2], MS_E, depth)][max(r - 1, 0)]()
+            elif d == MS_S:
+                [lambda: self.add(b[0], y, b[5] + 1, d, depth), lambda: self.add(b[0] - 1, y, b[5] - 3, MS_W, depth), lambda: self.add(b[3] + 1, y, b[5] - 3, MS_E, depth)][max(r - 1, 0)]()
+            elif d == MS_W:
+                [lambda: self.add(b[0] - 1, y, b[2], d, depth), lambda: self.add(b[0], y, b[2] - 1, MS_N, depth), lambda: self.add(b[0], y, b[5] + 1, MS_S, depth)][max(r - 1, 0)]()
+            else:
+                [lambda: self.add(b[3] + 1, y, b[2], d, depth), lambda: self.add(b[3] - 3, y, b[2] - 1, MS_N, depth), lambda: self.add(b[3] - 3, y, b[5] + 1, MS_S, depth)][max(r - 1, 0)]()
+            if depth < 8:
+                if d not in (MS_N, MS_S):
+                    x = b[0] + 3
+                    while x + 3 <= b[3]:
+                        r2 = rng.randrange(5)
+                        if r2 == 0: self.add(x, b[1], b[2] - 1, MS_N, depth + 1)
+                        elif r2 == 1: self.add(x, b[1], b[5] + 1, MS_S, depth + 1)
+                        x += 5
+                else:
+                    z = b[2] + 3
+                    while z + 3 <= b[5]:
+                        r2 = rng.randrange(5)
+                        if r2 == 0: self.add(b[0] - 1, b[1], z, MS_W, depth + 1)
+                        elif r2 == 1: self.add(b[3] + 1, b[1], z, MS_E, depth + 1)
+                        z += 5
+        elif k == "crossing":
+            d = p.d
+            outs = {MS_N: [(b[0] + 1, b[2] - 1, MS_N), (b[0] - 1, b[2] + 1, MS_W), (b[3] + 1, b[2] + 1, MS_E)],
+                    MS_S: [(b[0] + 1, b[5] + 1, MS_S), (b[0] - 1, b[2] + 1, MS_W), (b[3] + 1, b[2] + 1, MS_E)],
+                    MS_W: [(b[0] + 1, b[2] - 1, MS_N), (b[0] + 1, b[5] + 1, MS_S), (b[0] - 1, b[2] + 1, MS_W)],
+                    MS_E: [(b[0] + 1, b[2] - 1, MS_N), (b[0] + 1, b[5] + 1, MS_S), (b[3] + 1, b[2] + 1, MS_E)]}[d]
+            for x, z, dd in outs:
+                self.add(x, b[1], z, dd, depth)
+            if p.attrs["tall"]:
+                for x, z, dd in [(b[0] + 1, b[2] - 1, MS_N), (b[0] - 1, b[2] + 1, MS_W), (b[3] + 1, b[2] + 1, MS_E), (b[0] + 1, b[5] + 1, MS_S)]:
+                    if rng.random() < 0.5:
+                        self.add(x, b[1] + 4, z, dd, depth)
+        elif k == "stairs":
+            d = p.d
+            self.add(*{MS_N: (b[0], b[1], b[2] - 1), MS_S: (b[0], b[1], b[5] + 1), MS_W: (b[0] - 1, b[1], b[2]), MS_E: (b[3] + 1, b[1], b[2])}[d], d, depth)
+
+    def build(self):
+        rng = self.rng
+        x, z = 2, 2
+        self.start = MSPiece("room", (x, 50, z, x + 7 + rng.randrange(6), 54 + rng.randrange(6), z + 7 + rng.randrange(6)), None, 0)
+        self.pieces = [self.start]
+        self.children(self.start)
+        lo, hi = min(p.box[1] for p in self.pieces), max(p.box[4] for p in self.pieces)
+        top = hi - lo + 1 - 64 + 1
+        if top < 53:
+            top += rng.randrange(53 - top)
+        self.shift = top - hi
+        return self.pieces
+
+
+def mineshaft_blocks(rng, p, t):
+    """What a piece holds, counted from its postProcess with the same random draws, as if it were in solid stone."""
+    k, a = p.kind, p.attrs
+    t[("piece", k)] += 1
+    if k == "crossing":
+        t[("crossing", "two floors" if a["tall"] else "one floor")] += 1
+        t[("block", "planks")] += 4 * (7 if a["tall"] else 3)
+        t[("in a crossing", "planks")] += 4 * (7 if a["tall"] else 3)
+        return
+    if k != "corridor":
+        return
+    n = a["sections"]
+    length = n * 5 - 1
+    t[("corridor", "sections")] += n
+    webs = set()
+    if a["spider"]:
+        t[("corridor", "spider corridor")] += 1
+        for y in (0, 1):
+            for x in range(3):
+                for z in range(length + 1):
+                    if rng.random() <= 0.6:
+                        webs.add((x, y, z))
+    if a["rails"]:
+        t[("corridor", "with rails")] += 1
+    for i in range(n):
+        z = 2 + i * 5
+        for x in (0, 2):  # the support's fences take what's there
+            for y in (0, 1):
+                webs.discard((x, y, z))
+        t[("block", "fences")] += 4
+        if rng.randrange(4) == 0:
+            t[("block", "planks")] += 2
+        else:
+            t[("block", "planks")] += 3
+            for _ in range(2):
+                if rng.random() < 0.05:
+                    t[("block", "torches")] += 1
+        for chance, x, zz in [(0.1, 0, z - 1), (0.1, 2, z - 1), (0.1, 0, z + 1), (0.1, 2, z + 1), (0.05, 0, z - 2), (0.05, 2, z - 2), (0.05, 0, z + 2), (0.05, 2, z + 2)]:
+            if rng.random() < chance:
+                webs.add((x, 2, zz))
+        for x, zz in ((2, z - 1), (0, z + 1)):
+            if rng.randrange(100) == 0:
+                if (x, 0, zz) in webs:
+                    t[("chest minecart lost to a cobweb",)] += 1
+                else:
+                    t[("chest minecart",)] += 1
+                    t[("block", "rails (under chest minecarts)")] += 1
+                    t[("chest minecart", "in a spider corridor" if a["spider"] else "in a corridor with rails" if a["rails"] else "in a plain corridor")] += 1
+        if a["spider"] and not t.get(("_spawner", id(p))):
+            sz = z - 1 + rng.randrange(3)
+            t[("_spawner", id(p))] = 1
+            webs.discard((1, 0, sz))
+            t[("spawner",)] += 1
+    t[("block", "cobwebs")] += len(webs)
+    if a["spider"]:
+        t[("in a spider corridor", "cobwebs")] += len(webs)
+    if a["rails"]:
+        for z in range(length + 1):
+            if rng.random() < 0.7:
+                t[("block", "rails")] += 1
+
+
+def mineshaft_tally(ms, pieces, rng):
+    t = Counter()
+    t[("pieces",)] += len(pieces)
+    for p in pieces:
+        mineshaft_blocks(rng, p, t)
+    for k in [k for k in t if k[0] == "_spawner"]:
+        del t[k]
+    t[("depth", "deepest piece")] += max(p.depth for p in pieces)
+    xs = [v for p in pieces for v in (p.box[0], p.box[3])]
+    zs = [v for p in pieces for v in (p.box[2], p.box[5])]
+    t[("size", "across (x or z, the wider)")] += max(max(xs) - min(xs), max(zs) - min(zs)) + 1
+    t[("size", "high")] += max(p.box[4] for p in pieces) - min(p.box[1] for p in pieces) + 1
+    t[("Y", "top")] += max(p.box[4] for p in pieces) + ms.shift
+    t[("Y", "bottom")] += min(p.box[1] for p in pieces) + ms.shift
+    t[("Y", "room's floor")] += ms.start.box[1] + ms.shift
+    t[("corridor", "blocks long, all corridors")] += sum(p.attrs["sections"] * 5 for p in pieces if p.kind == "corridor")
+    return t
+
+
+def print_runs(name, runs):
+    n = len(runs)
+    print(f"\n=== {name} ({n} built)")
+    for k in sorted({k for t in runs for k in t}, key=str):
+        v = [t[k] for t in runs]
+        hist = Counter(round(x) for x in v)
+        print(f"  {' · '.join(k)}: mean {sum(v) / n:.3f}, {min(v):g}–{max(v):g}, in {sum(1 for x in v if x) / n:.1%}"
+              + (f"; {', '.join(f'{x}: {hist[x] / n:.1%}' for x in sorted(hist))}" if len(hist) <= 12 else ""))
+        if len(hist) > 12:
+            s = sorted(v)
+            print(f"      middle half {s[n // 4]:g}–{s[3 * n // 4]:g}, 5% {s[n // 20]:g}, 95% {s[19 * n // 20]:g}")
+
+
+def mineshaft_counts(n, seed=1):
+    """Build n mineshafts and tell, for each thing in them, its mean, least and most, and how many mineshafts have it."""
+    rng, runs = random.Random(seed), []
+    for _ in range(n):
+        ms = Mineshaft(rng)
+        runs.append(mineshaft_tally(ms, ms.build(), rng))
+    print_runs("mineshaft", runs)
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--mineshaft":
+        mineshaft_counts(int(sys.argv[2]) if len(sys.argv) > 2 else 5000)
+        sys.exit()
     if len(sys.argv) > 1 and sys.argv[1] == "--stronghold":
         stronghold_counts(int(sys.argv[2]) if len(sys.argv) > 2 else 5000)
         sys.exit()
