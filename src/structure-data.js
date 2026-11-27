@@ -27,6 +27,7 @@ const STRUCTURE_SCENES = {
   mineshaft: "mineshaft",
   woodland_mansion: "mansion",
   ocean_monument: "ocean",
+  pillager_outpost: "pillager_outpost",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 

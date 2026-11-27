@@ -3,7 +3,7 @@
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; dim, the dimension it lives in (nether or end; overworld if not
 // given); behavior, how it treats the player as the Minecraft Wiki classes it (neutral or aggressive, the wiki's hostile and
 // boss mobs; passive if not given); biome, the village biome its stage shows
-// (a BIOMES key, village, mushroom_fields, cave, mineshaft, mansion, trial_chamber, stronghold, deep_dark, nether, nether_fortress, bastion_remnant, end, end_city, end_island, ocean, lush_pool, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, village, mushroom_fields, cave, mineshaft, mansion, trial_chamber, stronghold, deep_dark, nether, nether_fortress, bastion_remnant, end, end_city, pillager_outpost, end_island, ocean, lush_pool, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -445,7 +445,7 @@ const MOBS = [
   { k: "drowned", n: "Drowned", behavior: "neutral", biome: "ocean_night", stand: lift(0.3) }, { k: "elder_guardian", n: "Elder Guardian", behavior: "aggressive", biome: "ocean", swim: true, zoom: ELDER_ZOOM },
   { k: "evoker", n: "Evoker", behavior: "aggressive", biome: "mansion" }, { k: "guardian", n: "Guardian", behavior: "aggressive", biome: "ocean", swim: true, zoom: GUARDIAN_ZOOM },
   { k: "husk", n: "Husk", behavior: "aggressive", biome: "desert_night" }, { k: "parched", n: "Parched", behavior: "aggressive", biome: "desert_night" }, { k: "phantom", n: "Phantom", behavior: "aggressive", biome: "plains_night", stand: { body: { p: [0, 22, 0] } } },
-  { k: "pillager", n: "Pillager", behavior: "aggressive", biome: "village" }, { k: "ravager", n: "Ravager", behavior: "aggressive", biome: "village" },
+  { k: "pillager", n: "Pillager", behavior: "aggressive", biome: "pillager_outpost" }, { k: "ravager", n: "Ravager", behavior: "aggressive", biome: "village" },
   { k: "silverfish", n: "Silverfish", behavior: "aggressive", biome: "stronghold" }, { k: "skeleton", n: "Skeleton", behavior: "aggressive", biome: "cave" },
   { k: "skeleton_horse", n: "Skeleton Horse", biome: "plains_night" }, { k: "slime", n: "Slime", behavior: "aggressive", biome: "cave", zoom: 1.8 }, { k: "sulfur_cube", n: "Sulfur Cube", biome: "sulfur_caves", zoom: 0.8 }, { k: "spider", n: "Spider", behavior: "neutral", biome: "cave", stand: lift(1.7) },
   { k: "stray", n: "Stray", behavior: "aggressive", biome: "snowy_night" }, { k: "vex", n: "Vex", behavior: "aggressive", biome: "mansion", stand: { root: { p: [0, 10, 0] } } }, { k: "vindicator", n: "Vindicator", behavior: "aggressive", biome: "mansion" }, { k: "warden", n: "Warden", behavior: "aggressive", biome: "deep_dark" }, { k: "witch", n: "Witch", behavior: "aggressive", biome: "swamp_night" },

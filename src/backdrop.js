@@ -452,6 +452,126 @@ const farBastion = (() => {
 const FUNGUS = { W: blockTex("nether_wart_block"), S: blockTex("shroomlight", null, { lamp: { size: 1.8, color: "255, 165, 80", strength: 0.42 } }), T: blockTex("crimson_stem_side") };
 const crimsonFungus = prop([".WWW.", "WWWWW", "WSWWW", "W.T.S", "..T..", "..T..", "..T.."], FUNGUS);
 const tallCrimsonFungus = prop(["..WWW..", ".WWWWW.", "WWWSWWW", "WSWWWWW", "W..T..W", "...T...", "...T...", "...T...", "...T..."], FUNGUS);
+// A pillager outpost, as Java builds it (its templates in misode/mcmeta 26.3-data, structure/pillager_outpost/*.nbt, seen side on).
+// A dark oak fence seen side on: its post and the rails to the side or sides it joins (as the nether fortress's).
+const fenceOf = (tex, left, right) => ({ parts: [[tex, [6, 0, 10, 16], [6, 0]], ...[[left, 0, 6], [right, 10, 16]].flatMap(([on, x0, x1]) => (on ? [[tex, [x0, 1, x1, 4], [x0, 1]], [tex, [x0, 7, x1, 10], [x0, 7]]] : []))], cap: false });
+const OUTPOST = {
+  W: blockTex("white_wool"), w: blockTex("white_wool", "#8e8e8e"), T: blockTex("crafting_table_front"),
+  f: fenceOf("planks_dark_oak", true, true), l: fenceOf("planks_dark_oak", true, false), r: fenceOf("planks_dark_oak", false, true), p: fenceOf("planks_dark_oak", false, false),
+  // The tent's middle pole, the shade of its inside behind it.
+  P: { layers: [["white_wool", "#8e8e8e"]], parts: fenceOf("planks_dark_oak", false, false).parts, cap: false },
+  L: blockTex("log_dark_oak"), S: blockTex("planks_dark_oak", null, { rows: [8, 16] }), D: blockTex("planks_dark_oak"),
+  H: blockTex("hay_block_side"), K: blockTex("pumpkin_face_off"), E: blockTex("log_dark_oak_top"),
+};
+const outpost = rows => prop(rows, OUTPOST);
+// A tent seen from its open end: white wool on dark oak fences, its middle pole up to the ridge, a crafting table inside.
+const outpostTent = outpost(["...W...", "..WPW..", ".WwPwW.", ".pwPTp."]);
+// A cage: dark oak logs at its corners, fences between, under a roof of slabs and stairs (this one empty, as one in three is).
+const outpostCage = outpost(["SDDS", "LffL", "LffL", "LffL"]);
+// Two practice targets: each a hay bale on a fence, fences out either side for arms, a carved pumpkin for a head.
+const outpostTargets = outpost([".K...K.", "rHl.rHl", ".p...p."]);
+// A pile of dark oak logs lying on their sides, seen end on.
+const outpostLogs = outpost([".EEEEE.", "EEEEEEE"]);
+// The watchtower, its front as the template has it (21 high, 15 wide), each block as it lies there: a cobblestone base with dark
+// oak logs upright at its corners, a ring of fences and slabs round it; a ledge of slabs, and under the window a sill of
+// cobblestone stairs and a slab; the tower of planks between upright logs, logs pointing out of it (O, their rings) in a diamond
+// over the window, the window itself three wide and two high, open through to the back (as in the game, the back's window right
+// behind it); a band of upside-down stairs, then the top floor's edge, a log lying along it (X) with a log's end at each corner,
+// a fence round the floor, cobblestone walls at its corners, ominous banners hanging from it; log posts up to the dark oak roof,
+// torches under it, the roof's underside (i) seen in the notch under its top. Generated from the template
+// (pillager_outpost/watchtower.nbt in misode/mcmeta 26.3-data), looking at its north side, where its banners face (its door is
+// on the south). Each block is shaded by how far back it is (its depth, from the front of the template), so it has its volume.
+const OUTPOST_TOWER = [
+  "...AAAAAAAAA...", "..AAAAAAAAAAA..", "..tAAAiiiAAAt..", "..AAC.....CAA..", "..A.C.....C.A..", "..w.C.....C.w..",
+  ".rwrffl.rfflwl.", "eXGOFXXXXXFOGXe", "..hhGTKKKTGhh..", "...GGAAOAAGG...", "...CCAOAOACC...", "...CCAAOAACC...",
+  "...CCAAhAACC...", "...CCA...ACC...", "...CCA...ACC...", "..LCCAKkKACCR..", "..sGGsssssGGs..", ".srrsGGGGGslls.",
+  ".CGGCGGGGGCGGC.", ".CGGCGGGGGCGGC.", ".CGGCGGGGGCGGC.",
+];
+// What's right behind a block that doesn't fill its space (a slab, a stair, a fence): the first whole block further back, which
+// shows round it, and its depth (generated with the rows above).
+const OUTPOST_BEHIND = [
+  "...............", "...............", "..A.........A..", "...............", "...............", "...............",
+  "....C.....C....", "...............", "..GG.GGGGG.GG..", "...............", "...............", "...............",
+  "...............", "...............", "...............", "......bOb......", ".....AAAAA.....", "..GGG.....GGG..",
+  "...............", "...............", "...............",
+];
+const OUTPOST_BEHIND_DEPTH = [
+  "...............", "...............", "..3.........3..", "...............", "...............", "...............",
+  "....4.....4....", "...............", "..43.33333.34..", "...............", "...............", "...............",
+  "...............", "...............", "...............", "......333......", ".....33333.....", "..432.....234..",
+  "...............", "...............", "...............",
+];
+const OUTPOST_DEPTH = [
+  "...543333345...", "..43222222234..", "..22226662222..", "..224.....422..", "..2.4.....4.2..", "..2.4.....4.2..",
+  ".321111.111123.", "432101111101234", "..32222222223..", "...433333334...", "...433333334...", "...433333334...",
+  "...433333334...", "...433...334...", "...433...334...", "..64332223346..", "..54322222345..", ".4321222221234.",
+  ".4321292921234.", ".4321222221234.", ".4321222221234.",
+];
+// The pack's ominous banner (art/banners/ominous.png, its flag's front, 20 by 40 texels): black, a gold border and cross, a
+// pale face. A wall banner hangs from the top of its block two and a half blocks down, two texels wider than the block each side.
+const OMINOUS_COLORS = { a: "#313139", b: "#3e4347", c: "#485359", d: "#e0ad4c", e: "#fce671", f: "#1b1b25", g: "#25252d", h: "#ffffff", i: "#cb7c3f" };
+const OMINOUS_FLAG = [
+  "abbbbccccccbcccbbbba", "bbbbbbbbbbbabbbbbbbb", "bbdeeeeeeeeeeeeeedbb", "bbeffffffffffffffebb", "bbeffggggggggggffebb",
+  "bbefgggggggggfggfebb", "bbegggggggggfagggebb", "bbegggggggggaggggebb", "bbeggggggggggggggebb", "bbeggggggggggggggebb",
+  "bbeggggghhhhgggggebb", "bbegggaaeddeaagggebb", "bbegaaaaeeeeaaaagebb", "bbegaaaaeeeeaaaagebb", "bbeaaaaadeedaaaaaebb",
+  "bbeaaaaaddddaaaaaebb", "bbeaaaaaddddaaaaaebb", "bbeaaaaaiiiiaaaaaebb", "bbeahhedggggdehhaebb", "bbeaeddiaaaaiddeaebb",
+  "bbeaeddiaaaaiddeaebb", "aaeadiiiaaaaiiidaebb", "aaeagggghhhhggggaeaa", "aaeaaaaaeddeaaaaaeaa", "aaegaaaaeeeeaaaaaeaa",
+  "aadagaaaeeeeaaaaadaa", "aadabgaadeedaaaaadaa", "aaeaabaaddddaaaaaeaa", "aaeaaaaaddddaaaaaeaa", "aadaaaaaiddiaaaaadaa",
+  "aadaaaaaggggaaaaaeaa", "aadaaaaaaaaaaggaadaa", "aadaaaaaaaaaaggaadaa", "aadaaaaaaaaaabbaadaa", "aadgaaaaaaaaaaaagdaa",
+  "gadgggggaaaagggggdag", "ggiffggggggggggffigg", "ggiiddddddddddddiigg", "gggggggggggggggggggg", "gggggggggggggggggggg",
+];
+// A banner's flag, a picture in texels (rows of letters, colors) whose left edge is x0 texels into its block: the part of it in
+// its k-th block down, as flat boxes (each run of a color one box). It sways in the scene's motion (`banners` in moves, see
+// drawBanners): then it's left out of the still picture, and drawn over it, moving.
+const bannerFlag = (rows, colors, x0, k) => ({
+  part: k, rows, colors, x0,
+  rects: rows.slice(16 * k, 16 * k + 16).flatMap((row, r) => [...row].reduce((runs, ch, x) => {
+    const last = runs[runs.length - 1];
+    if (last && last[4] === colors[ch] && last[2] === x + x0) last[2] = x + x0 + 1;
+    else runs.push([x + x0, r, x + x0 + 1, r + 1, colors[ch]]);
+    return runs;
+  }, [])),
+});
+// A banner seen edge on: a dark strip two texels thick, as long, against the wall it hangs on (the side of the block next to it).
+const EDGE_FLAG = Array(40).fill("gg"), EDGE_COLORS = { g: "#25252d" };
+const outpostTower = (() => {
+  const shades = ["", "", "#ececec", "#d8d8d8", "#c0c0c0", "#aaaaaa", "#969696"];
+  // An upside-down stair seen from its front: its top half, and its back quarter below in the shade; or from its side, its top
+  // half and the quarter under it on the side it rises to (L to the right, R to the left).
+  const RECESS = [[0, 8, 16, 16, "rgba(0, 0, 0, .3)"]];
+  const block = (ch, tint) => ({
+    A: blockTex("planks_dark_oak", tint), C: blockTex("log_dark_oak", tint), X: blockTex("log_dark_oak", tint, { turn: true }),
+    O: blockTex("log_dark_oak_top", tint), G: blockTex("cobblestone", tint), i: blockTex("planks_dark_oak", "#4c4c4c"), b: blockTex("planks_birch", tint),
+    s: blockTex("planks_dark_oak", tint, { rows: [8, 16] }), h: blockTex("planks_dark_oak", tint, { rows: [0, 8] }),
+    k: blockTex("cobblestone", tint, { rows: [0, 8] }),
+    T: blockTex("planks_dark_oak", tint, { shade: RECESS }), K: blockTex("cobblestone", tint, { shade: RECESS }),
+    L: blockTex("cobblestone", tint, { rows: [0, 8], parts: [["cobblestone", [8, 8, 16, 16], [8, 8]]], partsTint: tint }),
+    R: blockTex("cobblestone", tint, { rows: [0, 8], parts: [["cobblestone", [0, 8, 8, 16], [0, 8]]], partsTint: tint }),
+    w: { parts: [["cobblestone", [4, 0, 12, 16], [4, 0]]], cap: false }, t: plantTex("torch"),
+    f: fenceOf("planks_dark_oak", true, true), r: fenceOf("planks_dark_oak", false, true), l: fenceOf("planks_dark_oak", true, false), p: fenceOf("planks_dark_oak", false, false),
+  })[ch];
+  const legend = {}, keys = {}, pool = "ABCDEGHIJKLMNOPQRSTUVWXYZabcdgjmnopqruvxyz0123456789!@#$%^&*+=";
+  const keyOf = (id, spec) => (keys[id] || (keys[id] = pool[Object.keys(keys).length]), legend[keys[id]] = spec, keys[id]);
+  // A banner facing out (F) hangs over its own block and two and a half below; one seen edge on (e), a strip as long.
+  const banner = {}, rowsOf = OUTPOST_TOWER.map(row => [...row]);
+  OUTPOST_TOWER.forEach((row, r) => [...row].forEach((ch, c) => {
+    if (ch === "F") [0, 1, 2].forEach(k => { banner[`${r + k},${c}`] = bannerFlag(OMINOUS_FLAG, OMINOUS_COLORS, -2, k); });
+    if (ch === "e") [0, 1, 2].forEach(k => { banner[`${r + k},${c}`] = bannerFlag(EDGE_FLAG, EDGE_COLORS, c === 0 ? 14 : 0, k); });
+  }));
+  const rows = rowsOf.map((cells, r) => cells.map((ch, c) => {
+    const d = Math.min(6, +OUTPOST_DEPTH[r][c] || 0), flag = banner[`${r},${c}`];
+    // Under a banner, the log behind it on the top floor's edge.
+    const under = ch === "F" ? "C" : ch === "e" ? "." : ch;
+    const base = under === "." ? null : block(under, shades[ch === "F" ? 1 : d]);
+    if (flag) return keyOf(`${under}${d}flag${ch}${flag.part}`, { ...(base || { cap: false }), flag });
+    if (ch === ".") return ".";
+    // A block that doesn't fill its space, with the whole block behind it drawn first.
+    const back = OUTPOST_BEHIND[r][c];
+    if (back !== ".") { const bd = Math.min(6, +OUTPOST_BEHIND_DEPTH[r][c]); return keyOf(`${ch}${d}/${back}${bd}`, { ...base, behind: block(back, shades[bd]) }); }
+    return keyOf(ch + d, base);
+  }).join(""));
+  return prop(rows, legend);
+})();
 // flows: it runs down (see drawLava).
 const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava", null, { flows: true }) });
 const monument = prop([
@@ -997,6 +1117,18 @@ const BACKDROPS = {
     near: [[bastionRampart, -17], [bastionWall, 9]],
     lights: [[-11, 4.5]], lightSize: 4, lightStrength: 0.3,
   }),
+  // A pillager outpost, the pillager's (and the Structures tab's), on the plains: its watchtower close by on the left, too tall to
+  // see its top, ominous banners hanging from its top floor; practice targets on the right. On the low hills between, more of
+  // its features (a log pile, a tent, a cage) and an oak.
+  pillager_outpost: t => ({
+    // The banners sway.
+    moves: ["banners"],
+    mist: { far: 0.3, near: 0.04 },
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 2, rise: 2,
+      trees: [[oakTree(t), 0.72]],
+      landmarks: [[outpostLogs, 0.4], [outpostTent, 0.53], [outpostCage, 0.65]] },
+    near: [[outpostTower, -18.5], [outpostTargets, 9.5]],
+  }),
   // A cave a mineshaft runs through, the cave spider's: the cave's rock wall, its ceiling with dripstone and nearby
   // stalagmites, ore and cobwebs (the spiders' work); in the far wall, the mineshaft's corridor cut right across, lit
   // by its torches, its supports every four blocks, cobwebs, rails and a chest minecart.
@@ -1306,12 +1438,25 @@ function shadeBlock(ctx, rects, left, top, size) {
     ctx.fillRect(left + (x0 / 16) * size, top + (y0 / 16) * size, ((x1 - x0) / 16) * size, ((y1 - y0) / 16) * size);
   }
 }
+const turnedTextures = new WeakMap();
+function turnedTexture(cv) {
+  if (!turnedTextures.has(cv)) {
+    const out = Object.assign(document.createElement("canvas"), { width: cv.height, height: cv.width }), lc = out.getContext("2d");
+    lc.translate(out.width, 0);
+    lc.rotate(Math.PI / 2);
+    lc.drawImage(cv, 0, 0);
+    turnedTextures.set(cv, out);
+  }
+  return turnedTextures.get(cv);
+}
 function drawBlock(ctx, spec, left, top, size) {
   if (spec.fill) {
     ctx.fillStyle = spec.fill;
     ctx.fillRect(left, top, size, size);
     return;
   }
+  // behind: a whole block further back, drawn first, showing round a block that doesn't fill its space (a slab, a fence).
+  if (spec.behind) drawBlock(ctx, spec.behind, left, top, size);
   const [from, to] = spec.rows || [0, 16];
   // under: a color filled in behind the layers (the dark outside seen through a window's glass).
   if (spec.under) {
@@ -1319,7 +1464,9 @@ function drawBlock(ctx, spec, left, top, size) {
     ctx.fillRect(left, top, size, size);
   }
   (spec.layers || []).forEach(([name, tint, [x0, x1] = [0, 16]], i) => {
-    const tex = standIns && standIns[name] ? standIns[name](left, top, size, Boolean(spec.flows), tint, null, from) : textureCanvas(name, tint);
+    const found = standIns && standIns[name] ? standIns[name](left, top, size, Boolean(spec.flows), tint, null, from) : textureCanvas(name, tint);
+    // turn: the texture a quarter turn round (a log lying on its side, seen from its side).
+    const tex = spec.turn && found ? turnedTexture(found) : found;
     // squash: the whole texture drawn into those rows (a lily pad lying flat, seen edge on).
     if (tex && spec.squash) ctx.drawImage(tex, x0, 0, x1 - x0, 16, left + (x0 / 16) * size, top + (spec.squash[0] / 16) * size, ((x1 - x0) / 16) * size, ((spec.squash[1] - spec.squash[0]) / 16) * size);
     else if (tex) ctx.drawImage(tex, x0, from, x1 - x0, to - from, left + (x0 / 16) * size, top + (from / 16) * size, ((x1 - x0) / 16) * size, ((to - from) / 16) * size);
@@ -1331,12 +1478,14 @@ function drawBlock(ctx, spec, left, top, size) {
   // texels (a lantern's body, cap and handle, cut from its block texture).
   // [x, y, w, h]: drawn that size instead, squeezed (a small dripleaf's leaf, seen edge on).
   for (const [name, [x0, y0, x1, y1], [x, y, w = x1 - x0, h = y1 - y0]] of spec.parts || []) {
-    const tex = standIns && standIns[name] ? standIns[name](left, top, size, false, null, [x0, y0, x1, y1, x, y, w, h]) : textureCanvas(name);
+    // partsTint: the parts tinted as the block's layers (a stair's quarter, shaded by its depth).
+    const tex = standIns && standIns[name] ? standIns[name](left, top, size, false, null, [x0, y0, x1, y1, x, y, w, h]) : textureCanvas(name, spec.partsTint);
     if (tex) ctx.drawImage(tex, x0, y0, x1 - x0, y1 - y0, Math.round(left + (x / 16) * size), Math.round(top + (y / 16) * size), (w / 16) * size, (h / 16) * size);
   }
   // Flat-colored boxes over the layers, in texels: [x0, y0, x1, y1, color] (a rail seen from the side, a minecart).
   if (spec.flame && standIns && standIns.candle_flame) standIns.candle_flame(left, top, size);
-  for (const [x0, y0, x1, y1, color] of [...(spec.rects || []), ...(spec.flame && !(standIns && standIns.candle_flame) ? spec.flame : [])]) {
+  // flag: a banner's flag over the block, left out while it sways on the canvas over the scene (standIns.flags).
+  for (const [x0, y0, x1, y1, color] of [...(spec.rects || []), ...(spec.flame && !(standIns && standIns.candle_flame) ? spec.flame : []), ...(spec.flag && !(standIns && standIns.flags) ? spec.flag.rects : [])]) {
     ctx.fillStyle = color;
     ctx.fillRect(left + (x0 / 16) * size, top + (y0 / 16) * size, ((x1 - x0) / 16) * size, ((y1 - y0) / 16) * size);
   }
@@ -1877,7 +2026,7 @@ function backdropView(canvas) {
     // moves: what of the scene moves, on the canvas over it; what's LEFT_OUT isn't in the still picture. also: more stand-ins.
     const moves = scene.moves || [];
     const paint = (ctx, also) => {
-      standIns = { ...(moves.includes("candles") && { candle_flame: () => null }), ...Object.fromEntries(LEFT_OUT.filter(name => moves.includes(name)).map(name => [name, () => null])), ...also };
+      standIns = { ...(moves.includes("candles") && { candle_flame: () => null }), ...(moves.includes("banners") && { flags: true }), ...Object.fromEntries(LEFT_OUT.filter(name => moves.includes(name)).map(name => [name, () => null])), ...also };
       try { paintScene(ctx); } finally { standIns = null; }
     };
     // The crowns leaves fall from, and trial spawners and vaults, found as they're painted.
@@ -1937,6 +2086,11 @@ function backdropView(canvas) {
     const spawners = moves.includes("spawners") && { at: [...placed("trial_spawner"), ...placed("mob_spawner")], flame: ART_FRAMES.flame, ...(spawnerFront && { front: spawnerFront }) }, vaults = moves.includes("vaults") && { at: placed("vault") };
     // End gateways flash their beams now and then (size: a block's, the far gateway's).
     const gateways = moves.includes("gateways") && crowns.some(b => b.name === "end_gateway") && { at: placed("end_gateway"), size: crowns.find(b => b.name === "end_gateway").size / dpr };
+    // Banners sway: each flag's top left corner (in CSS pixels), a block's size, its picture, and where it hangs (for its own beat).
+    const banners = moves.includes("banners") && { mist: mist.near, haze, flags: scene.near.flatMap(([p, at]) => p.rows.flatMap((row, r) => [...row].flatMap((ch, c) => {
+      const flag = p.legend[ch] && p.legend[ch].flag;
+      return flag && flag.part === 0 ? [{ x: w / 2 + (at + c) * NEAR, y: horizon / dpr - (p.rows.length - r) * NEAR, size: NEAR, rows: flag.rows, colors: flag.colors, x0: flag.x0, beat: (c * 7 + r * 9) % 100 }] : [];
+    }))) };
     // Torches burn.
     const torches = moves.includes("torches") && { at: placed("torch"), flame: ART_FRAMES.flame };
     // Clouds cross an open sky, behind the scene (clouds: how strong they are, if not fully; faint at night).
@@ -1958,7 +2112,7 @@ function backdropView(canvas) {
     const leaves = scene.leaves && leafMotion(crowns, scene.leaves, h - GROUND_STRIP - (scene.leavesLand || 0) * NEAR, dpr, [[haze, mist.near], ...(scene.night ? [[scene.night.shade, 1]] : [])]);
     // And stars twinkle at night.
     const stars = twinkling.length > 0 && twinkling.map(([x, y, side, bright]) => [x / dpr, y / dpr, side / dpr, Number(bright.toFixed(2))]);
-    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || gateways || torches || crystals || rods || candles || clouds ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(gateways && { gateways }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }), ...(candles && { candles }), ...(clouds && { clouds }) } : null, dpr);
+    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || gateways || banners || torches || crystals || rods || candles || clouds ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(gateways && { gateways }), ...(banners && { banners }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }), ...(candles && { candles }), ...(clouds && { clouds }) } : null, dpr);
   };
   new ResizeObserver(draw).observe(canvas);
   return {

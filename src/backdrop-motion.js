@@ -272,6 +272,32 @@ function drawGateways(ctx, gateways, seconds, scale) {
     ctx.globalCompositeOperation = "source-over";
   });
 }
+// Banners swaying: Java's beat (BannerRenderer: a swing every 100 ticks, each banner its own moment by where it hangs), but sideways
+// and a little more (3 degrees), as Java swings them toward and away from you, which a flat front view can't show. Each flag is
+// swung from its top, row by row (each row shifted as far as the swing takes it, so its texels stay whole), and washed with the
+// scene's haze as the still picture was. flags: [{ x, y, size, rows, colors, x0, beat }] (its block's top left, in CSS pixels).
+const flagPictures = new WeakMap();
+function drawBanners(ctx, banners, seconds, scale) {
+  if (!flagPictures.has(banners)) flagPictures.set(banners, banners.flags.map(({ rows, colors }) => {
+    const cv = Object.assign(document.createElement("canvas"), { width: rows[0].length, height: rows.length }), lc = cv.getContext("2d");
+    rows.forEach((row, y) => [...row].forEach((ch, x) => { if (colors[ch]) { lc.fillStyle = colors[ch]; lc.fillRect(x, y, 1, 1); } }));
+    lc.globalCompositeOperation = "source-atop";
+    lc.globalAlpha = banners.mist;
+    lc.fillStyle = banners.haze;
+    lc.fillRect(0, 0, cv.width, cv.height);
+    return cv;
+  }));
+  const pictures = flagPictures.get(banners);
+  ctx.imageSmoothingEnabled = false;
+  banners.flags.forEach(({ x, y, size, rows, x0, beat }, i) => {
+    const texel = size / 16, h = ((seconds * 20 + beat) % 100) / 100, lean = Math.tan((3 / 180) * Math.PI * Math.cos(2 * Math.PI * h));
+    const left = Math.round((x + x0 * texel) * scale), w = Math.round(rows[0].length * texel * scale);
+    for (let r = 0; r < rows.length; r++) {
+      const top = Math.round((y + r * texel) * scale), next = Math.round((y + (r + 1) * texel) * scale);
+      ctx.drawImage(pictures[i], 0, r, rows[0].length, 1, left + Math.round((r + 0.5) * texel * lean * scale), top, w, next - top);
+    }
+  });
+}
 // Mist lying low among the far trees: two banks of it sliding past each other, in steps like the blocky clouds. front is what
 // stands before it, cut out.
 const MIST_BANKS = [{ seed: 111, up: 30, speed: 5, alpha: 0.6 }, { seed: 112, up: 8, speed: -3.2, alpha: 0.7 }], MIST_CELL = [8, 4], MIST_SIZE = [64, 12];
@@ -676,6 +702,7 @@ function drawMotion(ctx, motion, seconds, scale) {
   if (motion.rods) drawRods(ctx, motion.rods, seconds, scale);
   if (motion.vaults) drawVaults(ctx, motion.vaults, seconds, scale);
   if (motion.gateways) drawGateways(ctx, motion.gateways, seconds, scale);
+  if (motion.banners) drawBanners(ctx, motion.banners, seconds, scale);
   if (motion.leaves) drawn = drawLeaves(ctx, motion.leaves, seconds, scale) && drawn;
   if (motion.fire) drawn = drawFire(ctx, motion.fire, seconds, scale) && drawn;
   if (motion.bubbles) drawBubbles(ctx, motion.bubbles, seconds, scale);

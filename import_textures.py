@@ -287,6 +287,8 @@ FILES = {
     "basalt_side": "blocks/basalt_side", "chain1": "blocks/chain1", "chain2": "blocks/chain2",
     "crimson_stem_side": "blocks/huge_fungus/crimson_log_side", "nether_wart_block": "blocks/nether_wart_block", "shroomlight": "blocks/shroomlight",
     "weeping_vines": "blocks/weeping_vines", "weeping_vines_plant": "blocks/weeping_vines_plant",
+    # The pillager outpost's practice targets: a carved pumpkin's face.
+    "pumpkin_face_off": "blocks/pumpkin_face_off",
     # The End's far end gateway.
     "end_gateway": "blocks/end_gateway",
     **{f"{k}_carried": f"blocks/carried/{k}_carried" for k in ("mushroom_brown", "mushroom_red", "crimson_fungus", "warped_fungus", "torch", "soul_torch", "copper_torch", "redstone_torch")},
