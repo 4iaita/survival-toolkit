@@ -265,6 +265,15 @@ FILES = {
     "golden_spear": "items/spear/gold_spear", "netherite_spear": "items/spear/netherite_spear",
     "netherite_ingot": "items/netherite_ingot", "netherite_upgrade": "items/netherite_upgrade_smithing_template", "heavy_core": "blocks/heavy_core",
     "crafting_table_front": "blocks/crafting_table_front", "crafting_table_side": "blocks/crafting_table_side", "crafting_table_top": "blocks/crafting_table_top",
+    # The Structures tab: the bastion remnant, its kinds and its loot.
+    "blackstone_top": "blocks/blackstone_top", "gilded_blackstone": "blocks/gilded_blackstone", "polished_blackstone_bricks": "blocks/polished_blackstone_bricks",
+    "cracked_polished_blackstone_bricks": "blocks/cracked_polished_blackstone_bricks", "chiseled_polished_blackstone": "blocks/chiseled_polished_blackstone",
+    "lodestone_side": "blocks/lodestone_side", "lodestone_top": "blocks/lodestone_top", "ancient_debris_side": "blocks/ancient_debris_side",
+    "ancient_debris_top": "blocks/ancient_debris_top", "crimson_nylium_side": "blocks/crimson_nylium_side", "crimson_nylium_top": "blocks/crimson_nylium_top",
+    "crimson_roots": "blocks/crimson_roots", "bone_block_side": "blocks/bone_block_side", "bone_block_top": "blocks/bone_block_top",
+    "netherite_scrap": "items/netherite_scrap", "music_disc_pigstep": "items/record_pigstep",
+    # art/spectral_arrow.png isn't the pack's (Bedrock has no spectral arrows): it's Java 26.3's own item/spectral_arrow.png
+    # (misode/mcmeta, 26.3-assets), copied by hand, so it isn't listed here.
     **{f"{k}_carried": f"blocks/carried/{k}_carried" for k in ("mushroom_brown", "mushroom_red", "crimson_fungus", "warped_fungus", "torch", "soul_torch", "copper_torch", "redstone_torch")},
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.

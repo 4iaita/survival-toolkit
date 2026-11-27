@@ -14,12 +14,14 @@ const STRUCTURE_DIMS = [
 
 // Which background each dimension and structure (or kind of one) stands on: a scene of the Mobs tab's (BACKDROPS in
 // src/backdrop.js). plug(...) marks one that hasn't a scene of its own yet and borrows another; giving it its own scene is
-// adding that scene to BACKDROPS and changing its line here to the scene's name. Nothing is on a plug now.
+// adding that scene to BACKDROPS and changing its line here to the scene's name. Still on a plug: bastion_remnant (the Nether's plain
+// background until its own scene is built; nothing on the page says so).
 const plug = biome => ({ biome, plug: true });
 const STRUCTURE_SCENES = {
   overworld: "plains", nether: "nether", end: "end_city",
   trial_chambers: "trial_chamber",
   fortress: "nether_fortress",
+  bastion_remnant: plug("nether"),
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -32,7 +34,10 @@ const ST_BLOCKS = {
 /* Each structure: its containers (loot), its mobs, and where it is.
  *   loot: { k, n, block, where, table } or pick: [[table, weight], ...] when one of several tables is rolled (a spawner's key or
  *     its food); table can be { java, bedrock } where the editions' paths differ.
- *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it) }.
+ *   lootFacts: [label, text] under the containers: what else can be had there (blocks of gold).
+ *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it, or how many it has) }.
+ *   kinds: a structure made as one of several kinds (the bastion's four), each { k, n, icon, say } with its own loot, lootFacts, mobs
+ *     and mobFacts where they differ: picked in the Structures section's dropdown, and laid over the structure's own.
  *   where: facts for the Where it is section; both(java, bedrock) where the editions differ.
  */
 const STRUCTURES = [
@@ -120,6 +125,101 @@ const STRUCTURES = [
       danger: "Wither skeletons’ Wither drains your health and can kill; they’re 2.4 blocks tall, so a gap 2 blocks high stops them. Blazes’ fireballs set you on fire (Fire Resistance stops them, not their punches). The bridges’ low walls don’t stop a fall: a blast or a hit can knock you into the lava, which burns everything you carry. Ghasts can spawn in the fortress itself.",
       about: both("A wither skeleton drops its skull 2.5% of the times you kill it, 1% more for each level of Looting: three make the Wither. A blaze drops a blaze rod half the times you kill it, more often with Looting: you need them to brew and for eyes of ender. Nether wart grows on soul sand at the foot of the big stairways, up to two gardens a fortress.",
         "A wither skeleton drops its skull 2.5% of the times you kill it, 2% more for each level of Looting: three make the Wither. A blaze drops a blaze rod half the times you kill it; Looting gives more at once, not more often. You need them to brew and for eyes of ender. Nether wart grows on soul sand at the foot of the big stairways, up to two gardens a fortress."),
+    },
+  },
+  {
+    k: "bastion_remnant", n: "Bastion Remnant", dim: "nether", icon: "st:blackstone",
+    say: "Ruined blackstone castles of the piglins, guarded by piglin brutes and full of gold. Each is one of four kinds, picked as it’s made.",
+    // Each kind's containers and mobs: how many, from Java's structure pieces (tools/structure-pieces.py builds each kind 2000 times as
+    // Java's jigsaw placement does); the chests' loot from each edition's own tables.
+    kinds: [
+      {
+        k: "housing", n: "Housing units", icon: "st:polished_blackstone_bricks",
+        say: "A walled courtyard with blocks of piglin housing stacked round its middle. 1 in 4 bastions is this kind.",
+        loot: [
+          { k: "chest", n: "Chests", block: "chest", table: "chests/bastion_other",
+            where: "About 10 a bastion (6 to 17): one in the courtyard’s middle, 2 in the outer walls, 3 to 6 up the ramparts, and up to 8 in the housing blocks." },
+        ],
+        lootFacts: [
+          ["Blocks of gold", "About 19 a bastion, set in its walls and floors, and a few on their own in the housing blocks."],
+        ],
+        mobs: [
+          { mob: "piglin", how: "Placed as it’s made, about 21 (11 to 31): about 11 with golden swords and 10 with crossbows.", chance: "About 21" },
+          { mob: "piglin_brute", how: "Placed as it’s made, about 8 (1 to 15). They never respawn.", chance: "About 8" },
+        ],
+      },
+      {
+        k: "stables", n: "Hoglin stables", icon: "st:cracked_polished_blackstone_bricks",
+        say: "Stairways down into stables where the piglins keep hoglins, inside walls and ramparts. 1 in 4 bastions is this kind.",
+        loot: [
+          { k: "stable_chest", n: "Stable chests", block: "chest", table: "chests/bastion_hoglin_stable",
+            where: "About 3 a bastion (0 to 9), in some of the stables down the stairways." },
+          { k: "chest", n: "Chests", block: "chest", table: "chests/bastion_other",
+            where: "About 8 a bastion (4 to 12): 1 to 3 in the walls, the rest up the ramparts." },
+        ],
+        lootFacts: [
+          ["Blocks of gold", "About 16 a bastion, most in one of its side walls (12) and up its ramparts."],
+        ],
+        mobs: [
+          { mob: "hoglin", how: "Placed as it’s made, about 8 (1 to 14), in the stables. The bastion’s piglins don’t hunt them.", chance: "About 8" },
+          { mob: "piglin", how: "Placed as it’s made, about 23 (8 to 42): about 12 with golden swords and 11 with crossbows.", chance: "About 23" },
+          { mob: "piglin_brute", how: "Placed as it’s made, about 8 (1 to 17). They never respawn.", chance: "About 8" },
+        ],
+      },
+      {
+        k: "treasure", n: "Treasure room", icon: "st:gilded_blackstone",
+        say: "A great hall round a lava basin, with a platform of gold blocks and the treasure chest in its middle. 1 in 4 bastions is this kind.",
+        loot: [
+          { k: "treasure_chest", n: "Treasure chest", block: "chest", table: "chests/bastion_treasure",
+            where: "On the gold platform in the middle of the lava basin: one, or two in about 1 bastion in 4. Every one has a Netherite Upgrade." },
+          { k: "chest", n: "Chests", block: "chest", table: "chests/bastion_other",
+            where: "About 6 a bastion (4 to 10): 4 up the ramparts by the entrance, the rest in the hall’s walls round the basin." },
+        ],
+        lootFacts: [
+          ["Blocks of gold", "About 27 a bastion: 12 to 19 in the platform under the treasure chest, the rest in the entrance and the walls."],
+          ["Magma cube spawner", "One, at the bottom of the lava basin, by the platform."],
+        ],
+        mobs: [
+          { mob: "piglin_brute", how: "Placed as it’s made, about 16 (8 to 23), more than in any other kind. They never respawn.", chance: "About 16" },
+          { mob: "piglin", how: "Placed as it’s made, about 21 (11 to 30): about 11 with golden swords and 10 with crossbows.", chance: "About 21" },
+          { mob: "magma_cube", how: "From the spawner at the bottom of the lava basin, while a player is within 16 blocks: up to 4 at a time every 10 to 40 seconds, until there are 6 round it.", chance: "Spawner" },
+        ],
+      },
+      {
+        k: "bridge", n: "Bridge", icon: "st:chiseled_polished_blackstone",
+        say: "A big gatehouse with lava falls, walls and ramparts, and a long bridge leading out from it. 1 in 4 bastions is this kind.",
+        loot: [
+          { k: "bridge_chest", n: "Bridge chest", block: "chest", table: "chests/bastion_bridge",
+            where: "Just one, in the gatehouse. It always has a lodestone." },
+          { k: "chest", n: "Chests", block: "chest", table: "chests/bastion_other",
+            where: "About 4 a bastion (2 to 6), up the ramparts." },
+        ],
+        lootFacts: [
+          ["Blocks of gold", "About 22 a bastion, most along the bridge (16)."],
+        ],
+        mobs: [
+          { mob: "piglin", how: "Placed as it’s made, about 24 (15 to 32): about 12 with golden swords and 12 with crossbows, most of them in the gatehouse.", chance: "About 24" },
+          { mob: "piglin_brute", how: "Placed as it’s made, about 6 (0 to 15). They never respawn.", chance: "About 6" },
+          { mob: "hoglin", how: "Placed as it’s made, 0 to 2 in the gatehouse: 9 bridges in 10 have one.", chance: "0–2" },
+        ],
+      },
+    ],
+    mobFacts: [
+      ["What it’s made with", "Its piglins, brutes and hoglins come with it and stay: they never despawn, even far from you, and the piglins don’t hunt its hoglins. Those killed don’t come back."],
+      ["Afterwards", "A bastion has no spawns of its own: the biome it stands in goes on spawning inside it, so in a crimson forest hoglins and piglins come back, in a nether wastes zombified piglins, ghasts and piglins, in a soul sand valley skeletons and ghasts, in a warped forest endermen (the Nether’s Mobs section has them all)."],
+      ["Guarding the gold", both("Opening or breaking a chest, barrel or shulker box, or breaking a block of gold, gilded blackstone or gold ore, turns every piglin within 16 blocks that sees you on you, gold armor or not.",
+        "Breaking a chest, barrel or shulker box, a block of gold, gilded blackstone or gold ore turns every piglin within 16 blocks on you, gold armor or not.")],
+      ["Piglin brutes", "Always hostile, whatever gold you wear, and they hit hard with golden axes. They don’t barter, and they ignore gold on the ground."],
+    ],
+    where: {
+      biomes: "Nether wastes, crimson forests, warped forests and soul sand valleys: every Nether biome but the basalt deltas.",
+      height: "Built up from Y 32, just over the lava sea, whatever the ground there: often half buried in netherrack, now and then standing in the open over the lava. The treasure room reaches up to about Y 80.",
+      often: both("The Nether is split into regions of 27 by 27 chunks (432 blocks square), each with a fortress or a bastion remnant, not within 4 chunks of the region’s south and east edges. 3 in 5 are bastions, but not in a basalt delta, where a fortress is made instead. Each of the four kinds is as likely.",
+        "The Nether is split into regions of 30 by 30 chunks (480 blocks square), each with a fortress or a bastion remnant, not within 4 chunks of the region’s south and east edges. 2 in 3 are bastions, but not in a basalt delta, where a fortress is made instead. Each of the four kinds is as likely."),
+      find: "Look for the big black walls of blackstone; they stand out against the netherrack, though the fog hides anything more than about 12 chunks off. The four regions around the Nether’s middle (0, 0) each hold a fortress or a bastion: finding a fortress rules out a bastion in that region. Wear a piece of gold armor so its piglins leave you alone.",
+      danger: both("Piglin brutes attack on sight and hit hard. Opening a chest or breaking gold turns the piglins on you, gold armor or not, and their crossbows reach far. Hoglins in the stables knock you into the air. The treasure room’s walkways run over its lava basin, and lava falls pour out of the gatehouse’s walls.",
+        "Piglin brutes attack on sight and hit hard. Breaking a chest or gold turns the piglins on you, gold armor or not, and their crossbows reach far. Hoglins in the stables knock you into the air. The treasure room’s walkways run over its lava basin, and lava falls pour out of the gatehouse’s walls."),
+      about: "Gold: about 16 to 27 blocks of gold a bastion, gilded blackstone, and gold in its chests. Netherite: every treasure chest has a Netherite Upgrade (any other chest 1 in 10), the only place it’s found, and a duplicate takes 7 diamonds; and ancient debris, netherite scrap and now and then an ingot. Lodestones: one in every bridge chest. Pigstep: found nowhere else, in 1 in 18 of its plain chests. And the Snout banner pattern and armor trim.",
     },
   },
 ];
@@ -262,6 +362,8 @@ const DIM_FACTS = {
 const ST_ART = {
   "st:map": L("filled_map"), "st:nether_bricks": C("nether_brick"), "st:compass": L("compass"), "st:netherrack": C("netherrack"), "st:end_stone": C("end_stone"), "st:barrel": C("barrel_side", "barrel_top"),
   "st:vault": C("vault"), "st:trial_spawner": C("trial_spawner"), "st:dispenser": C("dispenser_front_horizontal", "furnace_top", "furnace_side"),
+  "st:blackstone": C("blackstone", "blackstone_top"), "st:gilded_blackstone": C("gilded_blackstone"), "st:polished_blackstone_bricks": C("polished_blackstone_bricks"),
+  "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
 };
 for (const [k, spec] of Object.entries(ST_ART)) if (artReady(spec)) ICONS[k] = spec;
 
@@ -298,9 +400,12 @@ function lootGroup(id, kind) {
 const LOOT_CUBES = {
   tuff: [], moss_block: [], diamond_block: [], emerald_block: [], iron_block: [], gold_block: [], bamboo_planks: [], oak_planks: [],
   acacia_planks: ["planks_acacia"], obsidian: [], scaffolding: ["scaffolding_side", "scaffolding_top"], heavy_core: [],
+  gilded_blackstone: [], crying_obsidian: [], lodestone: ["lodestone_side", "lodestone_top"], ancient_debris: ["ancient_debris_side", "ancient_debris_top"],
+  bone_block: ["bone_block_side", "bone_block_top"], soul_sand: [], crimson_nylium: ["crimson_nylium_side", "crimson_nylium_top"], glowstone: [],
 };
 // Items whose picture is called otherwise in art/.
-const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map" };
+const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
+  netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain" };
 const LOOT_SHINES = new Set(["enchanted_book", "enchanted_golden_apple", "experience_bottle"]);
 // Potions' colors (the Potions tab's), by their potion id without strong_ or long_.
 const lootPotion = v => (v.match(/(?:^|\+)potion:(?:strong_|long_)?([a-z_]+)/) || [])[1];

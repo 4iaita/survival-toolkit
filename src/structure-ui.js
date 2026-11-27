@@ -1,5 +1,7 @@
 /* ---------- Structures tab ----------
  * A dimension, then a structure in it (and its kind), on its background; its loot container by container, its mobs and where it is.
+ * The structures are picked in the Structures section only (the user's wish: no second list beside the stage), one a line; one made
+ * in kinds (the bastion) is a dropdown there, its kinds under it, and the section stays among the tabs once a structure is picked.
  * The data is src/structure-data.js and src/structure-loot.js. Loads after the Mobs tab (pickMob) and the Potions tab (potionIcon).
  */
 const st = { dim: "overworld", k: "", kind: "", section: "loot", box: "", query: "" };
@@ -85,7 +87,7 @@ function boxList(box) {
 }
 
 /* ---------- Sections ---------- */
-const ST_SECTIONS = [["loot", "Loot"], ["mobs", "Mobs"], ["where", "Where it is"]];
+const ST_SECTIONS = [["structures", "Structures"], ["loot", "Loot"], ["mobs", "Mobs"], ["where", "Where it is"]];
 const DIM_SECTIONS = [["structures", "Structures"], ["mobs", "Mobs"]];
 const stSections = () => (st.k ? ST_SECTIONS : DIM_SECTIONS);
 const stSectionIcon = k => ({ loot: "ui:logo", mobs: "ui:mob", where: "st:compass", structures: "st:map" }[k]);
@@ -103,7 +105,8 @@ function lootSection(s) {
       <div class="st-box-head">${plainSlot(ST_BLOCKS[box.block])}<div><h4>${esc(box.n)}</h4><p>${esc(byEdition(box.where, stEdition()))}</p></div></div>
       ${boxList(box)}
       <p class="st-note">The chance is that one ${box.pick ? "reward" : "container"} has at least one; × is how many come together.</p>
-    </div>`;
+    </div>
+    ${s.lootFacts ? `<dl class="fact-list">${s.lootFacts.map(([l, t]) => stFact(l, t)).join("")}</dl>` : ""}`;
 }
 
 const mobKey = k => (MOBS.some(m => m.k === k) ? k : null);
@@ -130,11 +133,21 @@ function whereSection(s) {
     </dl>`;
 }
 
-// A dimension on its own: its structures, then its mobs.
+// The dimension's structures, one a line; one made in kinds is a dropdown (open while it's the one picked, or once opened), its kinds
+// the lines under it that pick it.
+const stOpen = new Set();
+let stClosed = "";
+const stLine = (attrs, ico, name, say, pressed) => `<button type="button" class="item-row st-mob" ${attrs} aria-pressed="${pressed}">${plainSlot(ico, "sm")}<span class="item-name">${esc(name)}<span class="sub">${esc(say)}</span></span></button>`;
 function structuresSection() {
-  const list = STRUCTURES.filter(s => s.dim === st.dim);
+  const list = STRUCTURES.filter(s => s.dim === st.dim), shown = shownStructure();
+  const line = s => {
+    if (!s.kinds) return `<li>${stLine(`data-pick="${s.k}"`, s.icon, s.n, s.say, s.k === st.k)}</li>`;
+    const open = stOpen.has(s.k) || (s.k === st.k && stClosed !== s.k);
+    return `<li><button type="button" class="item-row st-mob st-drop" id="st-drop-${s.k}" data-open="${s.k}" aria-expanded="${open}" aria-controls="st-kinds-${s.k}">${plainSlot(s.icon, "sm")}<span class="item-name">${esc(s.n)}<span class="sub">${esc(s.say)}</span></span></button>
+      ${open ? `<ul class="item-list wide st-mobs st-kinds-list" id="st-kinds-${s.k}" aria-label="Kinds of ${esc(s.n)}">${s.kinds.map(x => `<li>${stLine(`data-pick="${s.k}" data-kind="${x.k}"`, x.icon || s.icon, x.n, x.say, s.k === st.k && shown.kindKey === x.k)}</li>`).join("")}</ul>` : ""}</li>`;
+  };
   return `${stHead("structures", plural(list.length, "structure"))}
-    ${list.length ? `<ul class="item-list wide st-mobs">${list.map(s => `<li><button type="button" class="item-row st-mob" data-pick="${s.k}">${plainSlot(s.icon, "sm")}<span class="item-name">${esc(s.n)}<span class="sub">${esc(s.say)}</span></span></button></li>`).join("")}</ul>` : '<p class="mob-lead">Coming soon.</p>'}`;
+    ${list.length ? `<ul class="item-list wide st-mobs st-one st-structs">${list.map(line).join("")}</ul>` : '<p class="mob-lead">Coming soon.</p>'}`;
 }
 
 /* ---------- A dimension's own mobs ---------- */
@@ -255,7 +268,7 @@ function dimMobsSection() {
 function renderStResult() {
   const s = shownStructure(), d = dimOf(st.dim), secs = stSections();
   const on = secs.some(([k]) => k === st.section) ? st.section : secs[0][0];
-  const body = s ? { loot: lootSection, mobs: mobsSection, where: whereSection }[on](s) : { structures: structuresSection, mobs: dimMobsSection }[on]();
+  const body = s ? { structures: structuresSection, loot: lootSection, mobs: mobsSection, where: whereSection }[on](s) : { structures: structuresSection, mobs: dimMobsSection }[on]();
   $("st-result").innerHTML = `
     <div class="res-top">
       <div class="res-title">${plainSlot(s ? s.icon : d.icon)}
@@ -275,16 +288,6 @@ function renderStPicker() {
   const s = shownStructure();
   $("st-name").textContent = s ? s.n : dimOf(st.dim).n;
   $("st-dims").innerHTML = STRUCTURE_DIMS.map(d => `<button type="button" class="name-chip" data-dim="${d.k}" aria-pressed="${d.k === st.dim && !st.k}">${iconImg(d.icon)}${esc(d.n)}</button>`).join("");
-  const list = STRUCTURES.filter(x => x.dim === st.dim);
-  $("st-picker").innerHTML = list.length
-    ? `<div><div class="cat-label">Structures</div><div class="st-list">${list.map(x => `<button type="button" class="st-tile" id="st-pick-${x.k}" data-pick="${x.k}" aria-pressed="${x.k === st.k}">${iconImg(x.icon)}<span>${esc(x.n)}</span></button>`).join("")}</div></div>`
-    : `<p class="choice-hint">Its structures are coming soon.</p>`;
-  const kinds = s && structureOf(s.k).kinds;
-  $("st-kind-bar").hidden = !kinds;
-  if (kinds) {
-    $("st-kind-label").textContent = `Kind: ${s.kindName}`;
-    $("st-kinds").innerHTML = kinds.map(x => `<button type="button" class="name-chip" data-kind="${x.k}" aria-pressed="${x.k === s.kindKey}">${x.icon ? iconImg(x.icon) : ""}${esc(x.n)}</button>`).join("");
-  }
 }
 
 function showStStage() {
@@ -364,8 +367,10 @@ function pickStructure(k, { kind = "", box = "", section = "" } = {}) {
   const s = structureOf(k);
   if (!s) return;
   if (k !== st.k) { st.box = ""; st.kind = ""; }
+  if (kind && kind !== st.kind) st.box = "";
   st.k = k;
   st.dim = s.dim;
+  stClosed = "";
   if (kind) st.kind = kind;
   if (box) { st.box = box; st.section = "loot"; }
   if (section) st.section = section;
@@ -380,20 +385,6 @@ $("st-dims").addEventListener("click", e => {
   if (!DIM_SECTIONS.some(([x]) => x === st.section)) st.section = "structures";
   renderStructures();
   refocus(`#st-dims button[data-dim="${st.dim}"]`);
-});
-$("st-picker").addEventListener("click", e => {
-  const b = e.target.closest("button[data-pick]");
-  if (!b) return;
-  pickStructure(b.dataset.pick);
-  refocus(`#st-pick-${st.k}`);
-});
-$("st-kinds").addEventListener("click", e => {
-  const b = e.target.closest("button[data-kind]");
-  if (!b) return;
-  st.kind = b.dataset.kind;
-  st.box = "";
-  renderStructures();
-  refocus(`#st-kinds button[data-kind="${st.kind}"]`);
 });
 $("st-results").addEventListener("click", e => {
   const d = e.target.closest("button[data-dim]");
@@ -416,6 +407,14 @@ const pickStSection = k => {
 $("st-result").addEventListener("click", e => {
   const tab = e.target.closest("button[data-section]");
   if (tab) return pickStSection(tab.dataset.section);
+  const drop = e.target.closest("button[data-open]");
+  if (drop) {
+    const k = drop.dataset.open;
+    // Open while it's the one picked: closing it then only hides its kinds.
+    if (drop.getAttribute("aria-expanded") === "true") { stOpen.delete(k); if (k === st.k) stClosed = k; } else { stOpen.add(k); stClosed = ""; }
+    renderStResult();
+    return refocus(`#st-drop-${k}`);
+  }
   const box = e.target.closest("button[data-box]");
   if (box) {
     st.box = box.dataset.box;
@@ -424,7 +423,11 @@ $("st-result").addEventListener("click", e => {
     return refocus(`#st-section button[data-box="${st.box}"]`);
   }
   const s = e.target.closest("button[data-pick]");
-  if (s) return pickStructure(s.dataset.pick);
+  if (s) {
+    const kind = s.dataset.kind || "";
+    pickStructure(s.dataset.pick, { kind, section: "loot" });
+    return refocus(kind ? `#st-section button[data-kind="${kind}"]` : `#st-section button[data-pick="${s.dataset.pick}"]`);
+  }
   const m = e.target.closest("button[data-mob]");
   if (m) {
     location.hash = "#mobs";

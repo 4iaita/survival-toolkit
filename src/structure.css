@@ -2,15 +2,6 @@
 #view-structures .name-chip .ico { width: 18px; height: 18px; }
 /* The dimensions over the structures beside the stage. */
 .st-dims { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
-.st-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: 4px; }
-.st-tile {
-  display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; min-width: 0; text-align: left; cursor: pointer;
-  font: 700 13.5px/1.2 var(--font-body); color: var(--ink);
-  background: var(--well); border: 2px solid transparent; box-shadow: inset 2px 2px 0 var(--panel-lo), inset -2px -2px 0 var(--panel-hi);
-}
-.st-tile:hover { border-color: var(--white); }
-.st-tile[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -3px 0 var(--btn-on-lo); }
-.st-tile .ico { width: 28px; height: 28px; flex: none; }
 .st-say { padding: 0 18px; }
 /* A container: its chips, its block and where it is, then its finds by group. */
 .st-boxes { margin: 0 0 10px; }
@@ -24,7 +15,7 @@
 .st-best-label { color: #7a5b00; }
 .item-row.st-best { outline: 2px solid #c9a227; outline-offset: -2px; }
 .st-note { margin: 10px 0 0; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
-/* Mobs and structures listed as buttons that open them. */
+/* Mobs and structures listed as buttons that open them; a structure made in kinds opens a list of them under it. */
 .st-mobs li { display: flex; min-width: 0; }
 button.st-mob { flex: 1; width: 100%; text-align: left; cursor: pointer; border: 2px solid transparent; font: inherit; color: inherit; }
 button.st-mob:hover { border-color: var(--white); }
@@ -34,3 +25,10 @@ button.st-mob:hover { border-color: var(--white); }
 .st-section-title + .st-group, #st-section > .st-group:first-of-type { margin-top: 0 !important; }
 .st-biomes { margin: -2px 0 6px; font-size: 12.5px; font-weight: 600; line-height: 1.4; color: var(--ink-soft); }
 .st-group-note { margin: 0 0 4px; }
+/* The structures, one a line: a structure with kinds is a dropdown, its kinds set in under it. */
+.st-structs .st-mob[aria-pressed="true"], .st-kinds-list .st-mob[aria-pressed="true"] { background: var(--btn-on); box-shadow: inset 2px 2px 0 var(--btn-on-hi), inset -2px -3px 0 var(--btn-on-lo); }
+.st-structs > li { flex-direction: column; }
+.st-drop .item-name { flex: 1; }
+.st-drop::after { content: ""; flex: none; align-self: center; border: 5px solid transparent; border-top-color: currentColor; margin: 5px 4px 0 8px; }
+.st-drop[aria-expanded="true"]::after { border-top-color: transparent; border-bottom-color: currentColor; margin: -5px 4px 0 8px; }
+.item-list.st-kinds-list { margin: 4px 0 2px 24px; grid-template-columns: minmax(0, 1fr); }
