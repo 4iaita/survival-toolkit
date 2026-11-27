@@ -59,8 +59,8 @@ try {
       for (const r of rowsOf(m.k)) for (const x of r.kinds) if (x.biome) out.push({ mob: m.k, row: r.k, kind: x.k, label: m.n + " (" + x.n + ")" });
       for (const t of shownTags(m.k)) if (t.biome || t.kind === SNOWY) out.push({ mob: m.k, tag: t.names[0], label: m.n + " named " + t.names[0] });
     }
-    // Then the Structures tab's: shown on the Mobs tab's stage (the same size), with the structure's first mob.
-    for (const s of STRUCTURES) if (sceneOf(s.k)) out.push({ mob: (s.mobs && s.mobs[0] && s.mobs[0].mob) || MOBS[0].k, scene: sceneOf(s.k), label: "Structures: " + s.n });
+    // Then the Structures tab's: shown on the Mobs tab's stage (the same size), with the structure's first mob (or its first kind's).
+    for (const s of STRUCTURES) if (sceneOf(s.k)) out.push({ mob: (((s.mobs || (s.kinds && s.kinds.find(k => k.mobs) || {}).mobs || [])[0]) || {}).mob || MOBS[0].k, scene: sceneOf(s.k), label: "Structures: " + s.n });
     return out;
   })()`);
   const seen = {}, order = [], motions = {};

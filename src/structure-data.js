@@ -14,14 +14,13 @@ const STRUCTURE_DIMS = [
 
 // Which background each dimension and structure (or kind of one) stands on: a scene of the Mobs tab's (BACKDROPS in
 // src/backdrop.js). plug(...) marks one that hasn't a scene of its own yet and borrows another; giving it its own scene is
-// adding that scene to BACKDROPS and changing its line here to the scene's name. Still on a plug: bastion_remnant (the Nether's plain
-// background until its own scene is built; nothing on the page says so).
+// adding that scene to BACKDROPS and changing its line here to the scene's name. Nothing is on a plug now.
 const plug = biome => ({ biome, plug: true });
 const STRUCTURE_SCENES = {
   overworld: "plains", nether: "nether", end: "end_city",
   trial_chambers: "trial_chamber",
   fortress: "nether_fortress",
-  bastion_remnant: plug("nether"),
+  bastion_remnant: "bastion_remnant",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 

@@ -40,6 +40,7 @@
 .stage[data-biome="pale_garden_night"]::after { filter: brightness(.6) saturate(.7); }
 .stage[data-biome="nether"] { --sky: #1c0605; --haze: #6e2010; }
 .stage[data-biome="nether_fortress"] { --sky: #1c0605; --haze: #6e2010; }
+.stage[data-biome="bastion_remnant"] { --sky: #1a0404; --haze: #6a1418; }
 /* The biomes some name tags' looks come from: the cherry grove's clear mountain sky, the pale garden's gray mist, the
    dappled forest's soft autumn haze, the sulfur caves' murky green fog. */
 .stage[data-biome="cherry_grove"] { --sky: #78a8e8; --haze: #f3d7e4; }

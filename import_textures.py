@@ -274,10 +274,14 @@ FILES = {
     "netherite_scrap": "items/netherite_scrap", "music_disc_pigstep": "items/record_pigstep",
     # art/spectral_arrow.png isn't the pack's (Bedrock has no spectral arrows): it's Java 26.3's own item/spectral_arrow.png
     # (misode/mcmeta, 26.3-assets), copied by hand, so it isn't listed here.
+    # The bastion remnant's background and the crimson forest round it.
+    "basalt_side": "blocks/basalt_side", "chain1": "blocks/chain1", "chain2": "blocks/chain2",
+    "crimson_stem_side": "blocks/huge_fungus/crimson_log_side", "nether_wart_block": "blocks/nether_wart_block", "shroomlight": "blocks/shroomlight",
+    "weeping_vines": "blocks/weeping_vines", "weeping_vines_plant": "blocks/weeping_vines_plant",
     **{f"{k}_carried": f"blocks/carried/{k}_carried" for k in ("mushroom_brown", "mushroom_red", "crimson_fungus", "warped_fungus", "torch", "soul_torch", "copper_torch", "redstone_torch")},
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
-FIRST_FRAME = {"sculk", "fire", "pumpkin_face_on"}
+FIRST_FRAME = {"sculk", "fire", "pumpkin_face_on", "crimson_stem_side"}
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"

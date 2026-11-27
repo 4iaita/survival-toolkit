@@ -388,6 +388,62 @@ const farFortress = (() => {
   fill(10, 17, 15, 17); fill(10, 17, 31, 33);
   return prop(rows.map(r => r.join("")), FAR_FORTRESS);
 })();
+// A bastion remnant, the piglins' ruined castle, as the game builds it: ramparts of polished blackstone bricks (some
+// cracked, a chiseled one here and there) over a lower half of plain blackstone, with basalt in them, gilded blackstone and
+// blocks of gold set in the walls, chains hanging from them with a lantern; a chest. A chain seen side on: its two crossed strips of links, cut from their sheets.
+const BASTION = {
+  B: blockTex("polished_blackstone_bricks"), C: blockTex("cracked_polished_blackstone_bricks"), X: blockTex("chiseled_polished_blackstone"),
+  K: blockTex("blackstone"), G: blockTex("gilded_blackstone"), A: blockTex("basalt_side"), P: blockTex("polished_basalt_side"),
+  $: blockTex("gold_block"), H: { layers: [["chest_front"]] },
+  c: { parts: [["chain1", [0, 0, 3, 16], [6, 0]], ["chain2", [0, 0, 3, 16], [7, 0]]], cap: false }, L: lanternTex("lantern_block"),
+};
+const bastion = rows => prop(rows, BASTION);
+// The end of a rampart, ruined: its upper half of bricks broken off in steps, a polished basalt pillar at its end, a ledge
+// left jutting out with a chain and a lantern hanging from it.
+const bastionRampart = bastion([
+  "BB.......",
+  "BBC......",
+  "PBBB.....",
+  "PBBBXBBB.",
+  "PCBB...c.",
+  "PBBG...c.",
+  "PKKK...L.",
+  "PKGK.....",
+  "PKKKC....",
+  "PKKKKK...",
+  "PKK$KKK..",
+]);
+// A lower stretch of wall broken off at the top, a basalt buttress against it, a block of gold and a chest at its foot.
+const bastionWall = bastion([
+  ".....BB",
+  "....CBB",
+  "...BBBX",
+  "..ABBBB",
+  "..AKGKK",
+  "$HAKKKK",
+]);
+// The bastion far off, at half size: a great rampart of bricks on its blackstone half, broken off in steps at the top, basalt
+// buttresses against it, gold here and there, and a dark way in at its foot. Huge crimson fungi round it on the crimson
+// forest's hills: a crimson stem, a cap of nether wart blocks with shroomlights in it.
+const FAR_BASTION = { b: blockTex("polished_blackstone_bricks"), c: blockTex("cracked_polished_blackstone_bricks"), k: blockTex("blackstone"),
+  a: blockTex("basalt_side"), g: blockTex("gold_block"), d: blockFill(FORTRESS_DARK) };
+const farBastion = (() => {
+  const W = 36, H = 20, rows = Array.from({ length: H }, () => Array(W).fill("."));
+  // How high the wall stands at each column (in blocks), ruined in steps.
+  const tops = [12, 12, 13, 13, 16, 16, 16, 16, 15, 15, 14, 14, 18, 18, 18, 17, 17, 17, 17, 19, 19, 19, 19, 16, 16, 15, 13, 13, 13, 14, 14, 11, 11, 10, 10, 10];
+  tops.forEach((top, c) => {
+    for (let k = 0; k < top; k++) rows[H - 1 - k][c] = k < 7 ? "k" : (c * 7 + k * 3) % 11 === 0 ? "c" : "b";
+  });
+  // Buttresses of basalt up the wall, gold in it, and the way in (an opening four wide and five high).
+  for (const c of [3, 11, 24, 32]) for (let k = 0; k < Math.min(9, tops[c]); k++) rows[H - 1 - k][c] = "a";
+  for (const [c, k] of [[7, 9], [16, 12], [21, 4], [28, 8]]) rows[H - 1 - k][c] = "g";
+  for (let c = 16; c < 20; c++) for (let k = 0; k < 5; k++) rows[H - 1 - k][c] = "d";
+  return prop(rows.map(r => r.join("")), FAR_BASTION);
+})();
+const crimsonFungus = prop([".WWW.", "WWWWW", "WSWWW", "W.T.S", "..T..", "..T..", "..T.."],
+  { W: blockTex("nether_wart_block"), S: blockTex("shroomlight"), T: blockTex("crimson_stem_side") });
+const tallCrimsonFungus = prop(["..WWW..", ".WWWWW.", "WWWSWWW", "WSWWWWW", "W..T..W", "...T...", "...T...", "...T...", "...T..."],
+  { W: blockTex("nether_wart_block"), S: blockTex("shroomlight"), T: blockTex("crimson_stem_side") });
 // flows: it runs down (see drawLava).
 const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava", null, { flows: true }) });
 const monument = prop([
@@ -890,6 +946,21 @@ const BACKDROPS = {
       blobs: [[-11, ["GGG", "GGGG", ".GG.", ".G.."], "glowstone"], [7, ["GGGG", ".GGG", ".GG.", "..G."], "glowstone"]] },
     near: [[fortressParapet, -17], [fortressCorridor, -17], [blazePlatform, 7.5]],
     lights: [[-10, 11], [8, 11], [-3, 1.2], [3, 1.2]], lightSize: 4,
+  }),
+  // A bastion remnant, the piglin brute's (and the Structures tab's), in a crimson forest, where they're often found: in its courtyard, a ruined
+  // rampart on the left with a lantern on a chain, a broken wall on the right with gold and a chest at its foot. Beyond, more of the bastion between the forest's hills and its huge crimson fungi, weeping vines hanging
+  // from the netherrack overhead.
+  bastion_remnant: () => ({
+    moves: ["lantern_block"],
+    mist: { far: 0.3, near: 0.06 },
+    hills: { top: blockTex("crimson_nylium_side"), fill: blockTex("netherrack"), base: 2, rise: 0,
+      ores: [["nether_gold_ore", "quartz_ore", "magma"], 0.04],
+      profile: [[0.06, 17], [0.13, 15], [0.21, 12], [0.235, 9], [0.765, 2], [0.79, 9], [0.87, 13], [0.94, 16], [1, 18]],
+      trees: [[crimsonFungus, 0.8], [tallCrimsonFungus, 0.9]],
+      landmarks: [[farBastion, 0.235]] },
+    ceiling: { rock: ["netherrack", "netherrack", "nether_wart_block", "netherrack"], drip: ["weeping_vines_plant", "weeping_vines_plant", "weeping_vines"], hang: 0.2 },
+    near: [[bastionRampart, -17], [bastionWall, 9]],
+    lights: [[-11, 4.5]], lightSize: 4, lightStrength: 0.3,
   }),
   // A cave a mineshaft runs through, the cave spider's: the cave's rock wall, its ceiling with dripstone and nearby
   // stalagmites, ore and cobwebs (the spiders' work); in the far wall, the mineshaft's corridor cut right across, lit

@@ -14,7 +14,7 @@ one at a time. This is how to do that quickly.
 3. Capture just the backgrounds you changed, with the mob hidden, into `tools/backdrops/out` (gitignored; the user keeps
    the gallery there open, so always capture there, never into a scratchpad):
    `node tools/backdrops/capture.mjs tools/backdrops/out <biome>[,<biome>...]`
-   It names each file `NN_<biome>.png` with its gallery number. Leave out the biomes to capture all 35 (about 3 minutes;
+   It names each file `NN_<biome>.png` with its gallery number. Leave out the biomes to capture all 36 (about 3 minutes;
    run it in the background). `SHOW_MOB=1` in front keeps the mob in the picture, to check the scene fits round it
    (capture those into the scratchpad, not `out`, so the gallery stays mob-free).
 4. Look at the PNG (crop and enlarge with `sips` for detail), and fix it until it's right before showing the user. For
@@ -59,11 +59,11 @@ to `index.json` with every mob that shows it):
 11 peaks · 12 mushroom_fields · 13 badlands · 14 lush_pool · 15 ocean · 16 flooded_cave · 17 swamp_water · 18 village ·
 19 swamp_night · 20 trial_chamber · 21 desert_night · 22 mineshaft · 23 pale_garden_night · 24 sulfur_caves ·
 25 pale_garden · 26 ocean_night · 27 snowy_night · 28 mansion · 29 plains_night · 30 stronghold · 31 deep_dark ·
-32 nether_fortress · 33 nether · 34 end_island · 35 end_city
+32 nether_fortress · 33 nether · 34 bastion_remnant · 35 end_island · 36 end_city
 
 After the mobs' come the backgrounds only the Structures tab shows (`STRUCTURE_SCENES` in `src/structure-data.js`), captured on the
-Mobs tab's stage with the structure's first mob (none now: the Nether Fortress's, `nether_fortress`, is the blaze's and the wither
-skeleton's too since 2026-11-27).
+Mobs tab's stage with the structure's first mob (or its first kind's); none now. The Nether Fortress's, `nether_fortress`, is the blaze's and
+the wither skeleton's too, the Bastion Remnant's (one for all four kinds, the user's choice, 2026-11-27) the piglin brute's.
 
 The grove, the snowy, old growth pine and spruce taigas, the savanna plateau, the sparse and bamboo jungles, the
 forest and the mangrove swamp were dropped (2026-11-21) as near copies: their mobs use snowy, taiga, savanna, jungle
@@ -131,11 +131,11 @@ Every background has an animation, added one by one and approved by the user (20
 - Snow (`drawSnow`, "not too much"): 6, 27. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
 - Calm sand (`drawSand`): 4, 21, 13. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
 - Lava (`drawLava`): 33, 32, 30. Fire (`drawFire`): 33. Torches (`drawTorches`): 22, 28. Spawner flames (`drawSpawners`): 20, 30, 32 (behind the fortress's fences: a legend entry's `front` is cut out of them). Nether gold ore glinting (`SHEETS`, its texels picked by `yellow`): 32, 33. Vault
-  sparks (`drawVaults`): 20. Lights that wax and wane (`drawLight`): 2, 22, 28, 30, 31, 35.
+  sparks (`drawVaults`): 20. Lights that wax and wane (`drawLight`): 2, 22, 28, 30, 31, 36.
 - Clouds (`drawClouds`), slowly right and back, in every outdoor scene (19 of them), in the same places everywhere; the jungle's crowns hide
   most of its own, and the user chose to leave it.
-- Ores and the lantern (`drawSheets`): 2; soul lanterns too: 31. Candle (`drawCandles`): 31. Drips (`drawDrips`): 2, 22. Sculk (`drawSculk`): 31. Wheat (`drawSway`): 18.
-- End crystals (`drawCrystals`): 34. End rods (`drawRods`): 35.
+- Ores and the lantern (`drawSheets`): 2; the bastion's lantern: 34; soul lanterns too: 31. Candle (`drawCandles`): 31. Drips (`drawDrips`): 2, 22. Sculk (`drawSculk`): 31. Wheat (`drawSway`): 18.
+- End crystals (`drawCrystals`): 35. End rods (`drawRods`): 36.
 
 Left still: the End's sky, the nether's magma and light.
 
@@ -173,7 +173,7 @@ Left still: the End's sky, the nether's magma and light.
   pack's `flipbook_textures.json` (`../textures/full-pack/subpacks/SP2/textures`). The lavafall runs at 4 texels a second, not the
   pack's 1, so it shows.
   `art/lava.png` is older than the folder's `lava_still`, which is what moves.
-- After changing `backdropView`, capture all 35 into the scratchpad and compare with `out`: pixels should differ by 1 at most.
+- After changing `backdropView`, capture all 36 into the scratchpad and compare with `out`: pixels should differ by 1 at most.
 - Reduced motion: it's drawn once and stays still. It stops while the stage is hidden.
 - Don't check it in the browser pane: it throttles frames, so it can look stuck. Use a headless Chrome of its own, as `capture.mjs` does.
 
