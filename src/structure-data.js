@@ -17,10 +17,11 @@ const STRUCTURE_DIMS = [
 // adding that scene to BACKDROPS and changing its line here to the scene's name. Nothing is on a plug now.
 const plug = biome => ({ biome, plug: true });
 const STRUCTURE_SCENES = {
-  overworld: "plains", nether: "nether", end: "end_city",
+  overworld: "plains", nether: "nether", end: "end",
   trial_chambers: "trial_chamber",
   fortress: "nether_fortress",
   bastion_remnant: "bastion_remnant",
+  end_city: "end_city",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -28,17 +29,21 @@ const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "
 const ST_BLOCKS = {
   chest: "ui:logo", barrel: "st:barrel", vault: "st:vault", ominous_vault: "st:vault", dispenser: "st:dispenser", pot: "ui:pot",
   spawner: "st:trial_spawner", ominous_spawner: "st:trial_spawner",
+  item_frame: "st:item_frame", dragon_head: "st:dragon_head", brewing_stand: "st:brewing_stand",
 };
 
 /* Each structure: its containers (loot), its mobs, and where it is.
  *   loot: { k, n, block, where, table } or pick: [[table, weight], ...] when one of several tables is rolled (a spawner's key or
- *     its food); table can be { java, bedrock } where the editions' paths differ.
+ *     its food); table can be { java, bedrock } where the editions' paths differ. rows: what's always in it, as a table's rows
+ *     ([id, kind, least, most, chance]), for what's placed with the structure and not rolled (the end ship's elytra); note: the line
+ *     under its list, if not the chance's.
  *   lootFacts: [label, text] under the containers: what else can be had there (blocks of gold).
  *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it, or how many it has) }.
  *   kinds: a structure made as one of several kinds (the bastion's four), each { k, n, icon, say } with its own loot, lootFacts, mobs
  *     and mobFacts where they differ: picked in the Structures section's dropdown, and laid over the structure's own.
  *   where: facts for the Where it is section; both(java, bedrock) where the editions differ.
  */
+const CITY_SHIP = 0.533;
 const STRUCTURES = [
   {
     k: "trial_chambers", n: "Trial Chambers", dim: "overworld", icon: "st:trial_spawner",
@@ -221,6 +226,54 @@ const STRUCTURES = [
       about: "Gold: about 16 to 27 blocks of gold a bastion, gilded blackstone, and gold in its chests. Netherite: every treasure chest has a Netherite Upgrade (any other chest 1 in 10), the only place it’s found, and a duplicate takes 7 diamonds; and ancient debris, netherite scrap and now and then an ingot. Lodestones: one in every bridge chest. Pigstep: found nowhere else, in 1 in 18 of its plain chests. And the Snout banner pattern and armor trim.",
     },
   },
+  {
+    // CITY_SHIP: how many cities have an end ship (Java's EndCityPieces, 20,000 built): what's always in a ship is shown as the chance a city has it.
+    k: "end_city", n: "End City", dim: "end", icon: "st:purpur_block",
+    say: "Towers and houses of purpur on the End’s outer islands, guarded by shulkers, with loot chests at the top, and now and then an end ship moored beside it with an elytra.",
+    // How many of each: from Java's EndCityPieces (tools/structure-pieces.py --end-city builds 20,000 cities as it does) and the data
+    // markers in its templates; the chests' loot from each edition's own table.
+    loot: [
+      { k: "chest", n: "Chests", block: "chest", table: "chests/end_city_treasure",
+        where: "About 3 a city (0 to 14), in two kinds of rooms: 2 at the top of each fat tower, the widest kind, which 3 cities in 5 have, up a little climb; and 1 in the top floor of a house of three floors, beside an ender chest. 1 city in 5 has none of these." },
+      { k: "ship_chest", n: "Ship chests", block: "chest", table: "chests/end_city_treasure",
+        where: "2 in the ship’s hold, either side of the elytra. About half the cities have a ship (53%), and never more than one." },
+      { k: "elytra", n: "Elytra", block: "item_frame", rows: [["elytra", "", 1, 1, CITY_SHIP]],
+        where: "In an item frame on the wall of the ship’s hold, between its two chests: one in every ship, so in about half the cities. It’s found nowhere else.",
+        note: "The chance is that a city has it: every ship does, undamaged and unenchanted. Take it out of the frame or break the frame." },
+      { k: "dragon_head", n: "Dragon head", block: "dragon_head", rows: [["dragon_head", "", 1, 1, CITY_SHIP]],
+        where: "On the ship’s bow, at the far end from the city. The only dragon head in the game: the dragon doesn’t drop one.",
+        note: "The chance is that a city has it: every ship does. Mine it with anything to take it." },
+      { k: "brewing_stand", n: "Brewing stand", block: "brewing_stand", rows: [["potion", "potion:strong_healing", 2, 2, CITY_SHIP]],
+        where: "On a table at the ship’s stern, with two potions in it and no blaze powder.",
+        note: "The chance is that a city has them: every ship does. The brewing stand itself can be mined and kept." },
+    ],
+    lootFacts: [
+      ["With a ship", "Cities that have one are bigger on the whole: about 5 chests and 32 shulkers with the ship’s, where a city without has about 2 chests and 15 shulkers."],
+      ["Ender chests", "One beside the chest in each three-floor house, about 1 a city: it holds your own ender chest’s things, and needs Silk Touch to keep (else 8 obsidian)."],
+      ["Blocks", "Purpur blocks and pillars, end stone bricks, end rods and magenta stained glass: easy to mine for building, as nothing guards them but the shulkers."],
+    ],
+    mobs: [
+      { mob: "shulker", how: "Placed as it’s made, about 24 a city (3 to 96; half have 7 to 35), on the walls, floors and roofs: 2 in each house’s ground floor, 4 up each fat tower, 1 on each tower’s top, and 3 on the ship. They never respawn.", chance: "About 24" },
+      { mob: "enderman", how: both("The End’s own spawns go on round and inside it: groups of 4, where no block light reaches.", "The End’s own spawns go on round and inside it: groups of 4, on the surface, in any light."), chance: "Spawns" },
+    ],
+    mobFacts: [
+      ["No spawns of its own", "Its shulkers come with it and stay: they never despawn, even on Peaceful, and none come back once killed. After that only the End’s own mobs spawn there, endermen."],
+      ["Shulkers", both("Hidden as purpur blocks in the walls, they open and fire bullets that follow you: 4 damage and Levitation for 10 seconds. Shut, they have 20 armor and arrows bounce off; hit them when they peek out. A shield stops the bullet.",
+        "Hidden as purpur blocks in the walls, they open and fire bullets that follow you: 4 damage and Levitation for 10 seconds. Shut, they have 20 armor and arrows bounce off; hit them when they peek out. A shield stops the damage but not the Levitation.")],
+      ["More shulkers", both("A shulker hit by a shulker bullet while it’s open (its own included) and over half its health can teleport away and leave a new shulker where it was: less often the more shulkers are within 8 blocks, never with 6 or more. That’s how shells are farmed.",
+        "A shulker hit by a shulker bullet while it’s open and over half its health can teleport away and leave a new shulker where it was: less often the more shulkers are within 8 blocks, never with 6 or more. One killed by a shulker bullet always leaves a new one. That’s how shells are farmed.")],
+      ["Shulker shells", both("Half of those you kill drop one, a sixteenth more for each level of Looting.", "Half of those you kill drop one; each level of Looting can add one more.")],
+    ],
+    where: {
+      biomes: both("End highlands and end midlands: the big islands of the outer End, about 1,000 blocks out and further. Never on the main island, the small islands or the barrens.",
+        "The End, which in Bedrock is one biome all over: on the big islands of the outer End, about 1,000 blocks out and further, never on the main island."),
+      height: "Only where the land reaches Y 60 or more at all four corners of a square 5 blocks wide where it starts, so on the high middles of the big islands. Its towers rise about 80 blocks over that (up to about 140), and its bridges reach out about 90 blocks.",
+      often: "The End is split into regions of 20 by 20 chunks (320 blocks square), each with one try at a city in its first 9 by 9 chunks, most often in their middle, so two are at least 11 chunks apart. The try fails where the biome or the land isn’t right, so many regions have none.",
+      find: "Kill the ender dragon: a gateway opens on the edge of the main island, 96 blocks from its middle (another each time it’s killed, up to 20). Throw an ender pearl into it to be sent about 1,000 blocks out to the outer islands. From there look for tall purple purpur towers and end rods; fly with an elytra once you have one, or bridge between the islands.",
+      danger: "Shulker bullets lift you for 10 seconds, then you fall: off a tower or a bridge that can kill you, and below the islands is the void, which takes you and everything you carry. Drink milk to end Levitation, and carry a Slow Falling potion. Endermen are everywhere: don’t look at them, or fight them under a roof two blocks high, which they can’t get under.",
+      about: "Elytra: the only place they’re found, one in each ship, so search cities for a ship. Shulker shells from the shulkers: two and a chest make a shulker box. The dragon head, also only on the ships. Diamond and iron gear enchanted at levels 20 to 39, diamonds, the Spire armor trim (1 chest in 15), and the ship’s two Potions of Healing II.",
+    },
+  },
 ];
 const structureOf = k => STRUCTURES.find(s => s.k === k);
 
@@ -363,8 +416,42 @@ const ST_ART = {
   "st:vault": C("vault"), "st:trial_spawner": C("trial_spawner"), "st:dispenser": C("dispenser_front_horizontal", "furnace_top", "furnace_side"),
   "st:blackstone": C("blackstone", "blackstone_top"), "st:gilded_blackstone": C("gilded_blackstone"), "st:polished_blackstone_bricks": C("polished_blackstone_bricks"),
   "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
+  "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
 };
 for (const [k, spec] of Object.entries(ST_ART)) if (artReady(spec)) ICONS[k] = spec;
+
+// The dragon head as the game draws it: the dragon's own head (the pack's new_ender_dragon model, the same boxes as Java's
+// DragonHeadModel): its upper head, snout, closed jaw, nostrils and the two scales on top, in the dragon's texture (256 wide), turned as
+// the inventory turns a head (its face to the lower left, as the page's other heads). Until the texture is decoded (dragonHeadTex, set by src/structure-ui.js) it's the plain cube of its scales.
+// Each box: lo, hi (game pixels, y down, its foot on the ground, its face toward the camera), uv; the nostrils' and scales' mirroring is left out.
+const DRAGON_HEAD_CUBES = [
+  { lo: [-8, -16, -1], hi: [8, 0, 15], uv: [112, 30] }, { lo: [-6, -9, -15], hi: [6, -4, 1], uv: [176, 44] }, { lo: [-6, -4, -15], hi: [6, 0, 1], uv: [176, 65] },
+  { lo: [-5, -11, -13], hi: [-3, -9, -9], uv: [112, 0] }, { lo: [3, -11, -13], hi: [5, -9, -9], uv: [112, 0] },
+  { lo: [-5, -20, 5], hi: [-3, -16, 11], uv: [0, 0] }, { lo: [3, -20, 5], hi: [5, -16, 11], uv: [0, 0] },
+];
+// A box face's texel in a texture of any width, laid out as skinTexel lays out a box: [s, t].
+function boxTexelAt([u, v], [w, h, d], face, fx, fy, fz) {
+  [fx, fy, fz] = [fx, fy, fz].map(f => Math.min(f, 0.999));
+  return { front: [u + d + fx * w, v + d + fy * h], back: [u + 2 * d + w + (1 - fx) * w, v + d + fy * h], right: [u + (1 - fz) * d, v + d + fy * h],
+    left: [u + d + w + fz * d, v + d + fy * h], top: [u + d + fx * w, v + (1 - fz) * d], bottom: [u + d + w + fx * w, v + (1 - fz) * d] }[face].map(Math.floor);
+}
+let dragonHeadTex = null;
+const DRAGON_HEAD_ICON = 64;
+function dragonHeadIcon(tex) {
+  const lit = 170 * EMITS;
+  const boxes = DRAGON_HEAD_CUBES.map(({ lo, hi, uv }) => {
+    const size = hi.map((x, i) => x - lo[i]), at = ([x, y, z]) => [x, y + GROUND, z];
+    return { lo: at(lo), hi: at(hi), color: (axis, side, fx, fy, fz) => {
+      const [s, t] = boxTexelAt(uv, size, FACES[axis][side], fx, fy, fz), i = (t * tex.w + s) * 4;
+      // Its eyes and mouth are the texture's glowing texels (alpha 3, as the dragon's lit layer has them): drawn in full light.
+      const a = tex.px[i + 3], rgb = tex.px[i] << 16 | tex.px[i + 1] << 8 | tex.px[i + 2];
+      return !a ? -1 : a < 255 ? rgb + 255 * EMITS : lit + rgb;
+    } };
+  });
+  const px = renderScene(boxes, { yaw: 0.12 - Math.PI / 4, pitch: 0.5, scale: DRAGON_HEAD_ICON / 34, center: [0, GROUND - 10, 0], origin: [DRAGON_HEAD_ICON / 2, DRAGON_HEAD_ICON / 2], width: DRAGON_HEAD_ICON, height: DRAGON_HEAD_ICON });
+  return Array.from({ length: DRAGON_HEAD_ICON * DRAGON_HEAD_ICON }, (_, i) => (px[i * 4 + 3] ? [px[i * 4], px[i * 4 + 1], px[i * 4 + 2]] : null));
+}
+if (ICONS["st:dragon_head"]) { const plain = ICONS["st:dragon_head"]; ICONS["st:dragon_head"] = { gen: () => (dragonHeadTex ? dragonHeadIcon(dragonHeadTex) : artPixels(plain)) }; }
 
 /* What the loot rows are: each item's group and how it's named. */
 // Groups, the best first.
@@ -375,7 +462,7 @@ const LOOT_BEST = new Set(["enchanted_golden_apple", "heavy_core", "trident", "e
   "golden_apple", "flow_banner_pattern", "guster_banner_pattern", "piglin_banner_pattern", "ominous_trial_key", "trial_key", "totem_of_undying",
   "echo_shard", "sniffer_egg", "music_disc_pigstep", "music_disc_otherside", "music_disc_relic", "music_disc_precipice", "music_disc_creator",
   "music_disc_creator_music_box", "music_disc_13", "music_disc_cat", "music_disc_bounce", "disc_fragment_5", "goat_horn", "dragon_egg",
-  "lodestone", "spyglass"]);
+  "lodestone", "spyglass", "dragon_head"]);
 const LOOT_FOOD = new Set(["apple", "baked_potato", "beef", "beetroot", "beetroot_soup", "bread", "cake", "carrot", "cod", "cooked_beef",
   "cooked_chicken", "cooked_cod", "cooked_porkchop", "cooked_salmon", "egg", "glow_berries", "golden_carrot", "honey_bottle", "melon_slice",
   "milk_bucket", "mutton", "poisonous_potato", "porkchop", "potato", "pumpkin_pie", "salmon", "spider_eye", "suspicious_stew",
@@ -405,6 +492,8 @@ const LOOT_CUBES = {
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
   netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain" };
+// What's placed with a structure and isn't in any loot table (a box's rows), named as Java's en_us.json names it.
+Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head" });
 const LOOT_SHINES = new Set(["enchanted_book", "enchanted_golden_apple", "experience_bottle"]);
 // Potions' colors (the Potions tab's), by their potion id without strong_ or long_.
 const lootPotion = v => (v.match(/(?:^|\+)potion:(?:strong_|long_)?([a-z_]+)/) || [])[1];

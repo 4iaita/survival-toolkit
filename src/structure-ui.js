@@ -59,6 +59,7 @@ const tablePath = t => (typeof t === "string" ? t : t[stEdition()]);
 // A container's finds in the edition picked: one table, or one of several (pick) rolled by weight, so each find's chance is the
 // weighted sum. [id, kind, least, most, chance, where].
 function boxRows(box) {
+  if (box.rows) return box.rows;
   const parts = box.pick || [[box.table, 1]], total = parts.reduce((a, [, w]) => a + w, 0), out = new Map();
   for (const [t, w] of parts) {
     for (const [id, kind, lo, hi, p, where = ""] of STRUCTURE_LOOT[stEdition()][tablePath(t)] || []) {
@@ -104,7 +105,7 @@ function lootSection(s) {
     <div class="st-box">
       <div class="st-box-head">${plainSlot(ST_BLOCKS[box.block])}<div><h4>${esc(box.n)}</h4><p>${esc(byEdition(box.where, stEdition()))}</p></div></div>
       ${boxList(box)}
-      <p class="st-note">The chance is that one ${box.pick ? "reward" : "container"} has at least one; × is how many come together.</p>
+      <p class="st-note">${esc(box.note || `The chance is that one ${box.pick ? "reward" : "container"} has at least one; × is how many come together.`)}</p>
     </div>
     ${s.lootFacts ? `<dl class="fact-list">${s.lootFacts.map(([l, t]) => stFact(l, t)).join("")}</dl>` : ""}`;
 }
@@ -321,6 +322,8 @@ function stSearchHits(q) {
       }
     }
   }
+  // A structure by its name, or what it's made of (its line in the Structures section: "purpur").
+  for (const s of STRUCTURES) if (s.n.toLowerCase().includes(q) || s.say.toLowerCase().includes(q)) hits.push({ structure: s, p: s.n.toLowerCase().includes(q) ? 0.95 : 0.2 });
   // Each dimension's own mobs: where they spawn in the open.
   for (const d of STRUCTURE_DIMS) {
     const where = new Map();
@@ -337,7 +340,12 @@ function renderStSearch() {
   }
   const hits = stSearchHits(q).slice(0, 60);
   box.innerHTML = hits.length
-    ? hits.map(h => h.dimMob
+    ? hits.map(h => h.structure
+      ? `<button type="button" class="search-hit" data-pick="${h.structure.k}" data-kind="" data-section="loot">
+          ${plainSlot(h.structure.icon, "sm")}
+          <span><span class="who">${esc(h.structure.n)}</span><span class="deal">${esc(dimOf(h.structure.dim).n)}: ${esc(h.structure.say)}</span></span>
+        </button>`
+      : h.dimMob
       ? `<button type="button" class="search-hit" data-dim="${h.dim.k}" data-section="mobs">
           ${plainSlot(mobIcon(mobOf(h.dimMob)), "sm")}
           <span><span class="who">${esc(mobName(mobOf(h.dimMob)))}</span><span class="deal">${esc(h.dim.n)}: ${esc(h.labels.slice(0, 3).join(", "))}${h.labels.length > 3 ? "…" : ""}</span></span>
@@ -450,3 +458,10 @@ $("edition").addEventListener("click", e => { if (e.target.closest("button[data-
 
 $("st-search").value = st.query;
 renderStructures();
+// The dragon head's icon is drawn from the dragon's texture once it's decoded (dragonHeadIcon): drawn again then.
+mobTexture("new_ender_dragon").then(tex => {
+  if (!tex) return;
+  dragonHeadTex = tex;
+  delete iconCache["st:dragon_head"];
+  renderStructures();
+});

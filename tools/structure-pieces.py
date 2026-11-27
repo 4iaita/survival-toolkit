@@ -2,6 +2,7 @@
 mobs (the entities saved in the piece), its notable blocks, and the pools its jigsaws lead to.
 
     python3 tools/structure-pieces.py <java data> <start pool> [--counts <structure> [how many]]
+    python3 tools/structure-pieces.py <java data> --end-city [how many]
 
 <java data> is misode/mcmeta's `26.3-data` tag unpacked (see tools/structure-loot.py's header); <start pool> is a template pool's id
 without "minecraft:", such as bastion/starts or trial_chambers/chamber/end. Each element of the start pool is a kind of the structure
@@ -11,6 +12,9 @@ With --counts it also builds the structure (worldgen/structure/<structure>.json:
 times (2000) as Java's JigsawPlacement does, pieces' boxes and all (see build), and gives, for each kind, the mean, least and most of
 each container (by loot table, and by the folder of pieces it's in), spawner and mob, the gold blocks left after the processors' decay,
 and how often it has at least one. The game's own random numbers aren't used, so these are the game's odds, not any one seed's.
+
+--end-city builds that many end cities (20000) as Java's EndCityPieces does (see EndCity), and counts the data markers in its pieces
+(chests, shulkers, the elytra) and the ship.
 """
 import gzip
 import io
@@ -62,7 +66,8 @@ def nbt(path):
 
 # ---------- Pieces ----------
 
-NOTABLE = {"gold_block", "lodestone", "gilded_blackstone", "ancient_debris", "spawner", "chest", "trapped_chest", "barrel", "lava"}
+NOTABLE = {"gold_block", "lodestone", "gilded_blackstone", "ancient_debris", "spawner", "chest", "trapped_chest", "barrel", "lava",
+           "ender_chest", "brewing_stand", "dragon_head", "dragon_wall_head"}
 
 
 class Data:
@@ -83,7 +88,7 @@ class Data:
             return self._pieces[loc]
         t = nbt(self.base / "structure" / f"{loc}.nbt")
         pal = t["palette"] if "palette" in t else t["palettes"][0]
-        out = {"containers": Counter(), "spawners": Counter(), "mobs": Counter(), "blocks": Counter(), "jigsaws": [], "size": t["size"]}
+        out = {"containers": Counter(), "spawners": Counter(), "mobs": Counter(), "blocks": Counter(), "markers": Counter(), "jigsaws": [], "size": t["size"]}
         for b in t["blocks"]:
             st = pal[b["state"]]
             name = st.get("Name", st.get("id", "")).replace("minecraft:", "")  # mcmeta's files say id
@@ -93,6 +98,9 @@ class Data:
                 out["jigsaws"].append({"pool": e.get("pool", "minecraft:empty").replace("minecraft:", ""), "name": e.get("name", ""),
                                        "target": e.get("target", ""), "final": e.get("final_state", "minecraft:air").replace("minecraft:", ""),
                                        "pos": b["pos"], "front": front, "top": top, "rollable": e.get("joint", "rollable") == "rollable"})
+                continue
+            if name == "structure_block" and e.get("mode") == "DATA":  # a data marker the structure's code acts on (the end city's)
+                out["markers"][e.get("metadata", "")] += 1
                 continue
             if "LootTable" in e:
                 out["containers"][(name, e["LootTable"].replace("minecraft:", ""))] += 1
@@ -161,6 +169,7 @@ def report(data, start):
             if pc["containers"]: bits.append("containers " + ", ".join(f"{n}×{b}:{t}" for (b, t), n in pc["containers"].items()))
             if pc["spawners"]: bits.append("spawners " + ", ".join(f"{n}×{m}" for m, n in pc["spawners"].items()))
             if pc["mobs"]: bits.append("mobs " + ", ".join(f"{n}×{m}" for m, n in pc["mobs"].items()))
+            if pc["markers"]: bits.append("markers " + ", ".join(f"{n}×{m}" for m, n in pc["markers"].items()))
             nb = {k: v for k, v in pc["blocks"].items() if k not in ("chest", "spawner", "barrel")}
             if nb: bits.append("blocks " + ", ".join(f"{n}×{b}" for b, n in nb.items()))
             js = Counter(j["pool"] for j in pc["jigsaws"] if j["pool"] != "empty")
@@ -345,8 +354,176 @@ def counts(data, start, depth, reach, n, seed=1):
             print(f"  {' · '.join(k)}: mean {sum(v) / n:.2f}, {min(v):g}–{max(v):g}, in {share:.0%}")
 
 
+# ---------- The end city: Java's EndCityPieces ----------
+# The end city isn't a jigsaw: its layout is in code (26.3's EndCityPieces, from memory of it), and its templates (structure/end_city)
+# mark what the code adds with data markers: "Chest" (a chest of chests/end_city_treasure in the block under it), "Sentry" (a shulker)
+# and "Elytra" (an item frame with an elytra). Ported as it is, random calls in the same order:
+#   - the start (startHouseTower): base_floor, second_floor_1, third_floor_1 and third_roof stacked, then a tower on the roof (depth 1).
+#   - a tower: tower_base, then 2 to 4 tower_pieces; 1 time in 3 the first piece, and each piece but the last half the times, is where
+#     bridges go out (each of 4 sides half the times), and then tower_top. Without bridges a fat tower goes on it (unless at depth 7),
+#     and if that fails the tower fails.
+#   - a fat tower: fat_tower_base, fat_tower_middle, up to 2 more middles (each 2 in 3, while the last went on), each with bridges out
+#     of each side half the times; then fat_tower_top (2 chests).
+#   - a bridge: 1 to 4 pieces (flat, steep or gentle stairs), then a ship (once a city: 1 in 10 − depth, while none has been made) or a
+#     house (base_floor; then a roof, or second_floor_2 and a roof and a tower, or second_floor_2, third_floor_2 (1 chest), a roof and a
+#     tower, each 1 in 3), and a bridge_end back.
+#   - recursiveChildren: past depth 8 nothing; a section's pieces are all kept or all dropped: dropped if one of them overlaps a piece
+#     already in the list it joins, but for one with the same genDepth as its parent (pieces get a random genDepth as their section is
+#     kept; new ones have 0, the bridges' first and last pieces -1). Only the first overlapping piece is looked at, as findCollisionPiece.
+# A city is only made where the land is at Y 60 or more (the lowest of four points 5 blocks apart): that isn't modelled.
+TOWER_BRIDGES = [(0, (1, -1, 0)), (1, (6, -1, 1)), (3, (0, -1, 5)), (2, (5, -1, 6))]
+FAT_TOWER_BRIDGES = [(0, (4, -1, 0)), (1, (12, -1, 4)), (3, (0, -1, 8)), (2, (8, -1, 12))]
+
+
+class ECPiece:
+    def __init__(self, data, name, tp, rot):
+        self.name, self.tp, self.rot, self.gd = name, tp, rot, 0
+        self.box = box_of(data.piece(f"end_city/{name}")["size"], rot, tp)
+
+
+class EndCity:
+    def __init__(self, data, rng):
+        self.data, self.rng, self.ship = data, rng, False
+
+    def add(self, out, parent, off, name, rot):
+        o = turn(off, parent.rot)
+        p = ECPiece(self.data, name, tuple(a + b for a, b in zip(parent.tp, o)), rot % 4)
+        out.append(p)
+        return p
+
+    def children(self, gen, depth, parent, off, pieces):
+        if depth > 8:
+            return False
+        made = []
+        if not gen(depth, parent, off, made):
+            return False
+        i = self.rng.getrandbits(32) - 2 ** 31
+        for p in made:
+            p.gd = i
+            hit = next((q for q in pieces if overlaps(q.box, p.box)), None)
+            if hit is not None and hit.gd != parent.gd:
+                return False
+        pieces.extend(made)
+        return True
+
+    def house(self, depth, parent, off, out):
+        if depth > 8:
+            return False
+        r, rng = parent.rot, self.rng
+        p = self.add(out, parent, off, "base_floor", r)
+        i = rng.randrange(3)
+        if i == 0:
+            self.add(out, p, (-1, 4, -1), "base_roof", r)
+        elif i == 1:
+            p = self.add(out, p, (-1, 0, -1), "second_floor_2", r)
+            p = self.add(out, p, (-1, 8, -1), "second_roof", r)
+            self.children(self.tower, depth + 1, p, None, out)
+        else:
+            p = self.add(out, p, (-1, 0, -1), "second_floor_2", r)
+            p = self.add(out, p, (-1, 4, -1), "third_floor_2", r)
+            p = self.add(out, p, (-1, 8, -1), "third_roof", r)
+            self.children(self.tower, depth + 1, p, None, out)
+        return True
+
+    def tower(self, depth, parent, off, out):
+        r, rng = parent.rot, self.rng
+        x = 3 + rng.randrange(2)
+        p = self.add(out, parent, (x, -3, 3 + rng.randrange(2)), "tower_base", r)
+        p = self.add(out, p, (0, 7, 0), "tower_piece", r)
+        bridges = p if rng.randrange(3) == 0 else None
+        floors = 1 + rng.randrange(3)
+        for j in range(floors):
+            p = self.add(out, p, (0, 4, 0), "tower_piece", r)
+            if j < floors - 1 and rng.random() < 0.5:
+                bridges = p
+        if bridges is not None:
+            for tr, at in TOWER_BRIDGES:
+                if rng.random() < 0.5:
+                    b = self.add(out, bridges, at, "bridge_end", r + tr)
+                    self.children(self.bridge, depth + 1, b, None, out)
+        elif depth != 7:
+            return self.children(self.fat_tower, depth + 1, p, None, out)
+        self.add(out, p, (-1, 4, -1), "tower_top", r)
+        return True
+
+    def bridge(self, depth, parent, off, out):
+        r, rng = parent.rot, self.rng
+        n = rng.randrange(4) + 1
+        p = self.add(out, parent, (0, 0, -4), "bridge_piece", r)
+        p.gd = -1
+        j = 0
+        for _ in range(n):
+            if rng.random() < 0.5:
+                p = self.add(out, p, (0, j, -4), "bridge_piece", r)
+                j = 0
+            else:
+                if rng.random() < 0.5:
+                    p = self.add(out, p, (0, j, -4), "bridge_steep_stairs", r)
+                else:
+                    p = self.add(out, p, (0, j, -8), "bridge_gentle_stairs", r)
+                j = 4
+        if not self.ship and rng.randrange(10 - depth) == 0:
+            x = -8 + rng.randrange(8)
+            self.add(out, p, (x, j, -70 + rng.randrange(10)), "ship", r)
+            self.ship = True
+        elif not self.children(self.house, depth + 1, p, (-3, j + 1, -11), out):
+            return False
+        p = self.add(out, p, (4, j, 0), "bridge_end", r + 2)
+        p.gd = -1
+        return True
+
+    def fat_tower(self, depth, parent, off, out):
+        r, rng = parent.rot, self.rng
+        p = self.add(out, parent, (-3, 4, -3), "fat_tower_base", r)
+        p = self.add(out, p, (0, 4, 0), "fat_tower_middle", r)
+        i = 0
+        while i < 2 and rng.randrange(3) != 0:
+            p = self.add(out, p, (0, 8, 0), "fat_tower_middle", r)
+            for tr, at in FAT_TOWER_BRIDGES:
+                if rng.random() < 0.5:
+                    b = self.add(out, p, at, "bridge_end", r + tr)
+                    self.children(self.bridge, depth + 1, b, None, out)
+            i += 1
+        self.add(out, p, (-2, 8, -2), "fat_tower_top", r)
+        return True
+
+    def build(self):
+        rot = self.rng.randrange(4)
+        pieces = [ECPiece(self.data, "base_floor", (0, 0, 0), rot)]
+        for off, name in (((-1, 0, -1), "second_floor_1"), ((-1, 4, -1), "third_floor_1"), ((-1, 8, -1), "third_roof")):
+            self.add(pieces, pieces[-1], off, name, rot)
+        self.children(self.tower, 1, pieces[-1], None, pieces)
+        return pieces
+
+
+def end_city_counts(data, n, seed=1):
+    """Build n end cities and tell, for each, the mean, least and most of every marker by piece, and of the ship."""
+    rng, runs = random.Random(seed), []
+    for _ in range(n):
+        t = Counter()
+        for p in EndCity(data, rng).build():
+            pc = data.piece(f"end_city/{p.name}")
+            t[("piece", p.name)] += 1
+            for m, k in pc["markers"].items():
+                t[(m,)] += k
+                t[(m, "in", p.name)] += k
+            for b in ("ender_chest", "brewing_stand", "dragon_wall_head"):
+                if pc["blocks"].get(b):
+                    t[("block", b)] += pc["blocks"][b]
+        runs.append(t)
+    print(f"\n=== end city ({n} built)")
+    for k in sorted({k for t in runs for k in t}, key=str):
+        v = [t[k] for t in runs]
+        hist = Counter(v)
+        print(f"  {' · '.join(k)}: mean {sum(v) / n:.3f}, {min(v):g}–{max(v):g}, in {sum(1 for x in v if x) / n:.1%}"
+              + (f"; {', '.join(f'{x}: {hist[x] / n:.1%}' for x in sorted(hist))}" if len(hist) <= 12 else ""))
+
+
 if __name__ == "__main__":
     d = Data(sys.argv[1])
+    if sys.argv[2] == "--end-city":
+        end_city_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 20000)
+        sys.exit()
     report(d, sys.argv[2])
     if len(sys.argv) > 3 and sys.argv[3] == "--counts":
         st = json.loads((d.base / "worldgen" / "structure" / f"{sys.argv[4]}.json").read_text())
