@@ -198,6 +198,8 @@ FILES = {
     # The silverfish's stronghold: stone bricks, cracked and mossy, and the portal room's frames.
     "stone_bricks": "blocks/stonebrick", "cracked_stone_bricks": "blocks/stonebrick_cracked",
     "end_portal_frame": "blocks/endframe_side",
+    # The Structures tab's stronghold: the end portal frame's top, for its icon.
+    "end_portal_frame_top": "blocks/endframe_top",
     # The breeze's trial chamber: tuff and copper, its spawners, vaults and copper bulbs.
     "tuff_bricks": "blocks/tuff_bricks", "chiseled_tuff": "blocks/chiseled_tuff", "chiseled_tuff_bricks": "blocks/chiseled_tuff_bricks",
     "polished_tuff": "blocks/polished_tuff",

@@ -23,6 +23,7 @@ const STRUCTURE_SCENES = {
   bastion_remnant: "bastion_remnant",
   end_city: "end_city",
   ancient_city: "deep_dark",
+  stronghold: "stronghold",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -143,6 +144,57 @@ const STRUCTURES = [
       find: "Go down to about Y −51 under mountains: the deep dark is darker than the caves round it, with sculk spreading over the deepslate. An abandoned camp’s secret chest has an Ancient City map 1 time in 7. No compass leads to one: a recovery compass only points to where you last died.",
       danger: "The warden: ordinary gear can’t beat it, and its sonic boom goes through walls and shields. Sneak everywhere, walk on wool or carpet, and step round the shriekers: the fourth warning brings it. Sculk sensors along the paths hear you and set off shriekers within 8 blocks; a wool block between them stops that. Throw a snowball or an arrow to draw it away, and if it comes, leave; it digs back down after a minute of quiet.",
       about: "Swift Sneak: found nowhere else, on books in 1 chest in 4. Echo shards (3 chests in 10), also only here: eight and a compass make a recovery compass. Disc fragments 5, also only here: nine make Music Disc 5. Enchanted golden apples, diamond leggings and hoes enchanted at levels 30 to 50, and Music Disc Otherside (also in dungeons and stronghold corridors). And the Ward and Silence armor trims; Silence is the rarest template.",
+    },
+  },
+  {
+    // How many of each: from Java's StrongholdPieces (tools/structure-pieces.py --stronghold builds 5000 strongholds as it does); the
+    // chests' loot from each edition's own tables. Bedrock's layout isn't in its files: it's shown as Java's, but for its prison cells
+    // (no iron doors, from the Minecraft Wiki).
+    k: "stronghold", n: "Stronghold", dim: "overworld", icon: "st:end_portal_frame",
+    say: "A buried maze of stone bricks: corridors, libraries and prison cells round the only end portal in the Overworld, which an eye of ender leads you to.",
+    loot: [
+      { k: "library", n: "Library chests", block: "chest", table: "chests/stronghold_library",
+        where: "In the libraries: one on the floor among the middle shelves, and in a tall library a second up on its gallery. About 2 libraries a stronghold (97% have 2), 6 in 7 of them tall: so about 3.6 library chests (72% have 4)." },
+      { k: "corridor", n: "Corridor chests", block: "chest", table: "chests/stronghold_corridor",
+        where: "In the chest corridors, one in each, on a step of stone brick slabs: about 4 a stronghold (19 in 20 have 4)." },
+      { k: "crossing", n: "Storeroom chests", block: "chest", table: "chests/stronghold_crossing",
+        where: "In a room crossing made as a storeroom, up on its wooden gallery by a ladder. 1 room crossing in 5 is one, of about 6 a stronghold: so about 1 a stronghold (0 to 5), and 3 strongholds in 10 have none." },
+    ],
+    lootFacts: [
+      ["The end portal", "12 end portal frames round a pool of lava, up stone brick stairs with the silverfish spawner on them. Each frame already has an eye of ender 1 time in 10. The frames can’t be mined in Survival, and an eye can’t be taken back out."],
+      ["Enchanted books", "Enchanted at level 30, the enchanting table’s best; they can be Mending, Frost Walker or a curse too."],
+      ["Blocks to take", both("About 440 bookshelves and 57 cobwebs in the libraries (Silk Touch keeps a bookshelf, else it gives 3 books; shears or Silk Touch keep a cobweb, a sword gives string), about 330 iron bars, 27 oak doors, 37 iron doors (10 of them in the prison cells) with 55 stone buttons, and ladders and torches.",
+        "About 440 bookshelves and 57 cobwebs in the libraries (Silk Touch keeps a bookshelf, else it gives 3 books; shears or Silk Touch keep a cobweb, a sword gives string), about 330 iron bars, 27 oak doors and 27 iron doors with 55 stone buttons (the prison cells have none), and ladders and torches.")],
+      ["Infested stone bricks", "About 1,000 of its walls’ stone bricks, 1 in 20, hide a silverfish: mined, it comes out, unless with Silk Touch, which gives a plain stone brick. Of the rest, 3 in 10 are mossy and 1 in 5 cracked."],
+    ],
+    mobs: [
+      { mob: "silverfish", how: "From the spawner on the portal room’s stairs, and out of the infested stone bricks in its walls when they’re mined: about 1,000 a stronghold.", chance: "Spawner" },
+      { mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
+      { mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
+      { mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { mob: "spider", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { mob: "slime", how: both("Only where the stronghold is in a slime chunk (1 in 10), below Y 40, in any light.", "Only where the stronghold is in a slime chunk, below Y 40, in any light."), chance: "Slime chunks" },
+      { mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
+      { mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
+      { mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
+      { mob: "drowned", how: "In water, in the dark, where the stronghold is in dripstone caves: 1 in 6 of their monster spawns.", chance: "Dripstone caves" },
+    ],
+    mobFacts: [
+      ["No spawns of its own", "The stronghold doesn’t change what spawns: the biome round it, often a cave biome at that depth, spawns its monsters in the dark on its floors, as in any cave. In the deep dark nothing does. Bats don’t spawn on stone bricks, only in caves cutting through."],
+      ["The spawner", "One, on the stairs up to the end portal: up to 4 silverfish at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. Light doesn’t stop silverfish: break it with a pickaxe to stop it."],
+      ["Calling for help", "A silverfish hurt without being killed calls others out of the infested blocks round it, and one can crawl into a stone or stone brick block and hide there, infesting it."],
+    ],
+    where: {
+      biomes: both("Any Overworld biome, even under the sea. Where its ring puts it, it’s moved up to 112 blocks to a biome it prefers: any but oceans, rivers, beaches, swamps, the dappled forest and the deep dark.",
+        "Any Overworld biome, deep underground; three are made under the meeting points of villages."),
+      height: "Underground. It’s about 32 blocks high (23 to 43) and 130 across (95 to 175). Its top, nearly always the spiral staircase where it starts, is at Y 52 at most and usually between Y −10 and 32; its lowest rooms can reach the bedrock. The portal room’s floor is usually between Y −25 and 17.",
+      often: both("128 in a world, no more, in 8 rings round 0, 0, spread evenly round each ring: 3 at 1,280 to 2,816 blocks out, 6 at 4,352 to 5,888, then 10, 15, 21, 28 and 36 in rings about 3,000 blocks further out each, and the last 9 at 22,784 to 24,320.",
+        "No limit: they’re scattered through the world, none within 160 blocks of 0, 0. And 3 more are made under the meeting points of villages, at least 453 blocks from 0, 0, most of them near that."),
+      find: both("Throw an eye of ender (an ender pearl and blaze powder): it flies about 12 blocks toward the nearest stronghold’s spiral staircase, rising while that’s further off and dropping once you’re near. 1 in 5 shatters; pick up the rest. To save eyes, throw two far apart and draw their lines: they cross over it. The first ring’s three are a third of a turn apart, 1,280 to 2,816 blocks from 0, 0. Dig down to the staircase; the portal room is usually 25 to 45 blocks from it, at least six rooms in.",
+        "Throw an eye of ender (an ender pearl and blaze powder): it flies about 12 blocks toward the nearest stronghold’s spiral staircase, rising while that’s further off and dropping once you’re near. 1 in 5 shatters; pick up the rest. To save eyes, throw two far apart and draw their lines: they cross over it. Three are under villages’ meeting points not far from 0, 0. Dig down to the staircase; the portal room is usually 25 to 45 blocks from it, at least six rooms in."),
+      danger: "Silverfish: the spawner on the portal room’s stairs, and the infested stone bricks, which let one out when mined: mine its walls with Silk Touch, or not at all. Getting lost: about 150 rooms over 130 blocks, on several levels; mark your way. Lava in the portal room, by its stairs and under the portal. Caves and mineshafts cut through it, bringing their monsters, cave spiders from a mineshaft’s spawners, and lava. And the portal: go in only ready to fight the ender dragon, as the way back is killing it, or dying.",
+      about: both("The End: the only end portal in the Overworld, its 12 frames waiting for eyes of ender. Each already has one 1 time in 10: about 1.2 a stronghold; 28% have none, 38% one, 23% two, 11% three or more, and all 12, the portal open, one in a trillion. The Eye armor trim: in every library chest (about 3.6 a stronghold) and 1 corridor chest in 10, and nowhere else. Enchanted books at level 30, in 2 library chests in 3. Ender pearls in 1 corridor chest in 4. About 440 bookshelves for an enchanting table. And Music Disc Otherside (also in dungeons and ancient cities).",
+        "The End: the only end portal in the Overworld, its 12 frames waiting for eyes of ender. Each already has one 1 time in 10: about 1.2 a stronghold; 28% have none, 38% one, 23% two, 11% three or more, and all 12, the portal open, one in a trillion. The Eye armor trim: in every library chest (about 3.6 a stronghold) and 1 corridor chest in 10, and nowhere else. Enchanted books at level 30, in nearly 3 library chests in 4. Ender pearls in 1 corridor chest in 4. About 440 bookshelves for an enchanting table. And Music Disc Otherside (also in dungeons and ancient cities)."),
     },
   },
   {
@@ -465,6 +517,8 @@ const ST_ART = {
   "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
   "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
   "st:reinforced_deepslate": C("reinforced_deepslate"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
+  // The end portal frame: 13 texels tall, its sides' top 3 rows clear.
+  "st:end_portal_frame": { boxes: [{ b: [0, 0, 0, 16, 13, 16], faces: [["end_portal_frame"], ["end_portal_frame_top"], ["end_portal_frame"]] }] },
 };
 for (const [k, spec] of Object.entries(ST_ART)) if (artReady(spec)) ICONS[k] = spec;
 

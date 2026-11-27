@@ -289,10 +289,75 @@ function renderStResult() {
 }
 
 /* ---------- Beside the stage, and under it ---------- */
+// The dimensions, one a row as the game's world list is: a square of the dimension's own stage, its icon on it, then its name, its
+// structures and how many mobs spawn there. The one shown is outlined; while one of its structures is shown, dimmer.
 function renderStPicker() {
   const s = shownStructure();
   $("st-name").textContent = s ? s.n : dimOf(st.dim).n;
-  $("st-dims").innerHTML = STRUCTURE_DIMS.map(d => `<button type="button" class="name-chip" data-dim="${d.k}" aria-pressed="${d.k === st.dim && !st.k}">${iconImg(d.icon)}${esc(d.n)}</button>`).join("");
+  $("st-dims").innerHTML = STRUCTURE_DIMS.map(d => {
+    const ss = STRUCTURES.filter(x => x.dim === d.k), mobs = new Set(dimLayout(d.k).flatMap(g => g.rows.map(r => r.mob))).size;
+    const pic = dimThumbs[sceneOf(d.k)];
+    return `<button type="button" class="st-dim${d.k === st.dim && st.k ? " here" : ""}" data-dim="${d.k}" aria-pressed="${d.k === st.dim && !st.k}">
+      <span class="st-dim-pic"${pic ? ` style="background-image:url('${pic}')"` : ""}>${iconImg(d.icon)}</span>
+      <span class="st-dim-text"><b>${esc(d.n)}</b><small>${esc(ss.length ? ss.map(x => x.n).join(", ") : "No structures yet")}</small><small>${mobs === 1 ? "1 mob spawns" : `${mobs} mobs spawn`} here</small></span>
+    </button>`;
+  }).join("");
+  dimThumbsSoon();
+}
+
+// Each dimension's square: its scene drawn once off screen at the stage's size, as the stage shows it (its sky, the scene, the
+// ground strip laid on as .stage::after lays it), and its middle cut out. One at a time, after the page has drawn.
+const DIM_THUMB = 128, dimThumbs = {};
+let dimThumbing = false;
+function dimThumbsSoon() {
+  const biome = STRUCTURE_DIMS.map(d => sceneOf(d.k)).find(b => !(b in dimThumbs));
+  if (!biome || dimThumbing) return;
+  dimThumbing = true;
+  setTimeout(() => dimThumb(biome).then(url => { dimThumbs[biome] = url; dimThumbing = false; renderStPicker(); }), 50);
+}
+function dimThumb(biome) {
+  const stage = Object.assign(document.createElement("div"), { className: "stage st-offstage" });
+  stage.dataset.biome = biome;
+  const cv = Object.assign(document.createElement("canvas"), { className: "stage-backdrop" });
+  stage.append(cv);
+  document.body.append(stage);
+  backdropView(cv).show(biome);
+  const W = cv.width, H = cv.height, dpr = W / (cv.clientWidth || 1), css = getComputedStyle(stage);
+  const full = Object.assign(document.createElement("canvas"), { width: W, height: H }), f = full.getContext("2d");
+  const sky = f.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, css.getPropertyValue("--sky").trim());
+  sky.addColorStop(0.78, css.getPropertyValue("--haze").trim());
+  f.fillStyle = sky;
+  f.fillRect(0, 0, W, H);
+  f.drawImage(cv, 0, 0);
+  const filter = getComputedStyle(stage, "::after").filter;
+  // Off the page once drawn: what moves in it stops with it.
+  stage.remove();
+  return new Promise(done => {
+    const ground = new Image();
+    ground.onload = ground.onerror = () => {
+      const strip = GROUND_STRIP * dpr, top = H - strip, tile = 32 * dpr;
+      f.save();
+      f.filter = filter && filter !== "none" ? filter : "none";
+      if (ground.naturalWidth) {
+        f.imageSmoothingEnabled = false;
+        for (let x = 0; x < W; x += tile) for (let y = top; y < H; y += tile) f.drawImage(ground, x, y, tile, tile);
+      }
+      const shade = f.createLinearGradient(0, top, 0, H);
+      shade.addColorStop(0.2, "rgba(0, 0, 0, 0)");
+      shade.addColorStop(1, "rgba(0, 0, 0, .3)");
+      f.fillStyle = shade;
+      f.fillRect(0, top, W, strip);
+      f.fillStyle = "rgba(255, 255, 255, .22)";
+      f.fillRect(0, top, W, 3 * dpr);
+      f.restore();
+      const out = Object.assign(document.createElement("canvas"), { width: DIM_THUMB, height: DIM_THUMB }), o = out.getContext("2d");
+      o.imageSmoothingQuality = "high";
+      o.drawImage(full, (W - H) / 2, 0, H, H, 0, 0, DIM_THUMB, DIM_THUMB);
+      done(out.toDataURL());
+    };
+    ground.src = groundArt(biome);
+  });
 }
 
 function showStStage() {

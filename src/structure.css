@@ -1,7 +1,21 @@
 /* ---------- Structures tab ---------- */
 #view-structures .name-chip .ico { width: 18px; height: 18px; }
-/* The dimensions over the structures beside the stage. */
-.st-dims { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+/* The dimensions beside the stage, as the game's world list: dark rows, a square of each one's stage with its icon on it, its name
+   and two grey lines; the one shown outlined in white, in grey while one of its structures is shown. */
+.st-dims { display: grid; gap: 4px; padding: 6px; background: rgba(0, 0, 0, .55); border: 2px solid #000; }
+.st-dim { display: flex; align-items: center; gap: 12px; width: 100%; padding: 6px 8px; text-align: left; cursor: pointer;
+  font: inherit; color: var(--white); background: transparent; border: 2px solid transparent; }
+.st-dim:hover { border-color: #808080; }
+.st-dim.here { border-color: #808080; background: rgba(0, 0, 0, .3); }
+.st-dim[aria-pressed="true"] { border-color: var(--white); background: rgba(0, 0, 0, .55); }
+.st-dim-pic { flex: none; display: grid; place-items: center; width: 64px; height: 64px; border: 2px solid #000;
+  background: #222 center / cover no-repeat; image-rendering: auto; }
+.st-dim-pic .ico { width: 36px; height: 36px; filter: drop-shadow(1px 1px 0 #000); }
+.st-dim-text { min-width: 0; }
+.st-dim-text b { display: block; font: 400 19px/1.1 var(--font-pixel); text-shadow: 2px 2px 0 #3f3f3f; }
+.st-dim-text small { display: block; margin-top: 3px; font: 600 13px/1.35 var(--font-body); color: #a8a8a8; }
+/* Where a dimension's square is drawn: off the page, at the stage's size. */
+.stage.st-offstage { position: fixed; left: -10000px; top: 0; width: 500px; height: 300px; visibility: hidden; pointer-events: none; }
 .st-say { padding: 0 18px; }
 /* A container: its chips, its block and where it is, then its finds by group. */
 .st-boxes { margin: 0 0 10px; }
