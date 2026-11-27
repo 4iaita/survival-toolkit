@@ -6,6 +6,7 @@ mobs (the entities saved in the piece), its notable blocks, and the pools its ji
     python3 tools/structure-pieces.py <java data> --mansion [how many] [src/structure-loot.js]
     python3 tools/structure-pieces.py --stronghold [how many]
     python3 tools/structure-pieces.py --mineshaft [how many]
+    python3 tools/structure-pieces.py --monument [how many] [<java data> <bedrock-samples>]
 
 <java data> is misode/mcmeta's `26.3-data` tag unpacked (see tools/structure-loot.py's header); <start pool> is a template pool's id
 without "minecraft:", such as bastion/starts or trial_chambers/chamber/end. Each element of the start pool is a kind of the structure
@@ -25,6 +26,10 @@ templates, and every block summed over its pieces; given src/structure-loot.js, 
 
 --stronghold and --mineshaft build that many (5000) as Java's StrongholdPieces and MineshaftPieces do, from memory of that code (see
 their sections), and count what's in them. They need no files.
+
+--monument builds that many ocean monuments (2000) as Java's OceanMonumentPieces does, from memory of that code (see its section): its
+room graph, the rooms fitted to it, and every block each piece places, counted as the blocks end up (prismarine, prismarine bricks,
+dark prismarine, sea lanterns, wet sponges, gold). Given both editions' files, also the elder guardians' and guardians' drops.
 """
 import gzip
 import io
@@ -1551,7 +1556,908 @@ def mansion_counts(data, n, seed=1, loot=None):
             print(f"  {row[0]} {row[1]}: {share(row[4]):.1%}, {share(other[4]) if other else 0:.1%}")
 
 
+# ---------- The ocean monument: Java's OceanMonumentPieces ----------
+# The monument has no templates and no jigsaws: it's one piece in code (26.3's OceanMonumentStructure and OceanMonumentPieces, from
+# memory of them), a building 58 by 23 by 58 at Y 39 (its bounding box: Y 39 to 61), with its rooms as child pieces. Ported as it is:
+#   - the room graph (MonumentBuilding.generateRoomGraph): a grid of rooms 8 by 4 by 8, 5 wide (x) and 4 deep (z) on the first two
+#     floors and 3 by 2 (x 1 to 3, z 0 and 1) on the third; each joined to its neighbours. The entrance room is (2, 0, 0); (2, 2, 0)
+#     joins the penthouse above, (0, 1, 0) and (4, 1, 0) the two wings. The core room is (0 to 3 at random, 0, 2), 2 by 2 by 2, and
+#     claims its seven neighbours. The rooms are shuffled, and each in turn tries 5 times to close one of its 6 openings at random,
+#     up to 2 of them, keeping a closing only if both sides can still reach the entrance (RoomDefinition.findSource).
+#   - the fitters, tried in this order on every room not yet claimed: double XY (2 wide, 2 high), double YZ, double Z, double X, double Y,
+#     simple top (the sponge room: no opening but down), simple (one of three designs, nextInt(3)). Then the two wings (one random int:
+#     each its & 1, the second one more) and the penthouse.
+#   - what each piece holds, from its postAddPiece (postProcess) as the code places it: every generateBox, placeBlock, water box
+#     (which clears) and generateBoxOnFillOnly (only into water), in the order the game runs them, the building's own first, then its
+#     rooms in the order they were made. So a block later pieces overwrite is counted once, as what it ends up.
+# The building's 23 pillars (4 by 4 each) go from its base down to the sea floor: 368 prismarine bricks at its base and 368 more for
+# every block the floor is lower; not counted here. Where the sea floor is higher than its base, it's cut away. The chunk checks
+# (chunkIntersects) are left out: they only skip work outside the chunk. Elder guardians: one placed by each wing room and the
+# penthouse (spawnElder), always 3.
+MO_GRAY, MO_LIGHT, MO_BLACK, MO_LAMP, MO_SPONGE, MO_GOLD = 1, 2, 3, 4, 5, 6
+MO_NAMES = {MO_GRAY: "prismarine", MO_LIGHT: "prismarine_bricks", MO_BLACK: "dark_prismarine", MO_LAMP: "sea_lantern",
+            MO_SPONGE: "wet_sponge", MO_GOLD: "gold_block"}
+MO_DOWN, MO_UP, MO_NORTH, MO_SOUTH, MO_WEST, MO_EAST = range(6)  # Direction.get3DDataValue
+MO_STEP = {MO_DOWN: (0, -1, 0), MO_UP: (0, 1, 0), MO_NORTH: (0, 0, -1), MO_SOUTH: (0, 0, 1), MO_WEST: (-1, 0, 0), MO_EAST: (1, 0, 0)}
+MO_OPP = {MO_DOWN: MO_UP, MO_UP: MO_DOWN, MO_NORTH: MO_SOUTH, MO_SOUTH: MO_NORTH, MO_WEST: MO_EAST, MO_EAST: MO_WEST}
+
+
+class MORoom:
+    def __init__(self, index):
+        self.index, self.conn, self.open = index, [None] * 6, [False] * 6
+        self.claimed = self.source = False
+        self.scan = 0
+
+    def connect(self, d, other):
+        self.conn[d], other.conn[MO_OPP[d]] = other, self
+
+    def update(self):
+        self.open = [c is not None for c in self.conn]
+
+    def find_source(self, scan):
+        if self.source:
+            return True
+        self.scan = scan
+        return any(self.conn[i] is not None and self.open[i] and self.conn[i].scan != scan and self.conn[i].find_source(scan) for i in range(6))
+
+    def special(self):
+        return self.index >= 75
+
+    def openings(self):
+        return sum(self.open)
+
+
+def mo_index(x, y, z):
+    return y * 25 + z * 5 + x
+
+
+class MonumentGrid:
+    """The building's blocks, in its own coordinates (x, z 0 to 57; y −1 to 23), and which piece placed each."""
+    def __init__(self):
+        import numpy as np
+        self.np = np
+        self.b = np.zeros((60, 26, 60), np.int8)
+        self.who = np.zeros((60, 26, 60), np.int16)
+        self.piece, self.ox, self.oy, self.oz = 0, 0, 0, 0
+
+    def at(self, ox, oy, oz, piece):
+        self.ox, self.oy, self.oz, self.piece = ox, oy + 1, oz, piece
+
+    def sl(self, x0, y0, z0, x1, y1, z1):
+        return (slice(self.ox + min(x0, x1), self.ox + max(x0, x1) + 1), slice(self.oy + min(y0, y1), self.oy + max(y0, y1) + 1),
+                slice(self.oz + min(z0, z1), self.oz + max(z0, z1) + 1))
+
+    def box(self, x0, y0, z0, x1, y1, z1, block):
+        s = self.sl(x0, y0, z0, x1, y1, z1)
+        self.b[s], self.who[s] = block, self.piece
+
+    def put(self, x, y, z, block):
+        self.box(x, y, z, x, y, z, block)
+
+    def water(self, x0, y0, z0, x1, y1, z1):
+        s = self.sl(x0, max(y0, -1), z0, x1, min(y1, 24), z1)
+        self.b[s], self.who[s] = 0, 0
+
+    def fill_only(self, x0, y0, z0, x1, y1, z1, block):
+        s = self.sl(x0, y0, z0, x1, y1, z1)
+        empty = self.b[s] == 0
+        self.b[s][empty] = block
+        self.who[s][empty] = self.piece
+
+
+def mo_floor(g, x, z, down):
+    if down:
+        g.box(x + 0, 0, z + 0, x + 2, 0, z + 7, MO_GRAY)
+        g.box(x + 5, 0, z + 0, x + 7, 0, z + 7, MO_GRAY)
+        g.box(x + 3, 0, z + 0, x + 4, 0, z + 2, MO_GRAY)
+        g.box(x + 3, 0, z + 5, x + 4, 0, z + 7, MO_GRAY)
+        g.box(x + 3, 0, z + 2, x + 4, 0, z + 2, MO_LIGHT)
+        g.box(x + 3, 0, z + 5, x + 4, 0, z + 5, MO_LIGHT)
+        g.box(x + 2, 0, z + 3, x + 2, 0, z + 4, MO_LIGHT)
+        g.box(x + 5, 0, z + 3, x + 5, 0, z + 4, MO_LIGHT)
+    else:
+        g.box(x, 0, z, x + 7, 0, z + 7, MO_GRAY)
+
+
+# -- the building (MonumentBuilding.postProcess, its own parts) --
+def mo_wing(g, flipped, xo):
+    g.box(xo, 0, 0, xo + 24, 0, 20, MO_GRAY)
+    g.water(xo, 1, 0, xo + 24, 10, 20)
+    for i in range(4):
+        g.box(xo + i, i + 1, i, xo + i, i + 1, 20, MO_LIGHT)
+        g.box(xo + i + 7, i + 5, i + 7, xo + i + 7, i + 5, 20, MO_LIGHT)
+        g.box(xo + 17 - i, i + 5, i + 7, xo + 17 - i, i + 5, 20, MO_LIGHT)
+        g.box(xo + 24 - i, i + 1, i, xo + 24 - i, i + 1, 20, MO_LIGHT)
+        g.box(xo + i + 1, i + 1, i, xo + 23 - i, i + 1, i, MO_LIGHT)
+        g.box(xo + i + 8, i + 5, i + 7, xo + 16 - i, i + 5, i + 7, MO_LIGHT)
+    g.box(xo + 4, 4, 4, xo + 6, 4, 20, MO_GRAY)
+    g.box(xo + 7, 4, 4, xo + 17, 4, 6, MO_GRAY)
+    g.box(xo + 18, 4, 4, xo + 20, 4, 20, MO_GRAY)
+    g.box(xo + 11, 8, 11, xo + 13, 8, 20, MO_GRAY)
+    for z in (12, 15, 18):
+        g.put(xo + 12, 9, z, MO_LIGHT)
+    left, right = xo + (19 if flipped else 5), xo + (5 if flipped else 19)
+    for z in range(20, 4, -3):
+        g.put(left, 5, z, MO_LIGHT)
+    for z in range(19, 6, -3):
+        g.put(right, 5, z, MO_LIGHT)
+    for i in range(4):
+        g.put(xo + 24 - (17 - i * 3) if flipped else xo + 17 - i * 3, 5, 5, MO_LIGHT)
+    g.put(right, 5, 5, MO_LIGHT)
+    g.box(xo + 11, 1, 12, xo + 13, 7, 12, MO_GRAY)
+    g.box(xo + 12, 1, 11, xo + 12, 7, 13, MO_GRAY)
+
+
+def mo_entrance_archs(g):
+    g.water(25, 0, 0, 32, 8, 20)
+    for i in range(4):
+        z = 5 + i * 4
+        g.box(24, 2, z, 24, 4, z, MO_LIGHT)
+        g.box(22, 4, z, 23, 4, z, MO_LIGHT)
+        g.put(25, 5, z, MO_LIGHT)
+        g.put(26, 6, z, MO_LIGHT)
+        g.put(26, 5, z, MO_LAMP)
+        g.box(33, 2, z, 33, 4, z, MO_LIGHT)
+        g.box(34, 4, z, 35, 4, z, MO_LIGHT)
+        g.put(32, 5, z, MO_LIGHT)
+        g.put(31, 6, z, MO_LIGHT)
+        g.put(31, 5, z, MO_LAMP)
+        g.box(27, 6, z, 30, 6, z, MO_GRAY)
+
+
+def mo_entrance_wall(g):
+    for a in [(15, 0, 42, 0), (21, 12, 36, 12), (17, 11, 40, 11), (16, 10, 41, 10), (16, 6, 41, 6), (17, 5, 40, 5), (21, 4, 36, 4),
+              (22, 3, 26, 3), (31, 3, 35, 3), (23, 2, 25, 2), (32, 2, 34, 2)]:
+        g.box(a[0], a[1], 21, a[2], a[3], 21, MO_GRAY)
+        if a == (15, 0, 42, 0):
+            g.water(26, 1, 21, 31, 3, 21)
+    g.box(15, 7, 21, 42, 9, 21, MO_GRAY)
+    g.box(28, 4, 20, 29, 4, 21, MO_LIGHT)
+    for x, y in [(27, 3), (30, 3), (26, 2), (31, 2), (25, 1), (32, 1)]:
+        g.put(x, y, 21, MO_LIGHT)
+    for i in range(7):
+        g.put(28 - i, 6 + i, 21, MO_BLACK)
+        g.put(29 + i, 6 + i, 21, MO_BLACK)
+    for i in range(4):
+        g.put(28 - i, 9 + i, 21, MO_BLACK)
+        g.put(29 + i, 9 + i, 21, MO_BLACK)
+    g.put(28, 12, 21, MO_BLACK)
+    g.put(29, 12, 21, MO_BLACK)
+    for i in range(3):
+        for y in (8, 9):
+            g.put(22 - i * 2, y, 21, MO_BLACK)
+            g.put(35 + i * 2, y, 21, MO_BLACK)
+    g.water(15, 13, 21, 42, 15, 21)
+    for x0, y1, x1 in [(15, 6, 15), (16, 5, 16), (17, 4, 20), (21, 3, 21), (22, 2, 22), (23, 1, 24), (42, 6, 42), (41, 5, 41), (37, 4, 40),
+                       (36, 3, 36), (33, 1, 34), (35, 2, 35)]:
+        g.water(x0, 1, 21, x1, y1, 21)
+
+
+def mo_roof(g):
+    g.box(21, 0, 22, 36, 0, 36, MO_GRAY)
+    g.water(21, 1, 22, 36, 23, 36)
+    for i in range(4):
+        g.box(21 + i, 13 + i, 21 + i, 36 - i, 13 + i, 21 + i, MO_LIGHT)
+        g.box(21 + i, 13 + i, 36 - i, 36 - i, 13 + i, 36 - i, MO_LIGHT)
+        g.box(21 + i, 13 + i, 22 + i, 21 + i, 13 + i, 35 - i, MO_LIGHT)
+        g.box(36 - i, 13 + i, 22 + i, 36 - i, 13 + i, 35 - i, MO_LIGHT)
+    g.box(25, 16, 25, 32, 16, 32, MO_GRAY)
+    for x, z in [(25, 25), (32, 25), (25, 32), (32, 32)]:
+        g.box(x, 17, z, x, 19, z, MO_LIGHT)
+    for (a, b), (c, d) in [((26, 26), (27, 27)), ((26, 31), (27, 30)), ((31, 31), (30, 30)), ((31, 26), (30, 27))]:
+        g.put(a, 20, b, MO_LIGHT)
+        g.put(c, 21, d, MO_LIGHT)
+        g.put(c, 20, d, MO_LAMP)
+    g.box(28, 21, 27, 29, 21, 27, MO_GRAY)
+    g.box(27, 21, 28, 27, 21, 29, MO_GRAY)
+    g.box(28, 21, 30, 29, 21, 30, MO_GRAY)
+    g.box(30, 21, 28, 30, 21, 29, MO_GRAY)
+
+
+def mo_lower_wall(g):
+    g.box(0, 0, 21, 6, 0, 57, MO_GRAY)
+    g.water(0, 1, 21, 6, 7, 57)
+    g.box(4, 4, 21, 6, 4, 53, MO_GRAY)
+    for i in range(4):
+        g.box(i, i + 1, 21, i, i + 1, 57 - i, MO_LIGHT)
+    for z in list(range(23, 53, 3)) + [52]:
+        g.put(5, 5, z, MO_LIGHT)
+    for i in range(4):
+        g.box(i, i + 1, 21, i, i + 1, 57 - i, MO_LIGHT)
+    g.box(4, 1, 52, 6, 3, 52, MO_GRAY)
+    g.box(5, 1, 51, 5, 3, 53, MO_GRAY)
+    g.box(51, 0, 21, 57, 0, 57, MO_GRAY)
+    g.water(51, 1, 21, 57, 7, 57)
+    g.box(51, 4, 21, 53, 4, 53, MO_GRAY)
+    for i in range(4):
+        g.box(57 - i, i + 1, 21, 57 - i, i + 1, 57 - i, MO_LIGHT)
+    for z in list(range(23, 53, 3)) + [52]:
+        g.put(52, 5, z, MO_LIGHT)
+    g.box(51, 1, 52, 53, 3, 52, MO_GRAY)
+    g.box(52, 1, 51, 52, 3, 53, MO_GRAY)
+    g.box(7, 0, 51, 50, 0, 57, MO_GRAY)
+    g.water(7, 1, 51, 50, 10, 57)
+    for i in range(4):
+        g.box(i + 1, i + 1, 57 - i, 56 - i, i + 1, 57 - i, MO_LIGHT)
+
+
+def mo_middle_wall(g):
+    g.box(7, 0, 21, 13, 0, 50, MO_GRAY)
+    g.water(7, 1, 21, 13, 10, 50)
+    g.box(11, 8, 21, 13, 8, 53, MO_GRAY)
+    for i in range(4):
+        g.box(i + 7, i + 5, 21, i + 7, i + 5, 54, MO_LIGHT)
+    for z in range(21, 46, 3):
+        g.put(12, 9, z, MO_LIGHT)
+    g.box(44, 0, 21, 50, 0, 50, MO_GRAY)
+    g.water(44, 1, 21, 50, 10, 50)
+    g.box(44, 8, 21, 46, 8, 53, MO_GRAY)
+    for i in range(4):
+        g.box(50 - i, i + 5, 21, 50 - i, i + 5, 54, MO_LIGHT)
+    for z in range(21, 46, 3):
+        g.put(45, 9, z, MO_LIGHT)
+    g.box(14, 0, 44, 43, 0, 50, MO_GRAY)
+    g.water(14, 1, 44, 43, 10, 50)
+    for x in range(12, 46, 3):
+        g.put(x, 9, 45, MO_LIGHT)
+        g.put(x, 9, 52, MO_LIGHT)
+        if x in (12, 18, 24, 33, 39, 45):
+            for y, z in [(9, 47), (9, 50), (10, 45), (10, 46), (10, 51), (10, 52), (11, 47), (11, 50), (12, 48), (12, 49)]:
+                g.put(x, y, z, MO_LIGHT)
+    for i in range(3):
+        g.box(8 + i, 5 + i, 54, 49 - i, 5 + i, 54, MO_GRAY)
+    g.box(11, 8, 54, 46, 8, 54, MO_LIGHT)
+    g.box(14, 8, 44, 43, 8, 53, MO_GRAY)
+
+
+def mo_upper_wall(g):
+    g.box(14, 0, 21, 20, 0, 43, MO_GRAY)
+    g.water(14, 1, 22, 20, 14, 43)
+    g.box(18, 12, 22, 20, 12, 39, MO_GRAY)
+    g.box(18, 12, 21, 20, 12, 21, MO_LIGHT)
+    for i in range(4):
+        g.box(i + 14, i + 9, 21, i + 14, i + 9, 43 - i, MO_LIGHT)
+    for z in range(23, 40, 3):
+        g.put(19, 13, z, MO_LIGHT)
+    g.box(37, 0, 21, 43, 0, 43, MO_GRAY)
+    g.water(37, 1, 22, 43, 14, 43)
+    g.box(37, 12, 22, 39, 12, 39, MO_GRAY)
+    g.box(37, 12, 21, 39, 12, 21, MO_LIGHT)
+    for i in range(4):
+        g.box(43 - i, i + 9, 21, 43 - i, i + 9, 43 - i, MO_LIGHT)
+    for z in range(23, 40, 3):
+        g.put(38, 13, z, MO_LIGHT)
+    g.box(21, 0, 37, 36, 0, 43, MO_GRAY)
+    g.water(21, 1, 37, 36, 14, 43)
+    g.box(21, 12, 37, 36, 12, 39, MO_GRAY)
+    for i in range(4):
+        g.box(15 + i, i + 9, 43 - i, 42 - i, i + 9, 43 - i, MO_LIGHT)
+    for x in range(21, 37, 3):
+        g.put(x, 13, 38, MO_LIGHT)
+
+
+def mo_building(g):
+    g.water(0, 0, 0, 57, 24, 57)
+    mo_wing(g, False, 0)
+    mo_wing(g, True, 33)
+    mo_entrance_archs(g)
+    mo_entrance_wall(g)
+    mo_roof(g)
+    mo_lower_wall(g)
+    mo_middle_wall(g)
+    mo_upper_wall(g)
+    pillars = 0
+    for x in range(7):
+        z = 0
+        while z < 7:
+            if z == 0 and x == 3:
+                z = 6
+            g.box(x * 9, 0, z * 9, x * 9 + 3, 0, z * 9 + 3, MO_LIGHT)
+            pillars += 1
+            z += 6 if x not in (0, 6) else 1
+    return pillars
+
+
+# -- the rooms --
+def mo_sides(g, d, wall):
+    """The water boxes cut in a 1 by 1 room's walls where it opens: [(direction, box)]."""
+    for k, b in wall:
+        if d.open[k]:
+            g.water(*b)
+
+
+MO_DOORS = [(MO_SOUTH, (3, 1, 0, 4, 2, 0)), (MO_NORTH, (3, 1, 7, 4, 2, 7)), (MO_WEST, (0, 1, 3, 0, 2, 4)), (MO_EAST, (7, 1, 3, 7, 2, 4))]
+
+
+def mo_dark_walls(g):
+    """The dark prismarine room's and the sponge room's walls (SimpleRoom design 2, SimpleTopRoom)."""
+    for y, blk in ((1, MO_LIGHT), (2, MO_BLACK), (3, MO_LIGHT)):
+        g.box(0, y, 0, 0, y, 7, blk)
+        g.box(7, y, 0, 7, y, 7, blk)
+        g.box(1, y, 0, 6, y, 0, blk)
+        g.box(1, y, 7, 6, y, 7, blk)
+    g.box(0, 1, 3, 0, 2, 4, MO_BLACK)
+    g.box(7, 1, 3, 7, 2, 4, MO_BLACK)
+    g.box(3, 1, 0, 4, 2, 0, MO_BLACK)
+    g.box(3, 1, 7, 4, 2, 7, MO_BLACK)
+
+
+def mo_simple(g, d, design, rng, t):
+    if d.index // 25 > 0:
+        mo_floor(g, 0, 0, d.open[MO_DOWN])
+    if d.conn[MO_UP] is None:
+        g.fill_only(1, 4, 1, 6, 4, 6, MO_GRAY)
+    pillar = design != 0 and rng.random() < 0.5 and not d.open[MO_DOWN] and not d.open[MO_UP] and d.openings() > 1
+    if design == 0:
+        for x0, x1, lx in ((0, 2, 1), (5, 7, 6)):
+            for z0, z1, lz, wz in ((0, 2, 1, 0), (5, 7, 6, 7)):
+                g.box(x0, 1, z0, x1, 1, z1, MO_LIGHT)
+                g.box(x0, 3, z0, x1, 3, z1, MO_LIGHT)
+                g.box(0 if x0 == 0 else 7, 2, z0, 0 if x0 == 0 else 7, 2, z1, MO_GRAY)
+                g.box(x0 + (1 if x0 == 0 else 0), 2, wz, x1 - (1 if x1 == 7 else 0), 2, wz, MO_GRAY)
+                g.put(lx, 2, lz, MO_LAMP)
+        for k, opened, closed in [(MO_SOUTH, [(3, 3, 0, 4, 3, 0, MO_LIGHT)], [(3, 3, 0, 4, 3, 1, MO_LIGHT), (3, 2, 0, 4, 2, 0, MO_GRAY), (3, 1, 0, 4, 1, 1, MO_LIGHT)]),
+                                  (MO_NORTH, [(3, 3, 7, 4, 3, 7, MO_LIGHT)], [(3, 3, 6, 4, 3, 7, MO_LIGHT), (3, 2, 7, 4, 2, 7, MO_GRAY), (3, 1, 6, 4, 1, 7, MO_LIGHT)]),
+                                  (MO_WEST, [(0, 3, 3, 0, 3, 4, MO_LIGHT)], [(0, 3, 3, 1, 3, 4, MO_LIGHT), (0, 2, 3, 0, 2, 4, MO_GRAY), (0, 1, 3, 1, 1, 4, MO_LIGHT)]),
+                                  (MO_EAST, [(7, 3, 3, 7, 3, 4, MO_LIGHT)], [(6, 3, 3, 7, 3, 4, MO_LIGHT), (7, 2, 3, 7, 2, 4, MO_GRAY), (6, 1, 3, 7, 1, 4, MO_LIGHT)])]:
+            for b in (opened if d.open[k] else closed):
+                g.box(*b)
+    elif design == 1:
+        for x, z in [(2, 2), (2, 5), (5, 5), (5, 2)]:
+            g.box(x, 1, z, x, 3, z, MO_LIGHT)
+        for x, z in [(2, 2), (2, 5), (5, 5), (5, 2)]:
+            g.put(x, 2, z, MO_LAMP)
+        for b in [(0, 1, 0, 1, 3, 0), (0, 1, 1, 0, 3, 1), (0, 1, 7, 1, 3, 7), (0, 1, 6, 0, 3, 6), (6, 1, 7, 7, 3, 7), (7, 1, 6, 7, 3, 6),
+                  (6, 1, 0, 7, 3, 0), (7, 1, 1, 7, 3, 1)]:
+            g.box(*b, MO_LIGHT)
+        for x, z in [(1, 0), (0, 1), (1, 7), (0, 6), (6, 7), (7, 6), (6, 0), (7, 1)]:
+            g.put(x, 2, z, MO_GRAY)
+        for k, (x0, z0, x1, z1) in [(MO_SOUTH, (1, 0, 6, 0)), (MO_NORTH, (1, 7, 6, 7)), (MO_WEST, (0, 1, 0, 6)), (MO_EAST, (7, 1, 7, 6))]:
+            if not d.open[k]:
+                g.box(x0, 3, z0, x1, 3, z1, MO_LIGHT)
+                g.box(x0, 2, z0, x1, 2, z1, MO_GRAY)
+                g.box(x0, 1, z0, x1, 1, z1, MO_LIGHT)
+    else:
+        mo_dark_walls(g)
+        mo_sides(g, d, MO_DOORS)
+    if pillar:
+        g.box(3, 1, 3, 4, 1, 4, MO_LIGHT)
+        g.box(3, 2, 3, 4, 2, 4, MO_GRAY)
+        g.box(3, 3, 3, 4, 3, 4, MO_LIGHT)
+        t[("simple room", "with a middle pillar")] += 1
+
+
+def mo_simple_top(g, d, rng, t):
+    if d.index // 25 > 0:
+        mo_floor(g, 0, 0, d.open[MO_DOWN])
+    if d.conn[MO_UP] is None:
+        g.fill_only(1, 4, 1, 6, 4, 6, MO_GRAY)
+    for x in range(1, 7):
+        for z in range(1, 7):
+            if rng.randrange(3) != 0:
+                y = 2 + (0 if rng.randrange(4) == 0 else 1)
+                g.box(x, y, z, x, 3, z, MO_SPONGE)
+    mo_dark_walls(g)
+    mo_sides(g, d, MO_DOORS)
+
+
+def mo_double_x(g, d):
+    east, west = d.conn[MO_EAST], d
+    if d.index // 25 > 0:
+        mo_floor(g, 8, 0, east.open[MO_DOWN])
+        mo_floor(g, 0, 0, west.open[MO_DOWN])
+    if west.conn[MO_UP] is None:
+        g.fill_only(1, 4, 1, 7, 4, 6, MO_GRAY)
+    if east.conn[MO_UP] is None:
+        g.fill_only(8, 4, 1, 14, 4, 6, MO_GRAY)
+    for y, blk in ((3, MO_LIGHT), (2, MO_GRAY), (1, MO_LIGHT)):
+        g.box(0, y, 0, 0, y, 7, blk)
+        g.box(15, y, 0, 15, y, 7, blk)
+        g.box(1, y, 0, 15, y, 0, blk)
+        g.box(1, y, 7, 14, y, 7, blk)
+    g.box(5, 1, 0, 10, 1, 4, MO_LIGHT)
+    g.box(6, 2, 0, 9, 2, 3, MO_GRAY)
+    g.box(5, 3, 0, 10, 3, 4, MO_LIGHT)
+    g.put(6, 2, 3, MO_LAMP)
+    g.put(9, 2, 3, MO_LAMP)
+    mo_sides(g, west, [(MO_SOUTH, (3, 1, 0, 4, 2, 0)), (MO_NORTH, (3, 1, 7, 4, 2, 7)), (MO_WEST, (0, 1, 3, 0, 2, 4))])
+    mo_sides(g, east, [(MO_SOUTH, (11, 1, 0, 12, 2, 0)), (MO_NORTH, (11, 1, 7, 12, 2, 7)), (MO_EAST, (15, 1, 3, 15, 2, 4))])
+
+
+def mo_double_y(g, d):
+    if d.index // 25 > 0:
+        mo_floor(g, 0, 0, d.open[MO_DOWN])
+    above = d.conn[MO_UP]
+    if above.conn[MO_UP] is None:
+        g.fill_only(1, 8, 1, 6, 8, 6, MO_GRAY)
+    for b in [(0, 4, 0, 0, 4, 7), (7, 4, 0, 7, 4, 7), (1, 4, 0, 6, 4, 0), (1, 4, 7, 6, 4, 7), (2, 4, 1, 5, 4, 2), (1, 4, 2, 1, 4, 5),
+              (2, 4, 5, 5, 4, 6), (6, 4, 2, 6, 4, 5)]:
+        g.box(*b, MO_LIGHT)
+    r = d
+    for y in (1, 5):
+        for k, z in ((MO_SOUTH, 0), (MO_NORTH, 7)):
+            if r.open[k]:
+                g.box(2, y, z, 2, y + 2, z, MO_LIGHT)
+                g.box(5, y, z, 5, y + 2, z, MO_LIGHT)
+                g.box(3, y + 2, z, 4, y + 2, z, MO_LIGHT)
+            else:
+                g.box(0, y, z, 7, y + 2, z, MO_LIGHT)
+                g.box(0, y + 1, z, 7, y + 1, z, MO_GRAY)
+        for k, x in ((MO_WEST, 0), (MO_EAST, 7)):
+            if r.open[k]:
+                g.box(x, y, 2, x, y + 2, 2, MO_LIGHT)
+                g.box(x, y, 5, x, y + 2, 5, MO_LIGHT)
+                g.box(x, y + 2, 3, x, y + 2, 4, MO_LIGHT)
+            else:
+                g.box(x, y, 0, x, y + 2, 7, MO_LIGHT)
+                g.box(x, y + 1, 0, x, y + 1, 7, MO_GRAY)
+        r = above
+
+
+def mo_double_z(g, d):
+    north, south = d.conn[MO_NORTH], d
+    if d.index // 25 > 0:
+        mo_floor(g, 0, 8, north.open[MO_DOWN])
+        mo_floor(g, 0, 0, south.open[MO_DOWN])
+    if south.conn[MO_UP] is None:
+        g.fill_only(1, 4, 1, 6, 4, 7, MO_GRAY)
+    if north.conn[MO_UP] is None:
+        g.fill_only(1, 4, 8, 6, 4, 14, MO_GRAY)
+    for y, blk in ((1, MO_LIGHT), (2, MO_GRAY), (3, MO_LIGHT)):
+        g.box(0, y, 0, 0, y, 15, blk)
+        g.box(7, y, 0, 7, y, 15, blk)
+        g.box(1, y, 0, 7, y, 0, blk)
+        g.box(1, y, 15, 6, y, 15, blk)
+    for b in [(1, 1, 1, 1, 1, 2), (6, 1, 1, 6, 1, 2), (1, 3, 1, 1, 3, 2), (6, 3, 1, 6, 3, 2), (1, 1, 13, 1, 1, 14), (6, 1, 13, 6, 1, 14),
+              (1, 3, 13, 1, 3, 14), (6, 3, 13, 6, 3, 14), (2, 1, 6, 2, 3, 6), (5, 1, 6, 5, 3, 6), (2, 1, 9, 2, 3, 9), (5, 1, 9, 5, 3, 9),
+              (3, 2, 6, 4, 2, 6), (3, 2, 9, 4, 2, 9), (2, 2, 7, 2, 2, 8), (5, 2, 7, 5, 2, 8)]:
+        g.box(*b, MO_LIGHT)
+    for x, z in [(2, 5), (5, 5), (2, 10), (5, 10)]:
+        g.put(x, 2, z, MO_LAMP)
+        g.put(x, 3, z, MO_LIGHT)
+    mo_sides(g, south, [(MO_SOUTH, (3, 1, 0, 4, 2, 0)), (MO_EAST, (7, 1, 3, 7, 2, 4)), (MO_WEST, (0, 1, 3, 0, 2, 4))])
+    mo_sides(g, north, [(MO_NORTH, (3, 1, 15, 4, 2, 15)), (MO_WEST, (0, 1, 11, 0, 2, 12)), (MO_EAST, (7, 1, 11, 7, 2, 12))])
+
+
+def mo_double_xy(g, d):
+    east, west = d.conn[MO_EAST], d
+    west_up, east_up = west.conn[MO_UP], east.conn[MO_UP]
+    if d.index // 25 > 0:
+        mo_floor(g, 8, 0, east.open[MO_DOWN])
+        mo_floor(g, 0, 0, west.open[MO_DOWN])
+    if west_up.conn[MO_UP] is None:
+        g.fill_only(1, 8, 1, 7, 8, 6, MO_GRAY)
+    if east_up.conn[MO_UP] is None:
+        g.fill_only(8, 8, 1, 14, 8, 6, MO_GRAY)
+    for y in range(1, 8):
+        blk = MO_GRAY if y in (2, 6) else MO_LIGHT
+        g.box(0, y, 0, 0, y, 7, blk)
+        g.box(15, y, 0, 15, y, 7, blk)
+        g.box(1, y, 0, 15, y, 0, blk)
+        g.box(1, y, 7, 14, y, 7, blk)
+    for b in [(2, 1, 3, 2, 7, 4), (3, 1, 2, 4, 7, 2), (3, 1, 5, 4, 7, 5), (13, 1, 3, 13, 7, 4), (11, 1, 2, 12, 7, 2), (11, 1, 5, 12, 7, 5),
+              (5, 1, 3, 5, 3, 4), (10, 1, 3, 10, 3, 4), (5, 7, 2, 10, 7, 5), (5, 5, 2, 5, 7, 2), (10, 5, 2, 10, 7, 2), (5, 5, 5, 5, 7, 5),
+              (10, 5, 5, 10, 7, 5)]:
+        g.box(*b, MO_LIGHT)
+    for x, z in [(6, 2), (9, 2), (6, 5), (9, 5)]:
+        g.put(x, 6, z, MO_LIGHT)
+    g.box(5, 4, 3, 6, 4, 4, MO_LIGHT)
+    g.box(9, 4, 3, 10, 4, 4, MO_LIGHT)
+    for x, z in [(5, 2), (5, 5), (10, 2), (10, 5)]:
+        g.put(x, 4, z, MO_LAMP)
+    mo_sides(g, west, [(MO_SOUTH, (3, 1, 0, 4, 2, 0)), (MO_NORTH, (3, 1, 7, 4, 2, 7)), (MO_WEST, (0, 1, 3, 0, 2, 4))])
+    mo_sides(g, east, [(MO_SOUTH, (11, 1, 0, 12, 2, 0)), (MO_NORTH, (11, 1, 7, 12, 2, 7)), (MO_EAST, (15, 1, 3, 15, 2, 4))])
+    mo_sides(g, west_up, [(MO_SOUTH, (3, 5, 0, 4, 6, 0)), (MO_NORTH, (3, 5, 7, 4, 6, 7)), (MO_WEST, (0, 5, 3, 0, 6, 4))])
+    mo_sides(g, east_up, [(MO_SOUTH, (11, 5, 0, 12, 6, 0)), (MO_NORTH, (11, 5, 7, 12, 6, 7)), (MO_EAST, (15, 5, 3, 15, 6, 4))])
+
+
+def mo_double_yz(g, d):
+    north, south = d.conn[MO_NORTH], d
+    north_up, south_up = north.conn[MO_UP], south.conn[MO_UP]
+    if d.index // 25 > 0:
+        mo_floor(g, 0, 8, north.open[MO_DOWN])
+        mo_floor(g, 0, 0, south.open[MO_DOWN])
+    if south_up.conn[MO_UP] is None:
+        g.fill_only(1, 8, 1, 6, 8, 7, MO_GRAY)
+    if north_up.conn[MO_UP] is None:
+        g.fill_only(1, 8, 8, 6, 8, 14, MO_GRAY)
+    for y in range(1, 8):
+        blk = MO_GRAY if y in (2, 6) else MO_LIGHT
+        g.box(0, y, 0, 0, y, 15, blk)
+        g.box(7, y, 0, 7, y, 15, blk)
+        g.box(1, y, 0, 6, y, 0, blk)
+        g.box(1, y, 15, 6, y, 15, blk)
+    for y in range(1, 8):
+        g.box(3, y, 7, 4, y, 8, MO_LAMP if y in (2, 6) else MO_BLACK)
+    mo_sides(g, south, [(MO_SOUTH, (3, 1, 0, 4, 2, 0)), (MO_EAST, (7, 1, 3, 7, 2, 4)), (MO_WEST, (0, 1, 3, 0, 2, 4))])
+    mo_sides(g, north, [(MO_NORTH, (3, 1, 15, 4, 2, 15)), (MO_WEST, (0, 1, 11, 0, 2, 12)), (MO_EAST, (7, 1, 11, 7, 2, 12))])
+    mo_sides(g, south_up, [(MO_SOUTH, (3, 5, 0, 4, 6, 0)), (MO_EAST, (7, 5, 3, 7, 6, 4)), (MO_WEST, (0, 5, 3, 0, 6, 4))])
+    mo_sides(g, north_up, [(MO_NORTH, (3, 5, 15, 4, 6, 15)), (MO_WEST, (0, 5, 11, 0, 6, 12)), (MO_EAST, (7, 5, 11, 7, 6, 12))])
+
+
+def mo_entry(g, d):
+    for b in [(0, 3, 0, 2, 3, 7), (5, 3, 0, 7, 3, 7), (0, 2, 0, 1, 2, 7), (6, 2, 0, 7, 2, 7), (0, 1, 0, 0, 1, 7), (7, 1, 0, 7, 1, 7),
+              (0, 1, 7, 7, 3, 7), (1, 1, 0, 2, 3, 0), (5, 1, 0, 6, 3, 0)]:
+        g.box(*b, MO_LIGHT)
+    mo_sides(g, d, [(MO_NORTH, (3, 1, 7, 4, 2, 7)), (MO_WEST, (0, 1, 3, 1, 2, 4)), (MO_EAST, (6, 1, 3, 7, 2, 4))])
+
+
+def mo_core(g):
+    g.fill_only(1, 8, 0, 14, 8, 14, MO_GRAY)
+    g.box(0, 7, 0, 0, 7, 15, MO_LIGHT)
+    g.box(15, 7, 0, 15, 7, 15, MO_LIGHT)
+    g.box(1, 7, 0, 15, 7, 0, MO_LIGHT)
+    g.box(1, 7, 15, 14, 7, 15, MO_LIGHT)
+    for y in range(1, 7):
+        blk = MO_GRAY if y in (2, 6) else MO_LIGHT
+        for x in (0, 15):
+            g.box(x, y, 0, x, y, 1, blk)
+            g.box(x, y, 6, x, y, 9, blk)
+            g.box(x, y, 14, x, y, 15, blk)
+        g.box(1, y, 0, 1, y, 0, blk)
+        g.box(6, y, 0, 9, y, 0, blk)
+        g.box(14, y, 0, 14, y, 0, blk)
+        g.box(1, y, 15, 14, y, 15, blk)
+    g.box(6, 3, 6, 9, 6, 9, MO_BLACK)
+    g.box(7, 4, 7, 8, 5, 8, MO_GOLD)
+    for y in (3, 6):
+        for x in (6, 9):
+            g.put(x, y, 6, MO_LAMP)
+            g.put(x, y, 9, MO_LAMP)
+    for b in [(5, 1, 6, 5, 2, 6), (5, 1, 9, 5, 2, 9), (10, 1, 6, 10, 2, 6), (10, 1, 9, 10, 2, 9), (6, 1, 5, 6, 2, 5), (9, 1, 5, 9, 2, 5),
+              (6, 1, 10, 6, 2, 10), (9, 1, 10, 9, 2, 10), (5, 2, 5, 5, 6, 5), (5, 2, 10, 5, 6, 10), (10, 2, 5, 10, 6, 5), (10, 2, 10, 10, 6, 10),
+              (5, 7, 1, 5, 7, 6), (10, 7, 1, 10, 7, 6), (5, 7, 9, 5, 7, 14), (10, 7, 9, 10, 7, 14), (1, 7, 5, 6, 7, 5), (1, 7, 10, 6, 7, 10),
+              (9, 7, 5, 14, 7, 5), (9, 7, 10, 14, 7, 10), (2, 1, 2, 2, 1, 3), (3, 1, 2, 3, 1, 2), (13, 1, 2, 13, 1, 3), (12, 1, 2, 12, 1, 2),
+              (2, 1, 12, 2, 1, 13), (3, 1, 13, 3, 1, 13), (13, 1, 12, 13, 1, 13), (12, 1, 13, 12, 1, 13)]:
+        g.box(*b, MO_LIGHT)
+
+
+def mo_wing_room(g, design):
+    if design == 0:
+        for i in range(4):
+            g.box(10 - i, 3 - i, 20 - i, 12 + i, 3 - i, 20, MO_LIGHT)
+        for b in [(7, 0, 6, 15, 0, 16), (6, 0, 6, 6, 3, 20), (16, 0, 6, 16, 3, 20), (7, 1, 7, 7, 1, 20), (15, 1, 7, 15, 1, 20), (7, 1, 6, 9, 3, 6),
+                  (13, 1, 6, 15, 3, 6), (8, 1, 7, 9, 1, 7), (13, 1, 7, 14, 1, 7), (9, 0, 5, 13, 0, 5)]:
+            g.box(*b, MO_LIGHT)
+        g.box(10, 0, 7, 12, 0, 7, MO_BLACK)
+        g.box(8, 0, 10, 8, 0, 12, MO_BLACK)
+        g.box(14, 0, 10, 14, 0, 12, MO_BLACK)
+        for z in range(18, 6, -3):
+            g.put(6, 3, z, MO_LAMP)
+            g.put(16, 3, z, MO_LAMP)
+        for x, z in [(10, 10), (12, 10), (10, 12), (12, 12)]:
+            g.put(x, 0, z, MO_LAMP)
+        g.put(8, 3, 6, MO_LAMP)
+        g.put(14, 3, 6, MO_LAMP)
+        for x, z in [(4, 4), (18, 4), (4, 18), (18, 18)]:
+            g.put(x, 2, z, MO_LIGHT)
+            g.put(x, 1, z, MO_LAMP)
+            g.put(x, 0, z, MO_LIGHT)
+        g.put(9, 7, 20, MO_LIGHT)
+        g.put(13, 7, 20, MO_LIGHT)
+        g.box(6, 0, 21, 7, 4, 21, MO_LIGHT)
+        g.box(15, 0, 21, 16, 4, 21, MO_LIGHT)
+    else:
+        g.box(9, 3, 18, 13, 3, 20, MO_LIGHT)
+        g.box(9, 0, 18, 9, 2, 18, MO_LIGHT)
+        g.box(13, 0, 18, 13, 2, 18, MO_LIGHT)
+        for x in (9, 13):
+            g.put(x, 6, 20, MO_LIGHT)
+            g.put(x, 5, 20, MO_LAMP)
+            g.put(x, 4, 20, MO_LIGHT)
+        g.box(7, 3, 7, 15, 3, 14, MO_LIGHT)
+        for x in (10, 12):
+            g.box(x, 0, 10, x, 6, 10, MO_LIGHT)
+            g.box(x, 0, 12, x, 6, 12, MO_LIGHT)
+            for y in (0, 4):
+                g.put(x, y, 10, MO_LAMP)
+                g.put(x, y, 12, MO_LAMP)
+        for x in (8, 14):
+            g.box(x, 0, 7, x, 2, 7, MO_LIGHT)
+            g.box(x, 0, 14, x, 2, 14, MO_LIGHT)
+        g.box(8, 3, 8, 8, 3, 13, MO_BLACK)
+        g.box(14, 3, 8, 14, 3, 13, MO_BLACK)
+
+
+def mo_penthouse(g):
+    g.box(2, -1, 2, 11, -1, 11, MO_LIGHT)
+    g.box(0, -1, 0, 1, -1, 11, MO_GRAY)
+    g.box(12, -1, 0, 13, -1, 11, MO_GRAY)
+    g.box(2, -1, 0, 11, -1, 1, MO_GRAY)
+    g.box(2, -1, 12, 11, -1, 13, MO_GRAY)
+    g.box(0, 0, 0, 0, 0, 13, MO_LIGHT)
+    g.box(13, 0, 0, 13, 0, 13, MO_LIGHT)
+    g.box(1, 0, 0, 12, 0, 0, MO_LIGHT)
+    g.box(1, 0, 13, 12, 0, 13, MO_LIGHT)
+    for i in range(2, 12, 3):
+        g.put(0, 0, i, MO_LAMP)
+        g.put(13, 0, i, MO_LAMP)
+        g.put(i, 0, 0, MO_LAMP)
+    g.box(2, 0, 3, 4, 0, 9, MO_LIGHT)
+    g.box(9, 0, 3, 11, 0, 9, MO_LIGHT)
+    g.box(4, 0, 9, 9, 0, 11, MO_LIGHT)
+    for x, z in [(5, 8), (8, 8), (10, 10), (3, 10)]:
+        g.put(x, 0, z, MO_LIGHT)
+    g.box(3, 0, 3, 3, 0, 7, MO_BLACK)
+    g.box(10, 0, 3, 10, 0, 7, MO_BLACK)
+    g.box(6, 0, 10, 7, 0, 10, MO_BLACK)
+    for x in (3, 10):
+        for z in range(2, 9, 3):
+            g.box(x, 0, z, x, 2, z, MO_LIGHT)
+    g.box(5, 0, 10, 5, 2, 10, MO_LIGHT)
+    g.box(8, 0, 10, 8, 2, 10, MO_LIGHT)
+    g.box(6, -1, 7, 7, -1, 8, MO_BLACK)
+    g.water(6, -1, 3, 7, -1, 4)
+
+
+class Monument:
+    """MonumentBuilding's room graph and pieces, as the game makes them."""
+    def __init__(self, rng):
+        self.rng = rng
+
+    def graph(self):
+        rng, defs = self.rng, [None] * 75
+        for y, xs, zs in ((0, range(5), range(4)), (1, range(5), range(4)), (2, range(1, 4), range(2))):
+            for x in xs:
+                for z in zs:
+                    defs[mo_index(x, y, z)] = MORoom(mo_index(x, y, z))
+        self.source = defs[mo_index(2, 0, 0)]
+        for x in range(5):
+            for z in range(5):
+                for y in range(3):
+                    r = defs[mo_index(x, y, z)]
+                    if r is None:
+                        continue
+                    for d in (MO_DOWN, MO_UP, MO_NORTH, MO_SOUTH, MO_WEST, MO_EAST):  # Direction.values()
+                        sx, sy, sz = MO_STEP[d]
+                        nx, ny, nz = x + sx, y + sy, z + sz
+                        if 0 <= nx < 5 and 0 <= nz < 5 and 0 <= ny < 3 and defs[mo_index(nx, ny, nz)] is not None:
+                            # The game's grid has north and south the other way round: a room's NORTH is the next z up.
+                            r.connect(d if nz == z else MO_OPP[d], defs[mo_index(nx, ny, nz)])
+        pent, left, right = MORoom(1003), MORoom(1001), MORoom(1002)
+        defs[mo_index(2, 2, 0)].connect(MO_UP, pent)
+        defs[mo_index(0, 1, 0)].connect(MO_SOUTH, left)
+        defs[mo_index(4, 1, 0)].connect(MO_SOUTH, right)
+        pent.claimed = left.claimed = right.claimed = True
+        self.source.source = True
+        core = defs[mo_index(rng.randrange(4), 0, 2)]
+        self.core = core
+        e, n, u = core.conn[MO_EAST], core.conn[MO_NORTH], core.conn[MO_UP]
+        for r in (core, e, n, e.conn[MO_NORTH], u, e.conn[MO_UP], n.conn[MO_UP], e.conn[MO_NORTH].conn[MO_UP]):
+            r.claimed = True
+        rooms = [r for r in defs if r is not None]
+        for r in rooms:
+            r.update()
+        pent.update()
+        rng.shuffle(rooms)
+        scan = 1
+        for r in rooms:
+            closed = tries = 0
+            while closed < 2 and tries < 5:
+                tries += 1
+                d = rng.randrange(6)
+                if r.open[d]:
+                    o = MO_OPP[d]
+                    r.open[d] = r.conn[d].open[o] = False
+                    ok = r.find_source(scan) and r.conn[d].find_source(scan + 1)
+                    scan += 2
+                    if ok:
+                        closed += 1
+                    else:
+                        r.open[d] = r.conn[d].open[o] = True
+        return rooms + [pent, left, right]
+
+    def build(self):
+        """[(kind, room, design)] in the order the game makes its pieces, and the two wings' designs."""
+        rng = self.rng
+        rooms = self.graph()
+        self.source.claimed = True
+        pieces = [("entry", self.source, None), ("core", self.core, None)]
+        for r in rooms:
+            if r.claimed or r.special():
+                continue
+            o = r.open
+            c = lambda d: r.conn[d]
+            if o[MO_EAST] and not c(MO_EAST).claimed and o[MO_UP] and not c(MO_UP).claimed and c(MO_EAST).open[MO_UP] and not c(MO_EAST).conn[MO_UP].claimed:
+                for x in (r, c(MO_EAST), c(MO_UP), c(MO_EAST).conn[MO_UP]):
+                    x.claimed = True
+                pieces.append(("double xy", r, None))
+            elif o[MO_NORTH] and not c(MO_NORTH).claimed and o[MO_UP] and not c(MO_UP).claimed and c(MO_NORTH).open[MO_UP] and not c(MO_NORTH).conn[MO_UP].claimed:
+                for x in (r, c(MO_NORTH), c(MO_UP), c(MO_NORTH).conn[MO_UP]):
+                    x.claimed = True
+                pieces.append(("double yz", r, None))
+            elif o[MO_NORTH] and not c(MO_NORTH).claimed:
+                r.claimed = c(MO_NORTH).claimed = True
+                pieces.append(("double z", r, None))
+            elif o[MO_EAST] and not c(MO_EAST).claimed:
+                r.claimed = c(MO_EAST).claimed = True
+                pieces.append(("double x", r, None))
+            elif o[MO_UP] and not c(MO_UP).claimed:
+                r.claimed = c(MO_UP).claimed = True
+                pieces.append(("double y", r, None))
+            elif not (o[MO_WEST] or o[MO_EAST] or o[MO_NORTH] or o[MO_SOUTH] or o[MO_UP]):
+                r.claimed = True
+                pieces.append(("sponge room", r, None))
+            else:
+                r.claimed = True
+                pieces.append(("simple room", r, rng.randrange(3)))
+        w = rng.getrandbits(32)
+        self.wings = (w & 1, (w + 1) & 1)
+        return pieces
+
+
+MO_PIECES = ["building", "entry", "core", "double xy", "double yz", "double z", "double x", "double y", "sponge room", "simple room 0",
+             "simple room 1", "simple room 2", "wing 0", "wing 1", "penthouse"]
+
+
+def monument_blocks(mo, pieces, rng, t):
+    g = MonumentGrid()
+    g.at(0, 0, 0, MO_PIECES.index("building"))
+    t[("pillars",)] += mo_building(g)
+    for kind, r, design in pieces:
+        x, z, y = r.index % 5, r.index // 5 % 5, r.index // 25
+        name = f"{kind} {design}" if kind == "simple room" else kind
+        g.at(9 + 8 * x, 4 * y, 22 + 8 * z, MO_PIECES.index(name))
+        t[("room", name)] += 1
+        t[("room", name, f"floor {y + 1}")] += 1
+        if kind == "entry":
+            mo_entry(g, r)
+        elif kind == "core":
+            mo_core(g)
+            t[("core room", "x", str(x))] += 1
+        elif kind == "double xy":
+            mo_double_xy(g, r)
+        elif kind == "double yz":
+            mo_double_yz(g, r)
+        elif kind == "double z":
+            mo_double_z(g, r)
+        elif kind == "double x":
+            mo_double_x(g, r)
+        elif kind == "double y":
+            mo_double_y(g, r)
+        elif kind == "sponge room":
+            mo_simple_top(g, r, rng, t)
+        else:
+            mo_simple(g, r, design, rng, t)
+    for xo, design in zip((1, 34), mo.wings):
+        g.at(xo, 1, 1, MO_PIECES.index(f"wing {design}"))
+        mo_wing_room(g, design)
+        t[("wing", f"design {design}")] += 1
+    g.at(22, 13, 22, MO_PIECES.index("penthouse"))
+    mo_penthouse(g)
+    t[("elder_guardian",)] += 3
+    np = g.np
+    for code, name in MO_NAMES.items():
+        mask = g.b == code
+        t[("block", name)] += int(mask.sum())
+        for p, k in zip(*np.unique(g.who[mask], return_counts=True)):
+            t[("block", name, "by", MO_PIECES[p])] += int(k)
+    ys = np.nonzero(g.b.any(axis=(0, 2)))[0]
+    t[("Y", "top")] += 39 + int(ys.max()) - 1
+    return t
+
+
+def monument_counts(n, seed=1):
+    """Build n ocean monuments and tell how many rooms of each kind, sponges, gold blocks, sea lanterns and prismarine they have."""
+    rng, runs = random.Random(seed), []
+    for _ in range(n):
+        mo = Monument(rng)
+        pieces = mo.build()
+        t = Counter()
+        monument_blocks(mo, pieces, rng, t)
+        t[("sponge rooms",)] += t[("room", "sponge room")]
+        runs.append(t)
+    print_runs("ocean monument", runs)
+    # Per sponge room: the sponges in it (each of its 36 columns: none 1 in 3, one 1 in 2, two 1 in 6).
+    rooms = sum(t[("room", "sponge room")] for t in runs)
+    if rooms:
+        print(f"\n  wet sponges a sponge room: {sum(t[('block', 'wet_sponge')] for t in runs) / rooms:.2f} (36 columns × 5/6 = 30 expected)")
+    print(f"  chance a monument has a sponge room: {sum(1 for t in runs if t[('room', 'sponge room')]) / n:.1%}")
+    # The figures the page uses: each kind of block's 5% and 95% over the monuments that have any, and a sponge room's own.
+    print("\n=== for the page: block, mean, 5%–95% of the monuments that have any, chance a monument has any")
+    for name in MO_NAMES.values():
+        v = sorted(t[("block", name)] for t in runs if t[("block", name)])
+        print(f"  {name}: {sum(t[('block', name)] for t in runs) / n:.1f}, {v[len(v) // 20]}–{v[19 * len(v) // 20]}, {len(v) / n:.1%}")
+    per = sorted(sum(1 + (rng.randrange(4) == 0) for _ in range(36) if rng.randrange(3)) for _ in range(20000))
+    print(f"  wet sponges in one sponge room: 5%–95% {per[1000]}–{per[19000]}, {per[0]}–{per[-1]} of 20,000")
+    v = sorted(t[("room", "sponge room")] for t in runs if t[("room", "sponge room")])
+    print(f"  sponge rooms where there are any: mean {sum(v) / len(v):.2f}, 5%–95% {v[len(v) // 20]}–{v[19 * len(v) // 20]}")
+
+
+# The elder guardians' and guardians' drops, from each edition's loot table: what one kill gives (by a player, without Looting, not on
+# fire: Java's furnace_smelt and the Looting modifiers left out) and what the monument's 3 elder guardians give together.
+MO_BEDROCK_IDS = {"fish": "cod", "clownfish": "tropical_fish", "prismarine_shard": "prismarine_shard"}
+
+
+def mo_drops(path, java, root):
+    """A mob's loot table -> {item: {count: chance}} for one kill by a player."""
+    from collections import defaultdict
+    t = json.loads(pathlib.Path(path).read_text())
+
+    def conv(a, b):
+        out = defaultdict(float)
+        for x, p in a.items():
+            for y, q in b.items():
+                out[x + y] += p * q
+        return dict(out)
+
+    def count(e):
+        mods = e.get("functions", []) if not java else e.get("modifier", [])
+        mods = mods if isinstance(mods, list) else [mods]
+        for m in mods:
+            kind = (m.get("function") or m.get("type", "")).replace("minecraft:", "")
+            if kind == "set_count":
+                c = m["count"]
+                lo, hi = (c, c) if isinstance(c, (int, float)) else (int(c["min"]), int(c["max"]))
+                return {n: 1 / (hi - lo + 1) for n in range(lo, hi + 1)}
+        return {1: 1.0}
+
+    def chance(conds):
+        p = 1.0
+        for c in conds:
+            kind = (c.get("condition") or c.get("type", "")).replace("minecraft:", "")
+            if kind == "all_of":
+                p *= chance(c["terms"])
+            elif kind == "random_chance_with_enchanted_bonus":
+                p *= c["unenchanted_chance"]
+            elif kind in ("random_chance_with_looting", "random_chance"):
+                p *= c["chance"]
+            elif kind != "killed_by_player":
+                raise ValueError(kind)
+        return p
+
+    def table(t):
+        items = {}
+        for pool in t["pools"]:
+            conds = pool.get("conditions", []) if not java else ([pool["condition"]] if "condition" in pool else pool.get("conditions", []))
+            run, total = chance(conds), sum(e.get("weight", 1) for e in pool["entries"])
+            got = defaultdict(lambda: defaultdict(float))
+            for e in pool["entries"]:
+                share = run * e.get("weight", 1) / total
+                kind = e["type"].replace("minecraft:", "")
+                if kind == "item":
+                    name = e["name"].replace("minecraft:", "")
+                    name = name if java else MO_BEDROCK_IDS.get(name, name)
+                    for n, q in count(e).items():
+                        got[name][n] += share * q
+                elif kind == "loot_table":
+                    ref = e.get("value") or e.get("name")
+                    sub = (root / "loot_table" / (ref.replace("minecraft:", "") + ".json")) if java else (root / (ref + ("" if ref.endswith(".json") else ".json")))
+                    for name, d in table(json.loads(sub.read_text())).items():
+                        for n, q in d.items():
+                            got[name][n] += share * q
+            for name, d in got.items():
+                d = dict(d)
+                d[0] = d.get(0, 0) + 1 - sum(d.values())
+                items[name] = conv(items.get(name, {0: 1.0}), d)
+        return items
+
+    return table(t), conv
+
+
+def monument_drops(java_root, bedrock_root):
+    jbase = pathlib.Path(java_root) / "data" / "minecraft"
+    bbase = pathlib.Path(bedrock_root) / "behavior_pack"
+    for mob in ("elder_guardian", "guardian"):
+        for ed, path, root in (("java", jbase / "loot_table" / "entities" / f"{mob}.json", jbase), ("bedrock", bbase / "loot_tables" / "entities" / f"{mob}.json", bbase)):
+            items, conv = mo_drops(path, ed == "java", root)
+            print(f"\n=== {mob}, {ed}: one kill by a player [id, least, most, chance of any]" + ("; the monument's 3 together" if mob == "elder_guardian" else ""))
+            for name, d in sorted(items.items(), key=lambda kv: -(1 - kv[1].get(0, 0))):
+                some = [n for n, q in d.items() if q > 1e-12 and n]
+                line = f"  {name}: {min(some)}–{max(some)}, {1 - d.get(0, 0):.4f}"
+                if mob == "elder_guardian":
+                    three = conv(conv(d, d), d)
+                    some3 = [n for n, q in three.items() if q > 1e-12 and n]
+                    line += f"; three: {min(some3)}–{max(some3)}, {1 - three.get(0, 0):.4f}"
+                print(line)
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--monument":
+        monument_counts(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
+        if len(sys.argv) > 4:
+            monument_drops(sys.argv[3], sys.argv[4])
+        sys.exit()
     if len(sys.argv) > 1 and sys.argv[1] == "--mineshaft":
         mineshaft_counts(int(sys.argv[2]) if len(sys.argv) > 2 else 5000)
         sys.exit()

@@ -148,7 +148,7 @@ FILES = {
     "kelp": "blocks/kelp_a", "kelp_top": "blocks/kelp_top", "kelp_bulb": "blocks/kelp_top_bulb", "seagrass": "blocks/seagrass",
     "tall_seagrass_top": "blocks/seagrass_doubletall_top_a", "tall_seagrass_bottom": "blocks/seagrass_doubletall_bottom_a",
     "sea_pickle": "blocks/sea_pickle", "sea_lantern": "blocks/sea_lantern",
-    "prismarine_bricks": "blocks/prismarine_bricks", "prismarine_dark": "blocks/prismarine_dark",
+    "prismarine_bricks": "blocks/prismarine_bricks", "prismarine_dark": "blocks/prismarine_dark", "prismarine_rough": "blocks/prismarine_rough",
     "coral_red": "blocks/coral_red", "coral_yellow": "blocks/coral_yellow", "coral_pink": "blocks/coral_pink", "coral_blue": "blocks/coral_blue",
     "coral_plant_red": "blocks/coral_plant_red", "coral_plant_yellow": "blocks/coral_plant_yellow", "coral_plant_pink": "blocks/coral_plant_pink",
     "coral_plant_blue": "blocks/coral_plant_blue", "coral_fan_red": "blocks/coral_fan_red", "coral_fan_yellow": "blocks/coral_fan_yellow",
@@ -292,7 +292,7 @@ FILES = {
     **{f"{k}_carried": f"blocks/carried/{k}_carried" for k in ("mushroom_brown", "mushroom_red", "crimson_fungus", "warped_fungus", "torch", "soul_torch", "copper_torch", "redstone_torch")},
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
-FIRST_FRAME = {"sculk", "fire", "pumpkin_face_on", "crimson_stem_side", "end_gateway"}
+FIRST_FRAME = {"sculk", "fire", "pumpkin_face_on", "crimson_stem_side", "end_gateway", "prismarine_rough"}
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"

@@ -26,6 +26,7 @@ const STRUCTURE_SCENES = {
   stronghold: "stronghold",
   mineshaft: "mineshaft",
   woodland_mansion: "mansion",
+  ocean_monument: "ocean",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -34,6 +35,7 @@ const ST_BLOCKS = {
   chest: "ui:logo", barrel: "st:barrel", vault: "st:vault", ominous_vault: "st:vault", dispenser: "st:dispenser", pot: "ui:pot",
   spawner: "st:trial_spawner", ominous_spawner: "st:trial_spawner",
   chest_minecart: "st:chest_minecart", rail: "st:rail",
+  gold_block: "st:gold_block", wet_sponge: "st:wet_sponge", prismarine_bricks: "st:prismarine_bricks", elder_guardian: "mob:elder_guardian",
   item_frame: "st:item_frame", dragon_head: "st:dragon_head", diamond_block: "st:diamond_block", brewing_stand: "st:brewing_stand", furnace: "st:furnace",
 };
 
@@ -307,6 +309,69 @@ const STRUCTURES = [
       danger: "Evokers: their fangs bite up from the floor and their vexes fly through walls; kill the evoker and the vexes waste away. Vindicators hit hard with their axes, two beside each evoker. Getting lost: about 34 rooms on three floors, along corridors that look alike; mark your way. The secret rooms: the fake End portal room’s trapped chest sets off TNT and lets out silverfish, the spider room’s spawner sits in cobwebs, and the lava room’s diamond is under lava. And the biome’s monsters in its dark rooms.",
       about: both("Totems of undying: one from every evoker, about 3 a mansion; the only other source is raids. The Vex armor trim: found nowhere else, in half its chests, so 88% of mansions have one. Allays in the large jail’s cells (55% of mansions). Enchanted golden apples (1 mansion in 7), diamond hoes and chestplates, Music Discs 13 and Cat, and enchanted books (54% of mansions). Dark oak: about 17,000 planks and 2,600 logs, white and red carpet, wool, about 42 empty chests, and now and then a block of diamond in a secret room (1 mansion in 6).",
         "Totems of undying: one from every evoker, about 3 a mansion; the only other source is raids. The Vex armor trim: found nowhere else, in half its chests, so 88% of mansions have one. Allays in the large jail’s cells (55% of mansions). Enchanted golden apples (1 mansion in 7), diamond hoes and chestplates, Music Discs 13 and Cat, and enchanted books with treasure enchantments (59% of mansions). Dark oak: about 17,000 planks and 2,600 logs, white and red carpet, wool, about 42 empty chests, and now and then a block of diamond in a secret room (1 mansion in 6)."),
+    },
+  },
+  {
+    // How many of each: from Java's OceanMonumentPieces (tools/structure-pieces.py --monument builds 5000 monuments as it does, and with
+    // both editions' files gives the elder guardians' drops). Its blocks are placed with it, not rolled: boxes of rows, × how many a
+    // monument has (9 in 10 of those with any between these). Bedrock's layout isn't in its files: it's shown as Java's. Guardians'
+    // spawning is Java's spawn_overrides and its code (Guardian.checkGuardianSpawnRules); Bedrock's is in its code, shown as Java's.
+    k: "ocean_monument", n: "Ocean Monument", dim: "overworld", icon: "st:prismarine_bricks",
+    say: "A great temple of prismarine on the floor of the deep ocean, lit by sea lanterns, held by guardians and three elder guardians, with eight blocks of gold at its heart and rooms of wet sponges.",
+    loot: [
+      { k: "gold", n: "Gold blocks", block: "gold_block", rows: [["gold_block", "", 8, 8, 1]],
+        where: "In the core room, the treasure room at the back of the building, two rooms wide and two floors high: 8 blocks of gold, 2 by 2 by 2, inside a block of dark prismarine with sea lanterns at its corners. Every monument has one; it’s one of four places along the back, so it can open onto the corridor round the building.",
+        note: "Built with it, not rolled: the chance is that a monument has them; × is how many. Mine the dark prismarine round them with a pickaxe." },
+      { k: "sponges", n: "Sponge rooms", block: "wet_sponge", rows: [["wet_sponge", "", 25, 121, 0.766]],
+        where: "Small rooms on the second or third floor, entered only through a hole in the floor, their ceilings hung with wet sponges: about 30 in a room (23 to 37 in 9 rooms in 10). 77% of monuments have one or more, about 2 where they do (1 to 4); 23% have none.",
+        note: "Built with it, not rolled: × is how many wet sponges a monument has, 9 in 10 of those with any between these; the chance is that it has any. Anything mines them, fastest with a hoe." },
+      { k: "elders", n: "Elder guardians", block: "elder_guardian",
+        rows: [["wet_sponge", "", 3, 3, 1], ["prismarine_shard", "", 1, 6, 0.963], ["cod", "", 1, 6, 0.8805], ["prismarine_crystals", "", 1, 3, 0.7037],
+          ["tide_armor_trim_smithing_template", "", 1, 3, 0.488], ["salmon", "", 1, 3, 0.0186], ["pufferfish", "", 1, 3, 0.0097], ["tropical_fish", "", 1, 3, 0.0015]],
+        where: "What the monument’s three elder guardians drop between them, killed by a player without Looting: each a wet sponge, 0 to 2 prismarine shards, a raw cod (1 in 2) or prismarine crystals (1 in 3), a Tide armor trim template 1 time in 5, and 1 time in 40 a fish as if fished.",
+        note: "The chance is that the three together drop at least one; × is how many. The wet sponges come only from a player’s kill (the template from any); Looting adds shards, cod and crystals. They never come back." },
+      { k: "blocks", n: "Its blocks", block: "prismarine_bricks",
+        rows: [["prismarine", "", 6491, 6889, 0.999], ["prismarine_bricks", "", 6004, 6322, 0.999], ["dark_prismarine", "", 207, 447, 0.999], ["sea_lantern", "", 106, 140, 0.999]],
+        where: "What it’s built of: prismarine in its floors, roofs and walls, prismarine bricks in its trims and pillars, dark prismarine in its dark rooms and round the gold, and about 120 sea lanterns lighting its rooms, wings, entrance and roof.",
+        note: "Built with it, not rolled: × is how many a monument has, 9 in 10 between these. Under it are its pillars (368 more prismarine bricks a block of their height). All need a pickaxe." },
+    ],
+    lootFacts: [
+      ["No chests", "A monument has no chest or container of any kind: its riches are the gold, the sponges and the elder guardians’ drops."],
+      ["Sea lanterns", "Mined without Silk Touch a sea lantern breaks into 2 or 3 prismarine crystals (Fortune gives more, up to 5). Five crystals and four shards make a new one."],
+      ["Wet sponges", "Dry one in a furnace (it leaves a bucket of water in an empty bucket in the fuel slot), or place it in the Nether, where it dries at once. A dry sponge soaks up the water round it, up to 65 blocks within 7: the way to drain the monument."],
+      ["The pillars", "23 pillars of prismarine bricks, 4 by 4 each, hold it up from the sea floor: round its edge, but for the entrance."],
+      ["Rooms", "About 27 rooms a monument round its entrance, on three floors: small ones of three designs (with sea lanterns in their corners, in four pillars, or dark), double ones two rooms long or high (about 10), the core room, and the sponge rooms. Over them all the penthouse, and on each side of the entrance a wing, one of two designs each."],
+    ],
+    mobs: [
+      { mob: "elder_guardian", how: "Placed as it’s made: one in each wing and one in the penthouse at the top. They never despawn, and none come back once killed.", chance: "3" },
+      { mob: "guardian", how: both("Every monster that spawns in the monument’s box (58 by 58 blocks, Y 39 to 61) is a guardian, 2 to 4 together: in water over water, in any light, not on Peaceful; where the sky shows through the water, only 1 try in 20. Nowhere else.",
+        "Every monster that spawns in the monument’s box (58 by 58 blocks, from its base to its roof) is a guardian, 2 to 4 together: in water over water, in any light, not on Peaceful; where the sky shows through the water, only 1 try in 20. Nowhere else."), chance: "2–4" },
+      { mob: "drowned", how: both("In the ocean round it, in the dark: not in the monument’s box, where guardians take their place.", "In the ocean round it, in light 7 or less, 2 to 4 together; now and then one rides a zombie nautilus."), chance: "Round it" },
+      { mob: "squid", how: both("In its water and round it, as in any deep ocean: between Y 50 and 63, 1 to 4 together.", "In its water and round it, as in any deep ocean: 2 to 4 together."), chance: "Common" },
+      { mob: "cod", how: both("In its water and round it, in the deep ocean, deep cold and deep lukewarm oceans: between Y 50 and 63, 3 to 6 together.", "In its water and round it, in every deep ocean: between Y 0 and 64, 4 to 7 together."), chance: "Common" },
+      { mob: "salmon", how: both("In its water and round it, in the deep cold and deep frozen oceans: between Y 50 and 63, 1 to 5 together.", "In its water and round it, in every deep ocean: between Y 0 and 64, 3 to 5 together."), chance: both("Cold seas", "Common") },
+      { mob: "nautilus", how: both("In its water and round it, in every deep ocean: alone.", "In its water and round it, in every deep ocean: between Y 38 and 58, alone."), chance: "Common" },
+      { mob: "dolphin", how: both("Round it, in the deep ocean and deep lukewarm ocean: between Y 50 and 63, 1 or 2 together.", "Round it, in the deep ocean and deep lukewarm ocean: between Y 0 and 64, 3 to 5 together."), chance: "Round it" },
+      { mob: "tropicalfish", how: both("In the deep lukewarm ocean: between Y 50 and 63, 8 together.", "In the deep lukewarm ocean: between Y 0 and 64, 1 to 5 together."), chance: "Warm seas" },
+      { mob: "pufferfish", how: both("In the deep lukewarm ocean: between Y 50 and 63, 1 to 3 together.", "In the deep lukewarm ocean: between Y 0 and 64, 3 to 5 together."), chance: "Warm seas" },
+    ],
+    mobFacts: [
+      ["Guardians only", both("Inside its box guardians take the place of every other monster, and no glow squid or axolotls spawn there; fish, squid, dolphins and nautiluses do, as in the ocean round it.",
+        "Inside its box guardians take the place of every other monster; fish, squid, dolphins and nautiluses spawn there as in the ocean round it.")],
+      ["Mining Fatigue", "Every minute each elder guardian gives every player within 50 blocks Mining Fatigue III for 5 minutes, even through walls, with its ghost flashing before your eyes: you can barely mine, and you swing slower. It isn’t given again while you have more than a minute of it left. Milk clears it; killing all three ends it."],
+      ["The elder guardian", `${MOB_INFO.elder_guardian.hp} health. Its laser charges for 3 seconds, then hits: ${MOB_INFO.elder_guardian.attack.replace("Laser: ", "")}. It never swims away, as guardians do, and it’s 10 experience.`],
+      ["Guardians", `${MOB_INFO.guardian.hp} health. Their laser charges for 4 seconds while they keep their distance, then hits: ${MOB_INFO.guardian.attack.replace("Laser: ", "")}. Out of sight, it breaks off. Their spikes hurt whatever hits them while they’re out. Out of water they flop about.`],
+      ["Their drops", "Elder guardian: a wet sponge (killed by a player), 0 to 2 prismarine shards, a raw cod (1 in 2) or prismarine crystals (1 in 3), a Tide armor trim template 1 time in 5, and 1 time in 40 a fish as if fished (killed by a player). Guardian: 0 to 2 prismarine shards, a raw cod or prismarine crystals (2 in 5 each), and the same 1 in 40 fish."],
+    ],
+    where: {
+      biomes: both("Deep oceans: the deep ocean, deep cold, deep frozen and deep lukewarm oceans. Its middle must be in one, and everything within 29 blocks of it ocean or river.",
+        "Deep oceans, the deep warm ocean too: everything within 16 blocks of its middle must be deep ocean, and within 29 blocks ocean or river."),
+      height: both("On the sea floor, its base at Y 39 and its roof’s top at Y 60, just under the surface. 58 by 58 blocks and 22 high, on pillars down to the floor; where the floor is higher it’s cut away, and the water round it is cleared down to it.",
+        "On the sea floor, its roof’s top always at Y 56. 58 by 58 blocks and 22 high, on pillars down to the floor; where the floor is higher it’s cut away, and the water round it is cleared down to it."),
+      often: "The Overworld is split into regions of 32 by 32 chunks (512 blocks square), each with one try at a monument in its first 27 by 27 chunks, most often near their middle, so two are at least 5 chunks apart. The try fails where the ocean isn’t deep and wide enough, so only regions of open deep ocean have one: there, about one every 512 blocks.",
+      find: "An Ocean Monument Map leads to the nearest monument: 2 in 3 journeyman cartographers sell one, for 13 emeralds and a compass, up to 12 times before restocking. No chest has one. Otherwise sail over deep ocean, the darkest water, and look down for the glow of sea lanterns.",
+      danger: "Mining Fatigue III from the elder guardians, every minute within 50 blocks, so you can hardly break anything until they’re dead. Guardians’ lasers from across the water, and their spikes when you hit them. Drowning: bring Water Breathing, a turtle shell, Respiration and Aqua Affinity, or a conduit. Getting lost in its dark, alike rooms on three floors. And drowned in the ocean round it.",
+      about: "Wet sponges: the only place they’re found, in its sponge rooms (77% of monuments, about 44 each) and from its three elder guardians, one each. The Tide armor trim: only from elder guardians, 1 time in 5 each, so half the monuments (49%) give one; seven diamonds and a block of prismarine copy it. 8 blocks of gold, 72 ingots. About 6,700 prismarine, 6,200 prismarine bricks, 320 dark prismarine and 120 sea lanterns to build with. And a guardian farm: once the elders are dead, guardians spawn all through its box in any light, for prismarine shards, crystals, cod and experience.",
     },
   },
   {
@@ -632,6 +697,7 @@ const ST_ART = {
   "st:blackstone": C("blackstone", "blackstone_top"), "st:gilded_blackstone": C("gilded_blackstone"), "st:polished_blackstone_bricks": C("polished_blackstone_bricks"),
   "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
   "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
+  "st:prismarine_bricks": C("prismarine_bricks"), "st:gold_block": C("gold_block"), "st:wet_sponge": C("wet_sponge"),
   "st:reinforced_deepslate": C("reinforced_deepslate"), "st:dark_oak_log": C("log_dark_oak", "log_dark_oak_top"), "st:diamond_block": C("diamond_block"), "st:chest_minecart": L("chest_minecart"), "st:rail": L("rail_carried"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
   // The end portal frame: 13 texels tall, its sides' top 3 rows clear.
   "st:end_portal_frame": { boxes: [{ b: [0, 0, 0, 16, 13, 16], faces: [["end_portal_frame"], ["end_portal_frame_top"], ["end_portal_frame"]] }] },
@@ -675,7 +741,7 @@ if (ICONS["st:dragon_head"]) { const plain = ICONS["st:dragon_head"]; ICONS["st:
 // Groups, the best first.
 const LOOT_GROUPS = [["best", "Best finds"], ["gear", "Gear"], ["books", "Enchanted books"], ["food", "Food and potions"], ["materials", "Materials"], ["blocks", "Blocks"], ["other", "Everything else"]];
 // The rare and best things: what a player would go there for.
-const LOOT_BEST = new Set(["enchanted_golden_apple", "heavy_core", "trident", "elytra", "heart_of_the_sea", "diamond_block", "emerald_block",
+const LOOT_BEST = new Set(["enchanted_golden_apple", "wet_sponge", "heavy_core", "trident", "elytra", "heart_of_the_sea", "diamond_block", "emerald_block",
   "netherite_ingot", "netherite_scrap", "ancient_debris", "netherite_upgrade_smithing_template", "saddle", "name_tag", "diamond_horse_armor",
   "golden_apple", "flow_banner_pattern", "guster_banner_pattern", "piglin_banner_pattern", "ominous_trial_key", "trial_key", "totem_of_undying",
   "echo_shard", "sniffer_egg", "music_disc_pigstep", "music_disc_otherside", "music_disc_relic", "music_disc_precipice", "music_disc_creator",
@@ -684,10 +750,10 @@ const LOOT_BEST = new Set(["enchanted_golden_apple", "heavy_core", "trident", "e
 const LOOT_FOOD = new Set(["apple", "baked_potato", "beef", "beetroot", "beetroot_soup", "bread", "cake", "carrot", "cod", "cooked_beef",
   "cooked_chicken", "cooked_cod", "cooked_porkchop", "cooked_salmon", "egg", "glow_berries", "golden_carrot", "honey_bottle", "melon_slice",
   "milk_bucket", "mutton", "poisonous_potato", "porkchop", "potato", "pumpkin_pie", "salmon", "spider_eye", "suspicious_stew",
-  "sweet_berries", "wheat", "rotten_flesh", "potion", "splash_potion", "lingering_potion", "ominous_bottle", "experience_bottle", "glistering_melon_slice"]);
+  "sweet_berries", "wheat", "rotten_flesh", "pufferfish", "tropical_fish", "potion", "splash_potion", "lingering_potion", "ominous_bottle", "experience_bottle", "glistering_melon_slice"]);
 const LOOT_MATERIALS = new Set(["amethyst_shard", "blaze_rod", "bone", "bone_meal", "clay_ball", "coal", "copper_ingot", "diamond", "emerald",
   "ender_pearl", "feather", "flint", "gold_ingot", "gold_nugget", "gunpowder", "honeycomb", "ink_sac", "iron_ingot", "iron_nugget", "lapis_lazuli",
-  "leather", "magma_cream", "nether_wart", "paper", "prismarine_crystals", "quartz", "rabbit_hide", "redstone", "resin_clump", "stick", "string",
+  "leather", "magma_cream", "nether_wart", "paper", "prismarine_crystals", "prismarine_shard", "quartz", "rabbit_hide", "redstone", "resin_clump", "stick", "string",
   "wheat_seeds", "beetroot_seeds", "melon_seeds", "pumpkin_seeds", "wind_charge", "breeze_rod", "fire_charge", "snowball", "glowstone_dust",
   "brick", "book", "glass_bottle", "bowl"]);
 const LOOT_GEAR = /(_sword|_axe|_pickaxe|_shovel|_hoe|_spear|_helmet|_chestplate|_leggings|_boots|_horse_armor|_nautilus_armor)$|^(bow|crossbow|shield|fishing_rod|shears|flint_and_steel|arrow|tipped_arrow|spectral_arrow|compass|clock|bucket|water_bucket|lead|mace|brush|bundle)$/;
@@ -713,6 +779,7 @@ const LOOT_CUBES = {
   gilded_blackstone: [], crying_obsidian: [], lodestone: ["lodestone_side", "lodestone_top"], ancient_debris: ["ancient_debris_side", "ancient_debris_top"],
   bone_block: ["bone_block_side", "bone_block_top"], soul_sand: [], crimson_nylium: ["crimson_nylium_side", "crimson_nylium_top"], glowstone: [],
   deepslate: [], sculk: [], sculk_catalyst: [], packed_ice: [], glass: [], tnt: ["tnt_side", "tnt_top"],
+  prismarine: ["prismarine_rough"], prismarine_bricks: [], dark_prismarine: ["prismarine_dark"], sea_lantern: [], wet_sponge: [],
 };
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
@@ -721,7 +788,9 @@ const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden
   buried_mineshaft_map: "mineshaft_explorer_map", allium: "flower_allium", dark_oak_sapling: "sapling_dark_oak" };
 // What's placed with a structure and isn't in any loot table (a box's rows), named as Java's en_us.json names it.
 Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head", wooden_shovel: "Wooden Shovel", deepslate: "Deepslate", oak_fence: "Oak Fence",
-  allium: "Allium", glass: "Glass" });
+  allium: "Allium", glass: "Glass", prismarine: "Prismarine", prismarine_bricks: "Prismarine Bricks", dark_prismarine: "Dark Prismarine",
+  sea_lantern: "Sea Lantern", wet_sponge: "Wet Sponge", prismarine_shard: "Prismarine Shard", pufferfish: "Pufferfish", tropical_fish: "Tropical Fish",
+  tide_armor_trim_smithing_template: "Tide Armor Trim Template" });
 const LOOT_SHINES = new Set(["enchanted_book", "enchanted_golden_apple", "experience_bottle"]);
 // Potions' colors (the Potions tab's), by their potion id without strong_ or long_.
 const lootPotion = v => (v.match(/(?:^|\+)potion:(?:strong_|long_)?([a-z_]+)/) || [])[1];

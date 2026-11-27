@@ -117,7 +117,7 @@ const mobKey = k => (MOBS.some(m => m.k === k) ? k : null);
 const stMobs = s => (s.mobs || []).filter(r => mobKey(r.mob) && (!r.ed || r.ed === stEdition()));
 const stMobName = r => (r.baby ? `Baby ${mobName(mobOf(r.mob))}` : mobName(mobOf(r.mob)));
 const mobRow = r => `<li><button type="button" class="item-row st-mob" data-mob="${r.mob}"${r.baby ? ' data-baby="on"' : ""} title="Open the ${esc(stMobName(r))} in the Mobs tab">
-    ${plainSlot(mobIcon(mobOf(r.mob)), "sm")}<span class="item-name">${esc(stMobName(r))}<span class="sub">${esc(byEdition(r.how, stEdition()))}</span></span>${r.chance ? `<span class="item-chance">${esc(r.chance)}</span>` : ""}</button></li>`;
+    ${plainSlot(mobIcon(mobOf(r.mob)), "sm")}<span class="item-name">${esc(stMobName(r))}<span class="sub">${esc(byEdition(r.how, stEdition()))}</span></span>${r.chance ? `<span class="item-chance">${esc(byEdition(r.chance, stEdition()))}</span>` : ""}</button></li>`;
 function mobsSection(s) {
   const mobs = stMobs(s);
   return `${stHead("mobs", mobs.length ? plural(new Set(mobs.map(r => r.mob + (r.baby ? "b" : ""))).size, "mob") : "")}
@@ -427,7 +427,7 @@ function renderStSearch() {
         </button>`
       : `<button type="button" class="search-hit" data-pick="${h.s.k}" data-kind="${h.kind ? h.kind.k : ""}" data-section="mobs">
           ${plainSlot(mobIcon(mobOf(h.mob.mob)), "sm")}
-          <span><span class="who">${esc(stMobName(h.mob))}</span><span class="deal">${esc([h.s.n, h.kind && h.kind.n].filter(Boolean).join(" · "))}${h.mob.chance ? `: ${esc(h.mob.chance)}` : ""}</span></span>
+          <span><span class="who">${esc(stMobName(h.mob))}</span><span class="deal">${esc([h.s.n, h.kind && h.kind.n].filter(Boolean).join(" · "))}${h.mob.chance ? `: ${esc(byEdition(h.mob.chance, stEdition()))}` : ""}</span></span>
         </button>`).join("")
     : `<p class="choice-hint">Nothing has anything like “${esc(st.query.trim())}”.</p>`;
 }
