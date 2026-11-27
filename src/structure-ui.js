@@ -118,10 +118,15 @@ const stMobs = s => (s.mobs || []).filter(r => mobKey(r.mob) && (!r.ed || r.ed =
 const stMobName = r => (r.baby ? `Baby ${mobName(mobOf(r.mob))}` : mobName(mobOf(r.mob)));
 const mobRow = r => `<li><button type="button" class="item-row st-mob" data-mob="${r.mob}"${r.baby ? ' data-baby="on"' : ""} title="Open the ${esc(stMobName(r))} in the Mobs tab">
     ${plainSlot(mobIcon(mobOf(r.mob)), "sm")}<span class="item-name">${esc(stMobName(r))}<span class="sub">${esc(byEdition(r.how, stEdition()))}</span></span>${r.chance ? `<span class="item-chance">${esc(byEdition(r.chance, stEdition()))}</span>` : ""}</button></li>`;
+// Its own mobs (placed with it, from its spawners, or what it makes spawn) first, then those that spawn there only as in the biome round
+// it (near): two groups, each under its label, where it has both.
+const ST_MOB_GROUPS = [[false, "Its own"], [true, "From the biome round it"]];
 function mobsSection(s) {
-  const mobs = stMobs(s);
+  const mobs = stMobs(s), list = rows => `<ul class="item-list wide st-mobs st-one">${rows.map(mobRow).join("")}</ul>`;
+  const groups = ST_MOB_GROUPS.map(([near, label]) => [label, mobs.filter(r => !!r.near === near)]).filter(([, rows]) => rows.length);
   return `${stHead("mobs", mobs.length ? plural(new Set(mobs.map(r => r.mob + (r.baby ? "b" : ""))).size, "mob") : "")}
-    ${mobs.length ? `<ul class="item-list wide st-mobs st-one">${mobs.map(mobRow).join("")}</ul>` : '<p class="mob-lead">No mobs of its own.</p>'}
+    ${!mobs.length ? '<p class="mob-lead">No mobs of its own.</p>' : groups.length < 2 ? list(mobs)
+      : groups.map(([label, rows]) => `<div class="cat-label potion-label st-group">${label}</div>${list(rows)}`).join("")}
     ${s.mobFacts ? `<dl class="fact-list">${s.mobFacts.map(([l, t]) => stFact(l, t)).join("")}</dl>` : ""}`;
 }
 

@@ -4,6 +4,7 @@ mobs (the entities saved in the piece), its notable blocks, and the pools its ji
     python3 tools/structure-pieces.py <java data> <start pool> [--counts <structure> [how many]]
     python3 tools/structure-pieces.py <java data> --end-city [how many]
     python3 tools/structure-pieces.py <java data> --mansion [how many] [src/structure-loot.js]
+    python3 tools/structure-pieces.py <java data> --outpost [how many] [src/structure-loot.js]
     python3 tools/structure-pieces.py --stronghold [how many]
     python3 tools/structure-pieces.py --mineshaft [how many]
     python3 tools/structure-pieces.py --monument [how many] [<java data> <bedrock-samples>]
@@ -23,6 +24,10 @@ and how often it has at least one. The game's own random numbers aren't used, so
 --mansion builds that many woodland mansions (5000) as Java's WoodlandMansionPieces does (from memory of that code: see its section),
 and counts its rooms by template, the data markers in them (chests, vindicators, evokers, allays), the chests placed full in the
 templates, and every block summed over its pieces; given src/structure-loot.js, also the chance a mansion's chests hold each find.
+
+--outpost builds that many pillager outposts (2000) as --counts does (see its section), and counts its watchtower chests, features
+(cages, tents, log piles, targets), their mobs (the iron golem, the allays) and every block, the overgrown tower's 1 in 20 laid over
+the tower block by block, and the box its pillagers spawn in; given src/structure-loot.js, also the chance an outpost has each find.
 
 --stronghold and --mineshaft build that many (5000) as Java's StrongholdPieces and MineshaftPieces do, from memory of that code (see
 their sections), and count what's in them. They need no files.
@@ -264,10 +269,30 @@ def processors_of(data, el):
     return p.get("processors", []) if isinstance(p, dict) else p
 
 
+def block_set(data, ref):
+    """A block list, one block or a block tag (#minecraft:..., its tags followed) -> the set of block names."""
+    refs = ref if isinstance(ref, list) else [ref]
+    out = set()
+    for r in refs:
+        r = r.replace("minecraft:", "")
+        if r.startswith("#"):
+            tag = json.loads((data.base / "tags" / "block" / f"{r[1:]}.json").read_text())
+            out |= block_set(data, [v if isinstance(v, str) else v["id"] for v in tag["values"]])
+        else:
+            out.add(r)
+    return out
+
+
 def kept(data, el, block):
-    """The chance a block of the template is still that block after the element's processors (their random_block_match rules)."""
+    """The chance a block of the template is still that block after the element's processors (their random_block_match rules, and
+    block_rot, which keeps each block with its integrity's chance: the outpost's overgrown tower keeps 1 in 20)."""
     keep = 1.0
     for pr in processors_of(data, el):
+        if pr.get("processor_type", "").endswith("block_rot"):
+            rot = pr.get("rottable_blocks")
+            if not rot or block in block_set(data, rot):
+                keep *= pr["integrity"]
+            continue
         for r in pr.get("rules", []):
             i = r["input_predicate"]
             if i.get("predicate_type", "").endswith("random_block_match") and i.get("block", "").replace("minecraft:", "") == block:
@@ -277,16 +302,34 @@ def kept(data, el, block):
     return keep
 
 
-def build(data, start_el, depth, reach, rng, anchor=None):
+def el_size(data, el):
+    """An element's size: a list element's is its templates' together (Java's ListPoolElement.getBoundingBox, all at one origin)."""
+    sizes = [data.piece(loc)["size"] for loc in elements(data, el)] or [[0, 0, 0]]
+    return [max(s[i] for s in sizes) for i in range(3)]
+
+
+def pool_height(data, ref):
+    """StructureTemplatePool.getMaxSize: the tallest of its elements (an empty one counts nothing)."""
+    pool = data.pool(ref)
+    return max([el_size(data, e["element"])[1] for e in pool["elements"] if not e["element"]["element_type"].endswith("empty_pool_element")] or [0])
+
+
+def build(data, start_el, depth, reach, rng, anchor=None, expansion=False, boxes=None):
     """One structure: [(template, element, depth)] of every piece placed. A feature element (the ancient city's sculk patches) is
     placed as a block's box where its jigsaw points, and listed as ("feature:<id>", element, depth).
     anchor: (start_jigsaw_name, its absolute Y, the world's lowest and highest Y) for a structure placed by a named jigsaw (the
     ancient city's city_anchor at Y -27): the structure's box is then round that jigsaw's height and cut off at the world's bottom
-    and top, as JigsawPlacement.addPieces does."""
+    and top, as JigsawPlacement.addPieces does.
+    expansion: the structure's use_expansion_hack (the outpost's, the villages'): a placed piece no more than 16 high is made taller,
+    after it's fitted, to hold the tallest piece its own inward jigsaws can bring (tryPlacingChildren: max(that + 1, its height − 1)
+    over its floor), so the pieces placed on it (the outpost's features on its plates) fit inside it. boxes: a list to put every
+    piece's box in."""
     rot = rng.randrange(4)
     loc = elements(data, start_el)[0]
     pc = data.piece(loc)
-    box = box_of(pc["size"], rot, (0, 0, 0))
+    box = box_of(el_size(data, start_el), rot, (0, 0, 0))
+    if boxes is not None:
+        boxes.append(box)
     cx, cz = (box[0] + box[3]) // 2, (box[2] + box[5]) // 2
     lo, hi = box[1] - reach, box[4] + reach
     if anchor:
@@ -334,7 +377,7 @@ def build(data, start_el, depth, reach, rng, anchor=None):
                 if not cloc:
                     break
                 cloc = cloc[0]
-                cp = data.piece(cloc)
+                cp, csize = data.piece(cloc), el_size(data, c)
                 rots = [0, 1, 2, 3]
                 rng.shuffle(rots)
                 for r in rots:
@@ -346,10 +389,17 @@ def build(data, start_el, depth, reach, rng, anchor=None):
                             continue
                         cpos = turn(cj["pos"], r)
                         off = tuple(a - b for a, b in zip(tgt, cpos))
-                        cb = box_of(cp["size"], r, off)
+                        cb = box_of(csize, r, off)
+                        if expansion and cb[4] - cb[1] + 1 <= 16:
+                            up = max([max(pool_height(data, x["pool"]), pool_height(data, data.pool(x["pool"]).get("fallback", "minecraft:empty")))
+                                      for x in cp["jigsaws"] if inside(cb, tuple(a + b + d for a, b, d in zip(turn(x["pos"], r), off, DIRS[facing(x["front"], r)])))] or [0])
+                            if up > 0:
+                                cb = cb[:4] + (max(cb[4], cb[1] + max(up + 1, cb[4] - cb[1])),) + cb[5:]
                         if not here.fits(cb):
                             continue
                         here.taken.append(cb)
+                        if boxes is not None:
+                            boxes.append(cb)
                         placed.append((cloc, c, d + 1))
                         if d + 1 <= depth:
                             queue.append((cloc, c, r, off, cb, here, d + 1))
@@ -402,6 +452,92 @@ def counts(data, start, depth, reach, n, seed=1, anchor=None):
             v = [t[k] for t in runs]
             share = sum(1 for x in v if x) / n
             print(f"  {' · '.join(k)}: mean {sum(v) / n:.2f}, {min(v):g}–{max(v):g}, in {share:.0%}")
+
+
+# ---------- The pillager outpost: a jigsaw, counted block by block ----------
+# Built as the other jigsaws are (build, with its use_expansion_hack): base_plates' one plate, its watchtower (towers: the watchtower and
+# over it the overgrown watchtower, a list element, the second through outpost_rot's block_rot at integrity 0.05, so each of its blocks is
+# placed over the first's 1 time in 20), and three feature plates round it, each with 15 jigsaws into features (7 features and 6 empties:
+# an empty ends that jigsaw). As if on flat land: the plates and features are terrain_matching, so on hills they follow the ground. Its
+# box for spawning is every piece's box, 12 more each way for its beard_thin terrain adaptation (Structure.adjustBoundingBox).
+OUTPOST_FEATURES = {"feature_cage1": "iron golem cage", "feature_cage2": "empty cage", "feature_cage_with_allays": "allay cage",
+                    "feature_logs": "log pile", "feature_tent1": "tent", "feature_tent2": "tent with pumpkins", "feature_targets": "targets"}
+
+
+def template_blocks(data, loc):
+    """A template's blocks by position, air, jigsaws (their final_state) and structure voids left out."""
+    t = nbt(data.base / "structure" / f"{loc}.nbt")
+    pal = t["palette"] if "palette" in t else t["palettes"][0]
+    out = {}
+    for b in t["blocks"]:
+        st = pal[b["state"]]
+        name = st.get("Name", st.get("id", "")).replace("minecraft:", "")
+        if name == "jigsaw":
+            name = b.get("nbt", {}).get("final_state", "minecraft:air").replace("minecraft:", "")
+        if name not in ("air", "structure_void"):
+            out[tuple(b["pos"])] = name
+    return out
+
+
+def outpost_counts(data, n, seed=1, loot=None):
+    st = json.loads((data.base / "worldgen" / "structure" / "pillager_outpost.json").read_text())
+    start = data.pool(st["start_pool"].replace("minecraft:", ""))["elements"][0]["element"]
+    tower, overgrown = (template_blocks(data, f"pillager_outpost/{k}") for k in ("watchtower", "watchtower_overgrown"))
+    feats = {k: template_blocks(data, f"pillager_outpost/{k}") for k in OUTPOST_FEATURES}
+    rng, runs = random.Random(seed), []
+    for _ in range(n):
+        boxes = []
+        placed = build(data, start, st["size"], st.get("max_distance_from_center", 80), rng, expansion=st.get("use_expansion_hack", False), boxes=boxes)
+        t = Counter()
+        for loc, el, d in placed:
+            name = loc.rsplit("/", 1)[1]
+            pc = data.piece(loc)
+            for (_, table), k in pc["containers"].items():
+                t[("chest", table)] += k
+            for m, k in pc["mobs"].items():
+                t[("mob", m)] += k
+            if name == "watchtower":
+                t[("towers",)] += 1
+                blocks = dict(tower)
+                for pos, b in overgrown.items():
+                    if rng.random() < 0.05:
+                        blocks[pos] = b
+                for b in blocks.values():
+                    t[("block", b)] += 1
+                    t[("tower block", b)] += 1
+            elif name in feats:
+                t[("feature", OUTPOST_FEATURES[name])] += 1
+                t[("feature", "any")] += 1
+                kind = "cage" if "cage" in name else "tent" if "tent" in name else OUTPOST_FEATURES[name]
+                t[("feature", kind, "kind")] += 1
+                for b in feats[name].values():
+                    t[("block", b)] += 1
+                    t[("feature block", b)] += 1
+                    t[("block", b, "in " + kind)] += 1
+            elif name == "feature_plate":
+                t[("plates",)] += 1
+        wide = 12 if st.get("terrain_adaptation", "none") != "none" else 0
+        lo = [min(b[i] for b in boxes) - wide for i in range(3)]
+        hi = [max(b[i + 3] for b in boxes) + wide for i in range(3)]
+        t[("box", "x across")] += hi[0] - lo[0] + 1
+        t[("box", "z across")] += hi[2] - lo[2] + 1
+        t[("box", "y high")] += hi[1] - lo[1] + 1
+        runs.append(t)
+    print_runs("pillager outpost", runs)
+    # The rows of the page's boxes: × is 9 in 10 of the outposts that have any (5% to 95%), the chance that one has any.
+    print("\n=== box rows: [id, least, most (9 in 10 of those with any), chance of any]; features: where they are, the mean")
+    for k in sorted({k for t in runs for k in t if k[0] in ("block", "mob", "feature")}, key=str):
+        v = sorted(t[k] for t in runs if t[k])
+        if v:
+            print(f"  {' · '.join(k)}: [{v[len(v) // 20]:g}, {v[19 * len(v) // 20]:g}, {len(v) / n:.3f}], mean where any {sum(v) / len(v):.2f}")
+    if loot:
+        rows = [json.loads(line.split(": ", 1)[1].rstrip().rstrip(",")) for line in pathlib.Path(loot).read_text().splitlines()
+                if line.startswith('  "chests/pillager_outpost": ')]
+        print("\n=== an outpost's chests: the chance it has at least one [id, kind, java, bedrock]")
+        for row in rows[0]:
+            other = next((r for r in rows[1] if r[0] == row[0]), None)
+            share = lambda q: 1 - sum((1 - q) ** t[("chest", "chests/pillager_outpost")] for t in runs) / n
+            print(f"  {row[0]} {row[1]} ×{row[2]}–{row[3]}: {share(row[4]):.1%}, {share(other[4]) if other else 0:.1%}")
 
 
 # ---------- The end city: Java's EndCityPieces ----------
@@ -2467,6 +2603,9 @@ if __name__ == "__main__":
     d = Data(sys.argv[1])
     if sys.argv[2] == "--mansion":
         mansion_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 5000, loot=sys.argv[4] if len(sys.argv) > 4 else None)
+        sys.exit()
+    if sys.argv[2] == "--outpost":
+        outpost_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 2000, loot=sys.argv[4] if len(sys.argv) > 4 else None)
         sys.exit()
     if sys.argv[2] == "--end-city":
         end_city_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 20000)

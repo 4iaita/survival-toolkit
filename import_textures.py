@@ -254,7 +254,7 @@ FILES = {
     "bucket_powder_snow": "items/bucket_powder_snow", "mangrove_boat": "items/mangrove_boat", "cocoa_beans": "items/dye_powder_brown",
     "sapling_spruce_carried": "blocks/carried/sapling_spruce_carried", "leaves_spruce_carried": "blocks/leaves_spruce_carried",
     "twisting_vines_carried": "blocks/carried/twisting_vines_carried", "weeping_vines_carried": "blocks/carried/weeping_vines_carried", "brick_block": "blocks/brick",
-    "pumpkin_face_on": "blocks/pumpkin_face_on", "trapped_chest_front": "blocks/trapped_chest_front", "dripstone_carried": "blocks/carried/dripstone_carried",
+    "pumpkin_face_on": "blocks/pumpkin_face_on", "goat_horn": "items/goat_horn", "trapped_chest_front": "blocks/trapped_chest_front", "dripstone_carried": "blocks/carried/dripstone_carried",
     "mangrove_door": "items/mangrove_door", "ender_eye": "items/ender_eye", "leaf_litter": "items/leaf_litter",
     "furnace_front": "blocks/furnace_front_off", "furnace_side": "blocks/furnace_side", "furnace_top": "blocks/furnace_top", "soul_lantern": "items/soul_lantern",
     "white_candle": "items/candles/white_candle", "orange_candle": "items/candles/orange_candle", "rail_carried": "blocks/carried/rail_carried", "heartbreak_pottery_sherd": "items/heartbreak_pottery_sherd",

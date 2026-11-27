@@ -46,7 +46,8 @@ const ST_BLOCKS = {
  *     ([id, kind, least, most, chance]), for what's placed with the structure and not rolled (the end ship's elytra); note: the line
  *     under its list, if not the chance's.
  *   lootFacts: [label, text] under the containers: what else can be had there (blocks of gold).
- *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it, or how many it has), ed (only in that edition) }.
+ *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it, or how many it has), ed (only in that edition), near
+ *     (it spawns there only as in the biome round it, not because of the structure: listed apart, under its own label) }.
  *   kinds: a structure made as one of several kinds (the bastion's four), each { k, n, icon, say } with its own loot, lootFacts, mobs
  *     and mobFacts where they differ: picked in the Structures section's dropdown, and laid over the structure's own.
  *   where: facts for the Where it is section; both(java, bedrock) where the editions differ.
@@ -132,7 +133,7 @@ const STRUCTURES = [
     ],
     mobs: [
       { mob: "warden", how: "Summoned by the city’s sculk shriekers: the fourth time you set them off it digs out of the ground beside the shrieker, and every time after. It digs back down after a minute of quiet.", chance: "Summoned" },
-      { mob: "glow_squid", ed: "bedrock", how: "In the city’s water, below Y 30: the deep dark’s only spawn.", chance: "Spawns" },
+      { near: true, mob: "glow_squid", ed: "bedrock", how: "In the city’s water, below Y 30: the deep dark’s only spawn.", chance: "Spawns" },
     ],
     mobFacts: [
       ["No spawns", both("Nothing spawns inside the city: it stops every kind of spawning in its whole box, and the deep dark round it has no spawns either. Its only mob is the warden.",
@@ -175,15 +176,15 @@ const STRUCTURES = [
     ],
     mobs: [
       { mob: "silverfish", how: "From the spawner on the portal room’s stairs, and out of the infested stone bricks in its walls when they’re mined: about 1,000 a stronghold.", chance: "Spawner" },
-      { mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
-      { mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
-      { mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
-      { mob: "spider", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
-      { mob: "slime", how: both("Only where the stronghold is in a slime chunk (1 in 10), below Y 40, in any light.", "Only where the stronghold is in a slime chunk, below Y 40, in any light."), chance: "Slime chunks" },
-      { mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
-      { mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
-      { mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
-      { mob: "drowned", how: "In water, in the dark, where the stronghold is in dripstone caves: 1 in 6 of their monster spawns.", chance: "Dripstone caves" },
+      { near: true, mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
+      { near: true, mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
+      { near: true, mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { near: true, mob: "spider", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { near: true, mob: "slime", how: both("Only where the stronghold is in a slime chunk (1 in 10), below Y 40, in any light.", "Only where the stronghold is in a slime chunk, below Y 40, in any light."), chance: "Slime chunks" },
+      { near: true, mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
+      { near: true, mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
+      { near: true, mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
+      { near: true, mob: "drowned", how: "In water, in the dark, where the stronghold is in dripstone caves: 1 in 6 of their monster spawns.", chance: "Dripstone caves" },
     ],
     mobFacts: [
       ["No spawns of its own", "The stronghold doesn’t change what spawns: the biome round it, often a cave biome at that depth, spawns its monsters in the dark on its floors, as in any cave. In the deep dark nothing does. Bats don’t spawn on stone bricks, only in caves cutting through."],
@@ -227,17 +228,17 @@ const STRUCTURES = [
     mobs: [
       { mob: "cave_spider", how: both("From the spawners in its spider corridors, in complete darkness: up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And where it’s in sulfur caves, in the dark, alone: 1 in 16 of their monster spawns.",
         "From the spawners in its spider corridors, in complete darkness: up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And where it’s in sulfur caves, in the dark, alone: 1 in 22 of their monster spawns."), chance: "Spawners" },
-      { mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
-      { mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
-      { mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
-      { mob: "spider", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4. Not in sulfur caves.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone. Not in sulfur caves."), chance: "Common" },
-      { mob: "bat", how: both("In its dark corridors below sea level, as in any cave: in light 3 or less (7 around Halloween), on stone, deepslate or tuff.", "In its dark corridors, as in any cave: in light 4 or less, on stone, deepslate or tuff."), chance: "Caves" },
-      { mob: "slime", how: both("Only where the mineshaft is in a slime chunk (1 in 10), below Y 40, in any light.", "Only where the mineshaft is in a slime chunk, below Y 40, in any light."), chance: "Slime chunks" },
-      { mob: "sulfur_cube", how: both("Where it’s in sulfur caves, in the dark: about 1 in 3 of their monster spawns, 2 to 4 together.", "Where it’s in sulfur caves, in any light, on Peaceful too: about 1 in 3 of their monster spawns, 2 to 4 together."), chance: "Sulfur caves" },
-      { mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
-      { mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
-      { mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
-      { mob: "drowned", how: "In water, in the dark, where the mineshaft is in dripstone caves: 1 in 6 of their monster spawns.", chance: "Dripstone caves" },
+      { near: true, mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
+      { near: true, mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
+      { near: true, mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { near: true, mob: "spider", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4. Not in sulfur caves.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone. Not in sulfur caves."), chance: "Common" },
+      { near: true, mob: "bat", how: both("In its dark corridors below sea level, as in any cave: in light 3 or less (7 around Halloween), on stone, deepslate or tuff.", "In its dark corridors, as in any cave: in light 4 or less, on stone, deepslate or tuff."), chance: "Caves" },
+      { near: true, mob: "slime", how: both("Only where the mineshaft is in a slime chunk (1 in 10), below Y 40, in any light.", "Only where the mineshaft is in a slime chunk, below Y 40, in any light."), chance: "Slime chunks" },
+      { near: true, mob: "sulfur_cube", how: both("Where it’s in sulfur caves, in the dark: about 1 in 3 of their monster spawns, 2 to 4 together.", "Where it’s in sulfur caves, in any light, on Peaceful too: about 1 in 3 of their monster spawns, 2 to 4 together."), chance: "Sulfur caves" },
+      { near: true, mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
+      { near: true, mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
+      { near: true, mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
+      { near: true, mob: "drowned", how: "In water, in the dark, where the mineshaft is in dripstone caves: 1 in 6 of their monster spawns.", chance: "Dripstone caves" },
     ],
     mobFacts: [
       ["No spawns of its own", "The mineshaft doesn’t change what spawns: the biome round it, often a cave biome at that depth, spawns its monsters in the dark of its corridors, as in any cave. Where it reaches the deep dark nothing does."],
@@ -285,13 +286,13 @@ const STRUCTURES = [
       { mob: "allay", how: "Held in the large jail’s four cells: each cell half the times has 1 to 3. 57% of mansions have a large jail and 55% some allays, about 6 where they do.", chance: "55%" },
       { mob: "spider", how: both("From the spawner in the spider room (1 mansion in 7): up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And in the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.",
         "From the spawner in the spider room (1 mansion in 7): up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And in the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
-      { mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
-      { mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
-      { mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { near: true, mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
+      { near: true, mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
+      { near: true, mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
       { mob: "silverfish", how: "Out of the fake End portal room’s 24 infested cobblestone (1 mansion in 16), when its trap goes off, or when they’re mined without Silk Touch.", chance: "6%" },
-      { mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
-      { mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
-      { mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
+      { near: true, mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
+      { near: true, mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
+      { near: true, mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
     ],
     mobFacts: [
       ["What it’s made with", "Its vindicators, evokers and allays come with it and stay: they never despawn, even far from you. No illager spawns there again: once they’re killed, it’s only the dark forest’s or pale garden’s monsters, in its dark rooms and corridors."],
@@ -347,14 +348,14 @@ const STRUCTURES = [
       { mob: "elder_guardian", how: "Placed as it’s made: one in each wing and one in the penthouse at the top. They never despawn, and none come back once killed.", chance: "3" },
       { mob: "guardian", how: both("Every monster that spawns in the monument’s box (58 by 58 blocks, Y 39 to 61) is a guardian, 2 to 4 together: in water over water, in any light, not on Peaceful; where the sky shows through the water, only 1 try in 20. Nowhere else.",
         "Every monster that spawns in the monument’s box (58 by 58 blocks, from its base to its roof) is a guardian, 2 to 4 together: in water over water, in any light, not on Peaceful; where the sky shows through the water, only 1 try in 20. Nowhere else."), chance: "2–4" },
-      { mob: "drowned", how: both("In the ocean round it, in the dark: not in the monument’s box, where guardians take their place.", "In the ocean round it, in light 7 or less, 2 to 4 together; now and then one rides a zombie nautilus."), chance: "Round it" },
-      { mob: "squid", how: both("In its water and round it, as in any deep ocean: between Y 50 and 63, 1 to 4 together.", "In its water and round it, as in any deep ocean: 2 to 4 together."), chance: "Common" },
-      { mob: "cod", how: both("In its water and round it, in the deep ocean, deep cold and deep lukewarm oceans: between Y 50 and 63, 3 to 6 together.", "In its water and round it, in every deep ocean: between Y 0 and 64, 4 to 7 together."), chance: "Common" },
-      { mob: "salmon", how: both("In its water and round it, in the deep cold and deep frozen oceans: between Y 50 and 63, 1 to 5 together.", "In its water and round it, in every deep ocean: between Y 0 and 64, 3 to 5 together."), chance: both("Cold seas", "Common") },
-      { mob: "nautilus", how: both("In its water and round it, in every deep ocean: alone.", "In its water and round it, in every deep ocean: between Y 38 and 58, alone."), chance: "Common" },
-      { mob: "dolphin", how: both("Round it, in the deep ocean and deep lukewarm ocean: between Y 50 and 63, 1 or 2 together.", "Round it, in the deep ocean and deep lukewarm ocean: between Y 0 and 64, 3 to 5 together."), chance: "Round it" },
-      { mob: "tropicalfish", how: both("In the deep lukewarm ocean: between Y 50 and 63, 8 together.", "In the deep lukewarm ocean: between Y 0 and 64, 1 to 5 together."), chance: "Warm seas" },
-      { mob: "pufferfish", how: both("In the deep lukewarm ocean: between Y 50 and 63, 1 to 3 together.", "In the deep lukewarm ocean: between Y 0 and 64, 3 to 5 together."), chance: "Warm seas" },
+      { near: true, mob: "drowned", how: both("In the ocean round it, in the dark: not in the monument’s box, where guardians take their place.", "In the ocean round it, in light 7 or less, 2 to 4 together; now and then one rides a zombie nautilus."), chance: "Round it" },
+      { near: true, mob: "squid", how: both("In its water and round it, as in any deep ocean: between Y 50 and 63, 1 to 4 together.", "In its water and round it, as in any deep ocean: 2 to 4 together."), chance: "Common" },
+      { near: true, mob: "cod", how: both("In its water and round it, in the deep ocean, deep cold and deep lukewarm oceans: between Y 50 and 63, 3 to 6 together.", "In its water and round it, in every deep ocean: between Y 0 and 64, 4 to 7 together."), chance: "Common" },
+      { near: true, mob: "salmon", how: both("In its water and round it, in the deep cold and deep frozen oceans: between Y 50 and 63, 1 to 5 together.", "In its water and round it, in every deep ocean: between Y 0 and 64, 3 to 5 together."), chance: both("Cold seas", "Common") },
+      { near: true, mob: "nautilus", how: both("In its water and round it, in every deep ocean: alone.", "In its water and round it, in every deep ocean: between Y 38 and 58, alone."), chance: "Common" },
+      { near: true, mob: "dolphin", how: both("Round it, in the deep ocean and deep lukewarm ocean: between Y 50 and 63, 1 or 2 together.", "Round it, in the deep ocean and deep lukewarm ocean: between Y 0 and 64, 3 to 5 together."), chance: "Round it" },
+      { near: true, mob: "tropicalfish", how: both("In the deep lukewarm ocean: between Y 50 and 63, 8 together.", "In the deep lukewarm ocean: between Y 0 and 64, 1 to 5 together."), chance: "Warm seas" },
+      { near: true, mob: "pufferfish", how: both("In the deep lukewarm ocean: between Y 50 and 63, 1 to 3 together.", "In the deep lukewarm ocean: between Y 0 and 64, 3 to 5 together."), chance: "Warm seas" },
     ],
     mobFacts: [
       ["Guardians only", both("Inside its box guardians take the place of every other monster, and no glow squid or axolotls spawn there; fish, squid, dolphins and nautiluses do, as in the ocean round it.",
@@ -373,6 +374,63 @@ const STRUCTURES = [
       find: "An Ocean Monument Map leads to the nearest monument: 2 in 3 journeyman cartographers sell one, for 13 emeralds and a compass, up to 12 times before restocking. No chest has one. Otherwise sail over deep ocean, the darkest water, and look down for the glow of sea lanterns.",
       danger: "Mining Fatigue III from the elder guardians, every minute within 50 blocks, so you can hardly break anything until they’re dead. Guardians’ lasers from across the water, and their spikes when you hit them. Drowning: bring Water Breathing, a turtle shell, Respiration and Aqua Affinity, or a conduit. Getting lost in its dark, alike rooms on three floors. And drowned in the ocean round it.",
       about: "Wet sponges: the only place they’re found, in its sponge rooms (77% of monuments, about 44 each) and from its three elder guardians, one each. The Tide armor trim: only from elder guardians, 1 time in 5 each, so half the monuments (49%) give one; seven diamonds and a block of prismarine copy it. 8 blocks of gold, 72 ingots. About 6,700 prismarine, 6,200 prismarine bricks, 320 dark prismarine and 120 sea lanterns to build with. And a guardian farm: once the elders are dead, guardians spawn all through its box in any light, for prismarine shards, crystals, cod and experience.",
+    },
+  },
+  {
+    // How many of each: from Java's pieces (tools/structure-pieces.py --outpost builds 5000 outposts as JigsawPlacement does, with its
+    // use_expansion_hack, the overgrown tower's 1 in 20 laid over the tower block by block, as if on flat land); the chest's loot from each
+    // edition's own table; its only container is that chest (the user's choice: its features and blocks are told in facts, not boxes). Bedrock's layout isn't in its files: it's shown as
+    // Java's but for its foundations (from the Minecraft Wiki). Spawning: Java's spawn_overrides and its code (PatrollingMonster's spawn
+    // rule, the 6% captains of finalizeSpawn), from memory; Bedrock's is in its code: where and how many from the Minecraft Wiki, the light
+    // and captains shown as Java's.
+    k: "pillager_outpost", n: "Pillager Outpost", dim: "overworld", icon: "st:crossbow",
+    say: "A dark oak watchtower flying ominous banners, with cages, tents and targets round it, where pillagers keep spawning by day and night and their captains carry the bottles that start raids.",
+    loot: [
+      { k: "chest", n: "Watchtower chest", block: "chest", table: "chests/pillager_outpost",
+        where: "One in every outpost, the only container it has: on the watchtower’s top floor, 14 blocks up, under its roof." },
+    ],
+    lootFacts: [
+      ["Round the tower", "About 11 features an outpost (9 to 14): cages, tents, targets and log piles, on three sides of the tower, each standing on the ground where it is. Each of 45 spots tries for one, 7 in 13 of the time, and keeps it if it fits."],
+      ["Foundations", both("", "Its tower’s foot reaches down to the ground in cobblestone and dark oak planks, its tents’ and cages’ in dark oak planks, its log piles’ in dark oak logs and its targets’ in cobblestone.")],
+      ["Blocks to take", "About 350 dark oak planks, 290 birch planks, 200 cobblestone, 220 dark oak logs (with the cages’ and the log piles’) and 200 dark oak fences, and its white wool, pumpkins, hay and crafting tables."],
+    ],
+    mobs: [
+      { mob: "pillager", how: both("Every monster that spawns in its box (72 by 72 blocks round the tower, from 12 under its foot to 12 over its roof) is a pillager, alone: in block light 8 or less, so by day too; not on Peaceful. They keep coming while you’re near, as many as the monster cap allows, and despawn as other monsters do. 6% are captains.",
+        "At a few spots by the tower: 1 to 4 columns 8 blocks apart, by which way its door faces, on the highest free block up to 18 blocks over its bottom floor, with a clear space 2 by 2 by 2. At most 8 at a time, in block light 8 or less, so by day too; not on Peaceful. 6% are captains."), chance: both("Spawns", "Up to 8") },
+      { mob: "allay", how: "Placed as it’s made: 2 in each allay cage, behind its fences. 80% of outposts have an allay cage, about 1.9 where they do (1 to 4), so about 4 allays. They never despawn.", chance: "80%" },
+      { mob: "iron_golem", how: "Placed as it’s made: 1 in each iron golem cage. 79% of outposts have one, about 1.9 where they do (1 to 4). It punches pillagers through the fences, and fights them once let out. It never despawns.", chance: "79%" },
+      { near: true, mob: "zombie", how: both("Round it in the dark, as in the biome: about 1 in 5 of its monster spawns, in groups of 4. Not in its box.", "Round it in the dark, as in the biome: 1 in 5 of its monster spawns, 2 to 4 together. Not in its box."), chance: "Round it" },
+      { near: true, mob: "skeleton", how: both("Round it in the dark, as in the biome: about 1 in 5 of its monster spawns, in groups of 4. Not in its box.", "Round it in the dark, as in the biome: 1 in 6 of its monster spawns, 1 or 2 together. Not in its box."), chance: "Round it" },
+      { near: true, mob: "creeper", how: both("Round it in the dark, as in the biome: about 1 in 5 of its monster spawns, in groups of 4. Not in its box.", "Round it in the dark, as in the biome: 1 in 5 of its monster spawns, alone. Not in its box."), chance: "Round it" },
+      { near: true, mob: "spider", how: both("Round it in the dark, as in the biome: about 1 in 5 of its monster spawns, in groups of 4. Not in its box.", "Round it in the dark, as in the biome: 1 in 5 of its monster spawns, alone. Not in its box."), chance: "Round it" },
+      { near: true, mob: "enderman", how: both("Round it in the dark, as in the biome: 1 in 50 of its monster spawns, 1 to 4 together. Not in its box.", "Round it in the dark, as in the biome: 1 in 50 of its monster spawns, 1 or 2 together. Not in its box."), chance: "Rare" },
+      { near: true, mob: "witch", how: "Round it in the dark, as in the biome: 1 in 100 of its monster spawns, alone. Not in its box.", chance: "Rare" },
+    ],
+    mobFacts: [
+      ["Only pillagers", "Inside its box pillagers take the place of every other monster, by day and by night: the biome’s monsters spawn only round it (husks too in deserts, strays in snowy plains). Its animals still spawn there, as in the biome."],
+      ["Captains", both("About 1 pillager in 17 that spawns there (6%) is a captain, an ominous banner on its head. It always drops the banner, and an Ominous Bottle of Bad Omen I to V, at random, however it dies.",
+        "About 1 pillager in 17 that spawns there (6%) is a captain, an ominous banner on its head. It always drops the banner, and, killed by a player, an Ominous Bottle of Bad Omen I to V, at random.")],
+      ["Bad Omen", both("Killing a captain no longer gives it: drinking its bottle does, for 100 minutes, at the bottle’s level (milk clears it). Walk into a village with it and it turns into Raid Omen, and 30 seconds later a raid starts there; level II or more adds a wave. Walk into trial chambers and it turns into Trial Omen instead, and their spawners turn ominous. On Peaceful no raid starts.",
+        "Killing a captain no longer gives it: drinking its bottle does, for 100 minutes, at the bottle’s level (milk clears it). Walk into a village with it and it turns into Raid Omen, and 30 seconds later a raid starts there. Walk into trial chambers and it turns into Trial Omen instead, and their spawners turn ominous. On Peaceful no raid starts.")],
+      ["Pillagers", both(`${MOB_INFO.pillager.hp} health. They shoot their crossbows every 3 seconds from up to 8 blocks away, and see you from 32: 2–3 damage on Easy, 3–5 on Normal, 5–7 on Hard.`,
+        `${MOB_INFO.pillager.hp} health. They shoot their crossbows every 3 seconds from up to 8 blocks away, and see you from 16: 3–5 damage.`)],
+      ["Their drops", both("Killed by a player, 8.5% drop their crossbow (1% more for each level of Looting), worn and now and then enchanted; nothing else but a captain’s banner and bottle. 5 experience, and 1 to 3 more for each piece of gear.",
+        "Killed by a player, 8.5% drop their crossbow (1% more for each level of Looting), worn and now and then enchanted, and 0 to 2 arrows (Looting adds up to 1 more); and a captain’s banner and bottle. 5 experience, and 1 to 3 more for each piece of gear.")],
+      ["The cages", "Break a fence to let them out. An allay given an item follows you and gathers more of it. An iron golem from a cage isn’t yours: hit it and it fights you. Either can be led away on a lead."],
+    ],
+    where: {
+      biomes: both("Plains, deserts, savannas, snowy plains and taigas, as villages, and up the mountains: meadows, groves, snowy slopes, cherry groves and the jagged, frozen and stony peaks.",
+        "Plains and sunflower plains, deserts, savannas, snowy plains, taigas and snowy taigas, and up the mountains: meadows, groves, snowy slopes, cherry groves and the jagged, frozen and stony peaks."),
+      height: both("On the surface, wherever the ground is, the land round its tower smoothed in. The watchtower is 15 blocks square and 21 high, four floors, its chest on the top one; its cages, tents, targets and log piles stand round it on three sides, on the ground itself, all of it within about 48 by 48 blocks.",
+        "On the surface, wherever the ground is, its tower’s foundations reaching down to it. The watchtower is 15 blocks square and 21 high, four floors, its chest on the top one; its cages, tents, targets and log piles stand round it on three sides, on the ground itself, all of it within about 48 by 48 blocks."),
+      often: both("The Overworld is split into regions of 32 by 32 chunks (512 blocks square), each with one try at an outpost in its first 24 by 24 chunks, so two are at least 8 chunks apart. Only 1 try in 5 goes ahead, and it fails where the biome isn’t right or a village could start within 10 chunks (160 blocks), so they’re far apart, on average more than 1,000 blocks.",
+        "The Overworld is split into regions of 32 by 32 chunks (512 blocks square), each with one try at an outpost in its first 24 by 24 chunks, so two are at least 8 chunks apart. Only 1 try in 5 goes ahead, and it fails where the biome isn’t right, so they’re far apart, on average more than 1,000 blocks. It can be near a village, even in one."),
+      find: both("No map, trade or chest leads to one. Look over plains, deserts, savannas, taigas and snowy plains for its dark tower, taller than the trees, ominous banners hanging from it. It’s never within 10 chunks of a village.",
+        "No map, trade or chest leads to one. Look over plains, deserts, savannas, taigas and snowy plains for its dark tower, taller than the trees, ominous banners hanging from it; now and then one stands by a village or in it."),
+      danger: both("Pillagers: their bolts reach 8 blocks, from the tower’s top and the ground round it, and they spawn by day as by night, more coming while you’re near. A shield stops the bolts; fight from cover, or go up the tower’s stairs fast. Its captains’ bottles start a raid if drunk and carried into a village: hold off until you’re ready. Patrols of pillagers also roam the land, wherever you are. And the night’s monsters round it.",
+        "Pillagers: their bolts reach 8 blocks, from the tower’s top and the ground round it, and they spawn by day as by night, up to 8 at a time. A shield stops the bolts; fight from cover, or go up the tower’s stairs fast. Its captains’ bottles start a raid if drunk and carried into a village: hold off until you’re ready. Patrols of pillagers also roam the land, wherever you are. And the night’s monsters round it."),
+      about: both("Allays (80% of outposts, about 4 where they are) and iron golems (79%, about 2). The Sentry armor trim: found nowhere else, 2 at a time in 1 chest in 4; 7 diamonds and a block of cobblestone copy one. Goat horns: in half its chests, one of Ponder, Sing, Seek and Feel. A crossbow in half its chests, and now and then from its pillagers. Ominous bottles from its captains, for raids (totems of undying from their evokers, emeralds, and Hero of the Village’s cheaper trades) and ominous trials. 8 ominous banners. And raid farms: pillagers keep spawning in its box, captains with bottles among them.",
+        "Allays (80% of outposts, about 4 where they are) and iron golems (79%, about 2). The Sentry armor trim: found nowhere else, 2 at a time in 1 chest in 4; 7 diamonds and a block of cobblestone copy one. Goat horns: in half its chests, one of Ponder, Sing, Seek and Feel. A crossbow in half its chests, and now and then from its pillagers. Ominous bottles from its captains, for raids (totems of undying from their evokers, emeralds, and Hero of the Village’s cheaper trades) and ominous trials. 8 ominous banners. And raid farms: pillagers keep spawning at its spots, captains with bottles among them."),
     },
   },
   {
@@ -531,7 +589,7 @@ const STRUCTURES = [
     ],
     mobs: [
       { mob: "shulker", how: "Placed as it’s made, about 24 a city (3 to 96; half have 7 to 35), on the walls, floors and roofs: 2 in each house’s ground floor, 4 up each fat tower, 1 on each tower’s top, and 3 on the ship. They never respawn.", chance: "About 24" },
-      { mob: "enderman", how: both("The End’s own spawns go on round and inside it: groups of 4, where no block light reaches.", "The End’s own spawns go on round and inside it: groups of 4, on the surface, in any light."), chance: "Spawns" },
+      { near: true, mob: "enderman", how: both("The End’s own spawns go on round and inside it: groups of 4, where no block light reaches.", "The End’s own spawns go on round and inside it: groups of 4, on the surface, in any light."), chance: "Spawns" },
     ],
     mobFacts: [
       ["No spawns of its own", "Its shulkers come with it and stay: they never despawn, even on Peaceful, and none come back once killed. After that only the End’s own mobs spawn there, endermen."],
@@ -699,6 +757,7 @@ const ST_ART = {
   "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
   "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
   "st:prismarine_bricks": C("prismarine_bricks"), "st:gold_block": C("gold_block"), "st:wet_sponge": C("wet_sponge"),
+  "st:crossbow": L("crossbow_standby"),
   "st:reinforced_deepslate": C("reinforced_deepslate"), "st:dark_oak_log": C("log_dark_oak", "log_dark_oak_top"), "st:diamond_block": C("diamond_block"), "st:chest_minecart": L("chest_minecart"), "st:rail": L("rail_carried"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
   // The end portal frame: 13 texels tall, its sides' top 3 rows clear.
   "st:end_portal_frame": { boxes: [{ b: [0, 0, 0, 16, 13, 16], faces: [["end_portal_frame"], ["end_portal_frame_top"], ["end_portal_frame"]] }] },
@@ -781,6 +840,7 @@ const LOOT_CUBES = {
   bone_block: ["bone_block_side", "bone_block_top"], soul_sand: [], crimson_nylium: ["crimson_nylium_side", "crimson_nylium_top"], glowstone: [],
   deepslate: [], sculk: [], sculk_catalyst: [], packed_ice: [], glass: [], tnt: ["tnt_side", "tnt_top"],
   prismarine: ["prismarine_rough"], prismarine_bricks: [], dark_prismarine: ["prismarine_dark"], sea_lantern: [], wet_sponge: [],
+  dark_oak_log: ["log_dark_oak", "log_dark_oak_top"],
 };
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
