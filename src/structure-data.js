@@ -487,6 +487,10 @@ const DIM_EXTRA = {
   nether: [],
   end: [
     { mob: "ender_dragon", biomes: ["the_end"], how: MOB_INFO.ender_dragon.spawn, chance: "One" },
+    // Not spawns: the shulker is placed with the end cities (Java's has_structure/end_city: the highlands and midlands), and the
+    // endermite comes out of a thrown ender pearl, wherever it lands.
+    { mob: "shulker", biomes: ["end_highlands", "end_midlands"], how: "Only in end cities, placed as they’re made, on their walls, floors and roofs. They never respawn.", chance: "End cities" },
+    { mob: "endermite", group: "Now and then", how: "Out of a thrown ender pearl where it lands, 1 time in 20, unless monsters are off.", chance: "Pearls" },
   ],
 };
 // The most of a mob that spawn together, where the game's code holds them to fewer than the biome's group size: Java's ghasts come one
