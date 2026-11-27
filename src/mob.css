@@ -49,8 +49,8 @@
 .stage[data-biome="sulfur_caves"] { --sky: #141a07; --haze: #3a4a14; }
 .stage[data-biome="sulfur_caves"]::after { filter: brightness(.62); }
 /* The End: a dark violet void, and end stone in the dim light it gets there. */
-.stage[data-biome="end_city"], .stage[data-biome="end_island"] { --sky: #120c20; --haze: #2a2140; }
-.stage[data-biome="end_city"]::after, .stage[data-biome="end_island"]::after { filter: brightness(.72) saturate(.8); }
+.stage[data-biome="end"], .stage[data-biome="end_city"], .stage[data-biome="end_island"] { --sky: #120c20; --haze: #2a2140; }
+.stage[data-biome="end"]::after, .stage[data-biome="end_city"]::after, .stage[data-biome="end_island"]::after { filter: brightness(.72) saturate(.8); }
 /* Underwater: bright near the surface, deep blue below, and the sand on the sea floor in shade. */
 .stage[data-biome="ocean"] { --sky: #3a9ad8; --haze: #0f5487; }
 .stage[data-biome="ocean"]::after { filter: brightness(.7) saturate(.7); }

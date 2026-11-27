@@ -8,8 +8,8 @@
  * So is the mineshaft: a cave full of cobwebs, a mineshaft's corridor cut across its far wall, its supports, torches,
  * rails and a chest minecart.
  * The cave and the nether, for the Mobs tab, aren't village biomes: a dark rock wall full of ore instead
- * of hills, a ceiling with stalactites or weeping vines, and lanterns or lava for light. Nor is the End: an end city
- * under the pack's End sky, its base floor close by, chorus trees beyond, far off a tower with a bridge out to an end
+ * of hills, a ceiling with stalactites or weeping vines, and lanterns or lava for light. Nor is the End: its outer
+ * islands of end stone and chorus trees, an end city far off; an end city close by under the pack's End sky, its base floor close by, chorus trees beyond, far off a tower with a bridge out to an end
  * ship; and the dragon's own island, a ring of crystal-topped obsidian pillars. And the ocean is seen from
  * underwater: sand hills and a far monument, kelp and coral nearby, sunlight slanting down from the surface, bubbles.
  * So is a lush cave's pool, the axolotl's: under the water of one of its clay-lined pools, its clay bottom rising to mossy
@@ -395,7 +395,9 @@ const BASTION = {
   B: blockTex("polished_blackstone_bricks"), C: blockTex("cracked_polished_blackstone_bricks"), X: blockTex("chiseled_polished_blackstone"),
   K: blockTex("blackstone"), G: blockTex("gilded_blackstone"), A: blockTex("basalt_side"), P: blockTex("polished_basalt_side"),
   $: blockTex("gold_block"), H: { layers: [["chest_front"]] },
-  c: { parts: [["chain1", [0, 0, 3, 16], [6, 0]], ["chain2", [0, 0, 3, 16], [7, 0]]], cap: false }, L: lanternTex("lantern_block"),
+  c: { parts: [["chain1", [0, 0, 3, 16], [6, 0]], ["chain2", [0, 0, 3, 16], [7, 0]]], cap: false },
+  // The lantern hanging from the chain: the chain's last links down to its handle.
+  L: { ...lanternTex("lantern_block"), parts: [["chain1", [0, 0, 3, 6], [6, 0]], ["chain2", [0, 0, 3, 6], [7, 0]], ...lanternTex("lantern_block").parts] },
 };
 const bastion = rows => prop(rows, BASTION);
 // The end of a rampart, ruined: its upper half of bricks broken off in steps, a polished basalt pillar at its end, a ledge
@@ -425,8 +427,14 @@ const bastionWall = bastion([
 // The bastion far off, at half size: a great rampart of bricks on its blackstone half, broken off in steps at the top, basalt
 // buttresses against it, gold here and there, and a dark way in at its foot. Huge crimson fungi round it on the crimson
 // forest's hills: a crimson stem, a cap of nether wart blocks with shroomlights in it.
+// The way in has depth: a frame of chiseled polished blackstone between basalt pillars, and inside it, in the shade, its side
+// walls, ceiling and floor going back into the dark; a step up to it.
 const FAR_BASTION = { b: blockTex("polished_blackstone_bricks"), c: blockTex("cracked_polished_blackstone_bricks"), k: blockTex("blackstone"),
-  a: blockTex("basalt_side"), g: blockTex("gold_block"), d: blockFill(FORTRESS_DARK) };
+  a: blockTex("basalt_side"), g: blockTex("gold_block"), d: blockFill(FORTRESS_DARK),
+  x: blockTex("chiseled_polished_blackstone"), p: blockTex("blackstone_top"),
+  s: blockTex("polished_blackstone_bricks", "#5c5c5c"), t: blockTex("polished_blackstone_bricks", "#454545"), f: blockTex("blackstone", "#6e6e6e") };
+// The entrance, columns 14 to 21, bottom row first.
+const BASTION_DOOR = ["pppppppp", "axsffsxa", "axsddsxa", "axsddsxa", "axsddsxa", "axtddtxa", "axxttxxa", "axxxxxxa"];
 const farBastion = (() => {
   const W = 36, H = 20, rows = Array.from({ length: H }, () => Array(W).fill("."));
   // How high the wall stands at each column (in blocks), ruined in steps.
@@ -434,16 +442,16 @@ const farBastion = (() => {
   tops.forEach((top, c) => {
     for (let k = 0; k < top; k++) rows[H - 1 - k][c] = k < 7 ? "k" : (c * 7 + k * 3) % 11 === 0 ? "c" : "b";
   });
-  // Buttresses of basalt up the wall, gold in it, and the way in (an opening four wide and five high).
+  // Buttresses of basalt up the wall, gold in it, and the way in.
   for (const c of [3, 11, 24, 32]) for (let k = 0; k < Math.min(9, tops[c]); k++) rows[H - 1 - k][c] = "a";
   for (const [c, k] of [[7, 9], [16, 12], [21, 4], [28, 8]]) rows[H - 1 - k][c] = "g";
-  for (let c = 16; c < 20; c++) for (let k = 0; k < 5; k++) rows[H - 1 - k][c] = "d";
+  BASTION_DOOR.forEach((line, k) => [...line].forEach((ch, i) => { rows[H - 1 - k][14 + i] = ch; }));
   return prop(rows.map(r => r.join("")), FAR_BASTION);
 })();
-const crimsonFungus = prop([".WWW.", "WWWWW", "WSWWW", "W.T.S", "..T..", "..T..", "..T.."],
-  { W: blockTex("nether_wart_block"), S: blockTex("shroomlight"), T: blockTex("crimson_stem_side") });
-const tallCrimsonFungus = prop(["..WWW..", ".WWWWW.", "WWWSWWW", "WSWWWWW", "W..T..W", "...T...", "...T...", "...T...", "...T..."],
-  { W: blockTex("nether_wart_block"), S: blockTex("shroomlight"), T: blockTex("crimson_stem_side") });
+// A shroomlight gives off a warm light, waxing and waning.
+const FUNGUS = { W: blockTex("nether_wart_block"), S: blockTex("shroomlight", null, { lamp: { size: 1.8, color: "255, 165, 80", strength: 0.42 } }), T: blockTex("crimson_stem_side") };
+const crimsonFungus = prop([".WWW.", "WWWWW", "WSWWW", "W.T.S", "..T..", "..T..", "..T.."], FUNGUS);
+const tallCrimsonFungus = prop(["..WWW..", ".WWWWW.", "WWWSWWW", "WSWWWWW", "W..T..W", "...T...", "...T...", "...T...", "...T..."], FUNGUS);
 // flows: it runs down (see drawLava).
 const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava", null, { flows: true }) });
 const monument = prop([
@@ -574,6 +582,17 @@ const farEndCity = (() => {
   put(END_SHIP, 15, 11);
   return prop(rows, END_CITY);
 })();
+// The same city further off, standing on the hills: end rods on the corners of its tower's roof and of its base roof (at that
+// size, a pale dot each), each giving off a pale light.
+const farEndCityRods = (() => {
+  const w = farEndCity.rows[0].length, rows = ["r" + ".".repeat(13) + "r" + ".".repeat(w - 15), ...farEndCity.rows];
+  const roof = rows.length - 8;
+  rows[roof] = [...rows[roof]].map((ch, c) => (c === 2 || c === 12 ? "r" : ch)).join("");
+  return prop(rows, { ...END_CITY, r: { rects: [[4, 0, 12, 16, "#f4eafc"]], cap: false, lamp: { size: 1.2, color: "235, 215, 255", strength: 0.4 } } });
+})();
+// An end gateway floating in the void, side on, as the game builds them: the gateway with bedrock in a cross over and under
+// it, a block of bedrock beyond each cross.
+const endGateway = prop([".B.", "BBB", ".G.", "BBB", ".B."], { B: blockTex("bedrock"), G: blockTex("end_gateway") });
 // Grown chorus trees, each its own shape: a stem branching out and up, flowers on the tips. Their stems stand in the
 // bottom row.
 const CHORUS = { C: plantTex("chorus_plant"), F: plantTex("chorus_flower") };
@@ -886,7 +905,7 @@ const BACKDROPS = {
       [prop(["P"], { P: SEA_PICKLE }), -3], [plant("seagrass"), 4], [reef("yellow", "pink", [".q", "fB"]), 6], [tallSeagrass, 9], [bulbKelp(7), 11], [kelp(10), 12],
       [reef("blue", "red", ["p.g.", "AABq", "AABB"]), 14], [bulbKelp(13), 18], [kelp(9), 19], [reef("red", "pink", ["fq", "AB"]), 21], [kelp(11), 24]],
   }),
-  // An end city, the enderman's, endermite's and shulker's, on one of the outer islands as the game builds them: the
+  // An end city, the shulker's (and the Structures tab's End City), on one of the outer islands as the game builds them: the
   // city's base floor close by, its tower rising out of sight; chorus trees on the flat end stone beyond; further off on
   // the left, more of the city, a tower with a bridge out to the end ship hanging in the void; under the End's sky.
   end_city: () => ({
@@ -894,12 +913,28 @@ const BACKDROPS = {
     mist: { far: 0.5, near: 0.08 },
     // A pale violet glow low in the middle, so that the dark mobs that live here stand out against it.
     sky: { texture: "end_sky", tint: "#1e1634", glow: "150, 105, 215" },
+    // Small hills, flat under the far city (two blocks), its foot on them.
     hills: { top: blockTex("end_stone"), fill: blockTex("end_stone"), base: 1, rise: 0,
-      trees: [[chorusTrees[0], 0.37], [chorusTrees[2], 0.64]] },
-    distant: [[farEndCity, 0.01, 1]],
+      profile: [[0.42, 2], [0.48, 3], [0.55, 4], [0.62, 3], [0.7, 2], [0.78, 3], [0.86, 4], [0.93, 3], [1, 2]],
+      trees: [[chorusTrees[0], 0.47], [chorusTrees[2], 0.64]] },
+    // The far city at five pixels a block, nearer than the End's (#36) was, its end rods' light waxing and waning.
+    distant: [[farEndCityRods, 0, 3.2, 5]],
     near: [[endCityBase, 9]],
     // The end rods on the tower's roof give off a pale light.
     lights: [[9, 8.5], [21, 8.5]], lightColor: "235, 215, 255", lightSize: 3, lightStrength: 0.3,
+  }),
+  // The End's outer islands, the enderman's and the endermite's (and the Structures tab's End): rolling end stone, grown chorus
+  // trees close by and on the hills, and far off an end gateway floating in the void, its beam flashing now and then.
+  end: () => ({
+    moves: ["gateways"],
+    mist: { far: 0.5, near: 0.08, distant: 0.6 },
+    sky: { texture: "end_sky", tint: "#1e1634", glow: "150, 105, 215" },
+    hills: { top: blockTex("end_stone"), fill: blockTex("end_stone"), base: 1, rise: 0,
+      profile: [[0.1, 3], [0.2, 4], [0.3, 3], [0.38, 2], [0.47, 3], [0.55, 4], [0.63, 3], [0.72, 2], [0.8, 3], [0.88, 4], [0.95, 3], [1, 2]],
+      trees: [[chorusTrees[1], 0.34], [chorusTrees[3], 0.47], [chorusTrees[0], 0.6]] },
+    // The gateway at six pixels a block, high over the hills.
+    distant: [[endGateway, 0.67, 24, 6]],
+    near: [[chorusTrees[2], -16], [chorusTrees[3], -8.5], [chorusTrees[0], 9], [chorusTrees[1], 14]],
   }),
   // The dragon's arena, the middle of the End's main island: a ring of obsidian pillars round it, wider the taller they
   // are, bedrock on top and an end crystal on each, two of the shortest caged in iron bars. Two close by at the sides, the
@@ -951,7 +986,7 @@ const BACKDROPS = {
   // rampart on the left with a lantern on a chain, a broken wall on the right with gold and a chest at its foot. Beyond, more of the bastion between the forest's hills and its huge crimson fungi, weeping vines hanging
   // from the netherrack overhead.
   bastion_remnant: () => ({
-    moves: ["lantern_block"],
+    moves: ["lantern_block", "nether_gold_ore", "light"],
     mist: { far: 0.3, near: 0.06 },
     hills: { top: blockTex("crimson_nylium_side"), fill: blockTex("netherrack"), base: 2, rise: 0,
       ores: [["nether_gold_ore", "quartz_ore", "magma"], 0.04],
@@ -1756,6 +1791,19 @@ function backdropView(canvas) {
     let roof = null, twinkling = [];
     const haze = getComputedStyle(canvas).getPropertyValue("--haze").trim() || "#bcd5ff";
     const horizon = (h - GROUND_STRIP + 2) * dpr;
+    // The lights, in CSS pixels: the scene's own ([at, up] in blocks from the middle), and every block whose legend entry is a
+    // lamp ({ size, color, strength }, the scene's if not given), wherever it's drawn: near, on the far hills or further off.
+    const lampLight = (spec, x, y) => ({ x, y, r: (spec.size || scene.lightSize || 6) * NEAR, color: spec.color || scene.lightColor || "255, 176, 84", strength: spec.strength ?? scene.lightStrength ?? 0.34 });
+    const lampsIn = (p, left, bottom, size) => p.rows.flatMap((row, r) => [...row].flatMap((ch, c) => {
+      const lamp = p.legend[ch] && p.legend[ch].lamp;
+      return lamp ? [lampLight(lamp === true ? {} : lamp, (left + (c + 0.5) * size) / dpr, (bottom - (p.rows.length - r - 0.5) * size) / dpr)] : [];
+    }));
+    const lights = [
+      ...(scene.lights || []).map(l => [].concat(l)).map(([at, up = 0.6]) => lampLight({}, w / 2 + (at + 0.5) * NEAR, horizon / dpr - up * NEAR)),
+      ...(scene.distant || []).flatMap(([p, at, up, size = FAR / 2]) => lampsIn(p, at * canvas.width, horizon - up * size * dpr, size * dpr)),
+      ...(scene.hills ? hillSpots(scene.hills, canvas.width, horizon, FAR * dpr, seed).flatMap(([p, left, ground]) => lampsIn(p, left, ground, FAR * dpr)) : []),
+      ...scene.near.flatMap(([p, at]) => lampsIn(p, canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr)),
+    ];
     // The whole still picture.
     const paintScene = ctx => {
       // Each layer is drawn on its own canvas, then washed with the haze where it has pixels.
@@ -1773,7 +1821,8 @@ function backdropView(canvas) {
       if (scene.sky) drawSky(ctx, scene.sky, canvas.width, canvas.height, 2 * NEAR * dpr, 13);
       // distant: things further off than the far hills, at half their size and deeper in the haze, [prop, across (0 to 1),
       // how many of their blocks up] (the end ship hanging in the void).
-      if (scene.distant) layer(lc => scene.distant.forEach(([p, at, up]) => drawProp(lc, p, at * canvas.width, horizon - up * (FAR / 2) * dpr, (FAR / 2) * dpr, false)), mist.distant ?? 0.68);
+      // A fourth number: the size of their blocks, if not half the far hills' (the end city very far off).
+      if (scene.distant) layer(lc => scene.distant.forEach(([p, at, up, size = FAR / 2]) => drawProp(lc, p, at * canvas.width, horizon - up * size * dpr, size * dpr, false)), mist.distant ?? 0.68);
       layer(lc => (scene.wall ? (scene.wall.pattern ? drawPatternWall(lc, scene.wall, canvas.width, horizon, NEAR * dpr) : drawWall(lc, scene.wall, canvas.width, canvas.height, NEAR * dpr, 7),
         // props: things in the wall itself, [prop, left edge, how many blocks up its bottom is] (the mineshaft's corridor).
         (scene.wall.props || []).forEach(([p, at, up]) => drawProp(lc, p, canvas.width / 2 + at * NEAR * dpr, horizon - up * NEAR * dpr, NEAR * dpr, false)))
@@ -1812,15 +1861,13 @@ function backdropView(canvas) {
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
       }
-      // Warm light round each lantern, up that many blocks if it isn't on the ground.
-      for (const light of scene.lights || []) {
-        const [at, up = 0.6] = [].concat(light);
-        // lightSize: how many blocks a light reaches (6 if not given); lightStrength: how bright at its heart (.34).
-        const x = canvas.width / 2 + (at + 0.5) * NEAR * dpr, y = horizon - up * NEAR * dpr, r = (scene.lightSize || 6) * NEAR * dpr;
+      // Warm light round each lantern, up that many blocks if it isn't on the ground. lightSize: how many blocks a light reaches
+      // (6 if not given); lightStrength: how bright at its heart (.34).
+      for (const light of lights) {
+        const x = light.x * dpr, y = light.y * dpr, r = light.r * dpr;
         const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
-        const color = scene.lightColor || "255, 176, 84";
-        glow.addColorStop(0, `rgba(${color}, ${scene.lightStrength ?? 0.34})`);
-        glow.addColorStop(1, `rgba(${color}, 0)`);
+        glow.addColorStop(0, `rgba(${light.color}, ${light.strength})`);
+        glow.addColorStop(1, `rgba(${light.color}, 0)`);
         ctx.globalCompositeOperation = "lighter";
         ctx.fillStyle = glow;
         ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
@@ -1834,7 +1881,7 @@ function backdropView(canvas) {
       try { paintScene(ctx); } finally { standIns = null; }
     };
     // The crowns leaves fall from, and trial spawners and vaults, found as they're painted.
-    const crowns = [], watched = [...(scene.leaves ? LEAF_BLOCKS : []), ...(moves.includes("spawners") ? ["trial_spawner", "mob_spawner"] : []), ...(moves.includes("vaults") ? ["vault"] : []), ...(moves.includes("torches") ? ["torch"] : []), ...(moves.includes("rods") ? ["end_rod"] : []), ...(moves.includes("candles") ? ["candle_flame"] : [])], found = name => (left, top, size, flows, tint) => {
+    const crowns = [], watched = [...(scene.leaves ? LEAF_BLOCKS : []), ...(moves.includes("spawners") ? ["trial_spawner", "mob_spawner"] : []), ...(moves.includes("vaults") ? ["vault"] : []), ...(moves.includes("gateways") ? ["end_gateway"] : []), ...(moves.includes("torches") ? ["torch"] : []), ...(moves.includes("rods") ? ["end_rod"] : []), ...(moves.includes("candles") ? ["candle_flame"] : [])], found = name => (left, top, size, flows, tint) => {
       if (left > -size && left < canvas.width) crowns.push({ name, left, top, size, tint });
       return textureCanvas(name, tint);
     };
@@ -1852,7 +1899,7 @@ function backdropView(canvas) {
     // Water drips off the dripstones' tips (their last block is 11 texels long), and the lights wax and wane.
     const tips = scene.drips && roof ? roof.tips.map(([c, down]) => [(c + 0.5) * NEAR, (down - 1) * NEAR + 11]) : [];
     const drips = tips.length > 0 && { floor: h - GROUND_STRIP, tips: scene.drips.map(at => tips.reduce((best, tip) => (Math.abs(tip[0] - at * w) < Math.abs(best[0] - at * w) ? tip : best))) };
-    const light = moves.includes("light") && (scene.lights || []).map(l => [].concat(l)).map(([at, up = 0.6]) => ({ x: w / 2 + (at + 0.5) * NEAR, y: horizon / dpr - up * NEAR, r: (scene.lightSize || 6) * NEAR, color: scene.lightColor || "255, 176, 84", strength: scene.lightStrength ?? 0.34 }));
+    const light = moves.includes("light") && lights.length > 0 && lights;
     // Mist lies among the far trees, behind what stands near (front: those props alone, to keep it off them).
     let mistMoves = false;
     if (moves.includes("mist")) {
@@ -1888,6 +1935,8 @@ function backdropView(canvas) {
       spawnerFront = cv.toDataURL();
     }
     const spawners = moves.includes("spawners") && { at: [...placed("trial_spawner"), ...placed("mob_spawner")], flame: ART_FRAMES.flame, ...(spawnerFront && { front: spawnerFront }) }, vaults = moves.includes("vaults") && { at: placed("vault") };
+    // End gateways flash their beams now and then (size: a block's, the far gateway's).
+    const gateways = moves.includes("gateways") && crowns.some(b => b.name === "end_gateway") && { at: placed("end_gateway"), size: crowns.find(b => b.name === "end_gateway").size / dpr };
     // Torches burn.
     const torches = moves.includes("torches") && { at: placed("torch"), flame: ART_FRAMES.flame };
     // Clouds cross an open sky, behind the scene (clouds: how strong they are, if not fully; faint at night).
@@ -1909,7 +1958,7 @@ function backdropView(canvas) {
     const leaves = scene.leaves && leafMotion(crowns, scene.leaves, h - GROUND_STRIP - (scene.leavesLand || 0) * NEAR, dpr, [[haze, mist.near], ...(scene.night ? [[scene.night.shade, 1]] : [])]);
     // And stars twinkle at night.
     const stars = twinkling.length > 0 && twinkling.map(([x, y, side, bright]) => [x / dpr, y / dpr, side / dpr, Number(bright.toFixed(2))]);
-    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || torches || crystals || rods || candles || clouds ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }), ...(candles && { candles }), ...(clouds && { clouds }) } : null, dpr);
+    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || gateways || torches || crystals || rods || candles || clouds ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(gateways && { gateways }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }), ...(candles && { candles }), ...(clouds && { clouds }) } : null, dpr);
   };
   new ResizeObserver(draw).observe(canvas);
   return {

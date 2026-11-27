@@ -245,6 +245,33 @@ function drawLight(ctx, lights, seconds, scale) {
     ctx.fillRect((x - r) * scale, (y - r) * scale, 2 * r * scale, 2 * r * scale);
   });
 }
+// End gateways' beams: now and then (every `every` seconds, each its own moment) a gateway shoots its purple beam up out of
+// sight for a second and a half, as the game does when something goes through, growing in and fading out. at: the blocks'
+// left edges and tops; size: a block's.
+function drawGateways(ctx, gateways, seconds, scale) {
+  const { every = 9, at, size } = gateways;
+  at.forEach(([x, y], i) => {
+    const f = (seconds + every * motionNoise(Math.round(x), Math.round(y), 151)) % every;
+    if (!seconds || f > 1.5) return;
+    const fade = Math.min(1, f / 0.15, (1.5 - f) / 0.6), mid = (x + size / 2) * scale, w = size * scale;
+    ctx.globalCompositeOperation = "lighter";
+    // The beam: a bright core and a wider, fainter glow round it, from the gateway up to the top.
+    for (const [wide, alpha, color] of [[1.6, 0.22, "170, 70, 230"], [0.7, 0.5, "205, 120, 255"], [0.25, 0.8, "245, 215, 255"]]) {
+      const beam = ctx.createLinearGradient(0, (y + size / 2) * scale, 0, 0);
+      beam.addColorStop(0, `rgba(${color}, ${(alpha * fade).toFixed(3)})`);
+      beam.addColorStop(1, `rgba(${color}, ${(alpha * fade * 0.35).toFixed(3)})`);
+      ctx.fillStyle = beam;
+      ctx.fillRect(Math.round(mid - (wide * w) / 2), 0, Math.max(1, Math.round(wide * w)), Math.round((y + size / 2) * scale));
+    }
+    // And a flash round the gateway itself.
+    const r = 2.2 * size * scale, glow = ctx.createRadialGradient(mid, (y + size / 2) * scale, 0, mid, (y + size / 2) * scale, r);
+    glow.addColorStop(0, `rgba(220, 160, 255, ${(0.55 * fade).toFixed(3)})`);
+    glow.addColorStop(1, "rgba(220, 160, 255, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(mid - r, (y + size / 2) * scale - r, 2 * r, 2 * r);
+    ctx.globalCompositeOperation = "source-over";
+  });
+}
 // Mist lying low among the far trees: two banks of it sliding past each other, in steps like the blocky clouds. front is what
 // stands before it, cut out.
 const MIST_BANKS = [{ seed: 111, up: 30, speed: 5, alpha: 0.6 }, { seed: 112, up: 8, speed: -3.2, alpha: 0.7 }], MIST_CELL = [8, 4], MIST_SIZE = [64, 12];
@@ -648,6 +675,7 @@ function drawMotion(ctx, motion, seconds, scale) {
   if (motion.candles) drawn = drawCandles(ctx, motion.candles, seconds, scale) && drawn;
   if (motion.rods) drawRods(ctx, motion.rods, seconds, scale);
   if (motion.vaults) drawVaults(ctx, motion.vaults, seconds, scale);
+  if (motion.gateways) drawGateways(ctx, motion.gateways, seconds, scale);
   if (motion.leaves) drawn = drawLeaves(ctx, motion.leaves, seconds, scale) && drawn;
   if (motion.fire) drawn = drawFire(ctx, motion.fire, seconds, scale) && drawn;
   if (motion.bubbles) drawBubbles(ctx, motion.bubbles, seconds, scale);

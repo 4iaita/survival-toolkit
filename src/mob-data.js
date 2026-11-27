@@ -3,7 +3,7 @@
 // (egg_<k> in art/); bedrockName where Bedrock calls it something else; dim, the dimension it lives in (nether or end; overworld if not
 // given); behavior, how it treats the player as the Minecraft Wiki classes it (neutral or aggressive, the wiki's hostile and
 // boss mobs; passive if not given); biome, the village biome its stage shows
-// (a BIOMES key, village, mushroom_fields, cave, mineshaft, mansion, trial_chamber, stronghold, deep_dark, nether, nether_fortress, bastion_remnant, end_city, end_island, ocean, lush_pool, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
+// (a BIOMES key, village, mushroom_fields, cave, mineshaft, mansion, trial_chamber, stronghold, deep_dark, nether, nether_fortress, bastion_remnant, end, end_city, end_island, ocean, lush_pool, flooded_cave or swamp_water, or one of plains, swamp, desert, snowy and ocean at night, with _night after it; plains if not given); glowing, its glow on all the time, for a mob that lights
 // itself; swim, floated in the middle of the water; zoom, drawn that many times the size that fits the stage, to scale
 // with a bigger mob; stand, bone poses for the stage where the pack's resting pose hides something
 // (bone -> { p: position, r: rotation }, as a look's pose).
@@ -455,6 +455,6 @@ const MOBS = [
   { k: "magma_cube", n: "Magma Cube", behavior: "aggressive", dim: "nether", biome: "nether", zoom: 2.5 }, { k: "piglin", n: "Piglin", behavior: "neutral", dim: "nether", biome: "nether" }, { k: "piglin_brute", n: "Piglin Brute", behavior: "aggressive", dim: "nether", biome: "bastion_remnant" },
   { k: "strider", n: "Strider", dim: "nether", biome: "nether" }, { k: "wither_skeleton", n: "Wither Skeleton", behavior: "aggressive", dim: "nether", biome: "nether_fortress", glowing: true }, { k: "zoglin", n: "Zoglin", behavior: "aggressive", dim: "nether", biome: "nether" },
   { k: "zombified_piglin", n: "Zombified Piglin", behavior: "neutral", bedrockName: "Zombie Pigman", dim: "nether", biome: "nether" }, { k: "wither", n: "Wither", behavior: "aggressive", dim: "nether", biome: "nether", stand: lift(8) },
-  { k: "ender_dragon", n: "Ender Dragon", behavior: "aggressive", dim: "end", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", behavior: "neutral", dim: "end", biome: "end_city", glowing: true },
-  { k: "endermite", n: "Endermite", behavior: "aggressive", dim: "end", biome: "end_city" }, { k: "shulker", n: "Shulker", behavior: "aggressive", dim: "end", biome: "end_city" },
+  { k: "ender_dragon", n: "Ender Dragon", behavior: "aggressive", dim: "end", biome: "end_island", stand: DRAGON_STAND, zoom: 1.5 }, { k: "enderman", n: "Enderman", behavior: "neutral", dim: "end", biome: "end", glowing: true },
+  { k: "endermite", n: "Endermite", behavior: "aggressive", dim: "end", biome: "end" }, { k: "shulker", n: "Shulker", behavior: "aggressive", dim: "end", biome: "end_city" },
 ];
