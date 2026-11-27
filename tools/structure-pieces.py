@@ -3,6 +3,7 @@ mobs (the entities saved in the piece), its notable blocks, and the pools its ji
 
     python3 tools/structure-pieces.py <java data> <start pool> [--counts <structure> [how many]]
     python3 tools/structure-pieces.py <java data> --end-city [how many]
+    python3 tools/structure-pieces.py <java data> --mansion [how many] [src/structure-loot.js]
     python3 tools/structure-pieces.py --stronghold [how many]
     python3 tools/structure-pieces.py --mineshaft [how many]
 
@@ -17,6 +18,10 @@ and how often it has at least one. The game's own random numbers aren't used, so
 
 --end-city builds that many end cities (20000) as Java's EndCityPieces does (see EndCity), and counts the data markers in its pieces
 (chests, shulkers, the elytra) and the ship.
+
+--mansion builds that many woodland mansions (5000) as Java's WoodlandMansionPieces does (from memory of that code: see its section),
+and counts its rooms by template, the data markers in them (chests, vindicators, evokers, allays), the chests placed full in the
+templates, and every block summed over its pieces; given src/structure-loot.js, also the chance a mansion's chests hold each find.
 
 --stronghold and --mineshaft build that many (5000) as Java's StrongholdPieces and MineshaftPieces do, from memory of that code (see
 their sections), and count what's in them. They need no files.
@@ -1135,6 +1140,417 @@ def mineshaft_counts(n, seed=1):
     print_runs("mineshaft", runs)
 
 
+# ---------- The woodland mansion: Java's WoodlandMansionPieces ----------
+# The mansion isn't a jigsaw: its layout is in code (26.3's WoodlandMansionStructure and WoodlandMansionPieces, from memory of them), and
+# its rooms are templates (structure/woodland_mansion) whose data markers the code acts on: "ChestWest", "ChestSouth", "ChestNorth" (a
+# chest of chests/woodland_mansion), "Warrior" (a vindicator), "Mage" (an evoker) and "Group of Allays" (half the times 1 to 3 allays: the 50% is
+# the Minecraft Wiki's, the Allay page's). Ported as it is:
+#   - MansionGrid: an 11 by 11 grid of 8-block cells, its outside blocked (5). Rows 0, 1, 9 and 10 are blocked; the entrance (3) is cells
+#     7–8 by 4–5, with a room cell (2) west of it, corridors (1) north and south of it and cells 9–10 by 2–7 blocked. Four corridors are
+#     dug west from beside it (recursiveCorridor: 6, 6, 3 and 3 cells long). Each step tries 8 times to turn a random way (not back, and
+#     east only half the times it's drawn) where the next two cells are clear, and recurses there; then the clear cells round it become
+#     rooms (2). Then cleanEdges, while it changes anything: a clear cell with 3 or 4 house neighbours, or 2 and at most 1 diagonal, is a
+#     room.
+#   - identifyRooms, for the first and second floors from that one grid, each on its own: the room cells shuffled; each not yet in a room
+#     starts one: 2x2 if the three cells right and below (or left and below, or left and above) are free room cells, else 1x2 with the
+#     right, below, left or above cell, else 1x1. A door goes on a random corner of it that touches a corridor (trying the others in a set
+#     order); with none, the room has no door. Its first cell (or the door's) is its origin.
+#   - the third floor (setupThirdFloor): one of the second floor's 1x2 rooms with a door is the stairs (c_stairs or d_stairs); over its far
+#     cell a corridor of 4 is dug, in a random clear direction, and cleanEdges, inside the house's outline. With no such room or no clear
+#     direction there's no third floor. Its rooms are identified as the others'.
+#   - each room, from its origin: a 1x1 with a door gets one of the floor's 1x1s (first floor 1x1_a1–a5, the others 1x1_b1–b5); with
+#     none, a secret 1x1_as1–as4. A 1x2 with its door on a long side gets 1x2_a1–a9 (first) or 1x2_c1–c4 (upper); with its door at an
+#     end 1x2_b1–b5 or 1x2_d1–d5; the stairs room c_stairs or d_stairs; with no door a secret 1x2_s1–s2 (first) or 1x2_se1 (upper). A 2x2
+#     with a door gets 2x2_a1–a4 (first) or 2x2_b1–b5 (upper), with none the secret 2x2_s1. Each pick is uniform.
+#   - corridors: a corridor_floor in each corridor cell, carpets between corridor cells; indoor walls between rooms and corridors, a door
+#     piece where the door is; the outer walls (wall_flat on the first floor, wall_window above) along the outline, wall_corner at each
+#     outer corner; the entrance; and the roofs (roof, roof_front at the edges, roof_corner and roof_inner_corner, small_wall round
+#     where the third floor rises).
+# Not modelled, as it's the land's: the mansion is only made where the ground's lowest corner (of a square round its middle) is at Y 60
+# or more, and cobblestone is filled under its first floor down to the ground. Pieces never clash (each cell is one piece), so nothing
+# is dropped. Blocks are summed over every piece placed, so a block where two pieces meet (a wall over a floor's edge) can count twice.
+MN_N, MN_E, MN_S, MN_W, MN_UP = (0, -1), (1, 0), (0, 1), (-1, 0), "up"
+MN_CW = {MN_N: MN_E, MN_E: MN_S, MN_S: MN_W, MN_W: MN_N}
+MN_CCW = {v: k for k, v in MN_CW.items()}
+MN_OPP = {MN_N: MN_S, MN_S: MN_N, MN_E: MN_W, MN_W: MN_E}
+MN_HORIZONTAL = [MN_N, MN_E, MN_S, MN_W]
+MN_2D = [MN_S, MN_W, MN_N, MN_E]  # Direction.from2DDataValue
+R1x1, R1x2, R2x2, ORIGIN, DOOR, STAIRS, CORR = 65536, 131072, 262144, 1048576, 2097152, 4194304, 8388608
+
+
+class MGrid:
+    def __init__(self, w, h, outside):
+        self.w, self.h, self.outside = w, h, outside
+        self.g = [[0] * h for _ in range(w)]
+
+    def set(self, x, y, v):
+        if 0 <= x < self.w and 0 <= y < self.h:
+            self.g[x][y] = v
+
+    def fill(self, x0, y0, x1, y1, v):
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                self.set(x, y, v)
+
+    def get(self, x, y):
+        return self.g[x][y] if 0 <= x < self.w and 0 <= y < self.h else self.outside
+
+    def setif(self, x, y, old, v):
+        if self.get(x, y) == old:
+            self.set(x, y, v)
+
+    def edges_to(self, x, y, v):
+        return self.get(x - 1, y) == v or self.get(x + 1, y) == v or self.get(x, y + 1) == v or self.get(x, y - 1) == v
+
+
+def is_house(g, x, y):
+    return g.get(x, y) in (1, 2, 3, 4)
+
+
+class Mansion:
+    FIRST = {"1x1": lambda r: f"1x1_a{r.randrange(5) + 1}", "1x1s": lambda r: f"1x1_as{r.randrange(4) + 1}",
+             "side": lambda r, st: f"1x2_a{r.randrange(9) + 1}", "front": lambda r, st: f"1x2_b{r.randrange(5) + 1}",
+             "1x2s": lambda r: f"1x2_s{r.randrange(2) + 1}", "2x2": lambda r: f"2x2_a{r.randrange(4) + 1}", "2x2s": lambda r: "2x2_s1"}
+    UPPER = {"1x1": lambda r: f"1x1_b{r.randrange(5) + 1}", "1x1s": lambda r: f"1x1_as{r.randrange(4) + 1}",
+             "side": lambda r, st: "1x2_c_stairs" if st else f"1x2_c{r.randrange(4) + 1}",
+             "front": lambda r, st: "1x2_d_stairs" if st else f"1x2_d{r.randrange(5) + 1}",
+             "1x2s": lambda r: "1x2_se1", "2x2": lambda r: f"2x2_b{r.randrange(5) + 1}", "2x2s": lambda r: "2x2_s1"}
+
+    def __init__(self, rng):
+        self.rng = rng
+        ex, ey = self.ex, self.ey = 7, 4
+        g = self.base = MGrid(11, 11, 5)
+        g.fill(ex, ey, ex + 1, ey + 1, 3)
+        g.fill(ex - 1, ey, ex - 1, ey + 1, 2)
+        g.fill(ex + 2, ey - 2, ex + 3, ey + 3, 5)
+        g.fill(ex + 1, ey - 2, ex + 1, ey - 1, 1)
+        g.fill(ex + 1, ey + 2, ex + 1, ey + 3, 1)
+        g.set(ex - 1, ey - 1, 1)
+        g.set(ex - 1, ey + 2, 1)
+        g.fill(0, 0, 11, 1, 5)
+        g.fill(0, 9, 11, 11, 5)
+        self.corridor(g, ex, ey - 2, MN_W, 6)
+        self.corridor(g, ex, ey + 3, MN_W, 6)
+        self.corridor(g, ex - 2, ey - 1, MN_W, 3)
+        self.corridor(g, ex - 2, ey + 2, MN_W, 3)
+        while self.clean(g):
+            pass
+        self.rooms = [MGrid(11, 11, 5) for _ in range(3)]
+        self.identify(g, self.rooms[0])
+        self.identify(g, self.rooms[1])
+        self.rooms[0].fill(ex + 1, ey, ex + 1, ey + 1, CORR)
+        self.rooms[1].fill(ex + 1, ey, ex + 1, ey + 1, CORR)
+        self.third = MGrid(11, 11, 5)
+        self.setup_third()
+        self.identify(self.third, self.rooms[2])
+
+    def corridor(self, g, x, y, d, n):
+        if n <= 0:
+            return
+        rng = self.rng
+        g.set(x, y, 1)
+        g.setif(x + d[0], y + d[1], 0, 1)
+        for _ in range(8):
+            d1 = MN_2D[rng.randrange(4)]
+            if d1 != MN_OPP[d] and (d1 != MN_E or not rng.random() < 0.5):
+                j, k = x + d[0], y + d[1]
+                if g.get(j + d1[0], k + d1[1]) == 0 and g.get(j + d1[0] * 2, k + d1[1] * 2) == 0:
+                    self.corridor(g, x + d[0] + d1[0], y + d[1] + d1[1], d1, n - 1)
+                    break
+        a, b = MN_CW[d], MN_CCW[d]
+        for dx, dy in ((a[0], a[1]), (b[0], b[1]), (d[0] + a[0], d[1] + a[1]), (d[0] + b[0], d[1] + b[1]),
+                       (d[0] * 2, d[1] * 2), (a[0] * 2, a[1] * 2), (b[0] * 2, b[1] * 2)):
+            g.setif(x + dx, y + dy, 0, 2)
+
+    @staticmethod
+    def clean(g):
+        changed = False
+        for i in range(g.h):
+            for j in range(g.w):
+                if g.get(j, i) == 0:
+                    k = is_house(g, j + 1, i) + is_house(g, j - 1, i) + is_house(g, j, i + 1) + is_house(g, j, i - 1)
+                    if k >= 3:
+                        g.set(j, i, 2)
+                        changed = True
+                    elif k == 2:
+                        l = is_house(g, j + 1, i + 1) + is_house(g, j - 1, i + 1) + is_house(g, j + 1, i - 1) + is_house(g, j - 1, i - 1)
+                        if l <= 1:
+                            g.set(j, i, 2)
+                            changed = True
+        return changed
+
+    def room_dir(self, x, y, floor, rid):
+        for d in MN_HORIZONTAL:
+            if (self.rooms[floor].get(x + d[0], y + d[1]) & 65535) == rid:
+                return d
+        return None
+
+    def setup_third(self):
+        rng, sg, t = self.rng, self.rooms[1], self.third
+        cands = [(j, i) for i in range(t.h) for j in range(t.w) if (sg.get(j, i) & 983040) == R1x2 and sg.get(j, i) & DOOR]
+        if not cands:
+            t.fill(0, 0, t.w, t.h, 5)
+            return
+        a, b = cands[rng.randrange(len(cands))]
+        v = sg.get(a, b)
+        sg.set(a, b, v | STAIRS)
+        d = self.room_dir(a, b, 1, v & 65535)
+        x2, y2 = a + d[0], b + d[1]
+        for j1 in range(t.h):
+            for k1 in range(t.w):
+                if not is_house(self.base, k1, j1):
+                    t.set(k1, j1, 5)
+                elif (k1, j1) == (a, b):
+                    t.set(k1, j1, 3)
+                elif (k1, j1) == (x2, y2):
+                    t.set(k1, j1, 3)
+                    self.rooms[2].set(k1, j1, CORR)
+        dirs = [dd for dd in MN_HORIZONTAL if t.get(x2 + dd[0], y2 + dd[1]) == 0]
+        if not dirs:
+            t.fill(0, 0, t.w, t.h, 5)
+            sg.set(a, b, v)
+            return
+        dd = dirs[rng.randrange(len(dirs))]
+        self.corridor(t, x2 + dd[0], y2 + dd[1], dd, 4)
+        while self.clean(t):
+            pass
+
+    def identify(self, g, rooms):
+        rng = self.rng
+        cells = [(j, i) for i in range(g.h) for j in range(g.w) if g.get(j, i) == 2]
+        for i in range(len(cells) - 1, 0, -1):  # Util.shuffle
+            k = rng.randrange(i + 1)
+            cells[i], cells[k] = cells[k], cells[i]
+        rid = 10
+        free = lambda x, y: rooms.get(x, y) == 0 and g.get(x, y) == 2
+        for l, l3 in cells:
+            if rooms.get(l, l3) != 0:
+                continue
+            i1 = i4 = l
+            j1 = k1 = l3
+            kind = R1x1
+            if free(l + 1, l3) and free(l, l3 + 1) and free(l + 1, l3 + 1):
+                i4, k1, kind = l + 1, l3 + 1, R2x2
+            elif free(l - 1, l3) and free(l, l3 + 1) and free(l - 1, l3 + 1):
+                i1, k1, kind = l - 1, l3 + 1, R2x2
+            elif free(l - 1, l3) and free(l, l3 - 1) and free(l - 1, l3 - 1):
+                i1, j1, kind = l - 1, l3 - 1, R2x2
+            elif free(l + 1, l3):
+                i4, kind = l + 1, R1x2
+            elif free(l, l3 + 1):
+                k1, kind = l3 + 1, R1x2
+            elif free(l - 1, l3):
+                i1, kind = l - 1, R1x2
+            elif free(l, l3 - 1):
+                j1, kind = l3 - 1, R1x2
+            i2 = i1 if rng.random() < 0.5 else i4
+            j2 = j1 if rng.random() < 0.5 else k1
+            door = DOOR
+            if not g.edges_to(i2, j2, 1):
+                i2 = i4 if i2 == i1 else i1
+                j2 = k1 if j2 == j1 else j1
+                if not g.edges_to(i2, j2, 1):
+                    j2 = k1 if j2 == j1 else j1
+                    if not g.edges_to(i2, j2, 1):
+                        i2 = i4 if i2 == i1 else i1
+                        j2 = k1 if j2 == j1 else j1
+                        if not g.edges_to(i2, j2, 1):
+                            door, i2, j2 = 0, i1, j1
+            for y in range(j1, k1 + 1):
+                for x in range(i1, i4 + 1):
+                    rooms.set(x, y, (ORIGIN | door | kind | rid) if (x, y) == (i2, j2) else (kind | rid))
+            rid += 1
+
+    def outer_walls(self, g, sx, sy, ex, ey, t, wall):
+        """traverseOuterWalls: walk the outline, a wall piece every cell and a corner at each outer turn."""
+        i, j, d = sx, sy, MN_S
+        start = MN_S
+        while True:
+            if not is_house(g, i + d[0], j + d[1]):
+                t[("piece", "wall_corner")] += 1
+                d = MN_CW[d]
+                if (i, j, d) != (ex, ey, start):
+                    t[("piece", wall)] += 1
+            elif is_house(g, i + d[0] + MN_CCW[d][0], j + d[1] + MN_CCW[d][1]):
+                i, j = i + d[0], j + d[1]
+                d = MN_CCW[d]
+            else:
+                i, j = i + d[0], j + d[1]
+                if (i, j, d) != (ex, ey, start):
+                    t[("piece", wall)] += 1
+            if (i, j, d) == (ex, ey, start):
+                return
+
+    def roof(self, g, above, t):
+        H = lambda x, y: is_house(g, x, y)
+        for i in range(g.h):
+            for j in range(g.w):
+                if H(j, i) and not (above and is_house(above, j, i)):
+                    t[("piece", "roof")] += 1
+                    t[("piece", "roof_front")] += (not H(j + 1, i)) + (not H(j - 1, i)) + (not H(j, i - 1)) + (not H(j, i + 1))
+                    for dx in (1, -1):
+                        if not H(j + dx, i):
+                            for dy in (-1, 1):
+                                if not H(j, i + dy):
+                                    t[("piece", "roof_corner")] += 1
+                                elif H(j + dx, i + dy):
+                                    t[("piece", "roof_inner_corner")] += 1
+                if above and H(j, i) and is_house(above, j, i):
+                    t[("piece", "small_wall")] += (not H(j + 1, i)) + (not H(j - 1, i)) + (not H(j, i - 1)) + (not H(j, i + 1))
+                    for dx in (1, -1):
+                        if not H(j + dx, i):
+                            t[("piece", "small_wall_corner")] += (not H(j, i - 1)) + (not H(j, i + 1))
+
+    def build(self):
+        """The pieces' names, counted, and the rooms placed: [(floor, template, kind)]."""
+        rng, t, placed = self.rng, Counter(), []
+        base, third = self.base, self.third
+        t[("piece", "entrance")] += 1
+        sx, sy = self.ex + 1, self.ey + 1
+        self.outer_walls(base, sx, sy, self.ex + 1, self.ey, t, "wall_flat")
+        self.outer_walls(base, sx, sy, self.ex + 1, self.ey, t, "wall_window")
+        found = next(((l, k) for k in range(third.h) for l in range(third.w - 1, -1, -1) if is_house(third, l, k)), None)
+        if found:
+            t[("piece", "wall_window")] += 1
+            self.outer_walls(third, found[0], found[1], found[0], found[1], t, "wall_window")
+        self.roof(base, third, t)
+        self.roof(third, None, t)
+        for fl in range(3):
+            rooms, g = self.rooms[fl], (third if fl == 2 else base)
+            coll = self.FIRST if fl == 0 else self.UPPER
+            for y in range(g.h):
+                for x in range(g.w):
+                    if g.get(x, y) == 1:
+                        t[("piece", "corridor_floor")] += 1
+                        for dx, dy, name in ((0, -1, "carpet_north"), (1, 0, "carpet_east"), (0, 1, "carpet_south_1" if fl == 0 else "carpet_south_2"),
+                                             (-1, 0, "carpet_west_1" if fl == 0 else "carpet_west_2")):
+                            if g.get(x + dx, y + dy) == 1 or rooms.get(x + dx, y + dy) & CORR:
+                                t[("piece", name)] += 1
+            wall, doorp = ("indoors_wall_1", "indoors_door_1") if fl == 0 else ("indoors_wall_2", "indoors_door_2")
+            for y in range(g.h):
+                for x in range(g.w):
+                    f1 = fl == 2 and g.get(x, y) == 3
+                    if not (g.get(x, y) == 2 or f1):
+                        continue
+                    v = rooms.get(x, y)
+                    kind, rid = v & 983040, v & 65535
+                    f1 = f1 and bool(v & CORR)
+                    doors = [d for d in MN_HORIZONTAL if g.get(x + d[0], y + d[1]) == 1] if v & DOOR else []
+                    d1 = doors[rng.randrange(len(doors))] if doors else (MN_UP if v & ORIGIN else None)
+                    same = lambda xx, yy: (rooms.get(xx, yy) & 65535) == rid
+                    if is_house(g, x - 1, y) and not same(x - 1, y):
+                        t[("piece", doorp if d1 == MN_W else wall)] += 1
+                    if g.get(x + 1, y) == 1 and not f1:
+                        t[("piece", doorp if d1 == MN_E else wall)] += 1
+                    if is_house(g, x, y + 1) and not same(x, y + 1):
+                        t[("piece", doorp if d1 == MN_S else wall)] += 1
+                    if g.get(x, y - 1) == 1 and not f1:
+                        t[("piece", doorp if d1 == MN_N else wall)] += 1
+                    if kind == R1x1:
+                        name = coll["1x1"](rng) if d1 in MN_HORIZONTAL else coll["1x1s"](rng)
+                        placed.append((fl, name, "1x1"))
+                    elif kind == R1x2 and d1 is not None:
+                        front = self.room_dir(x, y, fl, rid)
+                        st = bool(v & STAIRS)
+                        if d1 == MN_UP:
+                            name = coll["1x2s"](rng)
+                        elif d1 in (front, MN_OPP[front]):
+                            name = coll["front"](rng, st)
+                        else:
+                            name = coll["side"](rng, st)
+                        placed.append((fl, name, "1x2"))
+                    elif kind == R2x2 and d1 is not None:
+                        placed.append((fl, coll["2x2"](rng) if d1 != MN_UP else coll["2x2s"](rng), "2x2"))
+        for fl, name, _ in placed:
+            t[("piece", name)] += 1
+        self.has_third = found is not None
+        return t, placed
+
+
+MANSION_SECRET = {"1x1_as1": "X room", "1x1_as2": "Spider room", "1x1_as3": "Obsidian room", "1x1_as4": "Birch pillar room",
+                  "1x2_s1": "Clean chest room", "1x2_s2": "Fake End portal room", "1x2_se1": "Attic room", "2x2_s1": "Lava room"}
+
+
+def mansion_templates(data):
+    """Every template's blocks (air, structure voids and data markers left out), data markers and fixed chest contents."""
+    out = {}
+    for f in sorted((data.base / "structure" / "woodland_mansion").glob("*.nbt")):
+        tp = nbt(f)
+        pal = tp["palette"] if "palette" in tp else tp["palettes"][0]
+        blocks, markers, fixed = Counter(), Counter(), []
+        for b in tp["blocks"]:
+            stt = pal[b["state"]]
+            name = stt.get("Name", stt.get("id", "")).replace("minecraft:", "")
+            e = b.get("nbt", {})
+            if name == "structure_block" and e.get("mode") == "DATA":
+                markers[e.get("metadata", "")] += 1
+                continue
+            if name in ("air", "structure_void", "jigsaw"):
+                continue
+            blocks[name] += 1
+            if name in ("chest", "trapped_chest"):
+                fixed.append((name, tuple((i["id"].replace("minecraft:", ""), i["count"], json.dumps(i.get("components", {}))) for i in e.get("Items", []))))
+        out[f.stem] = {"blocks": blocks, "markers": markers, "fixed": fixed}
+    return out
+
+
+def mansion_counts(data, n, seed=1, loot=None):
+    """Build n mansions and tell how many of each room, chest, mob and notable block they have, and how often each secret room."""
+    rng, runs, tps = random.Random(seed), [], mansion_templates(data)
+    for _ in range(n):
+        m = Mansion(rng)
+        pieces, placed = m.build()
+        t = Counter()
+        t[("third floor",)] += m.has_third
+        for fl in range(3):
+            t[("rooms", f"floor {fl + 1}")] += sum(1 for f, _, _ in placed if f == fl)
+            t[("corridor cells", f"floor {fl + 1}")] += sum(1 for y in range(11) for x in range(11) if (m.third if fl == 2 else m.base).get(x, y) == 1)
+        cells = [(x, y) for y in range(11) for x in range(11) if is_house(m.base, x, y)]
+        t[("size", "cells across x")] += max(x for x, _ in cells) - min(x for x, _ in cells) + 1
+        t[("size", "cells across y")] += max(y for _, y in cells) - min(y for _, y in cells) + 1
+        t[("size", "house cells, floors 1 and 2")] += len(cells)
+        t[("size", "house cells, floor 3")] += sum(1 for y in range(11) for x in range(11) if is_house(m.third, x, y))
+        for fl, name, size in placed:
+            t[("room", name)] += 1
+            t[("room", name, f"floor {fl + 1}")] += 1
+            t[("rooms", size)] += 1
+            if name in MANSION_SECRET:
+                t[("secret", MANSION_SECRET[name])] += 1
+                t[("secret", "any")] += 1
+        for (_, name), k in pieces.items():
+            tp = tps[name]
+            for b, c in tp["blocks"].items():
+                t[("block", b)] += c * k
+            for mk, c in tp["markers"].items():
+                if mk.startswith("Chest"):
+                    t[("chest",)] += c * k
+                    t[("chest", "in", name)] += c * k
+                elif mk == "Warrior":
+                    t[("vindicator",)] += c * k
+                    t[("vindicator", "in", name)] += c * k
+                elif mk == "Mage":
+                    t[("evoker",)] += c * k
+                    t[("evoker", "in", name)] += c * k
+                elif mk == "Group of Allays":
+                    for _ in range(c * k):
+                        t[("allay", "cells")] += 1
+                        if rng.random() < 0.5:  # the Minecraft Wiki's Allay page: a 50% chance, in groups of 1 to 3
+                            t[("allay",)] += rng.randrange(3) + 1
+            for kind, items in tp["fixed"]:
+                t[("fixed " + kind, name, ", ".join(f"{i}×{c}{'' if comp == '{}' else ' ' + comp}" for i, c, comp in items) or "empty")] += k
+        runs.append(t)
+    print_runs("woodland mansion", runs)
+    if loot:
+        # Each find's chance that a mansion has one, in either edition: 1 − the mean over the mansions of (1 − its chance a chest) ** chests.
+        tables = [json.loads(line.split(": ", 1)[1].rstrip().rstrip(",")) for line in pathlib.Path(loot).read_text().splitlines()
+                  if line.startswith('  "chests/woodland_mansion": ')]
+        print("\n=== a mansion's chests: the chance it has at least one (java, bedrock)")
+        for row in tables[0]:
+            other = next((r for r in tables[1] if r[0] == row[0]), None)
+            share = lambda p: 1 - sum((1 - p) ** t[("chest",)] for t in runs) / n
+            print(f"  {row[0]} {row[1]}: {share(row[4]):.1%}, {share(other[4]) if other else 0:.1%}")
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--mineshaft":
         mineshaft_counts(int(sys.argv[2]) if len(sys.argv) > 2 else 5000)
@@ -1143,6 +1559,9 @@ if __name__ == "__main__":
         stronghold_counts(int(sys.argv[2]) if len(sys.argv) > 2 else 5000)
         sys.exit()
     d = Data(sys.argv[1])
+    if sys.argv[2] == "--mansion":
+        mansion_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 5000, loot=sys.argv[4] if len(sys.argv) > 4 else None)
+        sys.exit()
     if sys.argv[2] == "--end-city":
         end_city_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 20000)
         sys.exit()

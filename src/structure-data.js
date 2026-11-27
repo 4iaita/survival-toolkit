@@ -25,6 +25,7 @@ const STRUCTURE_SCENES = {
   ancient_city: "deep_dark",
   stronghold: "stronghold",
   mineshaft: "mineshaft",
+  woodland_mansion: "mansion",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -33,7 +34,7 @@ const ST_BLOCKS = {
   chest: "ui:logo", barrel: "st:barrel", vault: "st:vault", ominous_vault: "st:vault", dispenser: "st:dispenser", pot: "ui:pot",
   spawner: "st:trial_spawner", ominous_spawner: "st:trial_spawner",
   chest_minecart: "st:chest_minecart", rail: "st:rail",
-  item_frame: "st:item_frame", dragon_head: "st:dragon_head", brewing_stand: "st:brewing_stand", furnace: "st:furnace",
+  item_frame: "st:item_frame", dragon_head: "st:dragon_head", diamond_block: "st:diamond_block", brewing_stand: "st:brewing_stand", furnace: "st:furnace",
 };
 
 /* Each structure: its containers (loot), its mobs, and where it is.
@@ -247,6 +248,65 @@ const STRUCTURES = [
       find: "Explore caves and ravines: look for wooden fences and planks in their walls, rails and cobwebs; ravines often cut through one. In the badlands look for dark oak supports sticking out of the hills. An abandoned camp’s secret chest has a Buried Mineshaft Map 1 time in 7, which leads to one (never a badlands one). No eye or compass leads to one.",
       danger: "Cave spiders: their spawners hide in cobwebs, which slow you to a crawl, and their poison takes you down to half a heart. Cut the webs with a sword or shears, then light up or break the spawner. Caves and ravines cut through it, so floors end over long drops, with lava and water from the caves below. Getting lost: about 90 corridors over 150 blocks, on several levels; mark your way. And the biome’s monsters in its dark corridors.",
       about: "Name tags: in 42% of its chest minecarts, so 5 mineshafts in 6 have one: the best place to find them. Golden apples (28% of the minecarts) and enchanted golden apples (1.4%, so about 1 mineshaft in 15). Rails: about 300 on its tracks to take with any tool, and powered, detector and activator rails in its minecarts. String: about 260 cobwebs, a string each with a sword. Music Disc Bounce, only in mineshafts in sulfur caves, in 42% of their minecarts. And about 1,000 fences and 1,000 planks.",
+    },
+  },
+  {
+    // How many of each: from Java's WoodlandMansionPieces (tools/structure-pieces.py --mansion builds 5000 mansions as it does, and with
+    // src/structure-loot.js gives the chance a mansion's chests hold each find) and the data markers and chests in its room templates; the
+    // chests' loot from each edition's own table. Bedrock's layout isn't in its files: it's shown as Java's.
+    k: "woodland_mansion", n: "Woodland Mansion", dim: "overworld", icon: "st:dark_oak_log",
+    say: "A huge house of dark oak and cobblestone in the dark forest, three floors of rooms and secret rooms, held by vindicators and evokers, the only illagers that drop a totem of undying.",
+    loot: [
+      { k: "chest", n: "Chests", block: "chest", table: "chests/woodland_mansion",
+        where: "About 4 a mansion (1 to 8 in 9 mansions in 10; 98% have one), each in a room of its own kind: the checkerboard room (over its door), the gray banner room (behind its altar), the end of the wood arch hallway, the top of the winding stairway, the lofts of the bedroom with a loft and the arena room, and the secret rooms: two up in the attic room, one in the X room and one in the clean chest room." },
+      { k: "placed", n: "Filled chests", block: "chest",
+        rows: [["allium", "", 8, 8, 0.648], ["iron_axe", "set:efficiency:1-1", 1, 1, 0.394], ["dark_oak_sapling", "", 28, 28, 0.391], ["ender_pearl", "", 2, 2, 0.063]],
+        where: "Chests that come filled, the same in every one: 8 alliums in the allium room’s, an iron axe with Efficiency I in the tree-chopping room’s, 28 dark oak saplings in the sapling farm’s, and 2 ender pearls in the fake End portal room’s trapped chest, between two TNT.",
+        note: "Placed with it, not rolled: the chance is that a mansion has one; × is how many in its chest. The trapped chest sets off the TNT when opened." },
+      { k: "secret", n: "Secret rooms", block: "diamond_block",
+        rows: [["diamond_block", "", 1, 1, 0.177], ["obsidian", "", 19, 110, 0.177], ["glass", "", 99, 99, 0.037], ["cobweb", "", 95, 95, 0.141], ["tnt", "", 2, 2, 0.063]],
+        where: "Rooms with no door, walled in among the others: 7 mansions in 10 have one or more. The obsidian room (15% of mansions) hides a block of diamond in obsidian, the lava room (4%) one under lava in a case of glass and obsidian; the spider room (14%) is full of cobwebs round a spider spawner; the X room (14%) has a chest among cobblestone walls, the clean chest room (7%) a chest between torches; the fake End portal room (6%) a trapped chest of ender pearls between two TNT, over lava and among infested cobblestone; the birch pillar room (15%) nothing. On the upper floors, the attic room (36%) has a hidden loft with two chests. The 1 by 1 rooms can be on any floor, the clean chest and fake End portal rooms only on the first.",
+        note: "Built with it, not rolled: the chance is that a mansion has them; × is how many in one room. Obsidian needs a diamond pickaxe." },
+    ],
+    lootFacts: [
+      ["Empty chests", "About 42 empty chests a mansion, to take for storage: shelves of 42 single chests in the small storage room (39% of mansions) and 13 double chests in the large one (58%), and one in the mushroom farm."],
+      ["Blocks to take", "Dark oak: about 17,000 planks, 2,600 logs, 1,900 stairs and 400 fences in its walls and roofs. About 3,800 cobblestone (and more in the foundation), 9,400 birch planks in its floors, 1,600 red and 1,300 white carpet along its corridors, 670 glass panes, 230 bookshelves (in its libraries), 145 torches, and about 130 white wool and 180 light gray wool in its statues and beds."],
+      ["Its beds", "Wool and carpet, made to look like beds: there's no real bed in a mansion to sleep in or set your spawn."],
+      ["Statues", "Wool statues of a cat, a chicken and an illager’s head; the big illager statue room (57% of mansions) has a block of lapis lazuli inside the head."],
+      ["Rooms", "About 34 rooms a mansion: 13 on each of the first two floors (9 to 20) and 7 on the smaller third (1 to 15), with farms, jails, libraries, bedrooms, dining rooms and storage rooms, each kind on its own floor. A staircase room on the second floor leads up to the third."],
+    ],
+    mobs: [
+      { mob: "vindicator", how: "Placed as it’s made, about 16 (8 to 25 in 9 mansions in 10): one or more in most rooms with a door, the jails, farms, storage rooms and forge among them, three in the triple bed bedroom, and two with each evoker. They never despawn, and none come back once killed.", chance: "About 16" },
+      { mob: "evoker", how: "Placed as it’s made, about 3 (0 to 11; 1 mansion in 40 has none), on the upper floors: one in each ritual room, large dining room, conference room and map room, each with two vindicators. They never despawn, and none come back once killed.", chance: "About 3" },
+      { mob: "vex", how: "Summoned by the evokers, 3 at a time, every 17 seconds while fewer than 8 are within 16 blocks of it. They fly through walls, and start dying 30 to 119 seconds after.", chance: "Summoned" },
+      { mob: "allay", how: "Held in the large jail’s four cells: each cell half the times has 1 to 3. 57% of mansions have a large jail and 55% some allays, about 6 where they do.", chance: "55%" },
+      { mob: "spider", how: both("From the spawner in the spider room (1 mansion in 7): up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And in the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.",
+        "From the spawner in the spider room (1 mansion in 7): up to 4 at a time every 10 to 40 seconds while you’re within 16 blocks, until 6 are round it. And in the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { mob: "zombie", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, 2 to 4 together."), chance: "Common" },
+      { mob: "skeleton", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 6 of its monster spawns, 1 or 2 together."), chance: "Common" },
+      { mob: "creeper", how: both("In the dark, as in the biome round it: about 1 in 5 of its monster spawns, in groups of 4.", "In the dark, as in the biome round it: 1 in 5 of its monster spawns, alone."), chance: "Common" },
+      { mob: "silverfish", how: "Out of the fake End portal room’s 24 infested cobblestone (1 mansion in 16), when its trap goes off, or when they’re mined without Silk Touch.", chance: "6%" },
+      { mob: "enderman", how: both("In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 to 4 together.", "In the dark, as in the biome round it: 1 in 50 of its monster spawns, 1 or 2 together."), chance: "Rare" },
+      { mob: "zombie_villager", how: both("In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", "In the dark: 1 in 20 of the zombies that spawn."), chance: "Rare" },
+      { mob: "witch", how: "In the dark, as in the biome round it: 1 in 100 of its monster spawns, alone.", chance: "Rare" },
+    ],
+    mobFacts: [
+      ["What it’s made with", "Its vindicators, evokers and allays come with it and stay: they never despawn, even far from you. No illager spawns there again: once they’re killed, it’s only the dark forest’s or pale garden’s monsters, in its dark rooms and corridors."],
+      ["Totems of undying", both("Every evoker drops one however it dies, and a mansion has about 3: nearly every one has at least one. The only other evokers are in raids. It also drops 0 to 1 emerald when you kill it (Looting adds up to 1 more), and 10 experience.",
+        "Every evoker drops one however it dies, and a mansion has about 3: nearly every one has at least one. The only other evokers are in raids. It also drops 0 to 1 emerald (Looting adds up to 1 more) and 10 experience however it dies.")],
+      ["Evokers’ fangs", both("Fangs snap up out of the floor: a line of 16 toward you, or two rings round the evoker when you’re within 3 blocks, 6 damage on Normal (4 Easy, 9 Hard). It casts every 5 seconds.",
+        "Fangs snap up out of the floor: a line of 16 toward you, or two rings round the evoker when you’re within 3 blocks, 6 damage on every difficulty. It casts every 5 seconds.")],
+      ["Vindicators", "Each carries an iron axe: 13 damage on Normal (7.5 Easy, 19.5 Hard), and it drops it 8.5% of the times you kill it. They go for players, villagers and iron golems on sight."],
+      ["Illusioners", "None: no mansion has one, in either edition. Java’s illusioner only comes from commands, and Bedrock hasn’t one."],
+    ],
+    where: {
+      biomes: both("Dark forests and pale gardens.", "Dark forests and pale gardens. Its rules also allow lush caves, dripstone caves and sulfur caves under them, but it rarely ends up there."),
+      height: "On the surface, only where the land is at Y 60 or more round its middle. Three floors, the first 8 blocks high and the second 11, and a third about 2 in 5 their size over part of them (every mansion has one); its roofs reach about 32 blocks over the ground. Cobblestone fills under the first floor down to the land. It’s about 9 rooms by 7, 8 blocks each: some 70 by 56 blocks.",
+      often: "The Overworld is split into regions of 80 by 80 chunks (1,280 blocks square), each with one try at a mansion in its first 60 by 60 chunks, most often near their middle, so two are at least 20 chunks apart. The try fails where it isn’t a dark forest or pale garden, so most regions have none: they’re often thousands of blocks apart.",
+      find: "A Woodland Explorer Map leads to the nearest mansion: every master cartographer sells one, for 14 emeralds and a compass, up to 12 times before restocking. An abandoned camp’s secret chest has one 1 time in 7. Otherwise look over dark forests for its dark oak roofs and cobblestone walls, bigger than anything round them.",
+      danger: "Evokers: their fangs bite up from the floor and their vexes fly through walls; kill the evoker and the vexes waste away. Vindicators hit hard with their axes, two beside each evoker. Getting lost: about 34 rooms on three floors, along corridors that look alike; mark your way. The secret rooms: the fake End portal room’s trapped chest sets off TNT and lets out silverfish, the spider room’s spawner sits in cobwebs, and the lava room’s diamond is under lava. And the biome’s monsters in its dark rooms.",
+      about: both("Totems of undying: one from every evoker, about 3 a mansion; the only other source is raids. The Vex armor trim: found nowhere else, in half its chests, so 88% of mansions have one. Allays in the large jail’s cells (55% of mansions). Enchanted golden apples (1 mansion in 7), diamond hoes and chestplates, Music Discs 13 and Cat, and enchanted books (54% of mansions). Dark oak: about 17,000 planks and 2,600 logs, white and red carpet, wool, about 42 empty chests, and now and then a block of diamond in a secret room (1 mansion in 6).",
+        "Totems of undying: one from every evoker, about 3 a mansion; the only other source is raids. The Vex armor trim: found nowhere else, in half its chests, so 88% of mansions have one. Allays in the large jail’s cells (55% of mansions). Enchanted golden apples (1 mansion in 7), diamond hoes and chestplates, Music Discs 13 and Cat, and enchanted books with treasure enchantments (59% of mansions). Dark oak: about 17,000 planks and 2,600 logs, white and red carpet, wool, about 42 empty chests, and now and then a block of diamond in a secret room (1 mansion in 6)."),
     },
   },
   {
@@ -572,7 +632,7 @@ const ST_ART = {
   "st:blackstone": C("blackstone", "blackstone_top"), "st:gilded_blackstone": C("gilded_blackstone"), "st:polished_blackstone_bricks": C("polished_blackstone_bricks"),
   "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
   "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
-  "st:reinforced_deepslate": C("reinforced_deepslate"), "st:chest_minecart": L("chest_minecart"), "st:rail": L("rail_carried"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
+  "st:reinforced_deepslate": C("reinforced_deepslate"), "st:dark_oak_log": C("log_dark_oak", "log_dark_oak_top"), "st:diamond_block": C("diamond_block"), "st:chest_minecart": L("chest_minecart"), "st:rail": L("rail_carried"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
   // The end portal frame: 13 texels tall, its sides' top 3 rows clear.
   "st:end_portal_frame": { boxes: [{ b: [0, 0, 0, 16, 13, 16], faces: [["end_portal_frame"], ["end_portal_frame_top"], ["end_portal_frame"]] }] },
 };
@@ -652,15 +712,16 @@ const LOOT_CUBES = {
   acacia_planks: ["planks_acacia"], obsidian: [], scaffolding: ["scaffolding_side", "scaffolding_top"], heavy_core: [],
   gilded_blackstone: [], crying_obsidian: [], lodestone: ["lodestone_side", "lodestone_top"], ancient_debris: ["ancient_debris_side", "ancient_debris_top"],
   bone_block: ["bone_block_side", "bone_block_top"], soul_sand: [], crimson_nylium: ["crimson_nylium_side", "crimson_nylium_top"], glowstone: [],
-  deepslate: [], sculk: [], sculk_catalyst: [], packed_ice: [],
+  deepslate: [], sculk: [], sculk_catalyst: [], packed_ice: [], glass: [], tnt: ["tnt_side", "tnt_top"],
 };
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
   netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain", soul_torch: "soul_torch_carried",
   rail: "rail_carried", powered_rail: "powered_rail_carried", detector_rail: "detector_rail_carried", activator_rail: "activator_rail_carried",
-  buried_mineshaft_map: "mineshaft_explorer_map" };
+  buried_mineshaft_map: "mineshaft_explorer_map", allium: "flower_allium", dark_oak_sapling: "sapling_dark_oak" };
 // What's placed with a structure and isn't in any loot table (a box's rows), named as Java's en_us.json names it.
-Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head", wooden_shovel: "Wooden Shovel", deepslate: "Deepslate", oak_fence: "Oak Fence" });
+Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head", wooden_shovel: "Wooden Shovel", deepslate: "Deepslate", oak_fence: "Oak Fence",
+  allium: "Allium", glass: "Glass" });
 const LOOT_SHINES = new Set(["enchanted_book", "enchanted_golden_apple", "experience_bottle"]);
 // Potions' colors (the Potions tab's), by their potion id without strong_ or long_.
 const lootPotion = v => (v.match(/(?:^|\+)potion:(?:strong_|long_)?([a-z_]+)/) || [])[1];
