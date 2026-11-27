@@ -770,7 +770,7 @@ const groundArt = night => {
   // Only villages are BIOMES; the Mobs tab's cave, trial chamber, stronghold, deep dark, nether, End, ocean, lush pool and flooded caves, the tadpole's swamp water, the wolves' wild
   // badlands, the mooshroom's mushroom fields and the goat's peaks have floors of their own.
   const name = (BIOMES.find(b => b.k === biome) || { ground: { village: "grass_top", peaks: "snow",
-    mushroom_fields: "mycelium_top", badlands: "red_sand", mineshaft: "stone", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", deep_dark: "deepslate_tiles", plains: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "sulfur", nether: "netherrack", end_city: "end_stone", end_island: "end_stone", ocean: "sand", lush_pool: "clay", flooded_cave: "gravel", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
+    mushroom_fields: "mycelium_top", badlands: "red_sand", mineshaft: "stone", mansion: "planks_dark_oak", trial_chamber: "tuff_bricks", stronghold: "stone_bricks", deep_dark: "deepslate_tiles", plains: "grass_top", cherry_grove: "grass_top", pale_garden: "pale_moss_block", dappled_forest: "grass_top", sulfur_caves: "sulfur", nether: "netherrack", nether_fortress: "nether_brick", end_city: "end_stone", end_island: "end_stone", ocean: "sand", lush_pool: "clay", flooded_cave: "gravel", swamp_water: "mud" }[biome] || "stone" }).ground, tex = art(name);
   if (!tex) return icon(`biome:${biome}`);
   return paint(16, name === "grass_top" ? multiplied(tex, BIOME_TINTS[biome].grass) : tex);
 };

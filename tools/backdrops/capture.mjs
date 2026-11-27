@@ -1,5 +1,6 @@
 // Screenshots of the Mobs tab's stage backgrounds, the mob hidden, one per background, numbered as the gallery numbers
-// them (#1 savanna ... #43 end): in the order the mobs, their variants, rows and name tags first show each background.
+// them (#1 savanna ... #43 end): in the order the mobs, their variants, rows and name tags first show each background, then
+// those only the Structures tab shows.
 //   node tools/backdrops/capture.mjs <out-dir> [biome,biome,...]
 // With biomes, only those are captured (their numbers stay the same). Writes NN_<biome>.png and index.json (every
 // background, in order, with the mobs, variants and names that show it). Needs Google Chrome; reads the built index.html,
@@ -58,6 +59,8 @@ try {
       for (const r of rowsOf(m.k)) for (const x of r.kinds) if (x.biome) out.push({ mob: m.k, row: r.k, kind: x.k, label: m.n + " (" + x.n + ")" });
       for (const t of shownTags(m.k)) if (t.biome || t.kind === SNOWY) out.push({ mob: m.k, tag: t.names[0], label: m.n + " named " + t.names[0] });
     }
+    // Then the Structures tab's: shown on the Mobs tab's stage (the same size), with the structure's first mob.
+    for (const s of STRUCTURES) if (sceneOf(s.k)) out.push({ mob: (s.mobs && s.mobs[0] && s.mobs[0].mob) || MOBS[0].k, scene: sceneOf(s.k), label: "Structures: " + s.n });
     return out;
   })()`);
   const seen = {}, order = [], motions = {};
@@ -65,6 +68,8 @@ try {
     await run(`(() => { pickMob(${JSON.stringify(c.mob)}, ${JSON.stringify(c.tag || "")});
       ${c.variant ? `document.querySelector('button[data-variant="${c.variant}"]').click();` : ""}
       ${c.row ? `document.querySelector('button[data-row="${c.row}"][data-kind="${c.kind}"]').click();` : ""}
+      ${c.scene ? `const st = document.getElementById("mob-stage"); st.dataset.biome = ${JSON.stringify(c.scene)};
+        st.style.setProperty("--ground", "url('" + groundArt(${JSON.stringify(c.scene)}) + "')"); mobBackdrop.show(${JSON.stringify(c.scene)});` : ""}
       return true; })()`);
     const biome = await run(`document.getElementById("mob-stage").dataset.biome`);
     if (seen[biome]) { seen[biome].push(c.label); continue; }

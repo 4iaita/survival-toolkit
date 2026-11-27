@@ -175,7 +175,8 @@ function drawSheets(ctx, motion, seconds, scale) {
   if (!loaded(pic)) return false;
   // An ore's own texels, by how far from gray they are.
   if (!motionPictures.has(pic)) motionPictures.set(pic, { bright: Object.fromEntries(names.map(n => [n, brighter(pic[n])])),
-    ores: Object.fromEntries(names.map(n => [n, motion.sheets[n].shine && glowSheet(pic[n], (r, g, b) => (Math.max(r, g, b) - Math.min(r, g, b) - 30) / 110)])) });
+    // yellow: the ore's texels by how yellow they are instead (nether gold ore: its netherrack is far from gray too).
+    ores: Object.fromEntries(names.map(n => [n, motion.sheets[n].shine && glowSheet(pic[n], motion.sheets[n].yellow ? (r, g, b) => (g - b - 40) / 100 : (r, g, b) => (Math.max(r, g, b) - Math.min(r, g, b) - 30) / 110)])) });
   const { bright, ores } = motionPictures.get(pic);
   // The frame a block is at, the next one, and how far into it it has faded.
   const now = ({ name, x, y }) => {
@@ -342,10 +343,18 @@ function drawSway(ctx, sway, seconds, scale) {
   return true;
 }
 // Spawners' flames: the pack's flame, a few about each block, rising a little, shrinking and gone; a warm glow under them
-// that flickers. at: the blocks' left edges and tops.
-function drawSpawners(ctx, spawners, seconds, scale) {
-  const pic = picturesOf(spawners, ["flame"]);
+// that flickers. at: the blocks' left edges and tops. front: what stands in front of them (a nether fortress's fences), cut out of
+// them, on a canvas of its own.
+function drawSpawners(out, spawners, seconds, scale) {
+  const pic = picturesOf(spawners, spawners.front ? ["flame", "front"] : ["flame"]);
   if (!loaded(pic)) return false;
+  let ctx = out;
+  if (spawners.front) {
+    const cv = motionLayers[2] || (motionLayers[2] = document.createElement("canvas"));
+    if (cv.width !== out.canvas.width || cv.height !== out.canvas.height) Object.assign(cv, { width: out.canvas.width, height: out.canvas.height });
+    ctx = cv.getContext("2d");
+    ctx.clearRect(0, 0, cv.width, cv.height);
+  }
   ctx.imageSmoothingEnabled = false;
   spawners.at.forEach(([x, y], s) => {
     const r = 22 * (0.9 + 0.1 * Math.sin(seconds * 7 + s * 2) * Math.sin(seconds * 3.1)), glow = ctx.createRadialGradient((x + 8) * scale, (y + 4) * scale, 0, (x + 8) * scale, (y + 4) * scale, r * scale);
@@ -363,6 +372,12 @@ function drawSpawners(ctx, spawners, seconds, scale) {
     }
   });
   ctx.globalAlpha = 1;
+  if (spawners.front) {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.drawImage(pic.front, 0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.globalCompositeOperation = "source-over";
+    out.drawImage(ctx.canvas, 0, 0);
+  }
   return true;
 }
 // Torches' flames: the pack's flame at each one's tip, always there, growing and shrinking and turning over, and now and then a

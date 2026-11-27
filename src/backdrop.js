@@ -339,6 +339,55 @@ const fortressBridge = prop([
   "ii......ii......ii......ii......ii",
   "jj......jj......jj......jj......jj",
 ], { f: { layers: [["nether_brick", null, [5, 11]]] }, ...Object.fromEntries([..."abcdefghij"].map(k => [k, blockTex("nether_brick")])) });
+// A nether fortress up close, the blaze's and the wither skeleton's home, as the game builds it: all nether bricks, nether
+// brick fences and a blaze spawner.
+// A nether brick fence seen side on: its post (texels 6 to 10) and its two rails (rows 1 to 4 and 7 to 10) to the side or
+// sides it joins, cut from the brick's texture.
+const fencePart = (x0, x1) => [["nether_brick", [x0, 1, x1, 4], [x0, 1]], ["nether_brick", [x0, 7, x1, 10], [x0, 7]]];
+const netherFence = (left, right) => [["nether_brick", [6, 0, 10, 16], [6, 0]], ...(left ? fencePart(0, 6) : []), ...(right ? fencePart(10, 16) : [])];
+const FORTRESS_DARK = "#120505";
+const FORTRESS = {
+  B: blockTex("nether_brick"),
+  // A corridor's window: a fence across a hole in the wall, the dark inside behind it.
+  W: { parts: netherFence(true, true), under: FORTRESS_DARK, cap: false },
+  // front: in front of the spawner's flames (see backdropView).
+  f: { parts: netherFence(true, true), cap: false, front: true }, r: { parts: netherFence(false, true), cap: false, front: true },
+  l: { parts: netherFence(true, false), cap: false, front: true }, p: { parts: netherFence(false, false), cap: false, front: true },
+  // The blaze spawner, the platform's ring of fences in front of it, and of its flames.
+  Z: blockTex("mob_spawner", null, { under: FORTRESS_DARK, parts: netherFence(true, true), cap: false, front: { parts: netherFence(true, true) } }),
+};
+const fortress = rows => prop(rows, FORTRESS);
+// The bridge's low wall along its far side, a block high: everything else stands in front of it.
+const fortressParapet = fortress(["B".repeat(34)]);
+// A corridor seen from outside: a wall with a 1×2 window of fences in every other block, in 5-block segments (wall,
+// window, wall, window, wall), a block of wall under the windows and over them, and its roof.
+const fortressCorridor = fortress(["BBBBBBBB", "BBBBBBBB", "BWBBWBWB", "BWBBWBWB", "BBBBBBBB"]);
+// A blaze spawner's platform, side on: three full-block steps up from the bridge, fences along the steps' open side, and
+// on top a ring of fences, two high and three at the back, round the spawner.
+const blazePlatform = fortress([
+  ".......p",
+  "...rfffl",
+  "..rffZfl",
+  "rffBBBBB",
+  "rfBBBBBB",
+  "rBBBBBBB",
+]);
+// The fortress far off across the lava sea, at half size: on the left a corridor's block, its windows near the top and
+// solid nether brick down into the lava under it (a corridor is built down to the ground); on the right a bridge, its deck
+// two blocks thick with a low wall along it, on arches between pillars three blocks wide that go down into the lava.
+const FAR_FORTRESS = { b: blockTex("nether_brick"), w: { layers: [["nether_brick", null, [5, 11]]], under: FORTRESS_DARK } };
+const farFortress = (() => {
+  const W = 34, rows = Array.from({ length: 18 }, () => Array(W).fill("."));
+  const fill = (r0, r1, c0, c1, ch = "b") => { for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) rows[r][c] = ch; };
+  fill(0, 17, 0, 14);
+  for (const c of [1, 3, 6, 8, 11, 13]) fill(2, 3, c, c, "w");
+  // The bridge, a segment of nineteen blocks from column 15: wall and deck, the arch's shoulders, its pillars.
+  fill(4, 6, 15, 33);
+  fill(7, 7, 15, 20); fill(7, 7, 28, 33);
+  fill(8, 9, 15, 18); fill(8, 9, 30, 33);
+  fill(10, 17, 15, 17); fill(10, 17, 31, 33);
+  return prop(rows.map(r => r.join("")), FAR_FORTRESS);
+})();
 // flows: it runs down (see drawLava).
 const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava", null, { flows: true }) });
 const monument = prop([
@@ -812,7 +861,7 @@ const BACKDROPS = {
   // nearer, netherrack with quartz, gold ore, magma and blackstone in it, fires burning on it, mushrooms, and a lavafall
   // pouring into the lava at a shore of soul sand and gravel.
   nether: () => ({
-    moves: ["lava", "fire"],
+    moves: ["lava", "fire", "nether_gold_ore"],
     mist: { far: 0.32, near: 0.08 },
     hills: { top: blockTex("netherrack"), fill: blockTex("netherrack"), base: 2, rise: 0, liquid: [2, blockTex("lava"), [blockTex("magma"), 0.3]],
       ores: [["quartz_ore", "nether_gold_ore", "magma", "blackstone", "blackstone"], 0.05],
@@ -825,6 +874,22 @@ const BACKDROPS = {
     near: [[netherMound(["..F.", ".QNF", "NNMO", "NBNN"]), -16], [plant("fire"), -9], [plant("mushroom_brown"), -6],
       [plant("mushroom_red"), 4], [netherMound(["F.", "NO"]), 7], [netherMound([".....", "SgLLL"]), 11], [lavafall, 14]],
     lights: [[-14, 3.5], [-9, 0.5], [8, 1.5], [14, 6], [13, 0.5]], lightSize: 4,
+  }),
+  // A nether fortress, the blaze's and the wither skeleton's (and the Structures tab's): standing on one of its bridges, its low wall behind; on the left the end of
+  // a corridor with its fence windows, on the right a blaze spawner up three steps in its ring of fences. Beyond, the lava
+  // sea between netherrack cliffs, and more of the fortress across it: a corridor's block and a bridge on its pillars.
+  nether_fortress: () => ({
+    moves: ["lava", "spawners", "nether_gold_ore"],
+    mist: { far: 0.32, near: 0.08 },
+    hills: { top: blockTex("netherrack"), fill: blockTex("netherrack"), base: 4, rise: 0, liquid: [4, blockTex("lava"), [blockTex("magma"), 0.3]],
+      ores: [["quartz_ore", "nether_gold_ore", "magma", "blackstone", "blackstone"], 0.05],
+      // The cliffs either side rise over the far fortress's deck, which runs into them.
+      profile: [[0.07, 24], [0.14, 22], [0.2, 20], [0.752, 4], [0.81, 20], [0.9, 23], [1, 25]],
+      landmarks: [[farFortress, 0.2]] },
+    ceiling: { rock: ["netherrack", "netherrack", "netherrack", "blackstone"], drip: [], hang: 0,
+      blobs: [[-11, ["GGG", "GGGG", ".GG.", ".G.."], "glowstone"], [7, ["GGGG", ".GGG", ".GG.", "..G."], "glowstone"]] },
+    near: [[fortressParapet, -17], [fortressCorridor, -17], [blazePlatform, 7.5]],
+    lights: [[-10, 11], [8, 11], [-3, 1.2], [3, 1.2]], lightSize: 4,
   }),
   // A cave a mineshaft runs through, the cave spider's: the cave's rock wall, its ceiling with dripstone and nearby
   // stalagmites, ore and cobwebs (the spiders' work); in the far wall, the mineshaft's corridor cut right across, lit
@@ -1510,7 +1575,7 @@ const fireMotion = (paint, width, height, dpr) => ({ ...movingCells(paint, "fire
 // strongly what's brighter than the first frame shines through the scene's dimness; shine: how strongly its ore itself does,
 // slowly stronger and weaker.
 const SHEETS = {
-  gold_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, diamond_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, lapis_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.6 },
+  gold_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, nether_gold_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4, yellow: true }, diamond_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, lapis_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.6 },
   redstone_ore: { ticks: 6, glow: 0.9, shine: 0.4 },
   lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.5 }, soul_lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.7 },
 };
@@ -1742,7 +1807,16 @@ function backdropView(canvas) {
     }
     // Flames flicker about spawners, and sparks rise round vaults (their left edges and tops).
     const placed = name => crowns.filter(b => b.name === name).map(b => [b.left / dpr, b.top / dpr]);
-    const spawners = moves.includes("spawners") && { at: [...placed("trial_spawner"), ...placed("mob_spawner")], flame: ART_FRAMES.flame }, vaults = moves.includes("vaults") && { at: placed("vault") };
+    // What stands in front of a spawner (a block's front: itself, or what of it does), drawn alone: it's cut out of the flames.
+    let spawnerFront = null;
+    if (moves.includes("spawners") && scene.near.some(([p]) => Object.values(p.legend).some(spec => spec.front))) {
+      const cv = Object.assign(document.createElement("canvas"), { width: canvas.width, height: canvas.height }), fc = cv.getContext("2d");
+      fc.imageSmoothingEnabled = false;
+      for (const [p, at] of scene.near) drawProp(fc, prop(p.rows, Object.fromEntries(Object.entries(p.legend).flatMap(([k, spec]) => (spec.front ? [[k, spec.front === true ? spec : spec.front]] : [])))),
+        canvas.width / 2 + at * NEAR * dpr, horizon, NEAR * dpr, false);
+      spawnerFront = cv.toDataURL();
+    }
+    const spawners = moves.includes("spawners") && { at: [...placed("trial_spawner"), ...placed("mob_spawner")], flame: ART_FRAMES.flame, ...(spawnerFront && { front: spawnerFront }) }, vaults = moves.includes("vaults") && { at: placed("vault") };
     // Torches burn.
     const torches = moves.includes("torches") && { at: placed("torch"), flame: ART_FRAMES.flame };
     // Clouds cross an open sky, behind the scene (clouds: how strong they are, if not fully; faint at night).
