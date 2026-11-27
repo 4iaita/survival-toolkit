@@ -22,6 +22,7 @@ const STRUCTURE_SCENES = {
   fortress: "nether_fortress",
   bastion_remnant: "bastion_remnant",
   end_city: "end_city",
+  ancient_city: "deep_dark",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -29,7 +30,7 @@ const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "
 const ST_BLOCKS = {
   chest: "ui:logo", barrel: "st:barrel", vault: "st:vault", ominous_vault: "st:vault", dispenser: "st:dispenser", pot: "ui:pot",
   spawner: "st:trial_spawner", ominous_spawner: "st:trial_spawner",
-  item_frame: "st:item_frame", dragon_head: "st:dragon_head", brewing_stand: "st:brewing_stand",
+  item_frame: "st:item_frame", dragon_head: "st:dragon_head", brewing_stand: "st:brewing_stand", furnace: "st:furnace",
 };
 
 /* Each structure: its containers (loot), its mobs, and where it is.
@@ -38,12 +39,13 @@ const ST_BLOCKS = {
  *     ([id, kind, least, most, chance]), for what's placed with the structure and not rolled (the end ship's elytra); note: the line
  *     under its list, if not the chance's.
  *   lootFacts: [label, text] under the containers: what else can be had there (blocks of gold).
- *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it, or how many it has) }.
+ *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it, or how many it has), ed (only in that edition) }.
  *   kinds: a structure made as one of several kinds (the bastion's four), each { k, n, icon, say } with its own loot, lootFacts, mobs
  *     and mobFacts where they differ: picked in the Structures section's dropdown, and laid over the structure's own.
  *   where: facts for the Where it is section; both(java, bedrock) where the editions differ.
  */
 const CITY_SHIP = 0.533;
+const CITY_CENTRE_2 = 1 / 3;
 const STRUCTURES = [
   {
     k: "trial_chambers", n: "Trial Chambers", dim: "overworld", icon: "st:trial_spawner",
@@ -96,6 +98,51 @@ const STRUCTURES = [
       often: "One in every 34 by 34 chunks (544 blocks square), at least 12 chunks from the next. They’re in the same places in both editions.",
       find: "A Trial Chambers map: 2 in 3 journeyman cartographers sell one for 12 emeralds and a compass. An abandoned camp’s secret chest can have one too. Underground, look for tuff and copper.",
       danger: "Breezes knock you back and off ledges, and turn your arrows aside. Arrow traps wait on tripwires in the corridors. In an ominous trial lingering potions and arrows fall on you every 8 seconds.",
+    },
+  },
+  {
+    // How many of each: from Java's pieces (tools/structure-pieces.py --counts ancient_city builds 2000 cities as JigsawPlacement does,
+    // round its city_anchor at Y -27); the chests' loot from each edition's own tables. Its three city centres are as likely, and only
+    // the second has the hidden chest and furnace (CITY_CENTRE_2): what's in them is placed with it, not rolled.
+    k: "ancient_city", n: "Ancient City", dim: "overworld", icon: "st:reinforced_deepslate",
+    say: "A sunken city of deepslate deep in the deep dark, round a great frame of reinforced deepslate, where sculk shriekers call the warden.",
+    loot: [
+      { k: "chest", n: "Chests", block: "chest", table: "chests/ancient_city",
+        where: "About 22 a city (10 to 39), in the buildings along its walls: 1 in each small chamber (about 11 of them a city), 2 in each barracks (about 3 of them), 1 or 2 up each tall ruined tower (about 4 of them), and 3 in a sauna (1 city in 4 has one)." },
+      { k: "ice_box", n: "Ice box chest", block: "chest", table: "chests/ancient_city_ice_box",
+        where: "In the ice box, a room of packed and blue ice: about half the cities (54%) have one, a few have more." },
+      { k: "hidden_chest", n: "Hidden chest", block: "chest", rows: [["golden_apple", "", 1, 1, CITY_CENTRE_2]],
+        where: "In the hidden rooms under the city centre’s frame, behind a piston door, in 1 of its 3 kinds of city centre.",
+        note: "The chance is that a city has it: one golden apple, not enchanted, the same in every one." },
+      { k: "furnace", n: "Hidden furnace", block: "furnace", rows: [["wooden_shovel", "", 1, 1, CITY_CENTRE_2], ["deepslate", "", 24, 24, CITY_CENTRE_2]],
+        where: "In the same hidden rooms as the hidden chest: a wooden shovel in its fuel slot and 24 deepslate it has smelted, as if someone had lived there.",
+        note: "The chance is that a city has it. Taking the deepslate out gives the experience of smelting it." },
+    ],
+    lootFacts: [
+      ["The frame", "56 blocks of reinforced deepslate in the city centre, shaped like a portal: found nowhere else. It drops nothing when mined, so it can’t be taken in Survival."],
+      ["Blocks to take", "About 140 soul lanterns and 170 candles, 4 skeleton skulls, packed and blue ice in the ice box, and the sculk: sculk, sculk sensors, sculk catalysts and sculk shriekers keep themselves only with Silk Touch (else experience). Shriekers mined, even with Silk Touch, can’t summon wardens again."],
+      ["Redstone", "Under the frame, behind a piston door that a sculk sensor opens, are hidden rooms with redstone lamps and a lectern."],
+    ],
+    mobs: [
+      { mob: "warden", how: "Summoned by the city’s sculk shriekers: the fourth time you set them off it digs out of the ground beside the shrieker, and every time after. It digs back down after a minute of quiet.", chance: "Summoned" },
+      { mob: "glow_squid", ed: "bedrock", how: "In the city’s water, below Y 30: the deep dark’s only spawn.", chance: "Spawns" },
+    ],
+    mobFacts: [
+      ["No spawns", both("Nothing spawns inside the city: it stops every kind of spawning in its whole box, and the deep dark round it has no spawns either. Its only mob is the warden.",
+        "Nothing spawns in the deep dark but glow squid in water, so the city’s only monster is the warden.")],
+      ["Shriekers", "About 16 sculk patches a city (5 to 29), each with 1 to 3 sculk shriekers where there’s floor beside it, and a sculk catalyst half the time. Every shrieker made with the world can summon wardens, here and in the rest of the deep dark; one a player places or a catalyst grows can’t."],
+      ["Warnings", "Stepping on a shrieker, even sneaking, or a sculk sensor within 8 blocks hearing you sets it off: it shrieks 4.5 seconds, players within 40 blocks get 12 seconds of Darkness, and your warning level goes up by 1, at most once every 10 seconds. At the fourth a warden comes, within a few blocks of the shrieker, unless another is within 24 blocks. The level goes down by 1 every 10 minutes. None come on Peaceful."],
+      ["The warden", "500 health, and no knockback moves it. Its punch does 30 on Normal (16 Easy, 45 Hard) and disables a shield for 5 seconds; out of reach it fires a sonic boom, 10 on Normal (6 Easy, 15 Hard), through walls, armor, shields and Protection, up to 14 blocks away (20 up or down). Every 6 seconds it gives players within 20 blocks 13 seconds of Darkness."],
+      ["How it finds you", both("It’s blind: it hears vibrations within 15 blocks and sniffs the air every 5 to 10 seconds, smelling you even while you sneak. Sneaking makes no vibrations, nor does walking on wool or carpet; an arrow or snowball landing elsewhere draws it there. Bumping into it angers it a little, hitting it at once.",
+        "It’s blind: it hears vibrations within 15 blocks and sniffs the air every 5 to 10 seconds, smelling you even while you sneak. Sneaking makes no vibrations, nor does walking on wool or carpet; an arrow or snowball landing elsewhere draws it there. Bumping into it angers it at once, as hitting it does.")],
+    ],
+    where: {
+      biomes: "Only the deep dark, the cave biome deep under mountains and hills: the city’s middle has to be in it at Y −27.",
+      height: "Its floor is at Y −51, and the city centre rises to about Y −21. It spreads up to 116 blocks each way from its middle, so a big one is about 230 blocks across.",
+      often: "The Overworld is split into regions of 24 by 24 chunks (384 blocks square), each with one try at a city in its first 16 by 16 chunks, so two are at least 8 chunks apart. The try fails where its middle isn’t in the deep dark, so most regions have none.",
+      find: "Go down to about Y −51 under mountains: the deep dark is darker than the caves round it, with sculk spreading over the deepslate. An abandoned camp’s secret chest has an Ancient City map 1 time in 7. No compass leads to one: a recovery compass only points to where you last died.",
+      danger: "The warden: ordinary gear can’t beat it, and its sonic boom goes through walls and shields. Sneak everywhere, walk on wool or carpet, and step round the shriekers: the fourth warning brings it. Sculk sensors along the paths hear you and set off shriekers within 8 blocks; a wool block between them stops that. Throw a snowball or an arrow to draw it away, and if it comes, leave; it digs back down after a minute of quiet.",
+      about: "Swift Sneak: found nowhere else, on books in 1 chest in 4. Echo shards (3 chests in 10), also only here: eight and a compass make a recovery compass. Disc fragments 5, also only here: nine make Music Disc 5. Enchanted golden apples, diamond leggings and hoes enchanted at levels 30 to 50, and Music Disc Otherside (also in dungeons and stronghold corridors). And the Ward and Silence armor trims; Silence is the rarest template.",
     },
   },
   {
@@ -417,6 +464,7 @@ const ST_ART = {
   "st:blackstone": C("blackstone", "blackstone_top"), "st:gilded_blackstone": C("gilded_blackstone"), "st:polished_blackstone_bricks": C("polished_blackstone_bricks"),
   "st:cracked_polished_blackstone_bricks": C("cracked_polished_blackstone_bricks"), "st:chiseled_polished_blackstone": C("chiseled_polished_blackstone"),
   "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
+  "st:reinforced_deepslate": C("reinforced_deepslate"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
 };
 for (const [k, spec] of Object.entries(ST_ART)) if (artReady(spec)) ICONS[k] = spec;
 
@@ -488,12 +536,13 @@ const LOOT_CUBES = {
   acacia_planks: ["planks_acacia"], obsidian: [], scaffolding: ["scaffolding_side", "scaffolding_top"], heavy_core: [],
   gilded_blackstone: [], crying_obsidian: [], lodestone: ["lodestone_side", "lodestone_top"], ancient_debris: ["ancient_debris_side", "ancient_debris_top"],
   bone_block: ["bone_block_side", "bone_block_top"], soul_sand: [], crimson_nylium: ["crimson_nylium_side", "crimson_nylium_top"], glowstone: [],
+  deepslate: [], sculk: [], sculk_catalyst: [], packed_ice: [],
 };
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
-  netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain" };
+  netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain", soul_torch: "soul_torch_carried" };
 // What's placed with a structure and isn't in any loot table (a box's rows), named as Java's en_us.json names it.
-Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head" });
+Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head", wooden_shovel: "Wooden Shovel", deepslate: "Deepslate" });
 const LOOT_SHINES = new Set(["enchanted_book", "enchanted_golden_apple", "experience_bottle"]);
 // Potions' colors (the Potions tab's), by their potion id without strong_ or long_.
 const lootPotion = v => (v.match(/(?:^|\+)potion:(?:strong_|long_)?([a-z_]+)/) || [])[1];

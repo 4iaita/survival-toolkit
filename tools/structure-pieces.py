@@ -67,7 +67,10 @@ def nbt(path):
 # ---------- Pieces ----------
 
 NOTABLE = {"gold_block", "lodestone", "gilded_blackstone", "ancient_debris", "spawner", "chest", "trapped_chest", "barrel", "lava",
-           "ender_chest", "brewing_stand", "dragon_head", "dragon_wall_head"}
+           "ender_chest", "brewing_stand", "dragon_head", "dragon_wall_head",
+           # the ancient city's
+           "reinforced_deepslate", "sculk_sensor", "sculk_shrieker", "sculk_catalyst", "skeleton_skull", "soul_lantern", "candle",
+           "white_candle", "furnace", "lectern", "note_block", "packed_ice", "blue_ice", "redstone_lamp", "campfire"}
 
 
 class Data:
@@ -86,7 +89,14 @@ class Data:
         loc = loc.replace("minecraft:", "")
         if loc in self._pieces:
             return self._pieces[loc]
-        t = nbt(self.base / "structure" / f"{loc}.nbt")
+        path = self.base / "structure" / f"{loc}.nbt"
+        if not path.exists():
+            # A pool can name a template the game hasn't (the ancient city's walls/intact_horizontal_wall_stairs_5): Java's
+            # StructureTemplateManager.getOrCreate makes an empty one, with no jigsaws, so it never attaches.
+            self._pieces[loc] = {"containers": Counter(), "spawners": Counter(), "mobs": Counter(), "blocks": Counter(), "markers": Counter(),
+                                 "jigsaws": [], "size": [0, 0, 0], "missing": True}
+            return self._pieces[loc]
+        t = nbt(path)
         pal = t["palette"] if "palette" in t else t["palettes"][0]
         out = {"containers": Counter(), "spawners": Counter(), "mobs": Counter(), "blocks": Counter(), "markers": Counter(), "jigsaws": [], "size": t["size"]}
         for b in t["blocks"]:
@@ -252,14 +262,23 @@ def kept(data, el, block):
     return keep
 
 
-def build(data, start_el, depth, reach, rng):
-    """One structure: [(template, element, depth)] of every piece placed."""
+def build(data, start_el, depth, reach, rng, anchor=None):
+    """One structure: [(template, element, depth)] of every piece placed. A feature element (the ancient city's sculk patches) is
+    placed as a block's box where its jigsaw points, and listed as ("feature:<id>", element, depth).
+    anchor: (start_jigsaw_name, its absolute Y, the world's lowest and highest Y) for a structure placed by a named jigsaw (the
+    ancient city's city_anchor at Y -27): the structure's box is then round that jigsaw's height and cut off at the world's bottom
+    and top, as JigsawPlacement.addPieces does."""
     rot = rng.randrange(4)
     loc = elements(data, start_el)[0]
     pc = data.piece(loc)
     box = box_of(pc["size"], rot, (0, 0, 0))
     cx, cz = (box[0] + box[3]) // 2, (box[2] + box[5]) // 2
-    outer = Free((cx - reach, box[1] - reach, cz - reach, cx + reach, box[4] + reach, cz + reach), [box])
+    lo, hi = box[1] - reach, box[4] + reach
+    if anchor:
+        name, y, bottom, top = anchor
+        a = next(j["pos"][1] for j in pc["jigsaws"] if j["name"] == name)
+        lo, hi = max(a - reach, bottom - (y - a)), min(a + reach, top - (y - a))
+    outer = Free((cx - reach, lo, cz - reach, cx + reach, hi, cz + reach), [box])
     placed = [(loc, start_el, 0)]
     queue = [(loc, start_el, rot, (0, 0, 0), box, outer, 0)]
     while queue:
@@ -288,6 +307,14 @@ def build(data, start_el, depth, reach, rng):
             for c in cands:
                 if c["element_type"].endswith("empty_pool_element") or done:
                     break
+                if c["element_type"].endswith("feature_pool_element"):
+                    # FeaturePoolElement: one jigsaw named minecraft:bottom at its own block, its box that one block.
+                    fb = tgt + tgt
+                    if j["target"] == "minecraft:bottom" and here.fits(fb):
+                        here.taken.append(fb)
+                        placed.append(("feature:" + c["feature"].replace("minecraft:", ""), c, d + 1))
+                        break
+                    continue
                 cloc = elements(data, c)
                 if not cloc:
                     break
@@ -321,6 +348,9 @@ def build(data, start_el, depth, reach, rng):
 def tally_of(data, placed):
     t = Counter()
     for loc, el, d in placed:
+        if loc.startswith("feature:"):
+            t[("feature", loc[8:])] += 1
+            continue
         pc = data.piece(loc)
         group = loc.rsplit("/", 1)[0]
         for (b, tb), n in pc["containers"].items():
@@ -336,16 +366,21 @@ def tally_of(data, placed):
         golds = pc["blocks"].get("gold_block", 0) + sum(1 for j in pc["jigsaws"] if j["final"] == "gold_block")
         if golds:
             t[("gold blocks, after decay",)] += golds * kept(data, el, "gold_block")
+        for b, n in pc["blocks"].items():
+            if b not in ("gold_block", "chest", "spawner", "barrel"):
+                n += sum(1 for j in pc["jigsaws"] if j["final"] == b)
+                t[("block", b)] += n * kept(data, el, b)
+                t[("block in", b, group)] += n * kept(data, el, b)
         t[("piece", loc)] += 1
     return t
 
 
-def counts(data, start, depth, reach, n, seed=1):
+def counts(data, start, depth, reach, n, seed=1, anchor=None):
     sp = data.pool(start)
     for e in sp["elements"]:
         rng, runs = random.Random(seed), []
         for _ in range(n):
-            runs.append(tally_of(data, build(data, e["element"], depth, reach, rng)))
+            runs.append(tally_of(data, build(data, e["element"], depth, reach, rng, anchor)))
         keys = sorted({k for t in runs for k in t}, key=str)
         print(f"\n=== {elements(data, e['element'])[0]}  ({n} built, depth {depth})")
         for k in keys:
@@ -527,4 +562,8 @@ if __name__ == "__main__":
     report(d, sys.argv[2])
     if len(sys.argv) > 3 and sys.argv[3] == "--counts":
         st = json.loads((d.base / "worldgen" / "structure" / f"{sys.argv[4]}.json").read_text())
-        counts(d, sys.argv[2], st["size"], st.get("max_distance_from_center", 80), int(sys.argv[5]) if len(sys.argv) > 5 else 2000)
+        anchor = None
+        if "start_jigsaw_name" in st and "absolute" in st.get("start_height", {}):
+            # The Overworld's bottom and top (dimension_type/overworld: min_y -64, height 384): the only dimension one is in now.
+            anchor = (st["start_jigsaw_name"], st["start_height"]["absolute"], -64, 319)
+        counts(d, sys.argv[2], st["size"], st.get("max_distance_from_center", 80), int(sys.argv[5]) if len(sys.argv) > 5 else 2000, anchor=anchor)

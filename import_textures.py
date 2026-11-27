@@ -272,6 +272,9 @@ FILES = {
     "ancient_debris_top": "blocks/ancient_debris_top", "crimson_nylium_side": "blocks/crimson_nylium_side", "crimson_nylium_top": "blocks/crimson_nylium_top",
     "crimson_roots": "blocks/crimson_roots", "bone_block_side": "blocks/bone_block_side", "bone_block_top": "blocks/bone_block_top",
     "netherite_scrap": "items/netherite_scrap", "music_disc_pigstep": "items/record_pigstep",
+    # the ancient city's loot (the Structures tab)
+    "music_disc_otherside": "items/record_otherside", "music_disc_13": "items/record_13", "disc_fragment_5": "items/disc_fragment_5",
+    "candle": "items/candles/candle",
     # art/spectral_arrow.png isn't the pack's (Bedrock has no spectral arrows): it's Java 26.3's own item/spectral_arrow.png
     # (misode/mcmeta, 26.3-assets), copied by hand, so it isn't listed here.
     # The bastion remnant's background and the crimson forest round it.

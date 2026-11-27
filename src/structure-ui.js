@@ -31,6 +31,8 @@ function kindSay(id, kind) {
   for (const v of kind ? kind.split("+") : []) {
     const [k, rest = ""] = v.split(/:(.*)/);
     if (k === "worn") say.push("damaged");
+    // One enchantment at any level reads as Bedrock's set level range does (Swift Sneak I–III), from its highest (ENCH in src/solver.js).
+    else if (k === "ench" && rest && !rest.includes(",") && ENCH[rest]) say.push(`${enchName(rest)} ${span2([1, ENCH[rest].max], n => ROMAN[n] || n)}`);
     else if (k === "ench") say.push(rest === "treasure" ? "enchanted at random, treasure enchantments too" : rest ? `one of ${rest.split(",").map(enchName).join(", ")}, at any level` : id === "enchanted_book" ? "an enchantment at random" : "enchanted at random");
     else if (k === "lvl") say.push(`enchanted at level ${span2(rest.split("-"))}`);
     else if (k === "set") say.push(rest.split(",").map(x => { const [e, lv] = x.split(":"); return `${enchName(e)} ${span2(lv.split("-").map(Number), n => ROMAN[n] || n)}`; }).join(", "));
@@ -111,11 +113,13 @@ function lootSection(s) {
 }
 
 const mobKey = k => (MOBS.some(m => m.k === k) ? k : null);
+// A structure's mob rows in the edition picked (a row with ed is only in that one).
+const stMobs = s => (s.mobs || []).filter(r => mobKey(r.mob) && (!r.ed || r.ed === stEdition()));
 const stMobName = r => (r.baby ? `Baby ${mobName(mobOf(r.mob))}` : mobName(mobOf(r.mob)));
 const mobRow = r => `<li><button type="button" class="item-row st-mob" data-mob="${r.mob}"${r.baby ? ' data-baby="on"' : ""} title="Open the ${esc(stMobName(r))} in the Mobs tab">
     ${plainSlot(mobIcon(mobOf(r.mob)), "sm")}<span class="item-name">${esc(stMobName(r))}<span class="sub">${esc(byEdition(r.how, stEdition()))}</span></span>${r.chance ? `<span class="item-chance">${esc(r.chance)}</span>` : ""}</button></li>`;
 function mobsSection(s) {
-  const mobs = (s.mobs || []).filter(r => mobKey(r.mob));
+  const mobs = stMobs(s);
   return `${stHead("mobs", mobs.length ? plural(new Set(mobs.map(r => r.mob + (r.baby ? "b" : ""))).size, "mob") : "")}
     ${mobs.length ? `<ul class="item-list wide st-mobs st-one">${mobs.map(mobRow).join("")}</ul>` : '<p class="mob-lead">No mobs of its own.</p>'}
     ${s.mobFacts ? `<dl class="fact-list">${s.mobFacts.map(([l, t]) => stFact(l, t)).join("")}</dl>` : ""}`;
@@ -313,12 +317,13 @@ function stSearchHits(q) {
           if (r[1] === "*") continue;
           const base = (STRUCTURE_NAMES.items[r[0]] || r[0]).toLowerCase(), full = lootName(r[0], r[1]).toLowerCase();
           if (base.includes(q)) byId.set(r[0], any.get(r[0]) || r);
-          else if (full.includes(q) && !byId.has(r[0])) byId.set(`${r[0]}|${r[1]}`, r);
+          // Or what's done to it: a book's enchantment ("swift sneak").
+          else if ((full.includes(q) || kindSay(r[0], r[1]).toLowerCase().includes(q)) && !byId.has(r[0])) byId.set(`${r[0]}|${r[1]}`, r);
         }
         for (const r of byId.values()) hits.push({ item: r, s, kind, box, p: r[4] });
       }
-      for (const m of shown.mobs || []) {
-        if (mobKey(m.mob) && stMobName(m).toLowerCase().includes(q)) hits.push({ mob: m, s, kind, p: m.chance === "Every one" ? 1 : 0.5 });
+      for (const m of stMobs(shown)) {
+        if (stMobName(m).toLowerCase().includes(q)) hits.push({ mob: m, s, kind, p: m.chance === "Every one" ? 1 : 0.5 });
       }
     }
   }
@@ -353,7 +358,7 @@ function renderStSearch() {
       : h.item
       ? `<button type="button" class="search-hit" data-pick="${h.s.k}" data-kind="${h.kind ? h.kind.k : ""}" data-box="${h.box.k}">
           ${lootSlot(h.item[1] === "*" ? h.item[0] : h.item[0], h.item[1] === "*" ? "" : h.item[1])}
-          <span><span class="who">${esc(h.item[1] === "*" ? STRUCTURE_NAMES.items[h.item[0]] : lootName(h.item[0], h.item[1]))}</span><span class="deal">${esc([h.s.n, h.kind && h.kind.n, h.box.n].filter(Boolean).join(" · "))}: ${pct(h.p)}${h.item[5] ? `, only in ${esc(titled(h.item[5].replace(/_/g, " ")))}` : ""}</span></span>
+          <span><span class="who">${esc(h.item[1] === "*" ? STRUCTURE_NAMES.items[h.item[0]] : lootName(h.item[0], h.item[1]))}${h.item[1] !== "*" && kindSay(h.item[0], h.item[1]).toLowerCase().includes(q) ? ` · ${esc(kindSay(h.item[0], h.item[1]))}` : ""}</span><span class="deal">${esc([h.s.n, h.kind && h.kind.n, h.box.n].filter(Boolean).join(" · "))}: ${pct(h.p)}${h.item[5] ? `, only in ${esc(titled(h.item[5].replace(/_/g, " ")))}` : ""}</span></span>
         </button>`
       : `<button type="button" class="search-hit" data-pick="${h.s.k}" data-kind="${h.kind ? h.kind.k : ""}" data-section="mobs">
           ${plainSlot(mobIcon(mobOf(h.mob.mob)), "sm")}

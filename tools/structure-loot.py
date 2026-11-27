@@ -451,6 +451,7 @@ def names(java, bedrock, lang):
              or i == "netherite_upgrade_smithing_template" and "Netherite Upgrade Template"
              or get(f"item.minecraft.{i}.new")
              or i.startswith("music_disc_") and f"Music Disc ({get(f'item.minecraft.{i}.desc').split(' - ')[-1]})"
+             or i.startswith("disc_fragment_") and f"Disc Fragment ({get(f'item.minecraft.{i}.desc').split(' - ')[-1]})"
              or get(f"item.minecraft.{i}", f"block.minecraft.{i}"))
         if not n:
             raise ValueError(f"no name for {i}")
