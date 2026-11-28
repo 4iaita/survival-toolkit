@@ -143,6 +143,10 @@ FILES = {
     "door_spruce_upper": "blocks/door_spruce_upper", "door_spruce_lower": "blocks/door_spruce_lower",
     "door_acacia_upper": "blocks/door_acacia_upper", "door_acacia_lower": "blocks/door_acacia_lower",
     "smooth_sandstone": "blocks/sandstone_smooth", "chiseled_sandstone": "blocks/sandstone_carved",
+    # The villages' pieces (Java's smooth sandstone is the pack's sandstone top, its sandstone the pack's sandstone_normal).
+    "sandstone_top": "blocks/sandstone_top", "sandstone_normal": "blocks/sandstone_normal",
+    "door_jungle_upper": "blocks/door_jungle_upper", "door_jungle_lower": "blocks/door_jungle_lower",
+    "glass_yellow": "blocks/glass_yellow", "glass_orange": "blocks/glass_orange",
     # The nether backdrop.
     "deepslate": "blocks/deepslate/deepslate", "glow_lichen": "blocks/glow_lichen",
     "moss_block": "blocks/moss_block", "clay": "blocks/clay", "big_dripleaf_top": "blocks/big_dripleaf_top", "big_dripleaf_stem": "blocks/big_dripleaf_stem",

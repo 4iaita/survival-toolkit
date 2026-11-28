@@ -61,6 +61,8 @@ try {
     }
     // Then the Structures tab's: shown on the Mobs tab's stage (the same size), with the structure's first mob (or its first kind's).
     for (const s of STRUCTURES) if (sceneOf(s.k)) out.push({ mob: (((s.mobs || (s.kinds && s.kinds.find(k => k.mobs) || {}).mobs || [])[0]) || {}).mob || MOBS[0].k, scene: sceneOf(s.k), label: "Structures: " + s.n });
+    // And a kind's own (a village's), with the kind's first mob.
+    for (const s of STRUCTURES) for (const k of s.kinds || []) { const sc = sceneOf(s.k + "/" + k.k); if (STRUCTURE_SCENES[s.k + "/" + k.k]) out.push({ mob: ((k.mobs || s.mobs || [])[0] || {}).mob || MOBS[0].k, scene: sc, label: "Structures: " + s.n + " (" + k.n + ")" }); }
     return out;
   })()`);
   const seen = {}, order = [], motions = {};

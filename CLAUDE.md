@@ -4,7 +4,7 @@ Most of this is about the Mobs tab's stage backgrounds; the rest of that tab is 
 "Finding what's unused"). For the Equipment tab, read "The Equipment tab"; for the Potions tab, "The Potions tab"; for the Banners tab, "The Banners
 tab"; for the Fireworks tab, "The Fireworks tab"; for the Decorated Pots tab, "The Decorated Pots tab"; for the Armor Stands tab, "Armor Stands, section by section".
 
-The user reviews the mob stage backgrounds by number (`#18 · village`) from a numbered gallery, then asks for changes
+The user reviews the mob stage backgrounds by number (`#18 · village_plains`) from a numbered gallery, then asks for changes
 one at a time. This is how to do that quickly.
 
 ## The loop
@@ -56,13 +56,14 @@ The order is the order the mobs, their variants, rows and name tags first show e
 to `index.json` with every mob that shows it):
 
 1 savanna · 2 cave · 3 plains · 4 desert · 5 swamp · 6 snowy · 7 cherry_grove · 8 dappled_forest · 9 taiga · 10 jungle ·
-11 peaks · 12 mushroom_fields · 13 badlands · 14 lush_pool · 15 ocean · 16 flooded_cave · 17 swamp_water · 18 village ·
-19 swamp_night · 20 trial_chamber · 21 desert_night · 22 mineshaft · 23 pale_garden_night · 24 sulfur_caves ·
-25 pale_garden · 26 ocean_night · 27 snowy_night · 28 mansion · 29 plains_night · 30 pillager_outpost · 31 stronghold ·
-32 deep_dark · 33 nether_fortress · 34 nether · 35 bastion_remnant · 36 end_island · 37 end · 38 end_city
+11 peaks · 12 mushroom_fields · 13 badlands · 14 lush_pool · 15 ocean · 16 flooded_cave · 17 swamp_water · 18 village_plains ·
+19 village_desert · 20 village_savanna · 21 swamp_night · 22 trial_chamber · 23 desert_night · 24 mineshaft · 25 pale_garden_night ·
+26 sulfur_caves · 27 pale_garden · 28 ocean_night · 29 snowy_night · 30 mansion · 31 plains_night · 32 pillager_outpost ·
+33 stronghold · 34 deep_dark · 35 nether_fortress · 36 nether · 37 bastion_remnant · 38 end_island · 39 end · 40 end_city
 
 After the mobs' come the backgrounds only the Structures tab shows (`STRUCTURE_SCENES` in `src/structure-data.js`), captured on the
-Mobs tab's stage with the structure's first mob (or its first kind's); none now. The Pillager Outpost's, `pillager_outpost`
+Mobs tab's stage with the structure's first mob (or its first kind's), then a kind's own (`"village/<kind>"` in
+`STRUCTURE_SCENES`, with that kind's first mob); none now (the villages' are the villagers' too). The Pillager Outpost's, `pillager_outpost`
 (2026-11-28), is the pillager's too: its watchtower close by, its north side (where its banners face; the door is on the south),
 generated from Java's own template (`pillager_outpost/watchtower.nbt` in misode/mcmeta) block by block as each lies (`OUTPOST_TOWER`:
 logs by axis, X lying sideways drawn with `turn`, O pointing out as rings; stairs and slabs by shape), each shaded by its depth, and
@@ -72,6 +73,34 @@ texel; targets close by; a log pile, a tent and a cage on the far hills (the use
 the wither skeleton's too, the Bastion Remnant's (one for all four kinds, the user's choice, 2026-11-27) the piglin brute's, the End City's
 (`end_city`) the shulker's. The End's own, `end` (2026-11-27: its outer islands, chorus trees, a far end gateway; the user had
 the far end city taken out), is the enderman's and the endermite's.
+
+The villages: the desert and the savanna have scenes of their own, `village_<kind>`, built one at a time with the user (2026-11-28), and
+are the desert and savanna villagers' too (`MOB_VARIANTS.villager`, the user's wish). The plains village is `village_plains` (named
+`village` until the user had it named by its biome, 2026-11-28): the villager's own, the iron golem's, the ravager's, and the Structures
+tab's for the plains, snowy and taiga kinds. A snowy village scene was built and removed at the user's wish ("awful": its meeting
+points, a wooden lantern frame and an ice spire, and a far temple of stacked planks looked wrong); the taiga's isn't built. The villages' pieces are generated from Java's templates
+(`structure/village/<kind>/...` in misode/mcmeta `26.3-data`) by a scratchpad script, as the outpost's tower was, and drawn by
+`pieceProp` and `pieceBlock` in `src/backdrop.js` from a kind's legend of tokens (`DESERT_BLOCKS`: `full:`, `turn:`, `end:` logs by axis,
+`slab:<tex>:<half>`, `stair:<tex>:front|back|left|right:<half>`, `wall:`, `door:`, `torch`, `pot:`, `wheat:`, `bell`) and its pieces' rows, depths,
+and the block behind each and its depth (`DESERT_PIECES`). Java's names go to the pack's through `PIECE_TEX` (Java's smooth sandstone is the
+pack's `sandstone_top`, its cut sandstone art's `smooth_sandstone`, its sandstone `sandstone_normal`). A block behind three or more back is a
+room, drawn dim (`PIECE_INSIDE`, `ROOM_SHADE`). A jigsaw block must be drawn as its `final_state` (it's in the block's nbt): read as air, it
+left a hole in a house's wall that isn't in the game, and the user asked why. A piece's ground layer (y 0) is left out, but a farm's is
+raised a block, as the plains farm is. Doors aren't whole: what's behind shows through their windows; and a door or glass pane with
+nothing whole behind it in its line (it would look through the room and out of a window behind) shows the room, in the wall's block beside
+it: the user wanted the buildings to have volume. Corner stairs are drawn by their `shape` (`corner-<side>-<front|back>`, `inner-<side>`):
+drawn as straight ones, the savanna well's roof came out lopsided. `pieceProp`'s `drop` leaves cells out (the savanna well's front torch).
+Each kind needs its stage colors in `src/trade.css` (the Mobs tab's biome's): without them the haze is the default blue and the far
+hills come out gray-pink, which the user called ugly. The desert's: meeting point 2's well and bell in the middle, medium house 1 from its door side on
+the left, a lamp post and farm 2 on the right (seen from its north side, its wheat drawn grown: from the east, farm 1's rows
+alternated with water and its composter showed through, which the user called messy), small house 4 and temple 1 on the dunes.
+Nothing is drawn behind a plant (a block far behind a crop showed through it).
+The savanna's (rebuilt once: meeting point 2's terracotta fountain with flat brown banners looked ugly to the user): meeting point 4's
+roofed well with its hanging bell (`bell:ceiling`), its front torch left out (the user found three too many); small house 1 (yellow
+terracotta) from its door side under the Mobs tab's tall acacia; hay and large farm 1 on the right; low hills by `profile` (random ones
+looked too busy, and a near acacia's leaning trunk looked like their steps), rising behind the tall acacia; far acacias (`lowAcacia`, low
+and narrow, so its crown doesn't run into the near one's: the user didn't want crowns merged), temple 2 and small house 3. No lamp post
+(a torch on a fence looked random), no tree at full size behind the well (it looked too close: it's on the far hills).
 
 The grove, the snowy, old growth pine and spruce taigas, the savanna plateau, the sparse and bamboo jungles, the
 forest and the mangrove swamp were dropped (2026-11-21) as near copies: their mobs use snowy, taiga, savanna, jungle
@@ -133,19 +162,19 @@ the pale garden's).
 
 Every background has an animation, added one by one and approved by the user (2026-11-24 and 25):
 
-- Air bubbles (`drawBubbles`): 14, 15, 16, 17, 26. Gas off the sulfur pools (`drawGas`, `sulfurPool`'s `gas`): 24.
-- Twinkling stars (`drawStars`): 19, 21, 23, 27, 29. Falling leaves (`drawLeaves`): 7, 8, 23, 25, and a few in 1, 3, 5, 10, 19, 29; not
+- Air bubbles (`drawBubbles`): 14, 15, 16, 17, 28. Gas off the sulfur pools (`drawGas`, `sulfurPool`'s `gas`): 26.
+- Twinkling stars (`drawStars`): 21, 23, 25, 29, 31. Falling leaves (`drawLeaves`): 7, 8, 25, 27, and a few in 1, 3, 5, 10, 20, 21, 31; not
   from spruces or far trees.
-- Snow (`drawSnow`, "not too much"): 6, 27. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
-- Calm sand (`drawSand`): 4, 21, 13. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
-- Lava (`drawLava`): 34, 33, 31. Fire (`drawFire`): 34. Torches (`drawTorches`): 22, 28. Spawner flames (`drawSpawners`): 20, 31, 33 (behind the fortress's fences: a legend entry's `front` is cut out of them). Nether gold ore glinting (`SHEETS`, its texels picked by `yellow`): 33, 34, 35. Vault
-  sparks (`drawVaults`): 20. Lights that wax and wane (`drawLight`): 2, 22, 28, 31, 32, 35 (the lantern and the shroomlights), 38 (and the far city's end rods).
-- Clouds (`drawClouds`), slowly right and back, in every outdoor scene (20 of them), in the same places everywhere; the jungle's crowns hide
+- Snow (`drawSnow`, "not too much"): 6, 29. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
+- Calm sand (`drawSand`): 4, 23, 13, 19. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
+- Lava (`drawLava`): 36, 35, 33. Fire (`drawFire`): 36. Torches (`drawTorches`): 24, 30, 19, 20. Spawner flames (`drawSpawners`): 22, 33, 35 (behind the fortress's fences: a legend entry's `front` is cut out of them). Nether gold ore glinting (`SHEETS`, its texels picked by `yellow`): 35, 36, 37. Vault
+  sparks (`drawVaults`): 22. Lights that wax and wane (`drawLight`): 2, 24, 30, 33, 34, 37 (the lantern and the shroomlights), 40 (and the far city's end rods).
+- Clouds (`drawClouds`), slowly right and back, in every outdoor scene (22 of them), in the same places everywhere; the jungle's crowns hide
   most of its own, and the user chose to leave it.
-- Ores and the lantern (`drawSheets`): 2; the bastion's lantern: 35; soul lanterns too: 32. Candle (`drawCandles`): 32. Drips (`drawDrips`): 2, 22. Sculk (`drawSculk`): 32. Wheat (`drawSway`): 18.
-- Banners swaying (`drawBanners`, a legend entry's `flag`, `bannerFlag`): 30, Java's beat but sideways, 3 degrees, as the game's swing toward you
+- Ores and the lantern (`drawSheets`): 2; the bastion's lantern: 37; soul lanterns too: 34. Candle (`drawCandles`): 34. Drips (`drawDrips`): 2, 24. Sculk (`drawSculk`): 34. Wheat (`drawSway`): 18, 19, 20.
+- Banners swaying (`drawBanners`, a legend entry's `flag`, `bannerFlag`): 32, Java's beat but sideways, 3 degrees, as the game's swing toward you
   doesn't show from the front.
-- End crystals (`drawCrystals`): 36. End rods (`drawRods`): 38. An end gateway's beam flashing now and then (`drawGateways`): 37 only (the user wants it
+- End crystals (`drawCrystals`): 38. End rods (`drawRods`): 40. An end gateway's beam flashing now and then (`drawGateways`): 39 only (the user wants it
   on no other End background).
 
 Left still: the End's sky, the nether's magma and light.
