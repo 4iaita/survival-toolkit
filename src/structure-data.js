@@ -28,10 +28,11 @@ const STRUCTURE_SCENES = {
   woodland_mansion: "mansion",
   ocean_monument: "ocean",
   pillager_outpost: "pillager_outpost",
-  // A village: each kind on a scene of its own, if it has one; the others (the plains, the snowy and the taiga kinds) on the Mobs
-  // tab's plains village (village_plains).
+  // A village: each kind on a scene of its own (the plains kind on the Mobs tab's plains village, village_plains).
   "village/desert": "village_desert",
   "village/savanna": "village_savanna",
+  "village/taiga": "village_taiga",
+  "village/snowy": "village_snowy",
   village: "village_plains",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };

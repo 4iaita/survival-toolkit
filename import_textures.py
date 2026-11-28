@@ -177,7 +177,8 @@ FILES = {
     "hay_side": "blocks/hay_block_side", "wheat_crop": "blocks/wheat_stage_7", "dirt": "blocks/dirt", "packed_ice": "blocks/ice_packed",
     "poppy": "blocks/flower_rose", "dandelion": "blocks/flower_dandelion", "cornflower": "blocks/flower_cornflower",
     "short_grass": "blocks/tallgrass", "fern": "blocks/fern", "dead_bush": "blocks/deadbush",
-    "berry_bush": "blocks/sweet_berry_bush_stage3", "vine": "blocks/vine", "lily_pad": "blocks/waterlily",
+    "berry_bush": "blocks/sweet_berry_bush_stage3", "campfire_fire": "blocks/campfire", "campfire_log": "blocks/campfire_log",
+    "stripped_spruce_log": "blocks/stripped_spruce_log", "stripped_spruce_log_top": "blocks/stripped_spruce_log_top", "vine": "blocks/vine", "lily_pad": "blocks/waterlily",
     "water": "blocks/water_still_grey", "grass_side_overlay": "blocks/grass_side", "grass_top": "blocks/grass_top",
     "bamboo_stem": "blocks/bamboo_stem", "bamboo_leaf": "blocks/bamboo_leaf", "large_fern_top": "blocks/double_plant_fern_top",
     "large_fern_bottom": "blocks/double_plant_fern_bottom", "mossy_stone_bricks": "blocks/stonebrick_mossy",
@@ -301,7 +302,7 @@ FILES = {
     **{f"{k}_carried": f"blocks/carried/{k}_carried" for k in ("mushroom_brown", "mushroom_red", "crimson_fungus", "warped_fungus", "torch", "soul_torch", "copper_torch", "redstone_torch")},
 }
 # Animated block textures, a strip of frames top to bottom: only their first frame is kept.
-FIRST_FRAME = {"sculk", "fire", "pumpkin_face_on", "crimson_stem_side", "end_gateway", "prismarine_rough"}
+FIRST_FRAME = {"campfire_fire", "sculk", "fire", "pumpkin_face_on", "crimson_stem_side", "end_gateway", "prismarine_rough"}
 for color in COLORS:
     pack_color = "silver" if color == "light_gray" else color
     FILES[f"{color}_dye"] = f"items/dye_powder_{DYE_FILES.get(color, color)}"
@@ -518,14 +519,15 @@ def import_slot_sword(out):
 
 # Whole animated textures (art/frames/), as [file in the pack, the piece to cut out of it]: the moving backdrops draw every
 # frame (see src/backdrop-motion.js).
-FRAMES = {"lava_still": ("blocks/lava_still", None), "lava_flow": ("blocks/lava_flow", None), "fire": ("blocks/fire_0", None), "sculk": ("blocks/sculk", None),
+FRAMES = {"lava_still": ("blocks/lava_still", None), "lava_flow": ("blocks/lava_flow", None), "fire": ("blocks/fire_0", None), "sculk": ("blocks/sculk", None), "campfire_fire": ("blocks/campfire", None),
           "gold_ore": ("blocks/gold_ore", None), "nether_gold_ore": ("blocks/nether_gold_ore", None), "diamond_ore": ("blocks/diamond_ore", None), "redstone_ore": ("blocks/redstone_ore", None),
           "lantern_block": ("blocks/lantern", None), "soul_lantern_block": ("blocks/soul_lantern", None),
           "leaf_tinted": ("full-pack/subpacks/SP2/textures/particle/biome_tinted_leaves_atlas", None), "leaf_pale_oak": ("full-pack/subpacks/SP2/textures/particle/pale_oak_leaves_atlas", None),
           "leaf_orange": ("full-pack/subpacks/SP2/textures/particle/orange_poplar_leaves_atlas", None), "leaf_red": ("full-pack/subpacks/SP2/textures/particle/red_poplar_leaves_atlas", None), "leaf_gold": ("full-pack/subpacks/SP2/textures/particle/yellow_poplar_leaves_atlas", None),
           "lava_pop": ("full-pack/subpacks/SP2/textures/particle/particles", (8, 24, 16, 32)),
           "flame": ("full-pack/subpacks/SP2/textures/particle/particles", (0, 24, 8, 32)),
-          "candle_flame": ("full-pack/subpacks/SP2/textures/particle/particles", (64, 64, 72, 72))}
+          "candle_flame": ("full-pack/subpacks/SP2/textures/particle/particles", (64, 64, 72, 72)),
+          "campfire_smoke": ("full-pack/subpacks/SP2/textures/particle/campfire_smoke", (0, 0, 16, 192))}
 
 
 # The Potions tab: each potion's own bottles and tipped arrow (its key in src/brew-data.js -> the pack's two names for it).

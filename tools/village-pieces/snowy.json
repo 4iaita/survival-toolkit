@@ -1,0 +1,6 @@
+{
+ "house": ["snowy/houses/snowy_small_house_7.nbt", "W"],
+ "farm": ["snowy/houses/snowy_farm_2.nbt", "E"],
+ "farHouse": ["snowy/houses/snowy_medium_house_1.nbt", "E"],
+ "farHouse2": ["snowy/houses/snowy_small_house_6.nbt", "E"]
+}

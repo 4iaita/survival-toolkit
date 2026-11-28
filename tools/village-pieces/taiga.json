@@ -1,0 +1,9 @@
+{
+ "well": ["taiga/town_centers/taiga_meeting_point_2.nbt", "N", null, 2],
+ "house": ["taiga/houses/taiga_small_house_1.nbt", "N"],
+ "lamp": ["taiga/taiga_lamp_post_1.nbt", "N", null, 0],
+ "fire": ["taiga/taiga_decoration_6.nbt", "N", null, 0],
+ "farm": ["taiga/houses/taiga_large_farm_1.nbt", "S"],
+ "farHouse": ["taiga/houses/taiga_small_house_5.nbt", "W"],
+ "temple": ["taiga/houses/taiga_temple_1.nbt", "N"]
+}

@@ -592,7 +592,8 @@ const PIECE_TEX = { smooth_sandstone: "sandstone_top", cut_sandstone: "smooth_sa
   composter: "composter_side", hay_block: "hay_block_side", jungle_door: "door_jungle", acacia: "planks_acacia", acacia_planks: "planks_acacia",
   acacia_log: "log_acacia", acacia_wood: "log_acacia", acacia_fence: "acacia_fence", acacia_door: "door_acacia", melon: "melon_side", farmland: "dirt",
   yellow_stained_glass_pane: "glass_yellow", orange_stained_glass_pane: "glass_orange", glass_pane: "glass", short_grass: "short_grass",
-  tall_grass: "tall_grass" };
+  tall_grass: "tall_grass", spruce: "planks_spruce", spruce_planks: "planks_spruce", spruce_log: "log_spruce", spruce_wood: "log_spruce",
+  spruce_door: "door_spruce", cobblestone_wall: "cobblestone", pumpkin: "pumpkin_side", stripped_spruce_wood: "stripped_spruce_log", snow_block: "snow" };
 const pieceTex = n => PIECE_TEX[n] || n;
 const PIECE_SHADES = ["", "", "#ececec", "#d8d8d8", "#c0c0c0", "#aaaaaa", "#969696"], PIECE_INSIDE = "#8f7f6c";
 // A stair seen from the step's side, between x0 and x1: its upper half faces you as its lower one does, so it's lit the same, but
@@ -602,15 +603,33 @@ const stepShade = (half, x0 = 0, x1 = 16) => (half === "top" ? [[x0, 8, x1, 16, 
   : [[x0, 0, x1, 7, "rgba(0, 0, 0, .05)"], [x0, 7, x1, 8, "rgba(0, 0, 0, .16)"], [x0, 8, x1, 9, "rgba(255, 255, 255, .22)"]]);
 // A wall's arms seen side on: low ones 14 texels high, tall ones the whole block; its post 8 wide in the middle.
 const wallArm = (how, x0, x1) => (how === "low" ? [x0, 2, x1, 16] : how === "tall" ? [x0, 0, x1, 16] : null);
-function pieceBlock(token, tint) {
-  const [kind, n, ...more] = token.split(":"), tex = pieceTex(n), grass = BIOME_TINTS.village_savanna.grass;
-  // Grass on a block's side, in the savanna's color.
+// A stair seen side on (see pieceBlock): from its front or back, whole; from a side, its step; a corner, a quarter.
+function stairBlock(tex, tint, side, half) {
+  if (side === "front") return blockTex(tex, tint);
+  if (side === "back") return blockTex(tex, tint, { rects: stepShade(half) });
+  // A corner: its upper (or lower) quarter on one side, at the front or set back in the step's shade; or (inner) whole but for
+  // that side's quarter, set back.
+  const [y0, y1] = half === "top" ? [8, 16] : [0, 8], quarter = s => (s === "right" ? [8, 16] : [0, 8]);
+  if (side.startsWith("corner-")) {
+    const [, lr, fb] = side.split("-"), [x0, x1] = quarter(lr);
+    return blockTex(tex, tint, { rows: half === "top" ? [0, 8] : [8, 16], parts: [[tex, [x0, y0, x1, y1], [x0, y0]]], partsTint: tint,
+      ...(fb === "back" && { rects: stepShade(half, x0, x1) }) });
+  }
+  if (side.startsWith("inner-")) { const [x0, x1] = quarter(side.slice(6)); return blockTex(tex, tint, { rects: stepShade(half, x0, x1) }); }
+  const [x0, x1] = quarter(side);
+  return blockTex(tex, tint, { rows: half === "top" ? [0, 8] : [8, 16], parts: [[tex, [x0, y0, x1, y1], [x0, y0]]], partsTint: tint });
+}
+function pieceBlock(token, tint, grass = BIOME_TINTS.village_savanna.grass) {
+  const [kind, n, ...more] = token.split(":"), tex = pieceTex(n);
+  // Grass on a block's side, in the village's grass color.
   if (n === "grass_block") return { layers: [["dirt", tint], ["grass_side_overlay", grass]] };
   if (kind === "full") return blockTex(tex, tint);
   // Wood is bark all round, however it lies.
   if (kind === "turn") return blockTex(tex, tint, n.endsWith("_wood") ? {} : { turn: true });
   if (kind === "end") return blockTex(n.endsWith("_wood") ? tex : `${tex}_top`, tint);
   // A plant: grass tinted, a tall one by its half.
+  if (kind === "plant" && n === "large_fern") return plantTex(`large_fern_${more[0] === "upper" ? "top" : "bottom"}`, grass);
+  if (kind === "plant" && n === "fern") return plantTex("fern", grass);
   if (kind === "plant") return n === "tall_grass" ? plantTex(`tall_grass_${more[0] === "upper" ? "top" : "bottom"}`, grass) : plantTex(tex, n === "short_grass" ? grass : null);
   if (kind === "water") return blockTex("water", tint);
   // A glass pane: face on, its glass over what's behind it; edge on, a strip two texels thick.
@@ -618,24 +637,16 @@ function pieceBlock(token, tint) {
     const [, left, right] = more;
     return left === "true" || right === "true" ? { layers: [[tex, tint]], cap: false } : { parts: [[tex, [7, 0, 9, 16], [7, 0]]], partsTint: tint, cap: false };
   }
-  if (kind === "slab") return blockTex(tex, tint, { rows: more[0] === "top" ? [0, 8] : [8, 16] });
+  // No snow on a bottom slab or stair in a snowy scene (cap): the game's snow needs a whole top face, and a cap at the block's top
+  // floated over the slab.
+  if (kind === "slab") return blockTex(tex, tint, { rows: more[0] === "top" ? [0, 8] : [8, 16], ...(more[0] !== "top" && { cap: false }) });
   if (kind === "glazed") return blockTex(n, tint);
   if (kind === "stair") {
-    const [side, half] = more;
-    if (side === "front") return blockTex(tex, tint);
-    if (side === "back") return blockTex(tex, tint, { rects: stepShade(half) });
-    // A corner: its upper (or lower) quarter on one side, at the front or set back in the step's shade; or (inner) whole but for
-    // that side's quarter, set back.
-    const [y0, y1] = half === "top" ? [8, 16] : [0, 8], quarter = s => (s === "right" ? [8, 16] : [0, 8]);
-    if (side.startsWith("corner-")) {
-      const [, lr, fb] = side.split("-"), [x0, x1] = quarter(lr);
-      return blockTex(tex, tint, { rows: half === "top" ? [0, 8] : [8, 16], parts: [[tex, [x0, y0, x1, y1], [x0, y0]]], partsTint: tint,
-        ...(fb === "back" && { rects: stepShade(half, x0, x1) }) });
-    }
-    if (side.startsWith("inner-")) { const [x0, x1] = quarter(side.slice(6)); return blockTex(tex, tint, { rects: stepShade(half, x0, x1) }); }
-    const [x0, x1] = quarter(side);
-    return blockTex(tex, tint, { rows: half === "top" ? [0, 8] : [8, 16], parts: [[tex, [x0, y0, x1, y1], [x0, y0]]], partsTint: tint });
+    const [side, half] = more, stair = stairBlock(tex, tint, side, half);
+    // No snow on a bottom stair either (see slab).
+    return half === "top" ? stair : { ...stair, cap: false };
   }
+
   if (kind === "wall") {
     const [up, left, right, front] = more;
     if (n.endsWith("_fence")) return fenceOf(tex.replace(/^(\w+)_fence$/, "planks_$1"), left === "true", right === "true");
@@ -649,6 +660,25 @@ function pieceBlock(token, tint) {
     const [x0, x1] = side === "left" ? [0, 3] : [13, 16];
     return { parts: [[name, [x0, 0, x1, 16], [x0, 0]]], partsTint: tint, cap: false };
   }
+  // A trapdoor: shut, a plate 3 texels thick at the block's top or bottom; open, stood up against one side: face on, the whole
+  // trapdoor; edge on, a strip 3 texels wide.
+  if (kind === "trap") {
+    const [how] = more, rows = how === "top" ? [0, 3] : how === "bottom" ? [13, 16] : null;
+    if (rows) return { parts: [[tex, [0, rows[0], 16, rows[1]], [0, rows[0]]]], partsTint: tint, cap: false };
+    if (how === "open-front" || how === "open-back") return blockTex(tex, tint);
+    const [x0, x1] = how === "open-left" ? [0, 3] : [13, 16];
+    return { parts: [[tex, [x0, 0, x1, 16], [x0, 0]]], partsTint: tint, cap: false };
+  }
+  // A campfire as Java's model is seen side on: its fire (two crossed planes, a block high from a texel up, so its top texel is
+  // cut off), the near log lying across in front of it, and under that the two logs running back, their ends.
+  if (kind === "campfire") return { parts: [["campfire_fire", [0, 1, 16, 16], [0, 0]], ["campfire_log", [0, 0, 16, 4], [0, 9]],
+    ["campfire_log", [0, 4, 4, 8], [1, 12]], ["campfire_log", [0, 4, 4, 8], [11, 12]]], partsTint: tint, cap: false };
+  // A layer of snow, 2 texels for each of its layers (8: a whole block).
+  if (kind === "snow") return +n >= 8 ? blockTex("snow", tint, { cap: false }) : blockTex("snow", tint, { rows: [16 - 2 * +n, 16], cap: false });
+  // A lantern standing on the block below (lanternTex), or hanging from the one over it as Java's hanging model is: a texel higher,
+  // its handle a chain up to the block over it.
+  if (kind === "lantern") return n === "true" ? { parts: [["lantern_block", [0, 2, 6, 9], [5, 8]], ["lantern_block", [1, 0, 5, 2], [6, 6]],
+    ["lantern_block", [11, 1, 14, 3], [6.5, 4]], ["lantern_block", [11, 1, 14, 3], [6.5, 2]], ["lantern_block", [11, 1, 14, 3], [6.5, 0]]], cap: false } : lanternTex("lantern_block");
   if (kind === "torch") return plantTex("torch");
   if (kind === "wheat") return plantTex(+n === 7 ? "wheat_crop" : `wheat_stage_${n}`);
   if (kind === "pot") return n === "cactus" ? { parts: [["cactus_side", [5, 0, 11, 10], [5, 0]], ["flower_pot", [5, 10, 11, 16], [5, 10]]], cap: false } : potted(n);
@@ -660,35 +690,45 @@ function pieceBlock(token, tint) {
   return blockTex(tex, tint);
 }
 // A generated piece (rows, depth, and the block behind and its depth: rows of letters) with its kind's legend of tokens -> a prop.
-// drop: cells left out, "row,column" (the savanna well's front torch, which the user had taken out).
-function pieceProp(piece, tokens, drop = []) {
+// drop: cells left out, "row,column" (the savanna well's front torch, which the user had taken out), what's behind them showing.
+function pieceProp(piece, tokens, drop = [], grass) {
   const legend = {}, keys = {}, pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*+=?<>~";
   const keyOf = (id, spec) => (keys[id] || (keys[id] = pool[Object.keys(keys).length], legend[keys[id]] = spec), keys[id]);
+  // A window (a glass pane, or a fence across it: the taiga temple's) or a door.
+  const looksThrough = token => { const [kind, n] = token.split(":"); return kind === "door" || (kind === "wall" && /_(pane|fence)$/.test(n)); };
+  // A door's two halves share the room's shade, as the plains houses' doors do.
+  const shadeOf = token => { const [kind, , half] = token.split(":"); return kind !== "door" ? ROOM_SHADE : half === "upper" ? ROOM_SHADE.slice(0, 4) : ROOM_SHADE.slice(2); };
+  // The room seen through a window or door in this row, in the wall's block nearest it (a whole one in the row), dim, as the plains
+  // houses' windows show theirs: [its letter, the block].
+  const roomIn = (row, c, token) => {
+    const wall = [...row].map((x, i) => [Math.abs(i - c), x]).filter(([, x]) => x !== "." && /^(full|turn):/.test(tokens[x])).sort((p, q) => p[0] - q[0])[0];
+    return wall && [wall[1], { ...pieceBlock(tokens[wall[1]].replace(/^turn:/, "full:"), PIECE_INSIDE, grass), shade: shadeOf(token) }];
+  };
   const rows = piece.rows.map((row, r) => [...row].map((ch, c) => {
-    if (drop.includes(`${r},${c}`)) return ".";
+    // Left out: what's behind it shows instead (the temple's wall behind its lamp post).
+    if (drop.includes(`${r},${c}`)) {
+      const back = piece.behind[r][c], bd = Math.min(6, +piece.behindDepth[r][c]);
+      return back === "." ? "." : keyOf(`${back}${bd}`, pieceBlock(tokens[back], PIECE_SHADES[bd], grass));
+    }
     if (ch === ".") return ".";
-    const d = Math.min(6, +piece.depth[r][c]), back = piece.behind[r][c], spec = pieceBlock(tokens[ch], PIECE_SHADES[d]);
+    const d = Math.min(6, +piece.depth[r][c]), back = piece.behind[r][c], spec = pieceBlock(tokens[ch], PIECE_SHADES[d], grass);
     if (back === ".") {
-      // A window or door that would look out through the room and a window behind: the room, in the wall's block beside it (a
-      // whole one in the row), dim, as the plains houses' windows show theirs.
-      const [kind, n, half] = tokens[ch].split(":");
-      if (kind === "door" || (kind === "wall" && n.endsWith("_pane"))) {
-        const wall = [...row].map((x, i) => [Math.abs(i - c), x]).filter(([, x]) => x !== "." && /^(full|turn):/.test(tokens[x])).sort((p, q) => p[0] - q[0])[0];
-        if (wall) {
-          const shade = kind !== "door" ? ROOM_SHADE : half === "upper" ? ROOM_SHADE.slice(0, 4) : ROOM_SHADE.slice(2);
-          return keyOf(`${ch}${d}/room${wall[1]}`, { ...spec, behind: { ...pieceBlock(tokens[wall[1]].replace(/^turn:/, "full:"), PIECE_INSIDE), shade } });
-        }
-      }
-      return keyOf(ch + d, spec);
+      // A window or door that would look out through the room and a window behind: the room.
+      const room = looksThrough(tokens[ch]) && roomIn(row, c, tokens[ch]);
+      return room ? keyOf(`${ch}${d}/room${room[0]}`, { ...spec, behind: room[1] }) : keyOf(ch + d, spec);
     }
     const bd = Math.min(6, +piece.behindDepth[r][c]);
-    // Seen through a window or door, three or more blocks back: the room's far wall, dim, as the plains houses' rooms are.
-    // A door's two halves share the room's shade, as the plains houses' doors do.
-    const [kind, , half] = tokens[ch].split(":"), shade = kind !== "door" ? ROOM_SHADE : half === "upper" ? ROOM_SHADE.slice(0, 4) : ROOM_SHADE.slice(2);
-    const behind = bd - d >= 3 ? { ...pieceBlock(tokens[back], PIECE_INSIDE), shade } : pieceBlock(tokens[back], PIECE_SHADES[bd]);
-    return keyOf(`${ch}${d}/${back}${bd}`, { ...spec, behind });
+    // Seen through a window or door, three or more blocks back: the room's far wall, dim, as the plains houses' rooms are. Not behind
+    // snow, a plant or a crop: they're outside (a snowy farm's snow became a dark box).
+    if (bd - d >= 3 && !/^(snow|plant|wheat):/.test(tokens[ch])) return keyOf(`${ch}${d}/${back}${bd}`, { ...spec, behind: { ...pieceBlock(tokens[back], PIECE_INSIDE, grass), shade: shadeOf(tokens[ch]) } });
+    // A window behind a plant (a fern before the taiga temple's): the room through it too.
+    const room = looksThrough(tokens[back]) && roomIn(row, c, tokens[back]);
+    const behind = pieceBlock(tokens[back], PIECE_SHADES[bd], grass);
+    return keyOf(`${ch}${d}/${back}${bd}${room ? `/room${room[0]}` : ""}`, { ...spec, behind: room ? { ...behind, behind: room[1] } : behind });
   }).join(""));
-  return prop(rows, legend);
+  // smoke: where its campfires are, [column, blocks up], their smoke drawn by backdrop-motion.js.
+  const smoke = piece.rows.flatMap((row, r) => [...row].flatMap((ch, c) => (tokens[ch] === "campfire" && !drop.includes(`${r},${c}`) ? [[c, piece.rows.length - 1 - r]] : [])));
+  return { ...prop(rows, legend), ...(smoke.length && { smoke }) };
 }
 const DESERT_BLOCKS = { A: "torch", B: "full:cut_sandstone", C: "slab:smooth_sandstone:bottom", D: "full:smooth_sandstone", E: "bell", F: "slab:sandstone:bottom", G: "slab:sandstone:top", H: "door:jungle_door:upper:face:right", I: "pot:cactus", J: "door:jungle_door:lower:face:right", K: "full:terracotta", L: "wheat:7", M: "wheat:7", N: "wheat:7", O: "stair:smooth_sandstone:corner-right-back:bottom", P: "stair:smooth_sandstone:back:bottom", Q: "stair:smooth_sandstone:corner-left-back:bottom", R: "door:jungle_door:upper:face:left", S: "door:jungle_door:lower:face:left" };
 const DESERT_PIECES = {
@@ -750,6 +790,62 @@ const SAVANNA_PIECES = {
     behindDepth: [".......", ".......", ".......", ".......", ".......", "......."] },
 };
 const savannaPiece = (k, drop) => pieceProp(SAVANNA_PIECES[k], SAVANNA_BLOCKS, drop);
+const TAIGA_BLOCKS = { A: "end:spruce_log", B: "torch", C: "wall:spruce_fence:true:true:true:false", D: "wall:spruce_fence:true:false:false:false", E: "full:cobblestone", F: "bell:ceiling", G: "turn:spruce_log", H: "full:spruce_log", I: "trap:spruce_trapdoor:open-right", J: "door:spruce_door:upper:face:right", K: "trap:spruce_trapdoor:open-left", L: "door:spruce_door:lower:face:right", M: "wall:cobblestone_wall:true:low:none:none", N: "stair:cobblestone:back:bottom", O: "wall:cobblestone_wall:true:none:low:none", P: "wall:cobblestone_wall:true:false:false:false", Q: "campfire", R: "trap:spruce_trapdoor:open-back", S: "wall:cobblestone_wall:true:none:none:none", T: "wheat:7", U: "wheat:7", V: "wheat:7", W: "full:pumpkin", X: "door:spruce_door:upper:face:left", Y: "plant:large_fern:upper", Z: "door:spruce_door:lower:face:left", a: "full:spruce_wood", b: "turn:spruce_wood", c: "end:spruce_wood", d: "stair:cobblestone:left:bottom", e: "wall:glass_pane:true:true:true:false", f: "plant:large_fern:lower" };
+const TAIGA_PIECES = {
+  well: { rows: ["...AAA...", "..B.F.B..", "..D...D..", "..D...D..", "..EEEEE.."],
+    depth: ["...111...", "..0.3.0..", "..1...1..", "..1...1..", "..11111.."],
+    behind: [".........", "..A...A..", ".........", ".........", "........."],
+    behindDepth: [".........", "..1...1..", ".........", ".........", "........."] },
+  house: { rows: ["...A...", "..AEA..", ".AGGGA.", "AHEEEHA", "IHEJEHK", ".HBLBH.", ".HMNOH."],
+    depth: ["...0...", "..020..", ".01110.", "0122210", "3122213", ".11211.", ".11111."],
+    behind: [".......", ".......", ".......", ".......", ".......", "..EEE..", "..E.E.."],
+    behindDepth: [".......", ".......", ".......", ".......", ".......", "..262..", "..2.2.."] },
+  lamp: { rows: ["B", "P"],
+    depth: ["0", "0"],
+    behind: [".", "."],
+    behindDepth: [".", "."] },
+  fire: { rows: [".Q.", "IRK"],
+    depth: [".1.", "101"],
+    behind: ["...", "..."],
+    behindDepth: ["...", "..."] },
+  farm: { rows: [".B......B.", ".S......S.", ".STUVTVUV.", "WSRRWRRRRK"],
+    depth: [".1......7.", ".1......7.", ".12222111.", "2111010001"],
+    behind: ["..........", "..........", "..........", ".R.......W"],
+    behindDepth: ["..........", "..........", "..........", ".2.......7"] },
+  farHouse: { rows: ["...A...", "..AEA..", ".AEEEA.", "AHEBEHA", "IHEXEHK", ".HYZYH."],
+    depth: ["...0...", "..020..", ".02220.", "0121210", "3122213", ".11211."],
+    behind: [".......", ".......", ".......", "...E...", ".......", "..EEE.."],
+    behindDepth: [".......", ".......", ".......", "...2...", ".......", "..262.."] },
+  temple: { rows: ["...aba.......", "..bGGGb......", ".abGGGbc.....", "..EEEEE......", ".IERCREK.....", "..EEEEE......", ".IERCREK.....", "..EEEEE......", "..EEEEEEEEEE.", "B.EEBEEEEEEE.", "S.EESEEEEEEE.", "YdYEEEERYReRK", "fRKEEEEEfEEES"],
+    depth: ["...333.......", "..22222......", ".2111112.....", "..32223......", ".3312133.....", "..32223......", ".3312133.....", "..32223......", "..3222366666.", "4.3202355555.", "4.3202344444.", "0422023323435", "0012023424449"],
+    behind: [".............", ".............", ".............", ".............", ".............", ".............", ".............", ".............", ".............", "....E........", "....E........", "..E.....e.E..", "..E.....E...."],
+    behindDepth: [".............", ".............", ".............", ".............", ".............", ".............", ".............", ".............", ".............", "....2........", "....2........", "..3.....4.8..", "..3.....4...."] },
+};
+const SNOWY_BLOCKS = { A: "slab:spruce:bottom", B: "full:spruce_planks", C: "full:stripped_spruce_log", D: "door:spruce_door:upper:face:left", E: "slab:spruce:top", F: "lantern:false", G: "door:spruce_door:lower:face:left", H: "end:stripped_spruce_log", I: "full:snow_block", J: "wheat:7", K: "snow:2", L: "snow:1", M: "door:spruce_door:upper:face:right", N: "door:spruce_door:lower:face:right", O: "wall:cobblestone_wall:true:none:none:none", P: "wall:cobblestone_wall:true:low:none:none", Q: "wall:glass_pane:true:true:true:false" };
+const SNOWY_PIECES = {
+  house: { rows: ["...A...", "..ABA..", ".ABCBA.", "ABCCCBA", "BCCDCCB", "EFCGCFE"],
+    depth: ["...0...", "..000..", ".00100.", "0011100", "0111110", "0011100"],
+    behind: [".......", ".......", ".......", ".......", ".......", ".C.H.C."],
+    behindDepth: [".......", ".......", ".......", ".......", ".......", ".1.4.1."] },
+  farm: { rows: ["IIIJJJKI."],
+    depth: ["11000001."],
+    behind: ["........."],
+    behindDepth: ["........."] },
+  farHouse: { rows: ["...LLL..", "..LILIL.", ".LIIIIIL", ".IIIMIII", "LLLINILL"],
+    depth: ["...211..", "..41011.", ".4100012", ".2100012", "00000000"],
+    behind: ["........", "....I...", "........", "....I...", ".II.I.II"],
+    behindDepth: ["........", "....1...", "........", "....6...", ".21.6.12"] },
+  farHouse2: { rows: ["....O..", "...BP..", "..BCB..", ".BCHCB.", ".BCHCB.", "BCHQHCB", "BCCHCCB"],
+    depth: ["....4..", "...04..", "..010..", ".01110.", ".01110.", "0111110", "0111110"],
+    behind: [".......", ".......", ".......", ".......", ".......", ".......", "......."],
+    behindDepth: [".......", ".......", ".......", ".......", ".......", ".......", "......."] },
+};
+const snowyPiece = (k, drop) => pieceProp(SNOWY_PIECES[k], SNOWY_BLOCKS, drop, BIOME_TINTS.village_snowy.grass);
+// Left out: the side windows' shutters under the houses' eaves, seen edge on (stray strips in the sky under the eaves); the temple's two
+// lamp posts (one's cobblestone wall lost against the temple's; the other, set back, over ferns with the ground it stands on not drawn:
+// both torches looked to float).
+const EAVE_SHUTTERS = ["4,0", "4,6"];
+const taigaPiece = (k, drop) => pieceProp(TAIGA_PIECES[k], TAIGA_BLOCKS, drop, BIOME_TINTS.village_taiga.grass);
 // flows: it runs down (see drawLava).
 const lavafall = prop(Array(20).fill("L"), { L: blockTex("lava", null, { flows: true }) });
 const monument = prop([
@@ -1333,6 +1429,42 @@ const BACKDROPS = {
       landmarks: [[savannaPiece("farTemple"), 0.48], [savannaPiece("farHouse"), 0.83]] },
     near: [[savannaPiece("house"), -16], [tallAcacia(t), -8], [savannaPiece("well", ["2,2"]), 3],
       [block("hay_side", [".B", "BB"]), 9.5], [savannaPiece("farm"), 12.5]],
+  }),
+  // A taiga village's middle (the Structures tab's, and the taiga villager's), as Java builds it: its well (meeting point 2), a
+  // cobblestone rim under a roof of spruce logs on fence posts, torches on its corners and the bell hanging from the roof (the fence
+  // row in front of it left out, at the user's wish); close by
+  // on the left a house of spruce logs and cobblestone (small house 1) from its door's side, its roof's logs end on, and a lamp post
+  // (a torch on a cobblestone wall); on the right a campfire on a hay bale boxed in trapdoors (decoration 6) and a raised farm of
+  // wheat and pumpkins edged with trapdoors (large farm 1); on the hills behind, among spruces, a house (small house 5) and the
+  // temple, right of the campfire's smoke (the user didn't want it over the temple). Ferns and sweet berry bushes grow round them, as in the taiga. Smoke rises off the campfire, and mist lies among the far
+  // trees, as in the taiga.
+  village_taiga: t => ({
+    moves: ["torches", "wheat_crop", "campfire_fire", "smoke", "mist"],
+    // The hill line by hand (the waves' left the near spruce in a dip beside a one-column spike): one level under it and the far
+    // house, gentle steps elsewhere.
+    hills: { top: grassyTop(t), fill: blockTex("dirt"), base: 3,
+      profile: [[0.088, 6], [0.2, 4], [0.488, 5], [0.568, 4], [0.648, 5], [0.76, 6], [0.792, 5], [1, 4]],
+      trees: [0.224, 0.49].map(at => [spruceTree(), at]),
+      landmarks: [[taigaPiece("farHouse", EAVE_SHUTTERS), 0.31], [taigaPiece("temple", ["9,0", "10,0", "9,4", "10,4"]), 0.83]] },
+    near: [[taigaPiece("house", EAVE_SHUTTERS), -15.5], [largeFern(t), -9], [taigaPiece("lamp"), -7.5], [plant("berry_bush"), -5], [plant("fern", t.grass), -3],
+      [taigaPiece("well"), 0], [taigaPiece("fire"), 8], [plant("fern", t.grass), 11], [taigaPiece("farm"), 12]],
+  }),
+  // A snowy village's middle (the Structures tab's, and the snow villager's), as Java builds it: the bell of its meeting point 2 standing
+  // alone (the user's choice: the ice spire and the lantern frame of meeting points 1 and 3 looked wrong to them, and they didn't want
+  // the second's ice cairn); close by on the left a spruce house (small house 7) from its door's side, lanterns either side of it; on
+  // the right a wheat farm edged with snow blocks (farm 2); on snowy hills behind, among spruces, a snow-block house (medium house 1)
+  // and a spruce one (small house 6). Snow falls, as on the snowy plains; the lanterns flicker and the wheat sways.
+  village_snowy: () => ({
+    moves: ["snow", "wheat_crop", "lantern_block"],
+    // The hill line by hand: the waves' (base 3, rise 3), but for three bumps the user had taken out, by the house's roof, between the
+    // left spruce and the snow-block house (columns 0 to 20 all 4), and just right of that house (26 to 31 all 4).
+    hills: { top: blockTex("snowy_grass_side"), fill: blockTex("dirt"), base: 3,
+      profile: [[0.328, 4], [0.344, 6], [0.392, 5], [0.504, 4], [0.552, 3], [0.584, 4], [0.712, 5], [0.744, 6], [0.776, 5],
+        [0.808, 4], [0.84, 3], [0.968, 4], [1, 5]],
+      trees: [[spruceTree(), 0.22], [spruceTree(), 0.6], [spruceTree(), 0.864]],
+      landmarks: [[snowyPiece("farHouse"), 0.33], [snowyPiece("farHouse2"), 0.72]] },
+    near: [[snowyPiece("house"), -15.5], [prop(["B"], { B: pieceBlock("bell") }), 3], [snowyPiece("farm"), 10]],
+    snowy: true,
   }),
   // A cave a mineshaft runs through, the cave spider's: the cave's rock wall, its ceiling with dripstone and nearby
   // stalagmites, ore and cobwebs (the spiders' work); in the far wall, the mineshaft's corridor cut right across, lit
@@ -2025,7 +2157,7 @@ function lavaMotion(paint, width, height, dpr) {
   return { ...parts, pops, still: ART_FRAMES.lava_still, flow: ART_FRAMES.lava_flow, pop: ART_FRAMES.lava_pop };
 }
 // See-through blocks that move, left out of the still picture (they'd show through the moving ones' gaps): fires, plants that sway.
-const LEFT_OUT = ["fire", "wheat_crop"], SWAYS = ["wheat_crop"];
+const LEFT_OUT = ["fire", "wheat_crop", "campfire_fire"], SWAYS = ["wheat_crop"];
 // Plants that sway in the wind, their tops the most.
 const swayMotion = (paint, names, width, height, dpr) => ({ ...movingCells(paint, names, width, height, dpr).parts, pictures: Object.fromEntries(names.map(name => [name, textureCanvas(name).toDataURL()])) });
 const fireMotion = (paint, width, height, dpr) => ({ ...movingCells(paint, "fire", width, height, dpr).parts, frames: ART_FRAMES.fire });
@@ -2037,7 +2169,7 @@ const fireMotion = (paint, width, height, dpr) => ({ ...movingCells(paint, "fire
 const SHEETS = {
   gold_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, nether_gold_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4, yellow: true }, diamond_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.4 }, lapis_ore: { ticks: 3, every: 5, glow: 0.9, shine: 0.6 },
   redstone_ore: { ticks: 6, glow: 0.9, shine: 0.4 },
-  lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.5 }, soul_lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.7 },
+  lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.5 }, campfire_fire: { ticks: 1 }, soul_lantern_block: { ticks: 16, frames: [0, 1, 2, 1], glow: 0.7 },
 };
 function sheetMotion(paint, names, width, height, dpr) {
   const { parts } = movingCells(paint, names, width, height, dpr);
@@ -2244,6 +2376,9 @@ function backdropView(canvas) {
     const columns = Math.ceil(w / NEAR), bubbles = scene.water && { width: w, floor: h - GROUND_STRIP, roof: Array.from({ length: columns }, (_, c) => (roof ? roof[c] || 0 : 1) * NEAR) };
     // And gas rises out of the sulfur pools.
     const gas = scene.near.flatMap(([p, at]) => (p.gas || []).map(([c, from, to]) => ({ x: w / 2 + (at + c) * NEAR, from: horizon / dpr - from * NEAR, to: horizon / dpr - to * NEAR })));
+    // And smoke off the campfires (from their middle, half a block up).
+    const fires = moves.includes("smoke") ? scene.near.flatMap(([p, at]) => (p.smoke || []).map(([c, up]) => [w / 2 + (at + c + 0.5) * NEAR, horizon / dpr - (up + 0.5) * NEAR, NEAR])) : [];
+    const smoke = fires.length > 0 && { at: fires, sheet: ART_FRAMES.campfire_smoke };
     // And the nether's lava churns, runs down and spits, and its fires burn.
     const lava = moves.includes("lava") && lavaMotion(paint, canvas.width, canvas.height, dpr), fire = moves.includes("fire") && fireMotion(paint, canvas.width, canvas.height, dpr);
     // And the deep dark's sculk glimmers.
@@ -2297,7 +2432,8 @@ function backdropView(canvas) {
       return flag && flag.part === 0 ? [{ x: w / 2 + (at + c) * NEAR, y: horizon / dpr - (p.rows.length - r) * NEAR, size: NEAR, rows: flag.rows, colors: flag.colors, x0: flag.x0, beat: (c * 7 + r * 9) % 100 }] : [];
     }))) };
     // Torches burn.
-    const torches = moves.includes("torches") && { at: placed("torch"), flame: ART_FRAMES.flame };
+    // A torch on the far hills (a far house's) has its block's size too, as its flame is that much smaller.
+    const torches = moves.includes("torches") && { at: crowns.filter(b => b.name === "torch").map(b => (b.size === NEAR * dpr ? [b.left / dpr, b.top / dpr] : [b.left / dpr, b.top / dpr, b.size / dpr])), flame: ART_FRAMES.flame };
     // Clouds cross an open sky, behind the scene (clouds: how strong they are, if not fully; faint at night).
     const open = scene.hills && !scene.water && !scene.sky && !scene.ceiling;
     const clouds = open && { width: w, top: CLOUDS_TOP, tall: CLOUDS_TALL, strength: scene.night ? 0.18 : scene.clouds ?? 1, front: cloudFront(canvas, dpr) };
@@ -2318,7 +2454,7 @@ function backdropView(canvas) {
     const leaves = scene.leaves && leafMotion(crowns.filter(b => LEAF_BLOCKS.includes(b.name)), scene.leaves, h - GROUND_STRIP - (scene.leavesLand || 0) * NEAR, dpr, [[haze, mist.near], ...(scene.night ? [[scene.night.shade, 1]] : [])]);
     // And stars twinkle at night.
     const stars = twinkling.length > 0 && twinkling.map(([x, y, side, bright]) => [x / dpr, y / dpr, side / dpr, Number(bright.toFixed(2))]);
-    setMotion(bubbles || gas.length || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || gateways || banners || torches || crystals || rods || candles || clouds ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(gateways && { gateways }), ...(banners && { banners }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }), ...(candles && { candles }), ...(clouds && { clouds }) } : null, dpr);
+    setMotion(bubbles || gas.length || smoke || lava || fire || snow || stars || leaves || sculk || sheets || drips || light || sand || mistMoves || spindrift || spores || sway || spawners || vaults || gateways || banners || torches || crystals || rods || candles || clouds ? { width: w, height: h, ...(bubbles && { bubbles }), ...(gas.length && { gas }), ...(smoke && { smoke }), ...(lava && { lava }), ...(fire && { fire }), ...(snow && { snow }), ...(stars && { stars }), ...(leaves && { leaves }), ...(sculk && { sculk }), ...(sheets && { sheets }), ...(drips && { drips }), ...(light && { light }), ...(sand && { sand }), ...(mistMoves && { mist: mistMoves }), ...(spindrift && { spindrift }), ...(spores && { spores }), ...(sway && { sway }), ...(spawners && { spawners }), ...(vaults && { vaults }), ...(gateways && { gateways }), ...(banners && { banners }), ...(torches && { torches }), ...(crystals && { crystals }), ...(rods && { rods }), ...(candles && { candles }), ...(clouds && { clouds }) } : null, dpr);
   };
   new ResizeObserver(draw).observe(canvas);
   return {

@@ -308,9 +308,9 @@ const MOB_ROWS = {
       { k: "desert", n: "Desert", say: "from the desert", where: "Desert villages", biome: "village_desert", skins: { ...VILLAGER_DARK, ...villagerBiome("desert") } },
       { k: "jungle", n: "Jungle", say: "from the jungle", where: "Born in a jungle", biome: "jungle", skins: villagerBiome("jungle") },
       { k: "savanna", n: "Savanna", say: "from the savanna", where: "Savanna villages", biome: "village_savanna", skins: { ...VILLAGER_DARK, ...villagerBiome("savanna") } },
-      { k: "snow", n: "Snow", say: "from a snowy village", where: "Snowy villages (with the pack’s biome looks on, they’re Snowy)", biome: "snowy", skins: { ...VILLAGER_PALE, ...villagerBiome("snow") } },
+      { k: "snow", n: "Snow", say: "from a snowy village", where: "Snowy villages (with the pack’s biome looks on, they’re Snowy)", biome: "village_snowy", skins: { ...VILLAGER_PALE, ...villagerBiome("snow") } },
       { k: "swamp", n: "Swamp", say: "from the swamp", where: "Born in a swamp", biome: "swamp", skins: villagerBiome("swamp") },
-      { k: "taiga", n: "Taiga", say: "from the taiga", where: "Taiga villages", biome: "taiga", skins: { ...VILLAGER_PALE, ...villagerBiome("taiga") } },
+      { k: "taiga", n: "Taiga", say: "from the taiga", where: "Taiga villages", biome: "village_taiga", skins: { ...VILLAGER_PALE, ...villagerBiome("taiga") } },
     ] },
   ],
   // The zombie villager's biome, as the villager's: its outfit only (its skin is the zombie's green whatever the biome).

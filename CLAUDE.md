@@ -57,9 +57,10 @@ to `index.json` with every mob that shows it):
 
 1 savanna · 2 cave · 3 plains · 4 desert · 5 swamp · 6 snowy · 7 cherry_grove · 8 dappled_forest · 9 taiga · 10 jungle ·
 11 peaks · 12 mushroom_fields · 13 badlands · 14 lush_pool · 15 ocean · 16 flooded_cave · 17 swamp_water · 18 village_plains ·
-19 village_desert · 20 village_savanna · 21 swamp_night · 22 trial_chamber · 23 desert_night · 24 mineshaft · 25 pale_garden_night ·
-26 sulfur_caves · 27 pale_garden · 28 ocean_night · 29 snowy_night · 30 mansion · 31 plains_night · 32 pillager_outpost ·
-33 stronghold · 34 deep_dark · 35 nether_fortress · 36 nether · 37 bastion_remnant · 38 end_island · 39 end · 40 end_city
+19 village_desert · 20 village_savanna · 21 village_snowy · 22 village_taiga · 23 swamp_night · 24 trial_chamber · 25 desert_night ·
+26 mineshaft · 27 pale_garden_night · 28 sulfur_caves · 29 pale_garden · 30 ocean_night · 31 snowy_night · 32 mansion · 33 plains_night ·
+34 pillager_outpost · 35 stronghold · 36 deep_dark · 37 nether_fortress · 38 nether · 39 bastion_remnant · 40 end_island · 41 end ·
+42 end_city
 
 After the mobs' come the backgrounds only the Structures tab shows (`STRUCTURE_SCENES` in `src/structure-data.js`), captured on the
 Mobs tab's stage with the structure's first mob (or its first kind's), then a kind's own (`"village/<kind>"` in
@@ -74,33 +75,77 @@ the wither skeleton's too, the Bastion Remnant's (one for all four kinds, the us
 (`end_city`) the shulker's. The End's own, `end` (2026-11-27: its outer islands, chorus trees, a far end gateway; the user had
 the far end city taken out), is the enderman's and the endermite's.
 
-The villages: the desert and the savanna have scenes of their own, `village_<kind>`, built one at a time with the user (2026-11-28), and
-are the desert and savanna villagers' too (`MOB_VARIANTS.villager`, the user's wish). The plains village is `village_plains` (named
+The villages: the desert, the savanna, the snowy and the taiga have scenes of their own, `village_<kind>`, built one at a time with the user
+(2026-11-28), and are the desert, savanna, snow and taiga villagers' too (`MOB_VARIANTS.villager`, the user's wish). The plains village is `village_plains` (named
 `village` until the user had it named by its biome, 2026-11-28): the villager's own, the iron golem's, the ravager's, and the Structures
-tab's for the plains, snowy and taiga kinds. A snowy village scene was built and removed at the user's wish ("awful": its meeting
-points, a wooden lantern frame and an ice spire, and a far temple of stacked planks looked wrong); the taiga's isn't built. The villages' pieces are generated from Java's templates
-(`structure/village/<kind>/...` in misode/mcmeta `26.3-data`) by a scratchpad script, as the outpost's tower was, and drawn by
+tab's for the plains kind. A first snowy village scene was built and removed at the user's wish ("awful": its meeting
+points, a wooden lantern frame (3) and an ice spire (1), and a far temple of stacked planks looked wrong). The villages' pieces are generated from Java's templates
+(`structure/village/<kind>/...` in misode/mcmeta `26.3-data`) by `tools/village-pieces/` (see "Generating a village's pieces" below), and drawn by
 `pieceProp` and `pieceBlock` in `src/backdrop.js` from a kind's legend of tokens (`DESERT_BLOCKS`: `full:`, `turn:`, `end:` logs by axis,
-`slab:<tex>:<half>`, `stair:<tex>:front|back|left|right:<half>`, `wall:`, `door:`, `torch`, `pot:`, `wheat:`, `bell`) and its pieces' rows, depths,
+`slab:<tex>:<half>`, `stair:<tex>:front|back|left|right:<half>`, `wall:`, `door:`, `torch`, `pot:`, `wheat:`, `bell`, `trap:<tex>:top|bottom|open-<side>`,
+`campfire`) and its pieces' rows, depths,
 and the block behind each and its depth (`DESERT_PIECES`). Java's names go to the pack's through `PIECE_TEX` (Java's smooth sandstone is the
 pack's `sandstone_top`, its cut sandstone art's `smooth_sandstone`, its sandstone `sandstone_normal`). A block behind three or more back is a
 room, drawn dim (`PIECE_INSIDE`, `ROOM_SHADE`). A jigsaw block must be drawn as its `final_state` (it's in the block's nbt): read as air, it
 left a hole in a house's wall that isn't in the game, and the user asked why. A piece's ground layer (y 0) is left out, but a farm's is
-raised a block, as the plains farm is. Doors aren't whole: what's behind shows through their windows; and a door or glass pane with
-nothing whole behind it in its line (it would look through the room and out of a window behind) shows the room, in the wall's block beside
-it: the user wanted the buildings to have volume. Corner stairs are drawn by their `shape` (`corner-<side>-<front|back>`, `inner-<side>`):
-drawn as straight ones, the savanna well's roof came out lopsided. `pieceProp`'s `drop` leaves cells out (the savanna well's front torch).
+raised a block, as the plains farm is. Doors aren't whole: what's behind shows through their windows; and a door, a glass pane or a
+fence across a window with nothing whole behind it in its line (it would look through the room and out of a window behind) shows the room,
+in the wall's block beside it: the user wanted the buildings to have volume, and windows never hollow. Corner stairs are drawn by their `shape` (`corner-<side>-<front|back>`, `inner-<side>`):
+drawn as straight ones, the savanna well's roof came out lopsided. `pieceProp`'s `drop` leaves cells out (the savanna well's front torch), what's behind them showing (else a hole: the taiga temple's wall
+behind its lamp post).
 Each kind needs its stage colors in `src/trade.css` (the Mobs tab's biome's): without them the haze is the default blue and the far
 hills come out gray-pink, which the user called ugly. The desert's: meeting point 2's well and bell in the middle, medium house 1 from its door side on
 the left, a lamp post and farm 2 on the right (seen from its north side, its wheat drawn grown: from the east, farm 1's rows
 alternated with water and its composter showed through, which the user called messy), small house 4 and temple 1 on the dunes.
-Nothing is drawn behind a plant (a block far behind a crop showed through it).
+Nothing is drawn behind a crop (a block far behind it showed through); behind another plant, the whole block, or window and the room
+through it, up to two blocks back (with nothing, sky showed through the ferns by a house's door, which the user called gaps).
 The savanna's (rebuilt once: meeting point 2's terracotta fountain with flat brown banners looked ugly to the user): meeting point 4's
 roofed well with its hanging bell (`bell:ceiling`), its front torch left out (the user found three too many); small house 1 (yellow
 terracotta) from its door side under the Mobs tab's tall acacia; hay and large farm 1 on the right; low hills by `profile` (random ones
 looked too busy, and a near acacia's leaning trunk looked like their steps), rising behind the tall acacia; far acacias (`lowAcacia`, low
 and narrow, so its crown doesn't run into the near one's: the user didn't want crowns merged), temple 2 and small house 3. No lamp post
 (a torch on a fence looked random), no tree at full size behind the well (it looked too close: it's on the far hills).
+The taiga's (built 2026-11-28; the wiki says spruce and cobblestone, roofs of spruce logs, wheat, potato and pumpkin farms): meeting point 2's
+cobblestone well under a roof of logs on spruce fences, its bell hanging, torches on the roof's log ends; small house 1 from its door side
+(the roof's logs end on, a cobblestone gable) and a lamp post (a torch on a cobblestone wall) on the left; decoration 6 (a campfire on a
+hay bale boxed in open trapdoors) and large farm 1 (wheat and pumpkins in a bed raised a block, edged with trapdoors) on the right; small
+house 5 and the temple on grassy hills among spruces; ferns, a large fern and a sweet berry bush. The campfire is Java's model side on
+(`campfire_log`, the pack's `campfire` fire playing its 32 frames), its smoke rising; the taiga's mist among the far trees (the
+user's ask). The user's first review: the well's fence row in front of the bell taken out; the temple moved right of the smoke (it rose over
+the tower; the campfire couldn't go left without standing on the well), its spruce gone; the temple's two lamp posts left out (one's cobblestone wall
+was lost against the tower; the other, set back over ferns, stood on ground that isn't drawn: both torches looked to float); the side windows' shutters under the houses' eaves left out (stray strips in the
+sky); the farm's far pumpkin behind its post left out (drawn as a room, a dark brown block). A fence across a window shows the room, as a
+pane does (the temple's windows looked hollow); a fern has the wall (or window, and the room through it) up to two blocks behind it (sky
+showed through the ferns by the far house's door); a dropped cell shows what's behind it. The near far spruce moved left off the far house's eave, onto hills drawn by `profile` (the waves left it in a dip by a
+one-column spike). `tools/village-pieces/taiga_fix.py` makes the
+well's and farm's changes on the generated pieces. Not offered yet: a near spruce.
+The snowy's (built again 2026-11-28): asked about the middle first, the user chose meeting point 2's bell alone (its packed-ice cairn with a
+torch on top was the only meeting point left, and close to the spire). Small house 7, spruce planks and stripped logs, from its door side,
+its lanterns either side (`lantern:false`, standing; `lantern:true` hangs on a chain); farm 2 without its ground layer (with it the farm stood
+on a white plinth of snow blocks), its wheat grown and its snow blocks unshaded (`snowy_fix.py`: shaded by depth, the white came out a dirty gray, which the user saw); on the
+snowy hills a snow-block house (medium house 1) and a spruce one with a chimney (small house 6), three spruces (the user asked for one more
+on the right, on level ground at column 54). The hills are the waves' line
+drawn by `profile`, but for three bumps the user had removed (beside the house's roof, between the left spruce and the snow-block house, and just
+right of that house). No temple and no fence-and-lantern posts (farm 1's, the lamp posts: too like the rejected
+frame). `snowy: true` gives the spruces and full blocks snow caps; a template's own snow layers (`snow:<layers>`) and a bottom slab or
+stair get none (the game's snow needs a whole top face; caps floated over the house's slab roof). Snow falls as on #6.
+
+### Generating a village's pieces
+
+- The generator is in `tools/village-pieces/`: `python3 tools/village-pieces/make.py <java data> <kind>` prints the kind's
+  `<KIND>_BLOCKS` and `<KIND>_PIECES` to paste over src/backdrop.js's. `<java data>` is misode/mcmeta's `26.3-data` unpacked (see
+  tools/structure-loot.py's header). `<kind>.json` names the pieces: `{name: [template under structure/village/, "N|S|E|W", [c0, c1]
+  or null, low]}`, the side you look from, the columns kept, and the lowest y kept (1 if not given: the ground layer left out; 2 for a
+  meeting point whose ground is y 1; 0 for a lamp post or decoration standing on the ground). `<kind>_fix.py` (`fix(d)`) makes the hand
+  changes on the result, so a regenerate keeps them; cells the scene leaves out are its `drop` in src/backdrop.js. `gen.py` sees a
+  template side on, `pieces.py` reads it (a jigsaw as its `final_state`) with `tools/structure-pieces.py`'s `nbt`.
+- Look at each template from all four sides first (`python3 tools/village-pieces/view.py NSEW <template>`) and pick the one that reads
+  as the building: a house from its door's side, a roof of logs end on.
+- Only the taiga's spec is kept (`make.py` gives exactly the page's tables, checked 2026-11-28). The desert's and savanna's were made
+  before the folder with an older `gen.py` (nothing behind any plant): regenerating them would differ, so write their spec from the
+  pieces on the page if they're ever regenerated.
+- New block shapes go in `gen.py`'s `token` and `pieceBlock` together (the taiga's added `trap:` and `campfire`); new names in `PIECE_TEX`.
+  A kind passes its grass color to `pieceProp` (else the savanna's).
 
 The grove, the snowy, old growth pine and spruce taigas, the savanna plateau, the sparse and bamboo jungles, the
 forest and the mangrove swamp were dropped (2026-11-21) as near copies: their mobs use snowy, taiga, savanna, jungle
@@ -162,19 +207,21 @@ the pale garden's).
 
 Every background has an animation, added one by one and approved by the user (2026-11-24 and 25):
 
-- Air bubbles (`drawBubbles`): 14, 15, 16, 17, 28. Gas off the sulfur pools (`drawGas`, `sulfurPool`'s `gas`): 26.
-- Twinkling stars (`drawStars`): 21, 23, 25, 29, 31. Falling leaves (`drawLeaves`): 7, 8, 25, 27, and a few in 1, 3, 5, 10, 20, 21, 31; not
+- Air bubbles (`drawBubbles`): 14, 15, 16, 17, 30. Gas off the sulfur pools (`drawGas`, `sulfurPool`'s `gas`): 28.
+- Twinkling stars (`drawStars`): 23, 25, 27, 31, 33. Falling leaves (`drawLeaves`): 7, 8, 27, 29, and a few in 1, 3, 5, 10, 20, 23, 33; not
   from spruces or far trees.
-- Snow (`drawSnow`, "not too much"): 6, 29. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9.
-- Calm sand (`drawSand`): 4, 23, 13, 19. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
-- Lava (`drawLava`): 36, 35, 33. Fire (`drawFire`): 36. Torches (`drawTorches`): 24, 30, 19, 20. Spawner flames (`drawSpawners`): 22, 33, 35 (behind the fortress's fences: a legend entry's `front` is cut out of them). Nether gold ore glinting (`SHEETS`, its texels picked by `yellow`): 35, 36, 37. Vault
-  sparks (`drawVaults`): 22. Lights that wax and wane (`drawLight`): 2, 24, 30, 33, 34, 37 (the lantern and the shroomlights), 40 (and the far city's end rods).
-- Clouds (`drawClouds`), slowly right and back, in every outdoor scene (22 of them), in the same places everywhere; the jungle's crowns hide
+- Snow (`drawSnow`, "not too much"): 6, 21, 31. Powder off the peaks (`drawSpindrift`): 11. Mist among the far trees (`drawMist`): 9, 22.
+- Calm sand (`drawSand`): 4, 25, 13, 19. The user didn't like wind and gusts ("more calm weather"). Spores (`drawSpores`): 12.
+- Lava (`drawLava`): 38, 37, 35. Fire (`drawFire`): 38. Torches (`drawTorches`, a far one's flame as much smaller as its block): 26, 32, 19, 20, 22. Spawner flames (`drawSpawners`): 24, 35, 37 (behind the fortress's fences: a legend entry's `front` is cut out of them). Nether gold ore glinting (`SHEETS`, its texels picked by `yellow`): 37, 38, 39. Vault
+  sparks (`drawVaults`): 24. Lights that wax and wane (`drawLight`): 2, 26, 32, 35, 36, 39 (the lantern and the shroomlights), 42 (and the far city's end rods).
+- Clouds (`drawClouds`), slowly right and back, in every outdoor scene (24 of them), in the same places everywhere; the jungle's crowns hide
   most of its own, and the user chose to leave it.
-- Ores and the lantern (`drawSheets`): 2; the bastion's lantern: 37; soul lanterns too: 34. Candle (`drawCandles`): 34. Drips (`drawDrips`): 2, 24. Sculk (`drawSculk`): 34. Wheat (`drawSway`): 18, 19, 20.
-- Banners swaying (`drawBanners`, a legend entry's `flag`, `bannerFlag`): 32, Java's beat but sideways, 3 degrees, as the game's swing toward you
+- Ores and the lantern (`drawSheets`): 2; the bastion's lantern: 39; soul lanterns too: 36. Candle (`drawCandles`): 36. Drips (`drawDrips`): 2, 26. Sculk (`drawSculk`): 36. Wheat (`drawSway`): 18, 19, 20, 21, 22. The snowy village's lanterns (`drawSheets`): 21. The campfire's fire (`SHEETS`, left out of the still picture as fire is): 22.
+  Campfire smoke (`drawSmoke`, the user's ask; a piece's `smoke`, from its `campfire` cells): 22, the pack's own particle (`minecraft:campfire_smoke_particle`:
+  its 12 pictures, 5 seconds, its speeds and fade), at Java's rate (the pack doesn't give one); its gray is the pack's, darker than Java's.
+- Banners swaying (`drawBanners`, a legend entry's `flag`, `bannerFlag`): 34, Java's beat but sideways, 3 degrees, as the game's swing toward you
   doesn't show from the front.
-- End crystals (`drawCrystals`): 38. End rods (`drawRods`): 40. An end gateway's beam flashing now and then (`drawGateways`): 39 only (the user wants it
+- End crystals (`drawCrystals`): 40. End rods (`drawRods`): 42. An end gateway's beam flashing now and then (`drawGateways`): 41 only (the user wants it
   on no other End background).
 
 Left still: the End's sky, the nether's magma and light.
@@ -244,6 +291,32 @@ Left still: the End's sky, the nether's magma and light.
 - Near snow as single blocks on one-wide steps touches only at the corners and looks like it floats: make it one sheet, each column's snow
   reaching down beside the next lower one's (the peaks' crags).
 - After every change, capture and look before reporting.
+- A building drawn side on from a template: before showing it, enlarge each one and look for sky where the game shows something, as the
+  user will: through a window (a fence or pane with nothing whole behind it: draw the room), behind a plant by a wall, in a dropped cell
+  (draw what's behind), under eaves (shutters seen edge on are stray strips: leave them out). The user calls these gaps.
+- A block 3 or more behind is drawn as a dim room (dark brown): right through a window, wrong outside a building (a far pumpkin behind a
+  farm's post became a dark brown block). Clear that cell's behind. `pieceProp` never draws one behind snow, a plant or a crop (a snowy
+  farm's snow layer became a dark box).
+- A village kind where the user rejected pieces before (the snowy): ask about the centre before building, with what each choice is.
+- A farm with its ground layer (low 0) stands on a plinth of its border blocks; try it without first.
+- Depth shading on white (snow, snow blocks) reads as dirt: draw them unshaded (depth 1 at most).
+- In a snowy scene, check the caps: a cap floats over anything whose top isn't whole (bottom slabs, stairs): give it `cap: false`.
+- A torch on a post reads as floating when its post is lost against a wall of the same block, or stands on far ground that isn't drawn
+  (set back behind ferns): leave such lamp posts out (the taiga temple's two).
+- Nothing in front of a meeting point's bell: the user wants it seen (the taiga well's fence row was taken out).
+- What rises from a near thing (smoke) must have clear sky over it: the user didn't want it across a far building. If moving the source
+  as asked can't do it (the campfire would have stood on the well), say so and offer choices (the user moved the temple instead).
+- Far trees and landmarks are placed by their left edge in 8px columns (`round(at * width / 8)`, about 62 across): work out overlaps in
+  columns, not by eye. After moving a far tree, look at the ground under its trunk: the waves can leave it in a dip beside a lone spike;
+  draw that stretch with `profile`. The hills' seed is the scene's `seed`, else the biome's place in `BIOMES` + 1 (0 for a village kind:
+  print `hillHeights` in node to see the heights).
+- Something on the moving layer drawn at a fixed size (torch flames) is too big on a far piece: give it the block's size.
+- After changing what all pieces share (`pieceProp`, `pieceBlock`), capture the other villages into the scratchpad and compare with `out`
+  pixel by pixel: they should be the same.
+- To see motion: `SHOW_MOB=1` keeps the moving layer in the capture; for several moments, a copy of `capture.mjs` that hides the mob but
+  not `.stage-motion` and takes a screenshot each second (scale 2).
+- The wiki's Village page is too long for the fetch agent to reach each kind's buildings: the templates are the source, the wiki only for
+  the kind's look in words (materials, crops).
 
 ## The Mobs tab's controls and facts
 

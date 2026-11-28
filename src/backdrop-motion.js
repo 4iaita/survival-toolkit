@@ -63,6 +63,32 @@ function drawGas(ctx, vents, seconds, scale) {
     }
   });
 }
+// Smoke rising off campfires, as the pack's own particle (minecraft:campfire_smoke_particle): each puff one of its 12 pictures, 1.5
+// blocks across (a little less at the very end), going up at 0.5 to 1 block a second and 0.4 faster each second, for 5 seconds, fading
+// from its first second on. How often is Java's (the pack doesn't say): each tick, 1 in 9 or so, 2 or 3 puffs, a third of a block either
+// side of the middle. at: [x, y, a block's size] in CSS pixels, its middle half a block up. sheet: the 12 pictures, one under the next.
+// The ticks are counted from 0, so it's a full column at once (and with less motion).
+function drawSmoke(ctx, smoke, seconds, scale) {
+  const pic = picturesOf(smoke, ["sheet"]);
+  if (!loaded(pic)) return false;
+  ctx.imageSmoothingEnabled = false;
+  const LIFE = 5, now = Math.floor(seconds * 20), fade = t => t * t * (3 - 2 * t);
+  smoke.at.forEach(([x, y, size], v) => {
+    for (let tick = now - LIFE * 20; tick <= now; tick++) {
+      if (motionNoise(v, tick, 171) >= 0.11) continue;
+      for (let j = 0, count = motionNoise(v, tick, 172) < 0.5 ? 2 : 3; j < count; j++) {
+        const roll = n => motionNoise(v, tick, j, n), age = seconds - tick / 20;
+        if (age < 0 || age >= LIFE) continue;
+        const up = (0.5 + 0.5 * roll(173)) * age + 0.2 * age * age, side = 1.5 * Math.pow(1 - age / LIFE, 0.08) * size;
+        ctx.globalAlpha = 1 - fade(Math.min(1, Math.max(0, (age - 1) / 4)));
+        const cx = x + (roll(175) - 0.5) * 0.66 * size, cy = y - up * size;
+        ctx.drawImage(pic.sheet, 0, Math.floor(roll(174) * 12) * 16, 16, 16, Math.round((cx - side / 2) * scale), Math.round((cy - side / 2) * scale), Math.round(side * scale), Math.round(side * scale));
+      }
+    }
+  });
+  ctx.globalAlpha = 1;
+  return true;
+}
 // A motion's pictures (data URLs), loading; kept for as long as the motion is.
 const motionPictures = new WeakMap();
 function picturesOf(motion, names) {
@@ -434,7 +460,8 @@ function drawSpawners(out, spawners, seconds, scale) {
   return true;
 }
 // Torches' flames: the pack's flame at each one's tip, always there, growing and shrinking and turning over, and now and then a
-// small one rising off it. at: the blocks' left edges and tops (a torch's tip is at 8, 6 in its block).
+// small one rising off it. at: the blocks' left edges and tops (a torch's tip is at 8, 6 in its block), and the block's size if it
+// isn't 16 (a far house's torch, its flame as much smaller).
 function drawTorches(ctx, torches, seconds, scale) {
   const pic = picturesOf(torches, ["flame"]);
   if (!loaded(pic)) return false;
@@ -446,13 +473,13 @@ function drawTorches(ctx, torches, seconds, scale) {
     ctx.drawImage(pic.flame, -Math.round((side * scale) / 2), -Math.round(side * scale), Math.round(side * scale), Math.round(side * scale));
     ctx.restore();
   };
-  torches.at.forEach(([x, y], i) => {
-    const t = seconds + i * 1.7, wave = 0.5 + 0.3 * Math.sin(t * 6.1) + 0.2 * Math.sin(t * 10.7 + 1);
-    flame(x + 8, y + 8, 6.5 + 2 * wave, Math.floor(t * 4) % 2 === 1);
+  torches.at.forEach(([x, y, size = 16], i) => {
+    const t = seconds + i * 1.7, wave = 0.5 + 0.3 * Math.sin(t * 6.1) + 0.2 * Math.sin(t * 10.7 + 1), k = size / 16;
+    flame(x + 8 * k, y + 8 * k, (6.5 + 2 * wave) * k, Math.floor(t * 4) % 2 === 1);
     const every = 1.6, trip = Math.floor(t / every), f = t / every - trip, roll = n => motionNoise(i, trip, n);
     if (roll(161) < 0.6) {
       ctx.globalAlpha = 1 - f;
-      flame(x + 8 + (roll(162) - 0.5) * 3, y + 4 - 9 * f, 4.5 * (1 - 0.6 * f), roll(163) < 0.5);
+      flame(x + (8 + (roll(162) - 0.5) * 3) * k, y + (4 - 9 * f) * k, 4.5 * (1 - 0.6 * f) * k, roll(163) < 0.5);
       ctx.globalAlpha = 1;
     }
   });
@@ -712,5 +739,6 @@ function drawMotion(ctx, motion, seconds, scale) {
   if (motion.sand) drawSand(ctx, motion.sand, seconds, scale);
   if (motion.snow) drawSnow(ctx, motion.snow, seconds, scale);
   if (motion.gas) drawGas(ctx, motion.gas, seconds, scale);
+  if (motion.smoke) drawn = drawSmoke(ctx, motion.smoke, seconds, scale) && drawn;
   return drawn;
 }

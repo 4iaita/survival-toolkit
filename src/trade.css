@@ -13,8 +13,8 @@
 }
 .stage[data-biome="desert"], .stage[data-biome="village_desert"] { --sky: #7fb0ee; --haze: #f1dfb4; }
 .stage[data-biome="savanna"], .stage[data-biome="village_savanna"] { --sky: #79a9e6; --haze: #f0d29c; }
-.stage[data-biome="snowy"] { --sky: #9db6e4; --haze: #eef3fb; }
-.stage[data-biome="taiga"] { --sky: #6c90c6; --haze: #c8d8e6; }
+.stage[data-biome="snowy"], .stage[data-biome="village_snowy"] { --sky: #9db6e4; --haze: #eef3fb; }
+.stage[data-biome="taiga"], .stage[data-biome="village_taiga"] { --sky: #6c90c6; --haze: #c8d8e6; }
 .stage[data-biome="jungle"] { --sky: #5c9ce2; --haze: #c4e6c6; }
 .stage[data-biome="swamp"] { --sky: #5f7d97; --haze: #b1bd9f; }
 /* Flat blocky clouds on the armor stands' stage (a backdrop's are drawn with what moves in it: drawClouds), and the ground: the
