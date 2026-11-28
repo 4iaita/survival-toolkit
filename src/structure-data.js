@@ -28,6 +28,8 @@ const STRUCTURE_SCENES = {
   woodland_mansion: "mansion",
   ocean_monument: "ocean",
   pillager_outpost: "pillager_outpost",
+  // Every kind of village on the Mobs tab's village scene (a plains village's middle).
+  village: "village",
 };
 const sceneOf = k => { const s = STRUCTURE_SCENES[k]; return s ? (typeof s === "string" ? s : s.biome) : null; };
 
@@ -44,7 +46,7 @@ const ST_BLOCKS = {
  *   loot: { k, n, block, where, table } or pick: [[table, weight], ...] when one of several tables is rolled (a spawner's key or
  *     its food); table can be { java, bedrock } where the editions' paths differ. rows: what's always in it, as a table's rows
  *     ([id, kind, least, most, chance]), for what's placed with the structure and not rolled (the end ship's elytra); note: the line
- *     under its list, if not the chance's.
+ *     under its list, if not the chance's; ed: only in that edition (the village's fisher cottage chest, Java's alone).
  *   lootFacts: [label, text] under the containers: what else can be had there (blocks of gold).
  *   mobs: { mob (MOBS' key), how, chance (how many of these structures have it, or how many it has), ed (only in that edition), near
  *     (it spawns there only as in the biome round it, not because of the structure: listed apart, under its own label) }.
@@ -52,6 +54,51 @@ const ST_BLOCKS = {
  *     and mobFacts where they differ: picked in the Structures section's dropdown, and laid over the structure's own.
  *   where: facts for the Where it is section; both(java, bedrock) where the editions differ.
  */
+// The village's kinds share their mob rows and where-it-is facts, with each kind's own numbers (tools/structure-pieces.py --village).
+//   v: villagers [mean, 5%, 95%], babies and nitwits (means), cats [mean, 5%, 95%], golem (the share with one), pens: [mob, mean, share]
+//   of the animals placed in its pens and stables, zombies [mean, 5%, 95%] in an abandoned one.
+function villageMobs(v) {
+  const n = x => (x < 0.95 ? `${Math.round(x * 10) / 10}` : `${Math.round(x)}`);
+  return [
+    { mob: "villager", how: both(`Placed as it’s made, about ${n(v.villagers[0])} (${v.villagers[1]} to ${v.villagers[2]} in 9 villages in 10): round the meeting point and in the houses. They have no job until each claims a free job site block; nitwits (about ${n(v.nitwits)} a village) never take one.`,
+      `Placed as it’s made, about ${n(v.villagers[0])} (${v.villagers[1]} to ${v.villagers[2]} in 9 villages in 10): round the meeting point and in the houses. 1 in 20 is a baby; of the adults 1 in 10 is a nitwit, who never takes a job, and the rest have none until each claims a free job site block.`),
+      chance: `About ${n(v.villagers[0])}` },
+    { mob: "villager", baby: true, how: both(`Placed as it’s made, about ${n(v.babies)} a village${v.babyNote || ""}. It grows up in 20 minutes.`, "1 in 20 of the villagers placed as it’s made. It grows up in 20 minutes."),
+      chance: both(`About ${n(v.babies)}`, "1 in 20") },
+    { mob: "iron_golem", how: `${v.golem >= 0.995 ? "One, placed by the meeting point as it’s made, in every village" : v.golemNote}. It never despawns. More come as the villagers call them (see below).`,
+      chance: v.golem >= 0.995 ? "Every one" : `${Math.round(v.golem * 100)}%` },
+    { mob: "cat", how: both(`Placed as it’s made, about ${n(v.cats[0])} (${v.cats[1]} to ${v.cats[2]}), round the meeting point and in some houses: they never despawn. More come where 5 beds are claimed (see below).`,
+      `Placed as it’s made, about ${n(v.cats[0])} (${v.cats[1]} to ${v.cats[2]}), round the meeting point and in some houses: they never despawn. More come, one for every 4 claimed beds (see below).`),
+      chance: `About ${n(v.cats[0])}` },
+    ...(v.camel ? [{ mob: "camel", how: "One, placed as it’s made, tied up by the meeting point. It never despawns.", chance: "Every one" }] : []),
+    ...v.pens.map(([mob, mean, share]) => ({ mob, how: `Placed as it’s made, in its animal pens and stables, ${mob === "horse" ? "1 or 2" : "2"} at a time: about ${n(mean / share)} in a village that has any.`, chance: `${Math.round(share * 100)}%` })),
+    { mob: "zombie_villager", how: both(`Only in an abandoned village (2 in 100), in its villagers’ place: about ${n(v.zombies[0])} (${v.zombies[1]} to ${v.zombies[2]}), and no iron golem. They never despawn, and burn by day.`,
+      `Only in an abandoned village (2 in 100), in its villagers’ place: about ${n(v.zombies[0])} (${v.zombies[1]} to ${v.zombies[2]}), and no iron golem. They never despawn; by day they look for shade, as they burn in the sun.`), chance: "2%" },
+  ];
+}
+// How to find one of a kind: the cartographers that sell its map (Java's villager_trade/cartographer/2 and Bedrock's economy trades: by the
+// cartographer's own kind).
+const villageFind = (kind, sellers) => `A ${kind} Village Map leads to the nearest ${kind.toLowerCase()} village: apprentice cartographers of the ${sellers} kinds can sell one, for 8 emeralds and a compass, up to 12 times before restocking (each offers 2 of the 8 trades of its level). No chest or camp map leads to one. Otherwise look over the biome for paths, farms and roofs, and at night for torches.`;
+const VILLAGE_WHERE = {
+  often: both("The Overworld is split into regions of 34 by 34 chunks (544 blocks square), each with one try at a village in its first 26 by 26 chunks, so two are at least 8 chunks apart. Its kind is that of the biome at its middle, and the try fails where that’s no village biome. 2 in 100 are abandoned. A pillager outpost is never within 10 chunks (160 blocks) of a spot where a village could start.",
+    "They’re spread over the village biomes, close to one another where the biome is wide. 2 in 100 are abandoned. A pillager outpost can stand near one, even in it."),
+  danger: both("Raids: walk in with Bad Omen and a raid starts. Zombie sieges: now and then at midnight up to 20 zombies spawn in the village while you’re there. Zombies at night break its wooden doors on Hard and turn villagers into zombie villagers (half of them on Normal, all on Hard). Hit a villager and its iron golem turns on you. Lightning turns a villager into a witch. Pillager patrols come by. An abandoned village is full of zombie villagers, and has no golem.",
+    "Raids: walk in with Bad Omen and a raid starts. Zombies at night break its wooden doors on Hard and turn villagers into zombie villagers (half of them on Normal, all on Hard). Hit a villager and its iron golem turns on you. Lightning turns a villager into a witch. Pillager patrols come by. An abandoned village is full of zombie villagers, and has no golem."),
+};
+const villageWhere = (o, about) => ({
+  biomes: o.biomes,
+  height: `On the surface, wherever the ground is: its streets and farms follow the ground, its houses stand level on foundations, the land round them smoothed in. About ${o.across} blocks across (at most 161: 80 each way from its middle), round a meeting point with its bell.`,
+  often: VILLAGE_WHERE.often, find: o.find, danger: VILLAGE_WHERE.danger, about,
+});
+// The farms' crops: each wheat block of a farm becomes another crop by the kind's farm processor (farm_<kind>: carrots 3 in 10, else
+// potatoes 2 in 10...), so a farm is a mix. As shares of the blocks; Bedrock's crops grow full grown, Java's are planted (the wiki).
+const villageCrops = crops => both(`Its farms are of ${crops}, each block picked on its own, so a farm is a mix; and composters beside them. The crops are planted, not grown.`,
+  `Its farms are of ${crops}, each block picked on its own, so a farm is a mix; and composters beside them. The crops are fully grown.`);
+// An abandoned one of each kind: 2 in 100 of its start pool's meeting points are under village/<kind>/zombie (plains 4 of 204, desert 5
+// of 250, savanna 9 of 459, snowy 6 of 306, taiga 2 of 100), its pieces through zombie_<kind>'s rules; its figures from --village's
+// abandoned builds.
+const villageAbandoned = (kind, o) => `Any kind can be abandoned: 2 in 100 ${kind} villages are. The same houses and chests, but ${o.look}, with about ${o.webs} cobwebs; about ${o.zombies} zombie villagers in the villagers’ place, no iron golem, and about ${o.cats} cats still.${o.more ? ` ${o.more}` : ""}`;
+
 const CITY_SHIP = 0.533;
 const CITY_CENTRE_2 = 1 / 3;
 const STRUCTURES = [
@@ -434,6 +481,160 @@ const STRUCTURES = [
     },
   },
   {
+    // How many of each: from Java's pieces (tools/structure-pieces.py --village builds 2000 villages of each kind, and 1000 abandoned
+    // ones, as JigsawPlacement does, with its use_expansion_hack, as if on level ground: there a house whose door is 2 or more blocks
+    // up its template never fits); the chests' loot from each edition's own tables, and each find's chance in a village from both.
+    // Bedrock's villages are built from pieces that aren't in its files: shown as Java's, but for the fisher cottage (Bedrock has no
+    // village_fisher table) and its villagers' babies and nitwits (villager_v2's spawn_from_village). Golem and cat spawning, sieges and
+    // raids are Java's code (from memory, checked against the Minecraft Wiki) and the wiki's for Bedrock.
+    k: "village", n: "Village", dim: "overworld", icon: "st:bell",
+    say: "Houses, farms and job sites round a bell, where villagers live, work and trade, guarded by an iron golem. Each is one of five kinds, by the biome it stands in.",
+    kinds: [
+      {
+        k: "plains", n: "Plains village", icon: "st:oak_log",
+        say: "Oak and cobblestone houses round a well or a fountain, among wheat, carrot and potato farms, in plains and meadows.",
+        loot: [
+          { k: "house", n: "House chests", block: "chest", table: "chests/village/village_plains_house",
+            where: "In 3 of its kinds of house: small house 7, the big house and medium house 2, one in each. About 2 a village (1 to 4 in 9 villages in 10 that have any), and 80% have one or more." },
+          { k: "tannery", n: "Tannery chest", block: "chest", table: "chests/village/village_tannery", where: "In the tannery, by its cauldrons: 32% of villages have one, now and then two." },
+          { k: "cartographer", n: "Cartographer’s chest", block: "chest", table: "chests/village/village_cartographer", where: "In the cartographer’s house, by its cartography table: 25% of villages have one." },
+          { k: "weaponsmith", n: "Weaponsmith’s chest", block: "chest", table: "chests/village/village_weaponsmith", where: "In the weaponsmith’s house, by its lava, furnaces and grindstone: 20% of villages have one." },
+          { k: "fisher", n: "Fisher’s chest", block: "chest", table: "chests/village/village_fisher", ed: "java",
+            where: "In the fisher cottage, by its barrel. Its door is two blocks up its foundation, so it only fits where the ground beside the street is higher than the street: never in a village on level ground, now and then on hills." },
+        ],
+        lootFacts: [
+          ["Job sites", "About 7 job site blocks a village (1 to 24): composters by the farms (about 2), brewing stands in the temples, stonecutters, blast furnaces, lecterns in the libraries, the tannery’s cauldrons and the rest. Most villagers find one, not all."],
+          ["Beds", "About 10 a village (4 to 17), in its houses: one for each villager placed, more or less."],
+          ["Bells", "One at the meeting point, and another in each meeting point among the houses: 44% of plains villages have two or more."],
+          ["Farms", villageCrops("wheat (half the blocks), carrots (3 in 10), potatoes (1 in 7) and beetroots (1 in 18)")],
+          ["On hills", "Its fisher cottage and small house 8 only fit where the ground beside the street is higher than the street: on level ground it has neither."],
+          ["Abandoned", villageAbandoned("plains", { look: "no doors or torches, mossy cobblestone, and cobwebs in its walls and half its windows", webs: 165, zombies: 7, cats: 1.6 })],
+        ],
+        mobs: villageMobs({ villagers: [9.9, 5, 16], babies: 0.85, nitwits: 0.81, cats: [2.2, 1, 4], golem: 1,
+          pens: [["cow", 1.508, 0.471], ["pig", 1.449, 0.459], ["horse", 0.69, 0.348], ["sheep", 0.542, 0.233]], zombies: [7.3, 3, 13] }),
+        biomeMobs: { java: ["plains", "meadow"], bedrock: ["plains", "sunflower_plains", "meadow"] },
+        where: villageWhere({ biomes: both("Plains and meadows.", "Plains, sunflower plains and meadows."), across: 140, find: villageFind("Plains", "desert, savanna, snowy and taiga") },
+          "Trading: about 10 villagers to give jobs. Beds, about 10, to sleep in and set your spawn. Food: bread in 82% of villages’ chests, apples (73%), potatoes (70%), and the farms. In its chests, as a whole village: emeralds 36%, a saddle 9%, obsidian and iron armor 5%, diamonds 3%, horse armor 1%, and a bundle 57%. The iron golem’s iron, and an iron farm: villagers with beds call up more. Curing zombie villagers for cheap trades."),
+      },
+      {
+        k: "desert", n: "Desert village", icon: "st:smooth_sandstone",
+        say: "Sandstone and terracotta houses round a well, with cactus, wheat, beetroot and melon farms and a camel tied by the bell, in deserts.",
+        loot: [
+          { k: "house", n: "House chests", block: "chest", table: "chests/village/village_desert_house",
+            where: "In 4 of its kinds of house: small houses 4 and 6 and medium houses 1 and 2, one in each. About 3 a village (1 to 7 in 9 villages in 10 that have any), and 94% have one or more." },
+          { k: "weaponsmith", n: "Weaponsmith’s chest", block: "chest", table: "chests/village/village_weaponsmith", where: "In the weaponsmith’s house, by its lava and grindstone: 17% of villages have one." },
+          { k: "temple", n: "Temple chest", block: "chest", table: "chests/village/village_temple", where: "In one of its two temples, by the brewing stand: only 4% of villages have one." },
+          { k: "toolsmith", n: "Tool smith’s chest", block: "chest", table: "chests/village/village_toolsmith",
+            where: "In the tool smith’s house, by its smithing table. Its door is three blocks up its foundation, so it only fits where the ground beside the street is higher than the street: never in a village on level ground, now and then on dunes." },
+        ],
+        lootFacts: [
+          ["Job sites", "About 5 job site blocks a village (0 to 21): composters by the farms (about 2), cartography tables, lecterns, stonecutters, smokers, blast furnaces, looms, and the fisher’s 6 barrels in 1 village in 8."],
+          ["Beds", "About 13 a village (5 to 23), more than any other kind."],
+          ["Farms", villageCrops("wheat (7 in 10 blocks), beetroots (2 in 10) and melons (1 in 12)")],
+          ["Cactus", "About 4 patches of cactus and 4 piles of hay bales by its streets."],
+          ["On hills", "Its large farm (the building it picks most), tannery and tool smith’s house only fit where the ground beside the street is higher than the street: on level ground it has none of them."],
+          ["Abandoned", villageAbandoned("desert", { look: "no doors or torches, and cobwebs in its sandstone and terracotta walls", webs: 140, zombies: 10, cats: 5 })],
+        ],
+        mobs: villageMobs({ villagers: [13, 6, 22], babies: 1.08, nitwits: 1.1, cats: [4.9, 2, 9], golem: 1, camel: true,
+          pens: [["sheep", 0.41, 0.189], ["cow", 0.308, 0.148], ["pig", 0.319, 0.147], ["horse", 0.072, 0.049]], zombies: [9.7, 3, 18] }),
+        biomeMobs: { java: ["desert"], bedrock: ["desert"] },
+        where: villageWhere({ biomes: "Deserts.", across: 105, find: villageFind("Desert", "savanna and jungle") },
+          "Trading: about 13 villagers, the most of any kind, and 13 beds. Food: bread in 91% of villages’ chests, the farms’ wheat, beetroots and melons. Cactus and dead bushes in most villages’ chests, and books (36%). In its chests, as a whole village: emeralds 37%, iron armor 4%, a saddle 3%, diamonds 3%, horse armor 1%, and a bundle 66%. A camel by the bell. Curing zombie villagers for cheap trades."),
+      },
+      {
+        k: "savanna", n: "Savanna village", icon: "st:acacia_log",
+        say: "Acacia houses with orange terracotta round a well or a fountain, among wide wheat and melon farms, in savannas.",
+        loot: [
+          { k: "house", n: "House chests", block: "chest", table: "chests/village/village_savanna_house",
+            where: "In 5 of its kinds of house: small houses 2, 4 and 7 and medium houses 1 and 2, one in each. About 3 a village (1 to 6 in 9 villages in 10 that have any), and 95% have one or more." },
+          { k: "tannery", n: "Tannery chest", block: "chest", table: "chests/village/village_tannery", where: "In the tannery: 57% of villages have one (1 to 3)." },
+          { k: "cartographer", n: "Cartographer’s chest", block: "chest", table: "chests/village/village_cartographer", where: "In the cartographer’s house, by its cartography table: 53% of villages have one (1 to 3)." },
+          { k: "mason", n: "Mason’s chest", block: "chest", table: "chests/village/village_mason", where: "In the mason’s house, by its stonecutter: 31% of villages have one." },
+          { k: "butcher", n: "Butcher’s chest", block: "chest", table: "chests/village/village_butcher", where: "In one of its two butcher’s shops, by the smoker: 21% of villages have one." },
+          { k: "weaponsmith", n: "Weaponsmith’s chest", block: "chest", table: "chests/village/village_weaponsmith", where: "In one of its two weaponsmith’s houses: 9% of villages have one." },
+        ],
+        lootFacts: [
+          ["Job sites", "About 8 job site blocks a village (0 to 22): composters by its farms, and the job sites of its many workshops."],
+          ["Beds", "About 8 a village (3 to 14)."],
+          ["Bells", "One at the meeting point; 12% of savanna villages have a second."],
+          ["Farms", villageCrops("wheat (9 in 10 blocks) and melons (1 in 10), in wide fields")],
+          ["On hills", "Its shepherd’s house (the building it picks most), fisher cottage, small farm, second large farm and one of its animal pens only fit where the ground beside the street is higher than the street: on level ground it has none of them, so no loom or fisher’s barrel."],
+          ["Abandoned", villageAbandoned("savanna", { look: "no doors or torches, and cobwebs in its acacia and terracotta walls and half its windows", webs: 270, zombies: 6, cats: 2.5 })],
+        ],
+        mobs: villageMobs({ villagers: [8.4, 4, 13], babies: 0.71, nitwits: 0.71, cats: [2.9, 1, 5], golem: 1,
+          pens: [["pig", 0.507, 0.224], ["cow", 0.472, 0.212], ["sheep", 0.238, 0.115], ["horse", 0.132, 0.093]], zombies: [6.1, 2, 11] }),
+        biomeMobs: { java: ["savanna"], bedrock: ["savanna"] },
+        where: villageWhere({ biomes: "Savannas: not savanna plateaus or windswept savannas.", across: 145, find: villageFind("Savanna", "plains, desert and jungle") },
+          "Saddles: in 40% of villages’ chests, more than any other kind, and leather armor (24%). Emeralds in 60% of villages’ chests. Food: bread in 97%, and wide wheat fields. In its chests, as a whole village: iron armor 2%, diamonds 1.3%, horse armor 0.4%, a bundle 79%. Trading: about 8 villagers, and many workshops. Curing zombie villagers for cheap trades."),
+      },
+      {
+        k: "snowy", n: "Snowy village", icon: "st:snow",
+        say: "Spruce houses lit by lanterns, with packed ice in its paths, among potato farms, in snowy plains.",
+        loot: [
+          { k: "house", n: "House chests", block: "chest", table: "chests/village/village_snowy_house",
+            where: "In 2 of its kinds of house: small houses 5 and 6, one in each. About 2 a village (1 to 5 in 9 villages in 10 that have any), and 86% have one or more." },
+          { k: "tannery", n: "Tannery chest", block: "chest", table: "chests/village/village_tannery", where: "In the tannery: 44% of villages have one." },
+          { k: "armorer", n: "Armorer’s chest", block: "chest", table: "chests/village/village_armorer", where: "In the armorer’s house, by its blast furnace: 31% of villages have one. Only snowy villages have it." },
+          { k: "cartographer", n: "Cartographer’s chest", block: "chest", table: "chests/village/village_cartographer", where: "In the cartographer’s house, by its cartography table: 26% of villages have one." },
+          { k: "weaponsmith", n: "Weaponsmith’s chest", block: "chest", table: "chests/village/village_weaponsmith", where: "In the weaponsmith’s house: 23% of villages have one." },
+        ],
+        lootFacts: [
+          ["Job sites", "About 9 job site blocks a village (0 to 25), the most of any kind: composters, smokers, blast furnaces, smithing tables, the tannery’s cauldrons and the rest."],
+          ["Beds", "About 12 a village (5 to 20)."],
+          ["Farms", villageCrops("potatoes (7 in 10 blocks), wheat (2 in 10) and carrots (1 in 10)")],
+          ["Ice and light", "About 70 packed ice in its paths and meeting points (91% of villages), and about 40 lanterns."],
+          ["The shepherd’s house", both("It never generates: the jigsaw at its door is misnamed (buidling_entrance), so it can’t join a street, and its shepherd’s chest is never found.", "")],
+          ["Abandoned", villageAbandoned("snowy", { look: "no doors, torches or lanterns, and cobwebs in its spruce walls and half its windows", webs: 260, zombies: 7, cats: 5 })],
+        ],
+        mobs: villageMobs({ villagers: [11, 5, 18], babies: 0.96, nitwits: 0.92, cats: [5.2, 2, 9], golem: 1,
+          pens: [["cow", 1.028, 0.39], ["pig", 0.957, 0.365], ["sheep", 0.521, 0.229], ["horse", 0.197, 0.124]], zombies: [7.3, 3, 14] }),
+        biomeMobs: { java: ["snowy_plains"], bedrock: ["snowy_plains"] },
+        where: villageWhere({ biomes: "Snowy plains.", across: 135, find: villageFind("Snowy", "taiga and swamp") },
+          "Iron: iron ingots in 26% of villages’ chests and an iron helmet in 16%. Coal (57%), snow blocks, blue ice (19%), furnaces and beetroot soup in its chests. Emeralds 35%. In its chests, as a whole village: a saddle 13%, iron armor 6%, diamonds 4%, horse armor 1%, a bundle 66%. Cats: about 5, the most of any kind. Trading: about 11 villagers. Curing zombie villagers for cheap trades."),
+      },
+      {
+        k: "taiga", n: "Taiga village", icon: "st:spruce_log",
+        say: "Spruce and cobblestone houses among wheat and pumpkin farms, with more weaponsmiths than any other kind, in taigas.",
+        loot: [
+          { k: "house", n: "House chests", block: "chest", table: "chests/village/village_taiga_house",
+            where: "In 4 of its kinds of house: small houses 3 and 5 and medium houses 2 and 3, one in each. About 4 a village (1 to 8 in 9 villages in 10 that have any), and 96% have one or more. A fifth, medium house 1, only fits where the ground beside the street is higher than the street." },
+          { k: "weaponsmith", n: "Weaponsmith’s chest", block: "chest", table: "chests/village/village_weaponsmith", where: "In one of its two weaponsmith’s houses: 55% of villages have one (1 to 3)." },
+          { k: "cartographer", n: "Cartographer’s chest", block: "chest", table: "chests/village/village_cartographer", where: "In the cartographer’s house, by its cartography table: 44% of villages have one (1 to 3)." },
+          { k: "tannery", n: "Tannery chest", block: "chest", table: "chests/village/village_tannery", where: "In the tannery: 23% of villages have one." },
+          { k: "toolsmith", n: "Tool smith’s chest", block: "chest", table: "chests/village/village_toolsmith", where: "In the tool smith’s house, by its smithing table: 21% of villages have one." },
+          { k: "fletcher", n: "Fletcher’s chest", block: "chest", table: "chests/village/village_fletcher", where: "In the fletcher’s house, by its fletching table: 16% of villages have one. Only taiga villages have it." },
+        ],
+        lootFacts: [
+          ["Job sites", "About 8 job site blocks a village (0 to 26): grindstones (about 3, from its weaponsmiths), composters, blast furnaces, stonecutters and the rest."],
+          ["Beds", "About 9 a village (3 to 16)."],
+          ["Farms", villageCrops("wheat (a little over half the blocks), pumpkins (3 in 10) and potatoes (1 in 7)")],
+          ["On hills", "Its fisher cottage and medium house 1 only fit where the ground beside the street is higher than the street: on level ground it has neither."],
+          ["Abandoned", villageAbandoned("taiga", { look: "no doors or torches, its campfires out, mossy cobblestone, and cobwebs in its walls and half its windows", webs: 100, zombies: 6, cats: 2.7, more: "Half of them have no bell." })],
+        ],
+        mobs: villageMobs({ villagers: [9.4, 5, 15], babies: 2.1, nitwits: 0.66, cats: [2.1, 0, 5], golem: 0.514,
+          babyNote: ", more than in other kinds: at the larger of its two meeting points only babies fit, as its spots are too low for an adult",
+          golemNote: "Placed by the meeting point as it’s made, in half the villages (51%): at the larger of its two meeting points the golem’s spot is too low to hold one",
+          pens: [["sheep", 0.416, 0.189], ["cow", 0.305, 0.131], ["pig", 0.261, 0.118], ["horse", 0.07, 0.046]], zombies: [6.4, 2, 12] }),
+        biomeMobs: { java: ["taiga"], bedrock: ["taiga", "snowy_taiga"] },
+        where: villageWhere({ biomes: both("Taigas: not snowy or old growth ones.", "Taigas and snowy taigas."), across: 130, find: villageFind("Taiga", "plains, snowy and swamp") },
+          both("Diamonds: in 13% of villages’ chests, more than any other kind, and iron armor (17%), an iron pickaxe (25%), horse armor (4%) and a saddle (15%), from its weaponsmiths. Emeralds 53%. Food: bread (96%), potatoes, pumpkin pie, sweet berries (76%), and the farms. A bundle 81%. Trading: about 9 villagers. Curing zombie villagers for cheap trades.",
+            "Diamonds: in 13% of villages’ chests, more than any other kind, and iron armor (17%), an iron pickaxe (25%), horse armor (4%) and a saddle (15%), from its weaponsmiths. Emeralds 55%. Food: bread (96%), potatoes, pumpkin pie and the farms. A bundle 81%. Trading: about 9 villagers. Curing zombie villagers for cheap trades.")),
+      },
+    ],
+    mobFacts: [
+      ["Jobs", "A villager without a job claims a free job site block nearby and takes its job: a composter makes a farmer, a lectern a librarian, a grindstone a weaponsmith, and so on. Nitwits never do, and babies only once grown. A village has fewer job sites than villagers, so some stay jobless until you place more."],
+      ["Iron golems", both("A villager calls one up while gossiping with 4 others, or every 5 seconds while it panics (a zombie or raider near) with 2 others: all within 10 blocks, all having slept in the last 20 minutes, and none having seen a golem in the last 30 seconds. It appears within 8 blocks sideways and 6 up or down. That’s how iron farms work: beds, villagers, and a zombie they can see.",
+        "A village with at least 20 beds and 10 villagers, 3 in 4 of them (not counting nitwits) having worked in the last 20 minutes and all with a bed, makes one now and then (1 in 700 a tick, about every 35 seconds) within 8 blocks sideways and 6 up or down of its middle, while a player is near; one more for each 10 villagers more.")],
+      ["Cats", both("Every minute one more can spawn in a village with at least 5 claimed beds within 48 blocks, while no more than 4 cats are round it: so up to 5. These can despawn; those placed with it don’t.",
+        "Now and then one spawns in a village, 1 for every 4 claimed beds, up to 5 for 20 or more, within 8 blocks of its middle; 1 in 4 is a kitten. These can despawn; those placed with it don’t.")],
+      ["Zombie sieges", both("At midnight, 1 night in 10, while you’re in a village (near a claimed bed, bell or job site), not in mushroom fields and not on Peaceful: up to 20 zombies spawn at one spot 32 blocks from you and come for the villagers.", "")],
+      ["Raids", both("Bad Omen, from an Ominous Bottle, turns into Raid Omen as you walk into a village, and 30 seconds later a raid starts there: waves of pillagers, vindicators, ravagers, witches and evokers, 3 on Easy, 5 on Normal, 7 on Hard, and one more with Bad Omen II or more. Beat it for Hero of the Village (cheaper trades) and the evokers’ totems of undying.",
+        "Bad Omen, from an Ominous Bottle, turns into Raid Omen as you walk into a village, and 30 seconds later a raid starts there: waves of pillagers, vindicators, ravagers, witches and evokers, 3 on Easy, 5 on Normal, 7 on Hard. Beat it for Hero of the Village (cheaper trades) and the evokers’ totems of undying.")],
+      ["Abandoned villages", "2 in 100 villages of every kind, with zombie villagers in its villagers’ place and no iron golem. Cure them for villagers: throw a Splash Potion of Weakness and give a golden apple, and the villager it becomes sells to you cheaper."],
+      ["The share", "For what spawns round it: of that biome’s spawns of the same kind, monsters with monsters (at night) and animals with animals."],
+    ],
+  },
+  {
     k: "fortress", n: "Nether Fortress", dim: "nether", icon: "st:nether_bricks",
     say: "Nether brick bridges and halls strung out over the lava seas, home to blazes and wither skeletons.",
     loot: [
@@ -758,6 +959,8 @@ const ST_ART = {
   "st:purpur_block": C("purpur_block"), "st:item_frame": L("item_frame"), "st:brewing_stand": L("brewing_stand"), "st:dragon_head": C("dragon_head_side"),
   "st:prismarine_bricks": C("prismarine_bricks"), "st:gold_block": C("gold_block"), "st:wet_sponge": C("wet_sponge"),
   "st:crossbow": L("crossbow_standby"),
+  "st:bell": L("bell"), "st:oak_log": C("log_oak", "log_oak_top"), "st:smooth_sandstone": C("smooth_sandstone"), "st:acacia_log": C("log_acacia", "log_acacia_top"),
+  "st:snow": C("snow"), "st:spruce_log": C("log_spruce", "log_spruce_top"),
   "st:reinforced_deepslate": C("reinforced_deepslate"), "st:dark_oak_log": C("log_dark_oak", "log_dark_oak_top"), "st:diamond_block": C("diamond_block"), "st:chest_minecart": L("chest_minecart"), "st:rail": L("rail_carried"), "st:furnace": C("furnace_front", "furnace_top", "furnace_side"),
   // The end portal frame: 13 texels tall, its sides' top 3 rows clear.
   "st:end_portal_frame": { boxes: [{ b: [0, 0, 0, 16, 13, 16], faces: [["end_portal_frame"], ["end_portal_frame_top"], ["end_portal_frame"]] }] },
@@ -832,7 +1035,7 @@ const LOOT_BLOCKS = new Set(["rail", "powered_rail", "detector_rail", "activator
 const LOOT_MODELS = {
   oak_fence: { boxes: [[6, 0, 0, 10, 16, 4], [6, 0, 12, 10, 16, 16], [7, 12, 4, 9, 15, 12], [7, 6, 4, 9, 9, 12]].map(b => ({ b, faces: [["oak_planks"], ["oak_planks"], ["oak_planks"]] })) },
 };
-// Blocks drawn as cubes: [side, top] textures, if not the block's own name for both.
+// Blocks drawn as cubes: [side, top, right side] textures, if not the block's own name for both.
 const LOOT_CUBES = {
   tuff: [], moss_block: [], diamond_block: [], emerald_block: [], iron_block: [], gold_block: [], bamboo_planks: [], oak_planks: [],
   acacia_planks: ["planks_acacia"], obsidian: [], scaffolding: ["scaffolding_side", "scaffolding_top"], heavy_core: [],
@@ -841,12 +1044,15 @@ const LOOT_CUBES = {
   deepslate: [], sculk: [], sculk_catalyst: [], packed_ice: [], glass: [], tnt: ["tnt_side", "tnt_top"],
   prismarine: ["prismarine_rough"], prismarine_bricks: [], dark_prismarine: ["prismarine_dark"], sea_lantern: [], wet_sponge: [],
   dark_oak_log: ["log_dark_oak", "log_dark_oak_top"],
+  barrel: ["barrel_side", "barrel_top"], cactus: ["cactus_side", "cactus_top"], furnace: ["furnace_front", "furnace_top", "furnace_side"],
+  smooth_stone: [], snow_block: ["snow"], spruce_log: ["log_spruce", "log_spruce_top"],
 };
 // Items whose picture is called otherwise in art/.
 const LOOT_ART = { crossbow: "crossbow_standby", enchanted_golden_apple: "golden_apple", buried_trial_chambers_map: "trial_explorer_map",
   netherite_upgrade_smithing_template: "netherite_upgrade", diamond_spear: "spear", iron_chain: "chain", soul_torch: "soul_torch_carried",
   rail: "rail_carried", powered_rail: "powered_rail_carried", detector_rail: "detector_rail_carried", activator_rail: "activator_rail_carried",
-  buried_mineshaft_map: "mineshaft_explorer_map", allium: "flower_allium", dark_oak_sapling: "sapling_dark_oak" };
+  buried_mineshaft_map: "mineshaft_explorer_map", allium: "flower_allium", dark_oak_sapling: "sapling_dark_oak",
+  oak_sapling: "sapling_oak", acacia_sapling: "sapling_acacia", spruce_sapling: "sapling_spruce", large_fern: "large_fern_item", tall_grass: "tall_grass_item" };
 // What's placed with a structure and isn't in any loot table (a box's rows), named as Java's en_us.json names it.
 Object.assign(STRUCTURE_NAMES.items, { elytra: "Elytra", dragon_head: "Dragon Head", wooden_shovel: "Wooden Shovel", deepslate: "Deepslate", oak_fence: "Oak Fence",
   allium: "Allium", glass: "Glass", prismarine: "Prismarine", prismarine_bricks: "Prismarine Bricks", dark_prismarine: "Dark Prismarine",
@@ -862,7 +1068,7 @@ function lootIcon(id, kind) {
   if (id === "shield" && ICONS.shield) return "shield";
   const key = `st:${id}`;
   if (!ICONS[key]) {
-    const cube = LOOT_CUBES[id], spec = LOOT_MODELS[id] || (cube ? C(cube[0] || id, cube[1] || cube[0] || id) : L(LOOT_ART[id] || id));
+    const cube = LOOT_CUBES[id], spec = LOOT_MODELS[id] || (cube ? C(cube[0] || id, cube[1] || cube[0] || id, cube[2] || cube[0] || id) : L(LOOT_ART[id] || id));
     ICONS[key] = artReady(spec) ? spec : ICONS["ui:book"];
   }
   return key;

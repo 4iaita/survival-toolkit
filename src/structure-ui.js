@@ -98,8 +98,10 @@ const stHead = (k, note = "") => sectionHead("st-section-title", stSectionIcon(k
 // A fact only one edition has is both(text, "") or both("", text): no row in the other.
 const stFact = (label, text) => { const t = byEdition(text, stEdition()); return t ? `<div class="fact-row"><dt>${label}</dt><dd>${esc(t)}</dd></div>` : ""; };
 
+// A structure's containers in the edition picked (a box with ed is only in that one: the village's fisher cottage chest).
+const stBoxes = s => (s.loot || []).filter(b => !b.ed || b.ed === stEdition());
 function lootSection(s) {
-  const boxes = s.loot || [];
+  const boxes = stBoxes(s);
   if (!boxes.length) return `${stHead("loot")}<p class="mob-lead">It has no containers of its own.</p>`;
   const box = boxes.find(b => b.k === st.box) || boxes[0];
   return `${stHead("loot", plural(boxes.length, "kind of container", "kinds of container"))}
@@ -113,8 +115,20 @@ function lootSection(s) {
 }
 
 const mobKey = k => (MOBS.some(m => m.k === k) ? k : null);
-// A structure's mob rows in the edition picked (a row with ed is only in that one).
-const stMobs = s => (s.mobs || []).filter(r => mobKey(r.mob) && (!r.ed || r.ed === stEdition()));
+// A structure's mob rows in the edition picked (a row with ed is only in that one), and after them, for one with biomeMobs (a
+// village's kinds: { java: [biomes], bedrock: [biomes] }), what spawns round it as in those biomes, from src/dimension-spawns.js as
+// the Overworld's Mobs section has it: its animals and monsters, not bats or glow squid (underground).
+const ST_NEAR_KINDS = new Set(["creature", "animal", "monster"]);
+function biomeRows(s) {
+  const ed = stEdition(), biomes = s.biomeMobs && s.biomeMobs[ed];
+  if (!biomes) return [];
+  const mobs = new Set(biomes.flatMap(b => [...biomeSpawns(ed, b).values()].filter(r => ST_NEAR_KINDS.has(r.kind)).map(r => r.mob)));
+  return [...mobs].map(mob => ({ mob, s: spread(ed, biomes, mob) })).sort((a, b) =>
+    DIM_KIND_ORDER[a.s.kind] - DIM_KIND_ORDER[b.s.kind] || Math.max(...b.s.shares) - Math.max(...a.s.shares)).map(({ mob, s: x }) => ({
+    near: true, mob, chance: shareSpan(x.shares),
+    how: sentence([dimHow("overworld", mob), ed === "bedrock" && sayY(x.h), groupSize(x.lo, x.hi), whereIn("overworld", biomes, x.in)]) }));
+}
+const stMobs = s => [...(s.mobs || []), ...biomeRows(s)].filter(r => mobKey(r.mob) && (!r.ed || r.ed === stEdition()));
 const stMobName = r => (r.baby ? `Baby ${mobName(mobOf(r.mob))}` : mobName(mobOf(r.mob)));
 const mobRow = r => `<li><button type="button" class="item-row st-mob" data-mob="${r.mob}"${r.baby ? ' data-baby="on"' : ""} title="Open the ${esc(stMobName(r))} in the Mobs tab">
     ${plainSlot(mobIcon(mobOf(r.mob)), "sm")}<span class="item-name">${esc(stMobName(r))}<span class="sub">${esc(byEdition(r.how, stEdition()))}</span></span>${r.chance ? `<span class="item-chance">${esc(byEdition(r.chance, stEdition()))}</span>` : ""}</button></li>`;
@@ -380,7 +394,7 @@ function stSearchHits(q) {
   for (const s of STRUCTURES) {
     for (const kind of s.kinds || [null]) {
       const shown = kind ? { ...s, ...kind } : s;
-      for (const box of shown.loot || []) {
+      for (const box of stBoxes(shown)) {
         const rows = boxRows(box), any = new Map(rows.filter(r => r[1] === "*").map(r => [r[0], r]));
         const byId = new Map();
         for (const r of rows) {

@@ -5,6 +5,7 @@ mobs (the entities saved in the piece), its notable blocks, and the pools its ji
     python3 tools/structure-pieces.py <java data> --end-city [how many]
     python3 tools/structure-pieces.py <java data> --mansion [how many] [src/structure-loot.js]
     python3 tools/structure-pieces.py <java data> --outpost [how many] [src/structure-loot.js]
+    python3 tools/structure-pieces.py <java data> --village [how many] [src/structure-loot.js] [kinds, by commas] [how many abandoned]
     python3 tools/structure-pieces.py --stronghold [how many]
     python3 tools/structure-pieces.py --mineshaft [how many]
     python3 tools/structure-pieces.py --monument [how many] [<java data> <bedrock-samples>]
@@ -28,6 +29,10 @@ templates, and every block summed over its pieces; given src/structure-loot.js, 
 --outpost builds that many pillager outposts (2000) as --counts does (see its section), and counts its watchtower chests, features
 (cages, tents, log piles, targets), their mobs (the iron golem, the allays) and every block, the overgrown tower's 1 in 20 laid over
 the tower block by block, and the box its pillagers spawn in; given src/structure-loot.js, also the chance an outpost has each find.
+
+--village builds that many villages (2000) of each of Java's five kinds (plains, desert, savanna, snowy, taiga), and as many abandoned
+ones, as --counts does (see its section), and counts their buildings, chests by loot table and building, job site blocks, beds, bells,
+every block and the mobs placed with them; given src/structure-loot.js, also the chance a village of each kind has each find.
 
 --stronghold and --mineshaft build that many (5000) as Java's StrongholdPieces and MineshaftPieces do, from memory of that code (see
 their sections), and count what's in them. They need no files.
@@ -102,7 +107,9 @@ class Data:
         ref = ref.replace("minecraft:", "")
         if ref == "empty":
             return {"elements": [], "fallback": "minecraft:empty"}
-        return json.loads((self.base / "worldgen" / "template_pool" / f"{ref}.json").read_text())
+        if ("pool", ref) not in self._pieces:  # read once: build asks for each pool many times
+            self._pieces[("pool", ref)] = json.loads((self.base / "worldgen" / "template_pool" / f"{ref}.json").read_text())
+        return self._pieces[("pool", ref)]
 
     def piece(self, loc):
         """A template -> {containers: Counter(table), spawners: Counter(mob), mobs: Counter(entity), blocks: Counter, jigsaws: [...]}."""
@@ -310,8 +317,21 @@ def el_size(data, el):
 
 def pool_height(data, ref):
     """StructureTemplatePool.getMaxSize: the tallest of its elements (an empty one counts nothing)."""
+    if ("height", ref) in data._pieces:
+        return data._pieces[("height", ref)]
     pool = data.pool(ref)
-    return max([el_size(data, e["element"])[1] for e in pool["elements"] if not e["element"]["element_type"].endswith("empty_pool_element")] or [0])
+    data._pieces[("height", ref)] = h = max([el_size(data, e["element"])[1] for e in pool["elements"] if not e["element"]["element_type"].endswith("empty_pool_element")] or [0])
+    return h
+
+
+def tall_jigsaws(data, loc):
+    """A template's jigsaws whose pool (or its fallback) has anything in it, with that pool's height (pool_height): the only ones
+    the use_expansion_hack looks at."""
+    if ("tall", loc) not in data._pieces:
+        js = [(x, max(pool_height(data, x["pool"]), pool_height(data, data.pool(x["pool"]).get("fallback", "minecraft:empty").replace("minecraft:", ""))))
+              for x in data.piece(loc)["jigsaws"]]
+        data._pieces[("tall", loc)] = [(x, h) for x, h in js if h > 0]
+    return data._pieces[("tall", loc)]
 
 
 def build(data, start_el, depth, reach, rng, anchor=None, expansion=False, boxes=None):
@@ -391,8 +411,8 @@ def build(data, start_el, depth, reach, rng, anchor=None, expansion=False, boxes
                         off = tuple(a - b for a, b in zip(tgt, cpos))
                         cb = box_of(csize, r, off)
                         if expansion and cb[4] - cb[1] + 1 <= 16:
-                            up = max([max(pool_height(data, x["pool"]), pool_height(data, data.pool(x["pool"]).get("fallback", "minecraft:empty")))
-                                      for x in cp["jigsaws"] if inside(cb, tuple(a + b + d for a, b, d in zip(turn(x["pos"], r), off, DIRS[facing(x["front"], r)])))] or [0])
+                            up = max([h for x, h in tall_jigsaws(data, cloc)
+                                      if inside(cb, tuple(a + b + d for a, b, d in zip(turn(x["pos"], r), off, DIRS[facing(x["front"], r)])))] or [0])
                             if up > 0:
                                 cb = cb[:4] + (max(cb[4], cb[1] + max(up + 1, cb[4] - cb[1])),) + cb[5:]
                         if not here.fits(cb):
@@ -2588,6 +2608,188 @@ def monument_drops(java_root, bedrock_root):
                 print(line)
 
 
+# ---------- The villages: jigsaws, each kind's pieces counted ----------
+# Built as the other jigsaws are (build, with their use_expansion_hack): worldgen/structure/village_<kind>.json's start pool
+# (village/<kind>/town_centers), its size (6) and max_distance_from_center (80), as if on flat land (streets and farms are
+# terrain_matching, so on hills they follow the ground; in water or on steep ground houses still go in). A start element under
+# .../zombie/ is an abandoned village, its pieces from the zombie pools and its blocks through the zombie_<kind> processors. Normal and
+# abandoned ones are built apart (as many of each) and the share of abandoned ones is the start pool's weight.
+# Counted, each block as it ends up after its element's rule processors (zombie, farm, mossify: each rule in order, the first that
+# matches wins, a random_block_match passing with its chance): every block (a bed once, by its head), the chests by loot table and the
+# building they're in, the job site blocks by the job they give, and the entities saved in the pieces (villagers by job and age, the
+# iron golem, cats, animals). Given src/structure-loot.js, also the chance a village of each kind has each find in its chests.
+JOB_SITES = {"blast_furnace": "armorer", "smoker": "butcher", "cartography_table": "cartographer", "brewing_stand": "cleric",
+             "composter": "farmer", "barrel": "fisherman", "fletching_table": "fletcher", "cauldron": "leatherworker",
+             "water_cauldron": "leatherworker", "lava_cauldron": "leatherworker", "powder_snow_cauldron": "leatherworker",
+             "lectern": "librarian", "stonecutter": "mason", "loom": "shepherd", "smithing_table": "toolsmith", "grindstone": "weaponsmith"}
+VILLAGE_KINDS = ["plains", "desert", "savanna", "snowy", "taiga"]
+
+
+def village_piece(data, loc):
+    """A village template -> {blocks: Counter (a bed by its head, a jigsaw as its final_state), containers: Counter((block, table)),
+    mobs: Counter ("villager:<job>", "villager:baby", "zombie_villager:...", "cat:<variant>", or the entity's id)}."""
+    key = ("village", loc)
+    if key in data._pieces:
+        return data._pieces[key]
+    out = {"blocks": Counter(), "containers": Counter(), "mobs": Counter()}
+    path = data.base / "structure" / f"{loc}.nbt"
+    if path.exists():
+        t = nbt(path)
+        pal = t["palette"] if "palette" in t else t["palettes"][0]
+        for b in t["blocks"]:
+            s = pal[b["state"]]
+            name = s.get("Name", s.get("id", "")).replace("minecraft:", "")
+            props = s.get("Properties", s.get("properties", {})) or {}
+            e = b.get("nbt", {})
+            if name == "jigsaw":
+                name = e.get("final_state", "minecraft:air").replace("minecraft:", "").split("[")[0]
+            if name in ("air", "structure_void", "cave_air"):
+                continue
+            if name.endswith("_bed") and props.get("part") == "foot":
+                continue
+            out["blocks"][name] += 1
+            if "LootTable" in e:
+                out["containers"][(name, e["LootTable"].replace("minecraft:", ""))] += 1
+        for ent in t.get("entities", []):
+            e = ent["nbt"]
+            mid = e.get("id", "?").replace("minecraft:", "")
+            if mid in ("villager", "zombie_villager"):
+                job = e.get("VillagerData", {}).get("profession", "none").replace("minecraft:", "")
+                mid += ":baby" if e.get("Age", 0) < 0 else f":{job}"
+            elif mid == "cat":
+                mid += ":" + str(e.get("variant", "?")).replace("minecraft:", "")
+            out["mobs"][mid] += 1
+    data._pieces[key] = out
+    return out
+
+
+def village_rules(data, el):
+    rules = []
+    for pr in processors_of(data, el):
+        for r in pr.get("rules", []):
+            i, o = r["input_predicate"], r["output_state"]
+            o = (o if isinstance(o, str) else o.get("Name", o.get("id", ""))).replace("minecraft:", "")
+            t = i.get("predicate_type", "").replace("minecraft:", "")
+            if t in ("block_match", "random_block_match"):
+                blocks = {i["block"].replace("minecraft:", "")}
+            elif t == "tag_match":
+                blocks = block_set(data, "#" + i["tag"].replace("minecraft:", ""))
+            else:
+                continue  # blockstate_match: the zombie villages' glass panes facing one way turn brown; left as they were
+            if r.get("location_predicate", {}).get("predicate_type", "minecraft:always_true") != "minecraft:always_true":
+                continue  # the streets' rules over water
+            rules.append((blocks, i.get("probability", 1.0) if t == "random_block_match" else 1.0, o))
+    return rules
+
+
+def village_blocks(data, el, blocks):
+    """A piece's blocks as they end up after its element's rule processors, as expected counts."""
+    rules, out = village_rules(data, el), Counter()
+    for name, n in blocks.items():
+        left = 1.0
+        for bs, p, o in rules:
+            if name in bs:
+                if o not in ("air", "cave_air"):
+                    out[o] += n * left * p
+                left *= 1 - p
+                if left <= 0:
+                    break
+        if left > 0:
+            out[name] += n * left
+    return out
+
+
+def village_tally(data, placed, boxes):
+    t = Counter()
+    for loc, el, d in placed:
+        if loc.startswith("feature:"):
+            t[("feature", loc[8:])] += 1
+            continue
+        pc, name = village_piece(data, loc), loc.rsplit("/", 1)[1]
+        group = loc.split("/")[-2]
+        if group == "houses":
+            t[("building", name)] += 1
+            t[("buildings",)] += 1
+        for (_, table), k in pc["containers"].items():
+            t[("chest", table.rsplit("/", 1)[1])] += k
+            t[("chest in", table.rsplit("/", 1)[1], name)] += k
+        for m, k in pc["mobs"].items():
+            t[("mob", m)] += k
+            t[("mob", m.split(":")[0], "any")] += k
+        for b, k in village_blocks(data, el, pc["blocks"]).items():
+            t[("block", b)] += k
+            if b.endswith("_bed"):
+                t[("beds",)] += k
+            if b in JOB_SITES:
+                t[("job site", JOB_SITES[b])] += k
+                t[("job sites",)] += k
+    lo = [min(b[i] for b in boxes) for i in range(3)]
+    hi = [max(b[i + 3] for b in boxes) for i in range(3)]
+    t[("across", "x")] += hi[0] - lo[0] + 1
+    t[("across", "z")] += hi[2] - lo[2] + 1
+    t[("across", "wider")] += max(hi[0] - lo[0], hi[2] - lo[2]) + 1
+    return t
+
+
+def village_counts(data, n, seed=1, loot=None, kinds=VILLAGE_KINDS, abandoned=None):
+    tables = {}
+    if loot:
+        for line in pathlib.Path(loot).read_text().splitlines():
+            if line.startswith('  "chests/village/'):
+                k, v = line.split(": ", 1)
+                tables.setdefault(json.loads(k).rsplit("/", 1)[1], []).append(json.loads(v.rstrip().rstrip(",")))
+    for kind in kinds:
+        st = json.loads((data.base / "worldgen" / "structure" / f"village_{kind}.json").read_text())
+        pool = data.pool(st["start_pool"].replace("minecraft:", ""))
+        starts = {False: [], True: []}
+        for e in pool["elements"]:
+            starts["/zombie/" in elements(data, e["element"])[0]].append((e["element"], e["weight"]))
+        total = sum(w for g in starts.values() for _, w in g)
+        print(f"\n##### village_{kind}: abandoned {sum(w for _, w in starts[True])}/{total} = {sum(w for _, w in starts[True]) / total:.4f}; "
+              f"size {st['size']}, reach {st.get('max_distance_from_center')}, expansion {st.get('use_expansion_hack')}")
+        for zombie in (False, True):
+            rng, runs = random.Random(seed), []
+            if zombie and abandoned is not None:
+                n = abandoned
+            els, ws = zip(*starts[zombie])
+            for _ in range(n):
+                boxes = []
+                el = rng.choices(els, ws)[0]
+                placed = build(data, el, st["size"], st.get("max_distance_from_center", 80), rng, expansion=st.get("use_expansion_hack", False), boxes=boxes)
+                t = village_tally(data, placed, boxes)
+                t[("start", elements(data, el)[0].rsplit("/", 1)[1])] += 1
+                runs.append(t)
+            print_runs(f"village_{kind}{' (abandoned)' if zombie else ''}", runs)
+            print(f"\n=== village_{kind}{' (abandoned)' if zombie else ''}: 5%–95% of those with any, the chance of any")
+            for k in sorted({k for t in runs for k in t if k[0] in ("chest", "mob", "job site", "beds", "buildings", "block")}, key=str):
+                v = sorted(t[k] for t in runs if t[k])
+                if v and (k[0] != "block" or sum(v) / n >= 0.5):
+                    print(f"  {' · '.join(k)}: [{v[len(v) // 20]:g}, {v[19 * len(v) // 20]:g}, {len(v) / n:.3f}], mean {sum(v) / n:.2f}")
+            if tables:
+                for ed in (0, 1):
+                    print(f"\n=== village_{kind}{' (abandoned)' if zombie else ''}: the chance a village has each find in its chests, "
+                          f"{('Java', 'Bedrock')[ed]} [id, kind]: chance")
+                    finds = {}
+                    for tb, eds in tables.items():
+                        if ed < len(eds):
+                            for r in eds[ed]:
+                                finds.setdefault((r[0], r[1]), {})[tb] = r[4]
+                    out = []
+                    for f, per in finds.items():
+                        miss = sum(math_prod((1 - q) ** t[("chest", tb)] for tb, q in per.items()) for t in runs) / n
+                        if 1 - miss > 0.0005:
+                            out.append((1 - miss, f))
+                    for p, (i, v) in sorted(out, reverse=True):
+                        print(f"  {i} {v}: {p:.1%}")
+
+
+def math_prod(xs):
+    out = 1.0
+    for x in xs:
+        out *= x
+    return out
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--monument":
         monument_counts(int(sys.argv[2]) if len(sys.argv) > 2 else 2000)
@@ -2606,6 +2808,10 @@ if __name__ == "__main__":
         sys.exit()
     if sys.argv[2] == "--outpost":
         outpost_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 2000, loot=sys.argv[4] if len(sys.argv) > 4 else None)
+        sys.exit()
+    if sys.argv[2] == "--village":
+        village_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 2000, loot=sys.argv[4] if len(sys.argv) > 4 else None,
+                       kinds=sys.argv[5].split(",") if len(sys.argv) > 5 else VILLAGE_KINDS, abandoned=int(sys.argv[6]) if len(sys.argv) > 6 else None)
         sys.exit()
     if sys.argv[2] == "--end-city":
         end_city_counts(d, int(sys.argv[3]) if len(sys.argv) > 3 else 20000)

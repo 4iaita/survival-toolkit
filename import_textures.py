@@ -53,6 +53,9 @@ FILES = {
     "gold_block": "blocks/gold_block", "music_disc_creator": "items/music_disc_creator", "music_disc_precipice": "items/music_disc_precipice",
     "scaffolding_side": "blocks/scaffolding_side", "scaffolding_top": "blocks/scaffolding_top",
     "trial_key": "items/trial_key", "music_disc_creator_music_box": "items/music_disc_creator_music_box", "emerald_block": "blocks/emerald_block", "diamond_block": "blocks/diamond_block",
+    # the villages' chests: Java's smooth stone is the pack's stone slab top; the plants' inventory pictures are the pack's carried ones
+    "beetroot_soup": "items/beetroot_soup", "spruce_sign": "items/sign_spruce", "smooth_stone": "blocks/stone_slab_top",
+    "large_fern_item": "blocks/double_plant_fern_carried", "tall_grass_item": "blocks/double_plant_grass_carried",
     "glowstone_dust": "items/glowstone_dust", "gold_ingot": "items/gold_ingot", "golden_carrot": "items/carrot_golden",
     "gunpowder": "items/gunpowder", "ink_sac": "items/dye_powder_black", "iron_ingot": "items/iron_ingot",
     "item_frame": "items/item_frame", "lantern": "items/lantern", "lapis_lazuli": "items/dye_powder_blue",
